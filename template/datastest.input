@@ -1,0 +1,48 @@
+&simulation
+itestr4=-8  ! optimize  Z  
+ngen=1000000 ! # local energy and derivatives  samples
+!nscra=16   !  compute by scratch the determinant each nscra single el. update, default = 2 * nel
+!nbra=16    ! compute the local energy each nbra Metropolis single el. update, default   4 * nel
+iseedr=236413883
+nw=1       ! number of walkers default = # processors
+iopt=1     ! Default iopt=1 (begins), iopt=0 (continue)
+developer=1 !  developer=-1 check consistency after each minimization step.                    The same configuration is used and the same energy should be                    obtained as written in stdout.  
+!disk_io='default' ! 'default' spits out one file per rank,                                  'nocont' spits nothing, 'mpiio' splits one file for all ranks.
+/
+&pseudo     !
+! nintpsa=6  ! number of points for pseudo integration ! default allowed 12 18
+!npsamax=1   ! max number of overlapping pseudo atom cores defined in pseudo.dat (r< rcut) default 1(2) for atom(s)
+pseudorandom=.false.
+/
+&vmc
+tstep=2.    ! vmc step amplitude, check acceptance rate~0.5 at  end output
+epscut=0.d0  ! default =0. suggested non zero only for very large nweight.
+/
+&optimization
+kl=-6        ! Use conjugate gradients to solve Sx=f (convenient for nweight> # parameters, otherwise use kl=-7) x= direction in par space, f= energy deriv.
+epsdgel=1d-4 ! accuracy in solving the SR step  S x = f with a method depending on kl
+ncg=4       ! number of previous SR directions x used to compute the Hessian to accelerate convergence to the minimum (use ncg small!, ncg=1 simple SR).
+nweight=10000 ! bin length for each QMC optimization step: the bin.
+nbinr=2     ! number of sample/walker for each bin used to evaluate error bars                     (nweight-iboot)/nbinr should be preferably integer
+iboot=50    ! disregarded number of configurations in the averages over the bin
+tpar=0.125  ! the step predicted by a given optimization techn. is reduced by a factor tpar to improve stability (QMC has noise!)
+parr=0.1d0  ! the small eigenvalues of the matrix S are regularized (parr=0 no regularization, small values help to faster but less stable convergence).
+/
+&readio
+!writescratch=0 ! Default use disc space, writescratch=1 use RAM.
+!wherescratch='/local_scratch/sorella/'  ! name of the local scratch where the turborvb.scratch directory is created (default current directory). 
+/
+&parameters  ! all optimizable parameters are given in fort.10, all the types are listed below, a value=0 means do not optimize this type (e.g. iesd=0--> no two body one body) )
+iesd=1       ! optimize the two body and one body Jastrow
+iesfree=1    ! optimize the coefficient matrix (in the local basis) 3-Body density Jastrow factor
+iesinv=1     ! optimize the coefficient matrix (in the local basis) 3-Body spin  Jastrow factor
+iessw=1      ! optimize the coefficient matrix of the AGP
+iesup=1      ! optimize the exponents and (itestr4=-8) /or (itestr4=-4) of  the
+             ! contracted or non contracted AGP orbitals.
+iesm=1       ! optimize the exponents and (itestr4=-8) /or (itestr4=-4) of  the
+             ! contracted or non contracted Jastrow  orbitals (the same for spin                and density Jastrow).
+epsder=0.001d0
+/
+&unused
+testderiv=3  ! test derivatives orbital used
+/

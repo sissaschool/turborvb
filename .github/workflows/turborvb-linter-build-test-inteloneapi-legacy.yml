@@ -1,0 +1,61 @@
+# This workflow will build and test TurboRVB.
+
+name: TurboRVB linter-check, build, and test (Intel-oneapi, legacy)
+
+on:
+  push:
+    branches: [ "main", "devel" ]
+
+jobs:
+  intel-oneapi-legacy-test:
+    runs-on: ubuntu-latest
+    env:
+      CC: icx
+      CXX: icpx
+      FC: ifort
+
+    steps:
+    - name: Intel Apt repository
+      timeout-minutes: 1
+      run: |
+        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
+
+    - name: Install Intel oneAPI
+      timeout-minutes: 5
+      run: sudo apt-get install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build
+
+    - name: Install CMake
+      run: sudo apt-get install cmake
+
+    - name: Install and Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+
+    - name: Install python dependencies
+      run: pip install numpy scipy pandas
+
+    - name: Checkout the project repository
+      uses: actions/checkout@v2
+
+    - name: Setup Intel oneAPI environment
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+
+    - name: Lint TurboRVB with devel_tools/run_linter.py
+      run: |
+        python ./devel_tools/run_linter.py .
+
+    - name: Build TurboRVB with cmake serial and parallel versions
+      run: |
+        cmake -S. -Bbuild -DEXT_PARALLEL=ON -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort
+        cmake --build build -j 2
+
+    - name: Test TurboRVB with ctest both serial and parallel versions
+      run: |
+        ctest --test-dir build --output-on-failure -j 2
