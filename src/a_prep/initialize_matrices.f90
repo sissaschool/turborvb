@@ -36,7 +36,7 @@ subroutine initialize_mats_new
             &scale_z, mesh, nx0, ny0, nz0, weightx, weighty, weightz, meshproc_tot, &
             &volmesh_proc, minz_at, from_ions, rion_from, nx_at, ny_at, nz_at, rion_upload
     use fourier_module, only: ncub_min, ncub_max, nx_proc, nxny_proc, nx8, nxny8&
-            &, ind_init
+            &, ind_init, norm_metric
 #ifdef __SCALAPACK
     use descriptors
     use setup, only: np_ortho, leg_ortho, desch, oversl, oversldo, overhaml, overhamldo

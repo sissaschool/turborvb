@@ -70,6 +70,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
         )
 
     string(REGEX REPLACE "^turborvb" "common" COMMON_LIBRARY_TO_LINK ${EXECUTABLE})
+    string(REGEX REPLACE "^turborvb" "qlapack" QLAPACK_LIBRARY_TO_LINK ${EXECUTABLE})
     string(REGEX REPLACE "^turborvb" "adjoint-forward" ADFORWARD_LIBRARY_TO_LINK ${EXECUTABLE})
     string(REGEX REPLACE "^turborvb" "adjoint-backward" ADBACKWARD_LIBRARY_TO_LINK ${EXECUTABLE})
     string(REGEX REPLACE "^turborvb" "complex" COMPLEX_LIBRARY_TO_LINK ${EXECUTABLE})
@@ -77,7 +78,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
         ${COMMON_LIBRARY_TO_LINK}
-        qlapack
+        ${QLAPACK_LIBRARY_TO_LINK}
         pfapack
         ${ADBACKWARD_LIBRARY_TO_LINK}
         ${ADFORWARD_LIBRARY_TO_LINK}

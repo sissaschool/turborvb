@@ -42,21 +42,14 @@ foreach( LIBRARY IN LISTS LIBRARIES_S_L
         )
 
     string(REGEX REPLACE "^adjoint-forward" "common" COMMON_LIBRARY_TO_LINK ${LIBRARY})
+    string(REGEX REPLACE "^adjoint-forward" "qlapack" QLAPACK_LIBRARY_TO_LINK ${LIBRARY})
 
     target_link_libraries( ${LIBRARY}
       PRIVATE
         ${COMMON_LIBRARY_TO_LINK}
-        qlapack
+        ${QLAPACK_LIBRARY_TO_LINK}
         pfapack
         )
     
-    target_include_directories( ${LIBRARY}
-      PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${LIBRARY}.dir/src/d_qlapack
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${LIBRARY}.dir/src/m_common
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${LIBRARY}.dir/src/m_pfapack
-      )
-
   endif()
 endforeach()

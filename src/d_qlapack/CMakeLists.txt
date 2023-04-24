@@ -1,6 +1,6 @@
 foreach( LIBRARY IN LISTS LIBRARIES_S_L
                           LIBRARIES_P_L )
-  if( ${LIBRARY} MATCHES qlapack )
+  if( ${LIBRARY} MATCHES qlapack-.* )
 
     set_module_path_directory( ${LIBRARY} )
 
@@ -22,9 +22,11 @@ foreach( LIBRARY IN LISTS LIBRARIES_S_L
            zdotc.f
     )
     
+  string(REGEX REPLACE "^qlapack" "common" COMMON_LIBRARY_TO_LINK ${LIBRARY})
+
     target_link_libraries( ${LIBRARY}
-      PRIVATE
-        common-serial
+        PRIVATE
+        ${COMMON_LIBRARY_TO_LINK}
         )
 
     if( ${LIBRARY} MATCHES .*-nogpu-.* )
