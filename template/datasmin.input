@@ -1,0 +1,47 @@
+&simulation ! See further definitions in vmc (datasvmc.input).                                (type  'turborvb-serial.x vmc')
+itestr4=-4  ! optimize no exponents Z  (allowed itestr4=-8)                                   -9   same as -4 but without hessian (use ncg=1,tpar small)                      -5   same as -8 but ===                                                          a
+ngen=10000000 ! # local energy and derivatives  samples
+iopt=1
+!maxtime=1700
+/
+&pseudo     !
+/
+&vmc
+tstep=2.4     ! vmc step amplitude (a.u.)
+epscut=0.0  ! Default -100, for calculation with finite variance derivatives.                 see vmc input (datasvmc.input).
+hopfraction=0.5d0
+/
+&optimization
+kl=-7        ! kl=-6 Use conjugate gradients to solve Sx=f (convenient for nweight > # parameters, otherwise use kl=-7) x= direction in par space, f= energy deriv.
+epsdgel=1d-5 ! threshold for the elimination of parameters from minimization.
+!tolcg=1d-8  ! Accuracy in solving S x =f in SR step in parallel mode by                       conjugate gradients.
+ncg=1       ! number of SR directions x used to compute the Hessian to accelerate convergence to the minimum (use ncg small!, ncg=1 simple SR).
+!membig=.true. ! for small allocation and i/o output use membig=.false. when possible.
+nweight=10000 ! bin length for each QMC optimization step: the bin.
+!nmore_force=1 ! if using dynamics the corresponding nweight is multiplied by nmore_force only when computing                  ionic forces (ieskin>0). iboot=0 in this case (otherwise forced).
+nbinr=10000     ! number of sample/walker for each bin used to evaluate error bars                     (nweight-iboot)/nbinr should be preferably integer
+iboot=0    ! disregarded initial number of configurations in the averages                    over the bin nweight.
+tpar=0.35   ! the step predicted by a given optimization technique is reduced                 by a factor tpar to improve stability (QMC has noise!)
+parr=0.1d0  ! the small eigenvalues of the matrix S are regularized                           (parr=0 no regularization, small values help to go faster but                    less stable convergence). If parr<0 the regularization  is  the                 standard less efficient adding -parr x Identity to the sr matrix
+change_parr=.true.
+parr_min=1d-3
+!parr_max=0.01
+npbra=20
+parcutpar=4.d0
+symmetrize_agp=.true.
+minz=0.01d0
+maxz=500d0
+minzj=0.01d0
+maxzj=500.d0
+!twobodyoff=.false.  ! if .true. only one body part of the Jastrow is optimized
+!iesdtwobodyoff=.false. !  if .true.  the homogeneous part  of the jastrow is not optimized, (the one-body parameters for electron-ion cusp are instead considered).
+/
+&readio
+/
+&parameters
+iesd=1       ! optimize the two body and one body Jastrow
+iesfree=1    ! optimize the coefficient matrix (in the local basis) 3-Body density Jastrow factor
+iessw=1      ! optimize the coefficient matrix of the AGP
+iesup=1 ! optimize the basis det exponents (with -8) and/or the coefficient of contracted (with itestrr=-4 no exponents are optimized, if contractions present) 
+!iesm=1  ! same as above for the Jastrow basis (for uncontracted basis do not use it otherwise the exponents will be optimized even with itestrr=-4)
+/

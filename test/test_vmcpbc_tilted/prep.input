@@ -1,0 +1,65 @@
+&simulation   !
+itestr4=-4   ! -4 standard,-8 use twice larger basis for the Hartree potential.
+iopt=1       ! 1 initialize with no potential (no Hartree, xc, correlation)                   0 continue starting with wf read in fort.10_new and occupation                  read in occupationlevels.dat (both generated after iopt=1).                     NB
+!type_comp_dft=2 ! TABC (obsolete)
+!kappar=9.23766747510949039640d0
+/
+&pseudo
+!nintpsa=6   ! number of integration point for pseudo if present
+!pseudorandom=.true. ! random mesh for pseudo same algorithm for QMC by. R. Fahy.
+npsamax=4   ! Use npsamax>2 when the code finish for error '' Increase npsamax...
+/
+&vmc
+/
+&optimization
+molopt=1   !  do not change (it works only with molecular orbitals)
+yeswrite10=.true.
+/
+&readio
+writescratch=1 ! if writescratch=0 write all initial matrices on disc for faster                   continuation.
+/
+
+&parameters
+!decoupled_run=.true.
+!yes_kpoints=.true.
+!decoupled_run=.true. ! TABC
+/
+&molecul        ! section molecular orbitals
+nx=32
+ny=32
+nz=128          ! # of lattice points in the direction x, default ny=nz=nx
+nbufd=4096  !  input value for the buffer dimension,  Default=1000
+/
+&dft
+memlarge=.true.
+contracted_on=.false. ! if .true. it acts in the contracted basis.                                      If .false (default) it acts in the uncontracted basis.
+
+maxit=100       ! max number of iterations
+epsdft=1d-5     ! Tollerance in convergence in total energy
+!typeopt=4       !typeopt=0 use self consistency method with standard mixing,                     typeopt=2 Anderson mixing scheme looks much faster,                             typeopt=1 use steepest descent method with SR acceleration,
+mixing=1.d0   ! linear simple mixing in the density, choose a small value                       for convergence. If even this does not work, switch on                          optocc>0. You can also change iteration method with
+!mixingder=0.05    ! Used only with typeopt=3/4. 3: To evaluate numerically the                      first and second derivatives. 4: To be closer to the linear                     regime for the evaluation of the Jacobian (mixingder<<1).
+!tfcut=0.    ! Used only with typeopt=0/2/4. Use preconditioning to improve                      convergence  of small q charge fluctuations. tfcut suggested                    1/ xi_TF^2  where xi is the Thomas-Fermi length a.u.
+!orthodiag=.false. ! No orthogonalization after diagonalization. It is more                    accurate but slower to use orthodiag=.true.
+!maxold=3        ! maximum number of previous iterations to be considered in the                   numerical evaluation of Jacobian with typeopt=4
+typedft=1      ! typedft=0 Hartree, typedft=1 LDA (PZ 1981), typefit=2 LDA (OB                 1994), 1 and 2 differ in the interpolation of the correlation                   energy. typedft<0 (-1 and -2) corresponding fit by imposing
+!weightvh=1.d0   ! weight of the hartree potential weight=/1 used for tests.
+!weightxc=1.d0   ! weight of the exchange  energy, e.g.                                            weightxc=0 no exchange. weightcorr=1 standard LDA
+!weightcorr=1.d0 ! weight of the correlation energy, e.g.                                          weightcorr=0 no correlation, weightcorr=1 standard LDA
+optocc=1        !  default optocc=-1 use standard occupation of levels.                            It works for closed shell (insulators or special cases).                        optocc>=0 ---> print levels at each iteration.
+epsshell=1d-3    ! smearing of the Fermi distribution:                                       occupations(i) =2 (1 for LSDA)/( exp( (eig(i)-ef)/epsshell)+1)                  where ef is determined by sum(occupations(1:bands))=#electrons.                 Fo
+memlarge=.true. ! memlarge=.true. optimize speed  with >> memory requirements.
+!epsover=1d-14  ! minimum tollerance for the lowest eigenvalues of overlap mat.                   if epsover<0  no orthogonalization is implemented                               (faster less stable).
+!mincond=1      ! disregard the first mincond-1 direction regardless of the                       condition number limited by epsover. This is useful to have                     better cancellation errors as a function e.g. of pressure.
+!epssr=-1.d0     ! Used only for typeopt=1/3. if epssr>0 put a cutoff in the                       inverse as in the standard SR. If epssr=0. do not use the                       inverse, i.e. make standard steepest or conjugate gradients
+!maxcg=40    ! With typeopt=3, each maxcg steps restart the conj. grad.                        maxcg=0 no restarting (discouraged, numerically unstable)
+bands=16  ! The number of lowest eigenvalues of Khon-Sham equations.                         Default bands=nelup (the number of spin up electrons)+7.
+!nelocc=6        ! nelocc>0 (12 in the example below) is the number of                             occupations that are read in the number list record below                       occupations  values  can be only   (0,2]  (paired orbitals)
+!neloccdo=0      ! neloccco>0 as above for the spin down electrons assumed                         with no unpaired (another record with nelocddo indegers                         has to be written below)
+!randspin=0.d0   ! for initializing magnetization  if =/ 0, add random                             component if >0.
+!jaccond=1d-12   ! minimum threhold for the condition matrix in the self                           consistent approach typeopt=4
+!largez=.false.  ! if .true. compute better overlaps with exponents                                  larger than maxzdft below.
+!maxzdft=20      ! NB for Slater basis the threshold exponent is sqrt(maxzdft),                       with a mesh defined below. Inactive if largez=.false.
+!nc=-1           ! Reasonable default choice of the linear mesh size around                         the core atom with large exponents. Inactive if largez=.false.
+!nxs=1          ! grid where the magnetization is defined x mesh, after /                         read (nys+1)*(nzs-1)+nys records in the form sxyz=+/-1,0                         1 = Sz>0,-1=Sz<0, 0 = Sz=0
+/
