@@ -52,12 +52,15 @@ macro(SET_NVHPC_FORTRAN_COMPILER)
     #
     # There is a problem with nvidia compiler. When readf is link with
     # BLAS libraries it will segfault. We dont know the reason for this
-    # this is a quit workaround
+    # this is a quick workaround
+    #
+    # After restructuring this is not longer a problem, but I am keeping
+    # this lines commented for a future memo anout this problem.
     #
 
-    if( ${EXE} MATCHES readf)
-        set_property(TARGET ${EXE} PROPERTY LINK_LIBRARIES "-L./" "libturbo-serial.a")
-    endif()
+    #if( ${EXE} MATCHES readf)
+    #    set_property(TARGET ${EXE} PROPERTY LINK_LIBRARIES "-L./" "libturbo-serial.a")
+    #endif()
 
     #
     ######################################################################

@@ -41,16 +41,5 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
         ${COMPLEX_LIBRARY_TO_LINK}
     )
     
-    target_include_directories( ${EXECUTABLE}
-      PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/b_complex
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/c_adjoint_backward
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/c_adjoint_forward
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/d_qlapack
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/m_common
-        ${CMAKE_CURRENT_LIST_DIR}/CMakeFiles/${EXECUTABLE}.dir/src/m_pfapack
-      )
-
   endif()
 endforeach()

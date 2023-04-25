@@ -14,13 +14,14 @@ foreach( LIBRARY IN LISTS LIBRARIES_S_L
     set_module_path_directory( ${LIBRARY} )
 
     string(REGEX REPLACE "^complex" "common" COMMON_LIBRARY_TO_LINK ${LIBRARY})
+    string(REGEX REPLACE "^complex" "qlapack" QLAPACK_LIBRARY_TO_LINK ${LIBRARY})
     string(REGEX REPLACE "^complex" "adjoint-forward" ADFORWARD_LIBRARY_TO_LINK ${LIBRARY})
     string(REGEX REPLACE "^complex" "adjoint-backward" ADBACKWARD_LIBRARY_TO_LINK ${LIBRARY})
 
     target_link_libraries( ${LIBRARY}
       PRIVATE
         ${COMMON_LIBRARY_TO_LINK}
-        qlapack
+        ${QLAPACK_LIBRARY_TO_LINK}
         pfapack
         ${ADFORWARD_LIBRARY_TO_LINK}
         ${ADBACKWARD_LIBRARY_TO_LINK}

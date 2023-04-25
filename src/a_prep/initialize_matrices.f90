@@ -25,6 +25,12 @@ subroutine initialize_mats_new
     ! use ewald,           only: ewaldion1b,ewaldel1b
     ! use constants,       only: zzero,zone,Pi,ipc
     use allio
+    !
+    ! For Nvidia compiler one has to explicitly load norm_metric
+    ! otherwise the compiler will not see it.
+    !
+    use allio, only: norm_metric
+    !
     use parallel_module, only: old_threads
     use buffers
     use setup, only: overs, oversdo, overham, overhamdo, wf, write_matrix

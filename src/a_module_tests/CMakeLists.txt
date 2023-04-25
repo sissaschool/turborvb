@@ -15,7 +15,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
       target_link_libraries( ${EXECUTABLE}
         PRIVATE
             common-nogpu-serial
-            qlapack
+            qlapack-serial
             pfapack
             adjoint-nogpu-forward-serial
             adjoint-nogpu-backward-serial
@@ -25,7 +25,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
       target_link_libraries( ${EXECUTABLE}
         PRIVATE
             common-serial
-            qlapack
+            qlapack-serial
             pfapack
             adjoint-forward-serial
             adjoint-backward-serial
@@ -50,7 +50,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
 
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
-        qlapack
+        qlapack-serial
         common-serial
       )
   endif()
@@ -75,7 +75,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
         common-serial
-        qlapack
+        qlapack-serial
       )
   endif()
 
@@ -97,7 +97,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
-        qlapack
+        qlapack-serial
         common-serial
         adjoint-backward-serial
       )
@@ -144,7 +144,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
-        qlapack
+        qlapack-serial
         common-serial
       )
   endif()
@@ -167,7 +167,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     
     target_link_libraries( ${EXECUTABLE}
       PRIVATE
-        qlapack
+        qlapack-serial
         common-serial
       )
   endif()
