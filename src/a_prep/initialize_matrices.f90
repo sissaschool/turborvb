@@ -25,6 +25,12 @@ subroutine initialize_mats_new
     ! use ewald,           only: ewaldion1b,ewaldel1b
     ! use constants,       only: zzero,zone,Pi,ipc
     use allio
+    !
+    ! For Nvidia compiler one has to explicitly load norm_metric
+    ! otherwise the compiler will not see it.
+    !
+    use allio, only: norm_metric
+    !
     use parallel_module, only: old_threads
     use buffers
     use setup, only: overs, oversdo, overham, overhamdo, wf, write_matrix
@@ -36,7 +42,7 @@ subroutine initialize_mats_new
             &scale_z, mesh, nx0, ny0, nz0, weightx, weighty, weightz, meshproc_tot, &
             &volmesh_proc, minz_at, from_ions, rion_from, nx_at, ny_at, nz_at, rion_upload
     use fourier_module, only: ncub_min, ncub_max, nx_proc, nxny_proc, nx8, nxny8&
-            &, ind_init, norm_metric
+            &, ind_init
 #ifdef __SCALAPACK
     use descriptors
     use setup, only: np_ortho, leg_ortho, desch, oversl, oversldo, overhaml, overhamldo
