@@ -610,11 +610,19 @@ program readforward
         lzworkspace = 1
         !
         if (ipc .eq. 1) then
+#ifdef RISC
             call cusolver_dgetrf_buffersize_(handle, stat, nelup, nelup, psip, nelup, ldworkspace)
+#else
+            call cusolver_dgetrf_buffersize(handle, stat, nelup, nelup, psip, nelup, ldworkspace)
+#endif
             allocate (dev_dgetri_workspace(nelup, nelup))
             allocate (dev_zgetri_workspace(1, 1))
         else
+#ifdef RISC
             call cusolver_zgetrf_buffersize_(handle, stat, nelup, nelup, psip, nelup, lzworkspace)
+#else
+            call cusolver_zgetrf_buffersize(handle, stat, nelup, nelup, psip, nelup, lzworkspace)
+#endif
             allocate (dev_dgetri_workspace(1, 1))
             allocate (dev_zgetri_workspace(nelup, nelup))
         end if

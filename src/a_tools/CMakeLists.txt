@@ -32,13 +32,11 @@
         target_link_libraries( ${TOOL_NAME}
          PRIVATE
          complex-nogpu-serial
-         common-nogpu-serial
         )
     else()
         target_link_libraries( ${TOOL_NAME}
          PRIVATE
          complex-serial
-         common-serial
         )
     endif()
     install( TARGETS ${TOOL_NAME} )
