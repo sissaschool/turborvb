@@ -94,10 +94,9 @@ int F77_FUNC_(destroy_plan_3d, DESTROY_PLAN_3D)(fftwnd_plan *p)
 int F77_FUNC_(fft_x_stick, FFT_X_STICK)(fftw_plan *p, FFTW_COMPLEX *a, int *nx, int *ny, int *nz, int *ldx, int *ldy)
 {
 
-   int i, j, ind;
+   int i;
    int xstride, bigstride;
    int xhowmany, xidist;
-   double *ptr;
 
    /* trasform  along x and y */
    bigstride = (*ldx) * (*ldy);
@@ -105,8 +104,6 @@ int F77_FUNC_(fft_x_stick, FFT_X_STICK)(fftw_plan *p, FFTW_COMPLEX *a, int *nx, 
    xhowmany = (*ny);
    xstride = 1;
    xidist = (*ldx);
-
-   /* ptr = (double *)a; */
 
    for (i = 0; i < *nz; i++)
    {

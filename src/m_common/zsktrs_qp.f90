@@ -17,7 +17,11 @@ subroutine zsktrs(uplo, n, nhrs, a, b, ldb, x, info)
     implicit none
     integer n, nhrs, ldb, info, i, j
     complex*16 a(*), b(ldb, *), x(*)
+#ifdef __PORT
+    complex*16 aq, a2q, xo
+#else
     complex*32 aq, a2q, xo
+#endif
     character uplo
     if (uplo .eq. 'l' .or. uplo .eq. 'L') then
         a(1:n - 1) = -a(1:n - 1)
