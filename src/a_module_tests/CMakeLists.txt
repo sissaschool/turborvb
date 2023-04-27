@@ -14,21 +14,11 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
     if(EXT_GPU)
       target_link_libraries( ${EXECUTABLE}
         PRIVATE
-            common-nogpu-serial
-            qlapack-serial
-            pfapack
-            adjoint-nogpu-forward-serial
-            adjoint-nogpu-backward-serial
             complex-nogpu-serial
         )
     else()
       target_link_libraries( ${EXECUTABLE}
         PRIVATE
-            common-serial
-            qlapack-serial
-            pfapack
-            adjoint-forward-serial
-            adjoint-backward-serial
             complex-serial
         )
     endif()
