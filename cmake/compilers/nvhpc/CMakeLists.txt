@@ -146,47 +146,52 @@ macro( PREPARE_AGRESSIVE_NVHPC )
     set(AGRESSIVE_L "")
     list( APPEND AGRESSIVE_L
       cell.f90
+      conjginv_prep.f90
+      dgemm_my.f90
       dielectric.f90
+      dsktri.f90
+      dsktrs.f90
       ewald.f90
+      hopping_pbc.f90
+      jastrow_ee_exp.f90
+      jastrow_ei.f90
+      jastrow_exp.f90
+      jastrowgrad_exp_pbc.f90
       makefun.f90
-      makefun_pbc.f90
-      makefun_bump.f90
       makefun0.f90
-      makefun0_pbc.f90
       makefun0_bump.f90
-      upnewwf_new.f90
+      makefun0_pbc.f90
+      makefun_bump.f90
+      makefun_pbc.f90
+      mapping_sz.f90
+      ngivej_pbc.f90
+      ratio_psi.f90
+      ratiofn_psi.f90
+      ratiovar.f90
+      scalevect.f90
+      scratchdet.f90
+      subener.f90
+      t_lrdmc.f90
+      up2bodypsi_pbc_exp.f90
+      updiag.f90
       upinvhop.f90
       upinvhop_fnf_new.f90
-      uptabpip_new.f90
-      uptabtot_new.f90
-      ratiovar.f90
-      scratchdet.f90
-      scalevect.f90
-      jastrow_exp.f90
-      up2bodypsi_pbc_exp.f90
-      upwinv.f90
-      upwinvp.f90
-      jastrow_ei.f90
-      jastrow_ee_exp.f90
-      conjginv_prep.f90
-      hopping_pbc.f90
-      mapping_sz.f90
-      updiag.f90
+      upnewwf_new.f90
       upsim.f90
       upsimp.f90
       uptable.f90
+      uptabpip_new.f90
+      uptabtot_new.f90
       upvpot_pbc_exp.f90
-      upvpotdiag_pbc.f90
-      t_lrdmc.f90
-      ngivej_pbc.f90
       upvpotaa.f90
-      dgemm_my.f90
-      subener.f90
-      ratiofn_psi.f90
-      ratio_psi.f90
-      dsktri.f90
-      dsktrs.f90
-      zsktrs.f90
+      upvpotdiag_pbc.f90
+      upwinv.f90
+      upwinvp.f90
       zsktri.f90
+      zsktrs.f90
         )
+
+  if (CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 23)
+      list(REMOVE_ITEM AGRESSIVE_L upinvhop_fnf_new.f90)
+  endif()
 endmacro()
