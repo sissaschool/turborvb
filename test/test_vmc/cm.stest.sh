@@ -1,9 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+PREFIX=""
 if [[ $# -gt 0 ]]; then
 	TURBORVB=$1
 	OUT=$2
+        if [[ $# -gt 2 ]]; then
+	        PREFIX=$3
+	fi
 fi
 
 
