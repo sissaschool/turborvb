@@ -208,6 +208,14 @@ if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
 echo "################################################################################"
 cd $debug_root
 
+cd test_vmcopt_jastrow_1-3b_linear_method
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 $ROUND_OFF "$PREFIX"
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
 cd test_lrdmc_dla
 ./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 $ROUND_OFF "$PREFIX"
 exit_code=$?
