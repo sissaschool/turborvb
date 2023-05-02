@@ -173,6 +173,7 @@ if(EXT_TOOLS AND EXT_QMC)
   add_subdirectory(test_lrdmc_new)
   add_subdirectory(test_lrdmc_pfaff)
   add_subdirectory(test_lrdmc_tilted)
+  add_subdirectory(test_lrdmc_dla)
   #
   ######################################################################
 
