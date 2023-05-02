@@ -159,17 +159,20 @@ if(EXT_TOOLS AND EXT_QMC)
   # These tests are only if tools are available
   #
   
+  # VMC
   add_subdirectory(test_vmc)
   add_subdirectory(test_vmc_open_100_molecules)
-  add_subdirectory(test_lrdmc)
-  add_subdirectory(test_lrdmc_new)
   add_subdirectory(test_vmcpbc_tilted)
-  add_subdirectory(test_lrdmc_tilted)
   add_subdirectory(test_vmc_pfaff)
-  add_subdirectory(test_lrdmc_pfaff)
   add_subdirectory(test_vmc_pbc_gamma_8_crystals_insulator)
   add_subdirectory(test_vmc_pbc_complex_8_crystals_insulator)  
   add_subdirectory(test_vmc_pbc_trim_8_crystals_insulator)
+  
+  # LRDMC
+  add_subdirectory(test_lrdmc)
+  add_subdirectory(test_lrdmc_new)
+  add_subdirectory(test_lrdmc_pfaff)
+  add_subdirectory(test_lrdmc_tilted)
   #
   ######################################################################
 
