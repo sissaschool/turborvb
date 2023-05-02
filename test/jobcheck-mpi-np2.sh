@@ -216,6 +216,30 @@ if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
 echo "################################################################################" 
 cd $debug_root
 
+cd test_lrdmc_dltm
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 $ROUND_OFF "$PREFIX"
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_lrdmc_la
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 $ROUND_OFF "$PREFIX"
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_lrdmc_tmove
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 $ROUND_OFF "$PREFIX"
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
 success=0
 failure=0
 for exit_score in ${exit_scores_arr[@]}
