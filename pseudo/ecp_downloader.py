@@ -417,10 +417,11 @@ class Pseudopotentials:
                     output.append(
                         "{:14f}  {:14f}  {:14f}\n".format(coeff, pow + 2, exp)
                     )
-
+            
+            atomic_number=self.return_atomic_number(element=element.split('-')[0])
             file = os.path.join(
                 turbo_pp_dir,
-                f"Z{z_core}_atomnumber{self.return_atomic_number(element=element.split('-')[0])}.{prefix}",
+                f"Z{atomic_number-z_core}_atomnumber{atomic_number}.{prefix}",
             )
             with open(file, "w") as f:
                 f.writelines(output)
