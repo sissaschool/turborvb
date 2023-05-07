@@ -5,15 +5,16 @@ if [[ $# -gt 0 ]]; then
 	TURBORVB=$1
 	READF=$2
 	FORCEVMC=$3
-	OUT=$4
-	OUT_FORCEVMC=$5
-	TRUEOUT=$6
-	TRUEOUT_FORCEMVC=$7
-	REF_FORT21=$8
-	REF_FORCEVMC=$9
-	ROUND_OFF=${10}
-        if [[ $# -gt 10 ]]; then
-		PREFIX=${11}
+	IN=$4
+	OUT=$5
+	OUT_FORCEVMC=$6
+	TRUEOUT=$7
+	TRUEOUT_FORCEMVC=$8
+	REF_FORT21=$9
+	REF_FORCEVMC=${10}
+	ROUND_OFF=${11}
+        if [[ $# -gt 11 ]]; then
+		PREFIX=${12}
 	else
 		PREFIX=""
 	fi
@@ -29,7 +30,7 @@ fi
 #cd vmc
 echo " VMC and VMC forces TEST " 
 echo " dir=test_vmc" 
-$PREFIX $TURBORVB < datasvmc.d > $OUT
+$PREFIX $TURBORVB < $IN > $OUT
 [ $? -eq 0 ] && echo " Run without non-zero exit code" || exit 1
 
 #check energies
