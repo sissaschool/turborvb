@@ -2,4 +2,4 @@
 
 DESTINATION=../../src/m_common/fortran.c
 
-python make_wrapper.py > $DESTINATION
+python3 make_wrapper.py > $DESTINATION
