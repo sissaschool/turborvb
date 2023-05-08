@@ -183,7 +183,11 @@ if(EXT_TOOLS AND EXT_QMC)
   add_subdirectory(test_lrdmc_dltm)
   add_subdirectory(test_lrdmc_la)
   add_subdirectory(test_lrdmc_tmove)
-  #
+  
+  # MD
+  add_subdirectory(test_MD_classical_vmc)
+  add_subdirectory(test_MD_quantum_vmc)
+  
   ######################################################################
 
 endif()
