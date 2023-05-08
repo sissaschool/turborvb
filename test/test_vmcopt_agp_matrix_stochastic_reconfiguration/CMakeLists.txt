@@ -7,7 +7,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
      set( PREFIX "" )
      add_test_dependency_tree(
       NAME "Test VMCopt SR. AGPmat opt run (${EXECUTABLE})"
-	  COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA serial.out out_true.o REFERENCE_fortXXI 6 ${PREFIX}
+	  COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA serial.out out_true.o REFERENCE_fortXXI 5 ${PREFIX}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDENCY_TREE ${PARENT_DIR}
       )
@@ -16,7 +16,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
      set( PREFIX "mpirun -np 2" )
      add_test_dependency_tree(
       NAME "Test VMCopt SR. AGPmat opt run (${EXECUTABLE})"
-	  COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA mpi_np2.out out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 6 "${PREFIX}"
+	  COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA mpi_np2.out out_true_mpi_np2.o REFERENCE_fortXXI_mpi_np2 5 "${PREFIX}"
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDENCY_TREE ${PARENT_DIR}
       )
