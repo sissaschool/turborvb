@@ -8,7 +8,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
      add_test_dependency_tree(
       NAME "Test VMC run (${EXECUTABLE})"
       COMMAND ${BASH_EXECUTABLE} cm.test1.sh TURBORVB=$<TARGET_FILE:${EXECUTABLE}> 
-                                             READF=$<TARGET_FILE:readf>
+                                             READF=$<TARGET_FILE:readf> 
                                              INPUT_TURBORVB=datasvmc.d
                                              OUTPUT_TURBORVB=serial.out
                                              OUTPUT_REF=out_true.o
@@ -23,7 +23,7 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
      set( PREFIX "mpirun -np 2" )
      add_test_dependency_tree(
       NAME "Test VMC run (${EXECUTABLE})"
-      COMMAND ${BASH_EXECUTABLE} cm.test1.sh TURBORVB=$<TARGET_FILE:${EXECUTABLE}> 
+      COMMAND ${BASH_EXECUTABLE} cm.test1.sh TURBORVB=$<TARGET_FILE:${EXECUTABLE}>
                                              READF=$<TARGET_FILE:readf>
                                              INPUT_TURBORVB=datasvmc.d
                                              OUTPUT_TURBORVB=mpi_np2.out
@@ -40,7 +40,14 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
          set( PREFIX "" )
          add_test_dependency_tree(
           NAME "Test VMC run, forcing yes_ontarget (${EXECUTABLE})"
-          COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA datasvmc_yot.d serial.out NA out_true.o NA REFERENCE_fortXXI NA 6 ${PREFIX}
+          COMMAND ${BASH_EXECUTABLE} cm.test1.sh TURBORVB=$<TARGET_FILE:${EXECUTABLE}> 
+                                                 READF=$<TARGET_FILE:readf> 
+                                                 INPUT_TURBORVB=datasvmc_yot.d
+                                                 OUTPUT_TURBORVB=serial_yot.out
+                                                 OUTPUT_REF=out_true.o
+                                                 FORT21_REF=REFERENCE_fortXXI
+                                                 ROUND_OFF=6
+                                                 EXECUTE_PREFIX=${PREFIX}
           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
           DEPENDENCY_TREE ${PARENT_DIR}
           )
@@ -49,7 +56,14 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
          set( PREFIX "mpirun -np 2" )
          add_test_dependency_tree(
           NAME "Test VMC run, forcing yes_ontarget (${EXECUTABLE})"
-          COMMAND ${BASH_EXECUTABLE} cm.test1.sh $<TARGET_FILE:${EXECUTABLE}> $<TARGET_FILE:readf> NA datasvmc_yot.d mpi_np2.out NA out_true_mpi_np2.o NA REFERENCE_fortXXI_mpi_np2 NA 6 "${PREFIX}"
+          COMMAND ${BASH_EXECUTABLE} cm.test1.sh TURBORVB=$<TARGET_FILE:${EXECUTABLE}>
+                                                 READF=$<TARGET_FILE:readf>
+                                                 INPUT_TURBORVB=datasvmc_yot.d
+                                                 OUTPUT_TURBORVB=mpi_np2_yot.out
+                                                 OUTPUT_REF=out_true_mpi_np2.o
+                                                 FORT21_REF=REFERENCE_fortXXI_mpi_np2
+                                                 ROUND_OFF=6
+                                                 EXECUTE_PREFIX=${PREFIX}
           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
           DEPENDENCY_TREE ${PARENT_DIR}
           )

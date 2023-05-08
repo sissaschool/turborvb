@@ -1,25 +1,36 @@
 #!/bin/bash
 set -euo pipefail
 
+# Set default values
+TURBORVB=turborvb-serial.x
+READF=readf.x
+FORCEVMC=NA
+INPUT_TURBORVB=datas.input
+OUTPUT_TURBORVB=out
+OUTPUT_FORCEVMC=out_forcevmc
+OUTPUT_REF=out_true
+OUTPUT_FORCEVMC_REF=out_forcevmc_true
+FORT21_REF=fort.21_true
+FORCEVMC_REF=force_vmc_true
+ROUND_OFF=6
+EXECUTE_PREFIX=""
+
 if [[ $# -gt 0 ]]; then
-	TURBORVB=$1
-	READF=$2
-	FORCEVMC=$3
-	IN=$4
-	OUT=$5
-	OUT_FORCEVMC=$6
-	TRUEOUT=$7
-	TRUEOUT_FORCEMVC=$8
-	REF_FORT21=$9
-	REF_FORCEVMC=${10}
-	ROUND_OFF=${11}
-        if [[ $# -gt 11 ]]; then
-		PREFIX=${12}
-	else
-		PREFIX=""
-	fi
+  for ARG in "$@"; do
+    if [[ $ARG =~ ^([^=]+)=([^\']*)$ ]]; then
+  
+      KEY="${BASH_REMATCH[1]}"
+      VALUE="${BASH_REMATCH[2]}"
+  
+      eval "${KEY}='${VALUE}'"
+    else
+      echo "Uknown argument ${ARG}"
+      echo "Parameters has to be in key value pairs: $0 [key1=value1] [key2=value2] ..."
+      exit 1
+    fi
+  done
 else
-	source ../settings.sh
+  source ../settings.sh
 fi
 
 if [ ! -f "$TURBORVB" ]; then
@@ -30,22 +41,22 @@ fi
 #cd vmc
 echo " VMC and VMC forces TEST " 
 echo " dir=test_vmc" 
-$PREFIX $TURBORVB < $IN > $OUT
+$EXECUTE_PREFIX $TURBORVB < $INPUT_TURBORVB > $OUTPUT_TURBORVB
 [ $? -eq 0 ] && echo " Run without non-zero exit code" || exit 1
 
 #check energies
 echo "  Calculate local energies:'0 1 1 1' | readf.x" 
 echo "0 1 1 1" | $READF >& /dev/null
 
-if [ $(grep -c ERR $OUT) -gt 0 ]; then
+if [ $(grep -c ERR $OUTPUT_TURBORVB) -gt 0 ]; then
   echo "    Errors in output:"
-  echo `grep ERR $OUT`
+  echo `grep ERR $OUTPUT_TURBORVB`
   exit 1
 fi
 
 echo "    Rounds off values in fort.21 < 10**-${ROUND_OFF}".
 cat fort.21 | awk -v ROUND_OFF=${ROUND_OFF} '{printf("%.*f  %.*f  %.*f\n", ROUND_OFF, $1, ROUND_OFF, $2, ROUND_OFF, $3)}' > fort.21_roundoff
-cat ${REF_FORT21} | awk -v ROUND_OFF=${ROUND_OFF} '{printf("%.*f  %.*f  %.*f\n", ROUND_OFF, $1, ROUND_OFF, $2, ROUND_OFF, $3)}' > REFERENCE_fortXXI_roundoff
+cat ${FORT21_REF} | awk -v ROUND_OFF=${ROUND_OFF} '{printf("%.*f  %.*f  %.*f\n", ROUND_OFF, $1, ROUND_OFF, $2, ROUND_OFF, $3)}' > REFERENCE_fortXXI_roundoff
 
 #diff fort.21
 echo "    Compares fort.21_roundoff and REFERENCE_fortXXI_roundoff."
