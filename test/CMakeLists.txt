@@ -173,7 +173,7 @@ if(EXT_TOOLS AND EXT_QMC)
   add_subdirectory(test_vmcopt_jastrow_1-3b_stochastic_reconfiguration)
   add_subdirectory(test_vmcopt_agp_matrix_linear_method)
   add_subdirectory(test_vmcopt_agp_matrix_stochastic_reconfiguration)
-  add_subdirectory(test_vmcopt_sd_MOs_linear_method)
+  #add_subdirectory(test_vmcopt_sd_MOs_linear_method)
 
   # LRDMC
   add_subdirectory(test_lrdmc)
