@@ -159,18 +159,36 @@ if(EXT_TOOLS AND EXT_QMC)
   # These tests are only if tools are available
   #
   
+  # VMC
   add_subdirectory(test_vmc)
   add_subdirectory(test_vmc_open_100_molecules)
-  add_subdirectory(test_lrdmc)
-  add_subdirectory(test_lrdmc_new)
   add_subdirectory(test_vmcpbc_tilted)
-  add_subdirectory(test_lrdmc_tilted)
   add_subdirectory(test_vmc_pfaff)
-  add_subdirectory(test_lrdmc_pfaff)
   add_subdirectory(test_vmc_pbc_gamma_8_crystals_insulator)
   add_subdirectory(test_vmc_pbc_complex_8_crystals_insulator)  
   add_subdirectory(test_vmc_pbc_trim_8_crystals_insulator)
-  #
+
+  # VMCopt
+  add_subdirectory(test_vmcopt_jastrow_1-3b_linear_method)
+  add_subdirectory(test_vmcopt_jastrow_1-3b_stochastic_reconfiguration)
+  add_subdirectory(test_vmcopt_agp_matrix_linear_method)
+  add_subdirectory(test_vmcopt_agp_matrix_stochastic_reconfiguration)
+  #add_subdirectory(test_vmcopt_sd_MOs_linear_method)
+
+  # LRDMC
+  add_subdirectory(test_lrdmc)
+  add_subdirectory(test_lrdmc_new)
+  add_subdirectory(test_lrdmc_pfaff)
+  add_subdirectory(test_lrdmc_tilted)
+  add_subdirectory(test_lrdmc_dla)
+  add_subdirectory(test_lrdmc_dltm)
+  add_subdirectory(test_lrdmc_la)
+  add_subdirectory(test_lrdmc_tmove)
+  
+  # MD
+  add_subdirectory(test_MD_classical_vmc)
+  add_subdirectory(test_MD_quantum_vmc)
+  
   ######################################################################
 
 endif()

@@ -3215,7 +3215,7 @@ contains
                  &, winvbar, winvjbar, wint, dist, tmu, diagfn&
                  &, jastrowall_ee, jastrowall_ei, jasnew_ee, jasnew_ei, winvjbarsz)
 
-            deallocate (psip)
+            !deallocate (psip)
             allocate (psip_reweight(iscrapip))
             ! initialize psip
             psip_reweight = 0.d0
@@ -3724,7 +3724,7 @@ contains
 #else
             !      REALLOCATE A LOT OF USEFUL STAFF
             deallocate (psip_reweight)
-            allocate (psip(iscramax))
+            !allocate (psip(iscramax))
             allocate (tabpip((indt + ip4)*nel*nws), table(max(ipc*nel*indt, ipc)*nws)&
                  &, tabler(max(nel*indt, 1)*nws), winv(ipc*nelorb*nel*(indt4 + 1)*nws)&
                  &, ainv(ipc*nelup_mat*nelup_mat*nws), winvdo(ipc*(indt + ip4)*max(neldo, 1)*nws)             &

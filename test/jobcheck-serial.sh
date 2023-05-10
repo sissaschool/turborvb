@@ -207,6 +207,94 @@ if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
 echo "################################################################################"
 cd $debug_root
 
+cd test_vmcopt_jastrow_1-3b_linear_method
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_vmcopt_jastrow_1-3b_stochastic_reconfiguration
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_vmcopt_agp_matrix_linear_method
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_vmcopt_agp_matrix_stochastic_reconfiguration
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_vmcopt_sd_MOs_linear_method
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_lrdmc_dla
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_lrdmc_dltm
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_lrdmc_la
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_lrdmc_tmove
+./cm.test1.sh $TURBORVB $READF $FORCEVMC $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################" 
+cd $debug_root
+
+cd test_MD_classical_vmc
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
+cd test_MD_quantum_vmc
+./cm.test1.sh $TURBORVB $READF NA $OUT out_true.o REFERENCE_fortXXI $ROUND_OFF
+exit_code=$?
+exit_scores_arr+=($exit_code)
+if [ $exit_code -ne 0 ]; then echo " Warn: Job failed."; fi
+echo "################################################################################"
+cd $debug_root
+
 success=0
 failure=0
 for exit_score in ${exit_scores_arr[@]}
