@@ -84,6 +84,7 @@ if(EXT_MODTEST)
 
   endif()
 
+  add_subdirectory(test_openmp_parallel)
   add_subdirectory(test_openmp_reduction)
 
   add_subdirectory(test_zdotc_128)

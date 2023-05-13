@@ -12,7 +12,12 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   set(PASIVE_F "-O1")
 
   add_fortran_flag_if_avail( "-fpp"   "Intel (Legacy) Fortran compiler does not supports c preprocessor" )
-  add_fortran_flag_if_avail( "-qopenmp" )
+  if(OpenMP_FOUND)
+	    add_fortran_flag_if_avail( "-qopenmp" )
+	    add_c_flag_if_avail( "-qopenmp" )
+      add_target_link_flag( "-qopenmp" )
+  endif()
+
   add_fortran_flag_if_avail( "-g" )
   
   #message(${CMAKE_APPLE_SILICON_PROCESSOR})

@@ -13,6 +13,14 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
   set(AGRESSIVE_F "-Ofast")
   set(PASIVE_F "-O1")
 
+  add_fortran_flag_if_avail( "-g" )
+
+  if(OpenMP_FOUND)
+	    add_fortran_flag_if_avail( "-qopenmp" )
+	    add_c_flag_if_avail( "-qopenmp" )
+      add_target_link_flag( "-qopenmp" )
+  endif()
+
   # Set optimization flags:
   foreach( LIBRARY IN LISTS LIBRARIES_S_L
                             LIBRARIES_P_L
