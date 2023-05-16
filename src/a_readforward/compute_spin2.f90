@@ -543,12 +543,14 @@ contains
                 if (ifjasz) then
                     spin2_jastrow = -2.d0*(aux(k) + JasSpin(nelup + l, k)) + 2.0*(aux(nelup + l) - JasSpin(k, nelup + l))
 #ifdef DEBUG
-                    write (6, *) "JasSpin"
-                    do i = 1, nel
-                        write (6, *) (JasSpin(i, j), j=1, nel)
-                    end do
-                    write (6, *) "jastrow", spin2_jastrow
-                    call test_jastrow_spin_flip(JasSpin, k, l + nelup)
+! Commented out because of a problem in test_jastrow_spin_flip
+!
+!                   write (6, *) "JasSpin"
+!                   do i = 1, nel
+!                       write (6, *) (JasSpin(i, j), j=1, nel)
+!                   end do
+!                   write (6, *) "jastrow", spin2_jastrow
+!                   call test_jastrow_spin_flip(JasSpin, k, l + nelup)
 #endif
                     if (ipj .eq. 2) then
                         !  Shirakawa eq.
@@ -585,37 +587,40 @@ contains
 
 #ifdef DEBUG
 !------------------------------------------------------------------------------
-    subroutine test_jastrow_spin_flip(JasSpin, k, l)
+!   subroutine test_jastrow_spin_flip(JasSpin, k, l)
+!
+!   Commented out because up3bodypsi_sz is lost
+!
 !------------------------------------------------------------------------------
-        real*8 JasSpin(nel, nel)
-        integer k, l !assume k<l
+!       real*8 JasSpin(nel, nel)
+!       integer k, l !assume k<l
 
-        integer i, j, spinprod
-        real*8 ref, cost
+!       integer i, j, spinprod
+!       real*8 ref, cost
 
-        write (6, *) "switch", k, l
-        ref = 0.d0
-        call up3bodypsi_sz(nel, nelup, ref, 1, JasSpin)
-        cost = 0.d0
-        do i = 1, nel - 1
-            do j = i + 1, nel
-                spinprod = 1
-                if (i <= nelup .and. j > nelup) spinprod = -1
-                if (i == k) then
-                    if (j /= l) spinprod = -spinprod
-                elseif (i == l) then
-                    spinprod = -spinprod
-                elseif (j == k .or. j == l) then
-                    spinprod = -spinprod
-                end if
-                write (6, *) i, j, " spinprod ", spinprod
-                cost = cost + JasSpin(j, i)*spinprod
-            end do
-        end do
-        write (6, *) "ref = ", ref, "cost = ", cost
-        write (6, *) "jastrow_spin_flip refence difference = ", cost - ref
+!       write (6, *) "switch", k, l
+!       ref = 0.d0
+!       call up3bodypsi_sz(nel, nelup, ref, 1, JasSpin)
+!       cost = 0.d0
+!       do i = 1, nel - 1
+!           do j = i + 1, nel
+!               spinprod = 1
+!               if (i <= nelup .and. j > nelup) spinprod = -1
+!               if (i == k) then
+!                   if (j /= l) spinprod = -spinprod
+!               elseif (i == l) then
+!                   spinprod = -spinprod
+!               elseif (j == k .or. j == l) then
+!                   spinprod = -spinprod
+!               end if
+!               write (6, *) i, j, " spinprod ", spinprod
+!               cost = cost + JasSpin(j, i)*spinprod
+!           end do
+!       end do
+!       write (6, *) "ref = ", ref, "cost = ", cost
+!       write (6, *) "jastrow_spin_flip refence difference = ", cost - ref
 !------------------------------------------------------------------------------
-    end subroutine test_jastrow_spin_flip
+!   end subroutine test_jastrow_spin_flip
 !------------------------------------------------------------------------------
 #endif
 end module Spin2

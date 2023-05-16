@@ -4162,9 +4162,10 @@ contains
                                                             indm = j
                                                         end if
                                                         end do
-                                                        if (cov(indm + (i - 1)*ieskin) .lt. 0.d0)
+                                                        if (cov(indm + (i - 1)*ieskin) .lt. 0.d0) then
                                                             cov(1 + ieskin*(i - 1):ieskin*i) = &
                                                                 &-cov(1 + ieskin*(i - 1):ieskin*i)
+                                                        end if
                                                     end do
 #endif
 
