@@ -26,6 +26,7 @@ cw = cs.CodeWriter()
 
 from basics import ( add_complex,
                      default_includes,
+                     default_definitions,
                      add_notice,
                      add_license,
                    )
@@ -34,6 +35,8 @@ add_license(cw)
 add_notice(cw)
 
 default_includes(cw)
+default_definitions(cw)
+
 add_complex(cw)
 
 b_cublas = True

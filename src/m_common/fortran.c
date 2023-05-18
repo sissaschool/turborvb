@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <ctype.h>
+typedef size_t devptr_t;
 struct complex
 {
     double re;
