@@ -84,3 +84,6 @@ def default_includes(cw):
     cw.include("<stdlib.h>")
     cw.include("<stddef.h>")
     cw.include("<ctype.h>")
+
+def default_definitions(cw):
+    cw.add_line("typedef size_t devptr_t;")
