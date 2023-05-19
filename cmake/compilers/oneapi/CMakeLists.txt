@@ -12,6 +12,9 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
 
   set(AGRESSIVE_F "-Ofast")
   set(PASIVE_F "-O1")
+  if (CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 2023.1)
+    set(PASIVE_F "-O0")
+  endif()
 
   add_fortran_flag_if_avail( "-g" )
 
@@ -115,4 +118,8 @@ macro( PREPARE_AGRESSIVE_ONEAPI )
         zsktrs.f90
         zsktri.f90
         )
+
+  if (CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 2023.1)
+    list(REMOVE_ITEM AGRESSIVE_L ewald.f90)
+  endif()
 endmacro()

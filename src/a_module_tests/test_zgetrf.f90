@@ -15,7 +15,7 @@
 
 program test_zgetrf
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
     use allio, only: handle, dev_zgetrf_workspace, dev_Info
 #endif
 
@@ -28,7 +28,7 @@ program test_zgetrf
     real*8 :: one = 1.d0, zero = 0.d0
     integer :: s, gen, info, ii, jj, kk
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
     integer :: lworkspace, stat
 #endif
 
@@ -37,7 +37,7 @@ program test_zgetrf
 
     read (*, *) s, gen
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
     lworkspace = 1
 #ifdef RISC
     call cusolver_handle_init_(handle)
@@ -90,14 +90,14 @@ program test_zgetrf
 
     C = A
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
 !$omp target data map(tofrom:C,ipiv)
 #endif
     call zgetrf_(s, s&
                 &, C, s&
                 &, ipiv&
                 &, info)
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
 !$omp end target data
 #endif
 
@@ -148,7 +148,7 @@ program test_zgetrf
         print *, "OK"
     end if
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
 !$omp end target data
 #ifdef RISC
     call cusolver_handle_destroy_(handle)
@@ -159,7 +159,7 @@ program test_zgetrf
 
     deallocate (A, ipiv, temp, upper, lower, C, helper_r, helper_c)
 
-#if defined(_OFFLOAD) && defined(_CUBLAS)
+#if defined(_OFFLOAD) && defined(_CUSOLVER)
     deallocate (dev_zgetrf_workspace)
 #endif
 
