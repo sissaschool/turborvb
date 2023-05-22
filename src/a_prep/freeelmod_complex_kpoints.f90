@@ -2605,7 +2605,6 @@ contains
         !
         if (ipc .eq. 1) then
             bdim = size(molecorbl, 1)
-            bdimdo = size(molecorbldo, 1)
         else
             bdim = size(molecorbl, 1)/2
             bdimdo = size(molecorbldo, 1)/2
