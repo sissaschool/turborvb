@@ -9,7 +9,11 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   message( STATUS "Using Intel (legacy) Compiler" )
 
   set(AGRESSIVE_F "-Ofast")
-  set(PASIVE_F "-O1")
+  if( ${EXT_OPT} )
+    set(PASIVE_F "-O1")
+  else()
+    set(PASIVE_F "-O0")
+  endif()
 
   add_fortran_flag_if_avail( "-fpp"   "Intel (Legacy) Fortran compiler does not supports c preprocessor" )
   add_fortran_flag_if_avail( "-qopenmp" )
@@ -70,6 +74,13 @@ macro(SET_INTEL_C_COMPILER)
 
   list( APPEND PPDIRECTIVES "__FFTW" )
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
+
+  add_c_flag_if_avail( "-g" )
+  if( ${EXT_OPT} )
+    add_c_flag_if_avail( "-O3" )
+  else()
+    add_c_flag_if_avail( "-O0" )
+  endif()
 
 endmacro()
 
