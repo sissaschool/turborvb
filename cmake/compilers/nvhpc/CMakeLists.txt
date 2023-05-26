@@ -87,25 +87,22 @@ macro(SET_NVHPC_FORTRAN_COMPILER)
 
         ######################################################################
         #
-        # Some of the objects does not work properly when compiled with -O1
-        # only -O1. Therefor if optimizations are turned off they are set to
-        # -O0
         #
 
-        if(${AGR})
-          if(${EXT_OPT})
+        if(${EXT_OPT})
+          if(${AGR})
             set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS -O3)
             if(NOT ${SRC} IN_LIST AGRESSIVE_FINAL_L)
               list(APPEND AGRESSIVE_FINAL_L ${SRC})
             endif()
           else()
-            set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS -O0)
+            set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS -O1)
             if(NOT ${SRC} IN_LIST PASIVE_FINAL_L)
               list(APPEND PASIVE_FINAL_L ${SRC})
             endif()
           endif()
         else()
-          set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS -O1)
+          set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS -O0)
           if(NOT ${SRC} IN_LIST PASIVE_FINAL_L)
             list(APPEND PASIVE_FINAL_L ${SRC})
           endif()
@@ -131,7 +128,15 @@ macro(SET_NVHPC_C_COMPILER)
   list( APPEND PPDIRECTIVES "__FFTW" )
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
 
-  if(EXT_GPU)
+  add_c_flag_if_avail( "-g")
+
+  if( ${EXT_OPT} )
+    add_c_flag_if_avail( "-O3")
+  else()
+    add_c_flag_if_avail( "-O0")
+  endif()
+
+  if( ${EXT_GPU} )
     add_c_flag_if_avail( "-mp=gpu" )
     if(NOT EXT_GPUTYPE STREQUAL "")
       add_c_flag_if_avail( "-gpu=${EXT_GPUTYPE}" )

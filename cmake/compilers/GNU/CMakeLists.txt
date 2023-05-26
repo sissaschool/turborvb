@@ -10,7 +10,11 @@ macro(SET_GNU_FORTRAN_COMPILER)
 
   set( AGRESSIVE_FLAG_S "-Ofast" )
   set( AGRESSIVE_FLAG_S "${AGRESSIVE_FLAG_S} ${EXT_AGRS}" )
-  set( PASIVE_FLAG_S "-O2" )
+  if( ${EXT_OPT} )
+    set( PASIVE_FLAG_S "-O2" )
+  else()
+    set( PASIVE_FLAG_S "-O0" )
+  endif()
 
   # Maybe this can be done by check_Fortran_compiler_flag
 
@@ -29,7 +33,6 @@ macro(SET_GNU_FORTRAN_COMPILER)
   if(EXT_GPU)
 	  add_fortran_flag_if_avail( "-fno-whole-file" "GNU Fortran compiler does not supports no-whole-flag, turn off GPU support" )
 	  add_fortran_flag_if_avail( "-fopenmp" )
-	  add_fortran_flag_if_avail( "-g" )
 	  add_fortran_flag_if_avail( "-foffload=nvptx-none" )
 	  add_fortran_flag_if_avail( "-foffload-options=-lgfortran" )
 	  add_fortran_flag_if_avail( "-foffload-options=-lm" )
@@ -59,6 +62,7 @@ macro(SET_GNU_FORTRAN_COMPILER)
   add_fortran_flag_if_avail( "-march=native" )
   add_fortran_flag_if_avail( "-mtune=native" )
   add_fortran_flag_if_avail( "-w" )
+  add_fortran_flag_if_avail( "-g" )
   add_fortran_flag_if_avail( "-ggdb3" )
   add_fortran_flag_if_avail( "-cpp"                    "GNU Fortran compiler does not supports c preprocessor" )
   add_fortran_flag_if_avail( "-ffree-line-length-none" "GNU Fortran compiler does not supports arbitrary line length" )
@@ -116,6 +120,14 @@ macro(SET_GNU_C_COMPILER)
 
   list( APPEND PPDIRECTIVES "__FFTW" )
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
+
+  add_c_flag_if_avail( "-g" )
+
+  if( ${EXT_OPT} )
+    add_c_flag_if_avail( "-O3" )
+  else()
+    add_c_flag_if_avail( "-O0" )
+  endif()
 
 endmacro()
 

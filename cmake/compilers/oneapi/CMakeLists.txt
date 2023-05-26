@@ -11,8 +11,12 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
   add_fortran_flag_if_avail( "-fpp"   "Intel LLVM Fortran compiler does not supports C preprocessor" )
 
   set(AGRESSIVE_F "-Ofast")
-  set(PASIVE_F "-O1")
-  if (CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 2023.1)
+  if( ${EXT_OPT} )
+    set(PASIVE_F "-O1")
+    if (CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 2023.1)
+      set(PASIVE_F "-O0")
+    endif()
+  else()
     set(PASIVE_F "-O0")
   endif()
 
@@ -61,6 +65,14 @@ macro(SET_ONEAPI_C_COMPILER)
 
   list( APPEND PPDIRECTIVES "__FFTW" )
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
+
+  add_c_flag_if_avail( "-g" )
+
+  if( ${EXT_OPT} )
+    add_c_flag_if_avail( "-O3" )
+  else()
+    add_c_flag_if_avail( "-O0" )
+  endif()
 
 endmacro()
 
