@@ -30,7 +30,7 @@ c
       PARAMETER (ZERO= (0.0D+0,0.0D+0))
 
 #ifdef _OFFLOAD
-      INTEGER*4 :: I, J
+      INTEGER*4 :: I, J, INFO
 #endif
 c
       IF(.NOT.yes_ontarget) THEN
