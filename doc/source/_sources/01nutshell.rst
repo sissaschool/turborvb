@@ -19,6 +19,10 @@ TurboRVB sets itself apart from other QMC codes through several unique features:
 
 When you publish a paper using TurboRVB, please cite the following paper(s).
 
-- `TurboRVB: a many-body toolkit for ab initio electronic simulations by quantum Monte Carlo <https://arxiv.org/abs/2002.07401>`_
+- `TurboRVB: a many-body toolkit for ab initio electronic simulations by quantum Monte Carlo <https://doi.org/10.1063/5.0005037>`_
 
    | K. Nakano, C. Attaccalite, M. Barborini, L. Capriotti, M. Casula, E. Coccia, M. Dagrada, Y. Luo, G. Mazzola, A. Zen, and S. Sorella, *J. Chem. Phys.* 152, 204121 (2020)
+
+- TurboGenius: Python suite for high-throughput calculations of the ab-initio quantum Monte Carlo methods
+
+   | K. Nakano, O. Kohulak, A. Raghav, S. Sorella, M. Casula, *in preparation* (2023)
