@@ -178,53 +178,112 @@ DMCLRDMC section
 
 This section should be specified for a LRDMC or LRDMCopt run.
 
-.. table:: Parameter List
+.. table::
 
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | Parameter | Datatype | Default | Description                                                        |
-   +===========+==========+=========+====================================================================+
-   | tbra      | NA       | NA      | DMC time between consecutive branchings. Do not define when        |
-   |           |          |         | nbra > 0 in the simulation section.                                |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | etry      | NA       | NA      | Trial total energy. Please put the DFT or VMC energy.              |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | Klrdmc    | NA       | NA      | η parameter of LRDMC. η = 1 + Ka^2                                 |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | alat      | NA       | NA      | Lattice space a of the smallest regularization grid. Accept        |
-   |           |          |         | default. If you want to do a single-grid LRDMC calculation, please |
-   |           |          |         | put a negative value to satisfy the detailed-balance. If you want  |
-   |           |          |         | to do a double-grid LRDMC, please put a positive value and switch  |
-   |           |          |         | on iesrandoma.                                                     |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | iesrandoma| NA       | NA      | flag to randomize the direction of the electron's diffusion.       |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | alat2     | NA       | NA      | Double-grid Lattice space. alat2 = a'/a, where a is the smallest   |
-   |           |          |         | regularization grid and a' is the larger one used in the valence   |
-   |           |          |         | region (i.e., far from nuclei). When you put a negative value for  |
-   |           |          |         | alat, you should not specify alat2 (i.e., please comment it out).  |
-   |           |          |         | The default value of alat2 is determined by Nakano's algorithm.    |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | gamma     | NA       | NA      | The γ parameter in LRDMC. Accept default.                          |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | npow      | NA       | NA      | The parameter npow gradually sets the degree of localization used  |
-   |           |          |         | in the effective Hamiltonian. npow = 0 corresponds to a Fixed      |
-   |           |          |         | Node Hamiltonian whereas npow = 1 corresponds to the local         |
-   |           |          |         | approximation. Accept default.                                     |
-   +-----------+----------+---------+--------------------------------------------------------------------+
-   | parcutg   | NA       | NA      | Use parcutg=1. parcutg=0 for standard LRDMC with no cutoff         |
-   |           |          |         | (energy unbounded).                                                |
-   +-----------+----------+---------+--------------------------------------------------------------------+
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | Parameter name  | Datatype | Default               | Description                                                                                                        |
+   +=================+==========+=======================+====================================================================================================================+
+   | etry            | real     | 0.0                   | Trial total energy. Please put the DFT or VMC energy.                                                              |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | typereg         | int      | 6                     | How to deal with the spin-flip term, 0: Standard (Det. + Jas.), 6: only Det.                                       |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | npow            | int      | 0                     | The parameter npow gradually sets the degree of localization used                                                  |
+   |                 |          |                       | in the effective Hamiltonian. npow = 0 corresponds to a Fixed                                                      |
+   |                 |          |                       | Node Hamiltonian whereas npow = 1 corresponds to the local                                                         |
+   |                 |          |                       | approximation. Accept default.                                                                                     |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | tbra            | real     | 0.1                   | DMC time between consecutive branchings. Do not define when                                                        |
+   |                 |          |                       | nbra > 0 in the simulation section.                                                                                |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | gamma           | real     | 0.0                   | The γ parameter in LRDMC. Accept default.                                                                          |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | plat            | real     | 0.0                   | a function p(r) dividing the dense and coarse regions. Default value is 0.0 for the single-grid LRDMC (i.e.,       |
+   |                 |          |                       | alat2=0.0), automatically adjusted for the double-grid LRDMC (i.e., alat2=finite value)                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | alat2           | real     | 0.0                   | Double-grid Lattice space. alat2 = a'/a, where a is the smallest                                                   |
+   |                 |          |                       | regularization grid and a' is the larger one used in the valence                                                   |
+   |                 |          |                       | region (i.e., far from nuclei). When you put a negative value for                                                  |
+   |                 |          |                       | alat, you should not specify alat2 (i.e., please comment it out).                                                  |
+   |                 |          |                       | The default value of alat2 is determined by Nakano's algorithm.                                                    |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | alat            | real     | 1.0/Z_max             | Z_max is the largest effective nuclear charge in the system. Lattice space a of the smallest regularization grid.  |
+   |                 |          |                       | Accept default. If you want to do a single-grid LRDMC calculation, please                                          |
+   |                 |          |                       | put a negative value to satisfy the detailed-balance. If you want                                                  |
+   |                 |          |                       | to do a double-grid LRDMC, please put a positive value and switch                                                  |
+   |                 |          |                       | on iesrandoma.                                                                                                     |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | tstepfn         | real     | 0.0                   | 0.0 -> Fixed-node, 1.0 -> LRDMC becomes a VMC calc.                                                                |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | Klrdmc          | real     | 0.0                   | η parameter of LRDMC. η = 1 + Ka^2                                                                                 |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | optbra          | int      | 0                     | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | parcutg         | real     | 1                     | Use parcutg=1. parcutg=0 for standard LRDMC with no cutoff                                                         |
+   |                 |          |                       | (energy unbounded), but it now works.                                                                              |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | novar           | int      | 0                     | unclear, used for evaluating local energies in the subroutines updiag/updiag_complex compute the local energy both |
+   |                 |          |                       | diagonal and off-diagonal part. Regularization of the Coulomb potential is also computed.                          |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | epscutdmc       | real     | 0.0                   | regularization used in a DMC calculation. the detail is under investigation.                                       |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | epstldmc        | real     | 0.0                   | psidetln(j) is smaller than epstldmc, then kill the walker.                                                        |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | rejweight       | bool     | .true.                | rejecting or rescaling the weights according to the acceptance/rejection step) in standard dmc or non local dmc    |
+   |                 |          |                       | with heat bath after all electron diffusion rejecting or rescaling the weights according to acceptance should be   |
+   |                 |          |                       | the best choice. In non local dmc with heat bath after single particle diffusion the best choice is not to reject  |
+   |                 |          |                       | the weights.                                                                                                       |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | cutreg          | float    | automatically chosen  | DMC cutoff on local energy (Ry).                                                                                   |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | better_dmc      | bool     | .true.                | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | yesalfe         | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | safelrdmc       | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | changelambda    | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | noblocking      | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | add_diff        | bool     | .true.                | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | lrdmc_der       | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | lrdmc_nonodes   | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | enforce_detailb | bool     | .false.               | enforcing the detailed-balance                                                                                     |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | iesrandoma      | bool     | .true.                | flag to randomize the direction of the electron's diffusion.                                                       |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | zmin            | real     | 0.0                   | the minimum effective Z for which the double-grid LRDMC is applied.                                                |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | yes_fastbranch  | bool     | .false.               | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | l0_kousuke      | real     | 2.0                   | a parameter for the double-grid LRDMC. See "l" in the Eq.6 of the paper (Phys. Rev. B 101, 155106 (2020)).         |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | nw_max          | int      | -1                    | max number of. walker                                                                                              |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | true_wagner     | int      | -1 for VMC, 2 for DMC | if true_wagner=2, the regularization developed by S. Pathak and L.K. Wagner [AIP Advances 10, 085213 (2020)]       |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | cutweight       | real     | depends on calc. type | regularization parameter in eq.4 of S. Pathak and L.K. Wagner [AIP Advances 10, 085213 (2020)]                     |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | nbra_cyrus      | int      | 0                     | A parameter to compute forces using the practical scheme developed by S. Moroni et al. (originally devised by      |
+   |                 |          |                       | Cyrus Umrigar), corresponding n in Eqs. 12 and 13 of the paper [J. Chem. Theory Comput. 2014, 10, 11, 4823–4829]   |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
+   | weight_moroni   | real     | 1.0                   | unclear                                                                                                            |
+   +-----------------+----------+-----------------------+--------------------------------------------------------------------------------------------------------------------+
 
 
 Readio section
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. table:: Parameter List
+.. table::
+   :align: left
 
    +----------+----------+---------+----------------------------------------------+
    | Parameter| Datatype | Default | Description                                  |
    +==========+==========+=========+==============================================+
-   | iread    | NA       | NA      | For correlated sampling or measuring         |
+   | iread    | int      | 0       | For correlated sampling or measuring         |
    |          |          |         | correlation functions with readforward, use  |
    |          |          |         | iread=3.                                     |
    +----------+----------+---------+----------------------------------------------+
@@ -238,12 +297,12 @@ This section should be specified for a VMCopt or LRDMCopt run.
    :scale: 40%
    :align: center
 
-.. table:: Parameter List
+.. table::
 
    +-----------------+----------+---------+--------------------------------------------------+
-   | Parameter       | Datatype | Default | Description                                      |
+   |    Parameter    | Datatype | Default |              Description                         |
    +=================+==========+=========+==================================================+
-   | kl              | NA       | NA      | Method used for the solution of the linear       |
+   |       kl        |   int    |   -7    | Method used for the solution of the linear       |
    |                 |          |         | equation Sx = f, where f are energy              |
    |                 |          |         | derivatives and x parameters change in the       |
    |                 |          |         | stochastic reconfiguration. kl=-7 is mandatory   |
@@ -254,27 +313,27 @@ This section should be specified for a VMCopt or LRDMCopt run.
    |                 |          |         | when the number of sampling per processor is     |
    |                 |          |         | very large.                                      |
    +-----------------+----------+---------+--------------------------------------------------+
-   | ncg             | Integer  | NA      | If ncg > 1, a conjugate gradient approach is     |
+   |       ncg       |   int    |   1     | If ncg > 1, a conjugate gradient approach is     |
    |                 |          |         | used with ncg gradients (generated on fly        |
    |                 |          |         | during the run) to accelerate convergence.       |
    |                 |          |         | ncg > 1 can be used only with the linear         |
    |                 |          |         | method (itestr4 = -4, -8).                       |
    +-----------------+----------+---------+--------------------------------------------------+
-   | parcutmin       | Real     | NA      | If ncg > 1 is used in the minimization only      |
+   |   parcutmin     |  real    |  0.0    | If ncg > 1 is used in the minimization only      |
    |                 |          |         | the gradients that have a signal/noise ratio     |
    |                 |          |         | larger than parcutmin. If ncg = 0, the standard  |
    |                 |          |         | linear method with all parameters included in    |
    |                 |          |         | the optimization is used.                        |
    +-----------------+----------+---------+--------------------------------------------------+
-   | npbra           | NA       | NA      | If npbra > 0 in the linear method, npbra         |
+   |     npbra       |   int    |   0     | If npbra > 0 in the linear method, npbra         |
    |                 |          |         | parameters with the largest signal to noise      |
    |                 |          |         | ratio are also included.                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | parcutpar       | NA       | NA      | If npbra > 0, among the npbra selected, only     |
+   |   parcutpar     |   real   |  0.0    | If npbra > 0, among the npbra selected, only     |
    |                 |          |         | the parameters with signal/noise ratio >         |
    |                 |          |         | parcutpar are optimized.                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | tpar            | Real     | NA      | Optimization step; in the case of the linear     |
+   |      tpar       |   Real   |  0.35   | Optimization step; in the case of the linear     |
    |                 |          |         | method (itestr4 = -4, -8) reduces the step       |
    |                 |          |         | from its ideal value (tpar = 1) that is          |
    |                 |          |         | unfortunately unstable for large number of       |
@@ -283,7 +342,7 @@ This section should be specified for a VMCopt or LRDMCopt run.
    |                 |          |         | by hand as in the standard steepest descent      |
    |                 |          |         | method.                                          |
    +-----------------+----------+---------+--------------------------------------------------+
-   | parr            | Real     | NA      | Determines the accuracy in the calculation       |
+   |      parr       |   real   |  0.0    | Determines the accuracy in the calculation       |
    |                 |          |         | of the inverse of the SR matrix. The smaller     |
    |                 |          |         | the value, the more accurate (and fast) is       |
    |                 |          |         | the optimization, but the stability of the       |
@@ -291,43 +350,43 @@ This section should be specified for a VMCopt or LRDMCopt run.
    |                 |          |         | systematically up to at least 0.001 for fairly   |
    |                 |          |         | accurate wavefunction optimizations.             |
    +-----------------+----------+---------+--------------------------------------------------+
-   | nweight         | Integer  | NA      | Number of sampling used for each iteration of    |
+   |    nweight      |   int    |   1     | Number of sampling used for each iteration of    |
    |                 |          |         | the optimization steps.                          |
    +-----------------+----------+---------+--------------------------------------------------+
-   | nbinr           | NA       | NA      | Number of bins used in the optimization step     |
+   |     nbinr       |   int    |   1     | Number of bins used in the optimization step     |
    |                 |          |         | of length nweight-iboot. This binning is used    |
    |                 |          |         | to estimate error bars during the simulation.    |
    +-----------------+----------+---------+--------------------------------------------------+
-   | iboot           | Integer  | NA      | Number of step before making averages in the     |
+   |     iboot       |   int    |   0     | Number of step before making averages in the     |
    |                 |          |         | bin of length nweight. nweight-iboot has to      |
    |                 |          |         | be a multiple of nbinr.                          |
    +-----------------+----------+---------+--------------------------------------------------+
-   | epsi            | Real     | NA      | Cutoff for reducing too large changes of WF      |
+   |      epsi       |   real   | 10000.0 | Cutoff for reducing too large changes of WF      |
    |                 |          |         | such that Δpsi/\|psi\| > epsi.                   |
    +-----------------+----------+---------+--------------------------------------------------+
-   | minzj/maxzj     | Real     | NA      | Minimum/Maximum Jastrow orbital exponent Z       |
+   |  minzj/maxzj    |   real   |automatic| Minimum/Maximum Jastrow orbital exponent Z       |
    |                 |          |         | allowed.                                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | minz/maxz       | Real     | NA      | Minimum/Maximum AGP orbital exponent Z           |
+   |   minz/maxz     |   real   |automatic| Minimum/Maximum AGP orbital exponent Z           |
    |                 |          |         | allowed.                                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | molopt          | Integer  | NA      | If molopt = -1 optimization with fixed number    |
+   |     molopt      |   int    |   0     | If molopt = -1 optimization with fixed number    |
    |                 |          |         | of molecular orbitals is performed (nmolmax      |
    |                 |          |         | in the &molecul section should be defined in     |
    |                 |          |         | this case). If not specified, the standard       |
    |                 |          |         | optimization is employed.                        |
    +-----------------+----------+---------+--------------------------------------------------+
-   | yesquantum      | NA       | NA      | If yesquantum=.true. quantum effects are         |
+   |   yesquantum    |   bool   |.false.  | If yesquantum=.true. quantum effects are         |
    |                 |          |         | included. No kaverage is possible for the        |
    |                 |          |         | time being.                                      |
    +-----------------+----------+---------+--------------------------------------------------+
-   | nbead           | NA       | NA      | When yesquantum is true, one has to specify      |
+   |     nbead       |   int    |   -1    | When yesquantum is true, one has to specify      |
    |                 |          |         | the number of beads of the corresponding path    |
    |                 |          |         | integral. The larger this number, the more       |
    |                 |          |         | accurate the Trotter approximation is (error     |
    |                 |          |         | vanishing as 1/nbead^2).                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | idyn            | Integer  | NA      | To choose the type of ion dynamics. The          |
+   |      idyn       |   int    |   0     | To choose the type of ion dynamics. The          |
    |                 |          |         | available options are:                           |
    |                 |          |         |                                                  |
    |                 |          |         |   - idyn=0: No dynamic option specified,         |
@@ -347,28 +406,28 @@ This section should be specified for a VMCopt or LRDMCopt run.
    |                 |          |         |   - idyn=8: Standard Ceriotti's second order     |
    |                 |          |         |             damped Newton dynamics.              |
    +-----------------+----------+---------+--------------------------------------------------+
-   | tion            | Real     | NA      | When dynamics is on (idyn > 0) it represents     |
+   |      tion       |   real   |  tpar   | When dynamics is on (idyn > 0) it represents     |
    |                 |          |         | the time-step of the molecular dynamics. With    |
    |                 |          |         | idyn=5, has the scale of an energy and should    |
    |                 |          |         | be set small enough inversely proportional to    |
    |                 |          |         | the number of samples used to evaluate the       |
    |                 |          |         | covariance matrix.                               |
    +-----------------+----------+---------+--------------------------------------------------+
-   | signalnoise     | NA       | NA      | If signalnoise=.true., one optimizes all the     |
+   |   signalnoise   |   bool   |.false.  | If signalnoise=.true., one optimizes all the     |
    |                 |          |         | parameters (including atomic positions with      |
    |                 |          |         | ieskin ≠ 0) by following the direction of        |
    |                 |          |         | maximum signal to noise ratio. parr is also      |
    |                 |          |         | effective in this case to regularize the         |
    |                 |          |         | inversion.                                       |
    +-----------------+----------+---------+--------------------------------------------------+
-   | nmore_force     | Integer  | NA      | If dynamics is employed, the number of samples   |
+   |  nmore_force    |   int    |   1     | If dynamics is employed, the number of samples   |
    |                 |          |         | used during the last step of optimization is     |
    |                 |          |         | increased by a factor (nmore_force+1).           |
    +-----------------+----------+---------+--------------------------------------------------+
-   | onebodysz       | NA       | NA      | If .true., optimize only the one body part of    |
+   |   onebodysz     |   bool   |.false.  | If .true., optimize only the one body part of    |
    |                 |          |         | the spin Jastrow factor.                         |
    +-----------------+----------+---------+--------------------------------------------------+
-   | symmetrizeagp   | NA       | NA      | If .true. (default), symmetrize the agp at       |
+   |  symmetrizeagp  |   bool   |.true.   | If .true. (default), symmetrize the agp at       |
    |                 |          |         | each iteration step, as it can deteriorate       |
    |                 |          |         | due to numerical accuracy.                       |
    +-----------------+----------+---------+--------------------------------------------------+
