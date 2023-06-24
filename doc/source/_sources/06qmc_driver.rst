@@ -114,7 +114,6 @@ Pseudo section
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
-   :widths: 15 10 20 55
 
    +---------------+----------+---------------------+-------------------------------------------------------------------+
    | Parameter     | Datatype | Default             | Description                                                       |
@@ -134,25 +133,44 @@ VMC section
 
 This section should be specified for a VMC or VMCopt run.
 
-.. table:: Parameter List
+.. table::
 
-   +------------+----------+---------+------------------------------------------------------------------+
-   | Parameter  | Datatype | Default | Description                                                      |
-   +============+==========+=========+==================================================================+
-   | tstep      | NA       | NA      | Time step for VMC moves. Adapted automatically.                  |
-   +------------+----------+---------+------------------------------------------------------------------+
-   | epscuttype | NA       | NA      | Accept default (0,2) determined by epscut. The type of           |
-   |            |          |         | regularization applied to the determinant. Type 0: no            |
-   |            |          |         | regularization. Type 2: best one. (Other options are possible    |
-   |            |          |         | but deprecated).                                                 |
-   +------------+----------+---------+------------------------------------------------------------------+
-   | epscut     | NA       | NA      | The threshold of regularization. epscut = 0 to be used only in   |
-   |            |          |         | the optimization of the Jastrow, when no regularization is       |
-   |            |          |         | necessary for finite variance energy derivatives. If epscut > 0, |
-   |            |          |         | a regularization is applied (epscuttype=2) and finite variance   |
-   |            |          |         | forces and energy derivatives can be computed. It is tuned       |
-   |            |          |         | automatically starting from the value in input.                  |
-   +------------+----------+---------+------------------------------------------------------------------+
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | Parameter Name | Datatype | Default                                              | Description                                                                               |
+   +================+==========+======================================================+===========================================================================================+
+   | tstep          | real     | 2.0                                                  | Time step for VMC moves. Adapted automatically.                                           |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | hopfraction    | real     | 0.0                                                  | The hopping ratio used in the MCMC. See. subroutine hopping in detail.                    |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | epscut         | real     | 1.0d-5                                               | The threshold of regularization. epscut = 0 to be used only in                            |
+   |                |          |                                                      | the optimization of the Jastrow, when no regularization is                                |
+   |                |          |                                                      | necessary for finite variance energy derivatives. If epscut > 0,                          |
+   |                |          |                                                      | a regularization is applied (epscuttype=2) and finite variance                            |
+   |                |          |                                                      | forces and energy derivatives can be computed. It is tuned                                |
+   |                |          |                                                      | automatically starting from the value in input.                                           |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | epstlrat       | real     | sqrt(epsmach), where epsmach = dlamch('e')           | epstl = epstlrat*epscut.  epstl is a precision control parameter used in                  |
+   |                |          |                                                      | subroutine ratio_psi() (if zero not used)  dlamch('e') is a lapack routine                |
+   |                |          |                                                      | that returns the relative machine precision                                               |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | epscuttype     | int      | 0 or 2                                               | Accept default (0,2) determined by epscut. The type of                                    |
+   |                |          |                                                      | regularization applied to the determinant. Type 0: no                                     |
+   |                |          |                                                      | regularization. Type 2: best one. (Other options are possible                             |
+   |                |          |                                                      | but deprecated).                                                                          |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | alat2v         | real     | 0.0                                                  | not used. This will be removed in the future                                              |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | shift          | real     | 0.0                                                  | unidentified                                                                              |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | change_epscut  | bool     | .true. for VMC, otherwise .false.                    | automatic adjustment of epscut                                                            |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | change_tstep   | bool     | .true. for VMC, otherwise .false.                    | automatic adjustment of tstep                                                             |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | epsvar         | real     | 1.0d-4                                               | epsvar is a precision control parameter used in subroutine ratiovar.f90 (if zero not used)|
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
+   | theta_reg      | real     | 0.375                                                | ratiodet = 1.d0/ratiodet**theta_reg used in subroutine ratiovar.f90.                      |
+   |                |          |                                                      | Eq.(121) in the paper [J. Chem. Phys. 152, 204121 (2020)].                                |
+   +----------------+----------+------------------------------------------------------+-------------------------------------------------------------------------------------------+
 
 
 DMCLRDMC section
