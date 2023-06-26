@@ -2,7 +2,7 @@ TurboRVB user manuals
 ===========================================
 
 .. figure:: /_static/07logo/logo.png
-    :width: 1400px
+    :width: 700px
 
 .. toctree::
    :maxdepth: 2
