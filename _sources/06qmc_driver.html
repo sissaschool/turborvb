@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Monte Carlo calculations &mdash; TurboRVB userguides Updated on 26/06/2023 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/roles.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Wavefunction conversions" href="05conversions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TurboRVB userguides
+          </a>
+              <div class="version">
+                Updated on 26/06/2023
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="01nutshell.html">TurboRVB in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03wavefunction.html">Wavefunction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04DFT_driver.html">Initializations of Wavefunctions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05conversions.html">Wavefunction conversions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quantum Monte Carlo calculations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quantum-monte-carlo-kernel-turborvb-x">Quantum Monte Carlo kernel (turborvb.x)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#simulation-section">Simulation section</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pseudo-section">Pseudo section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vmc-section">VMC section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dmclrdmc-section">DMCLRDMC section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#readio-section">Readio section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optimization-section">Optimization section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters-section">Parameters section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fitpar-section">Fitpar section</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dynamics-section">Dynamics section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-get-energy-and-forces-after-a-vmc-or-lrdmc-run-forcevmc-sh-forcefn-sh">How to get energy and forces after a VMC or LRDMC run (forcevmc.sh, forcefn.sh)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extrapolation-of-lrdmc-energies-with-respect-to-the-lattice-space-funvsa-x">Extrapolation of LRDMC energies with respect to the lattice space (funvsa.x)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-average-variational-parameters-after-a-vmcopt-or-lrdmcopt-run-readalles-x">How to average variational parameters after a VMCopt or LRDMCopt run (readalles.x)</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TurboRVB userguides</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quantum Monte Carlo calculations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/06qmc_driver.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quantum-monte-carlo-calculations">
+<h1>Quantum Monte Carlo calculations<a class="headerlink" href="#quantum-monte-carlo-calculations" title="Permalink to this heading">¶</a></h1>
+<p>We describe input files that control variational and diffusion Monte Carlo simulations.
+TurboRVB input files are built using fortran namelists.
+Keywords are divided in different sections according to their meaning.</p>
+<section id="quantum-monte-carlo-kernel-turborvb-x">
+<h2>Quantum Monte Carlo kernel (turborvb.x)<a class="headerlink" href="#quantum-monte-carlo-kernel-turborvb-x" title="Permalink to this heading">¶</a></h2>
+<p>turborvb.x is a binary to run QMC jobs.
+The input parameters are explained as follows.</p>
+<section id="simulation-section">
+<h3>Simulation section<a class="headerlink" href="#simulation-section" title="Permalink to this heading">¶</a></h3>
+<p>This section contains general informations necessary to specify the type of run to be carried out.
+In this section it is specified whether we want to perform a wave function optimization or
+production run and using which method (like Variational Monte Carlo (VMC) or Lattice Regularized DMC (LRDMC).</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>itestr4</p></td>
+<td><p>int</p></td>
+<td><p>2</p></td>
+<td><p>This keyword decides the optimization scheme and its kernel. It can assume an integer value according to the following scheme:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">2</span></code> (VMC) Variational Monte Carlo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-4</span></code> (VMC-opt) Wavefunction optimization by Hessian matrix method. Only the <strong>lambda</strong> parameters and the coefficients of the contracted orbitals are optimized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-8</span></code> (VMC-opt) Wavefunction optimization by Hessian matrix method. All the parameters are optimized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-9,</span> <span class="pre">-5</span></code> (VMC-opt) Same as -4, -8, respectively, but using Stochastic reconfiguration (SR) wavefunction optimization method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-6</span></code> (LRDMC) Lattice Regularized Diffusion Monte Carlo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-24,</span> <span class="pre">-28</span></code> (LRDMC-opt) Same as -4, -8, respectively, but the derivatives are computed using LRDMC.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itestr4</span> <span class="pre">=</span> <span class="pre">-29,</span> <span class="pre">-25</span></code> (LRDMC-opt) Same as -9, -5, respectively, but the derivatives are computed using LRDMC.</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>maxtime</p></td>
+<td><p>int</p></td>
+<td><p>86000</p></td>
+<td><p>The program will stop after maxtime (sec.)</p></td>
+</tr>
+<tr class="row-even"><td><p>iopt</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>This keyword controls the starting of the run. It can assume the following integer values:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">iopt</span> <span class="pre">=</span> <span class="pre">1</span></code>: New run from scratch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iopt</span> <span class="pre">=</span> <span class="pre">0</span></code>: Continue from previous run.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iopt</span> <span class="pre">=</span> <span class="pre">2</span></code>: Initialize the optimization from the initial values given by fort.10, but read the previous equilibrated configuration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iopt</span> <span class="pre">=</span> <span class="pre">3</span></code>: Same as 2, but when combined with molopt=-1, recomputes from scratch the projection matrices required to enforce a given number of molecular orbitals.</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>ngen</p></td>
+<td><p>int</p></td>
+<td><p>100</p></td>
+<td><p>The number of iterations of any chosen method. Represents the total number of samples for the local energy or energy derivatives. In case of optimization, it must be a multiple of nweight given in the &amp;optimization section.</p></td>
+</tr>
+<tr class="row-even"><td><p>nscra</p></td>
+<td><p>int</p></td>
+<td><p>2*nel + 2</p></td>
+<td><p>Inside an MC step, the determinant is usually updated instead of being recalculated from scratch. To avoid error summation, it’s necessary to calculate it from scratch every nscra accepted moves.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nbra</p></td>
+<td><p>int</p></td>
+<td><p>depending on itestr4</p></td>
+<td><p>In VMC, it indicates the number of Metropolis steps before computing a new sample. In LRDMC, if &gt; 0, it uses the new more efficient method with perfect load balancing. Should be large enough (#electrons) to guarantee an efficient branching (% independent walkers / # walkers between 80% and 95%).</p></td>
+</tr>
+<tr class="row-even"><td><p>iseedr</p></td>
+<td><p>int</p></td>
+<td><p>236413883</p></td>
+<td><p>Seed of the random number generator.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nw</p></td>
+<td><p>int</p></td>
+<td><p>num. of MPI</p></td>
+<td><p>Number of walkers. If not specified, it coincides with the number of processors. Otherwise, it must be a multiple of their number.</p></td>
+</tr>
+<tr class="row-even"><td><p>disk_io</p></td>
+<td><p>str</p></td>
+<td><p>default</p></td>
+<td><p>‘default’: default I/O, temporary files for each MPI process, ‘nocont’: minimal I/O no continuation, ‘mpiio’: temporary files are not generated for each MPI rank. They are gathered to single file.</p></td>
+</tr>
+<tr class="row-odd"><td><p>kSq</p></td>
+<td><p>real</p></td>
+<td><p>0.0 for molecule, 1.d-8 for crystals</p></td>
+<td><p>Precision for the Ewald summation.</p></td>
+</tr>
+<tr class="row-even"><td><p>kappar</p></td>
+<td><p>real</p></td>
+<td><p>0.0 for molecule</p></td>
+<td><p>Coefficient in the Ewald summation. The default value depends on the crystal type (orthorombic, nonorthorohmbic).</p></td>
+</tr>
+<tr class="row-odd"><td><p>freqcheck</p></td>
+<td><p>int</p></td>
+<td><p>1000</p></td>
+<td><p>Frequency for checking flag error.</p></td>
+</tr>
+<tr class="row-even"><td><p>membig</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>Large memory is given or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p>membigcpu</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>Large memory is given or not.</p></td>
+</tr>
+<tr class="row-even"><td><p>developer</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Unidentified (This will be removed in the future).</p></td>
+</tr>
+<tr class="row-odd"><td><p>yesfast</p></td>
+<td><p>int</p></td>
+<td><p>-1</p></td>
+<td><p>Fast I/O (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-even"><td><p>nproc_diag</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>The number of intra MPI communicators. 0 means no intra communicator (this will be removed in the future).</p></td>
+</tr>
+<tr class="row-odd"><td><p>ip_reshuff</p></td>
+<td><p>int</p></td>
+<td><p>-1</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-even"><td><p>min_block</p></td>
+<td><p>int</p></td>
+<td><p>100</p></td>
+<td><p>The minimum block size for computational efficiency at expense of memory, used for SCALAPACK. A smaller value will require less memory. (This will be removed in the future).</p></td>
+</tr>
+<tr class="row-odd"><td><p>max_target</p></td>
+<td><p>int</p></td>
+<td><p>200000 for GPU, 0 for CPU</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-even"><td><p>max_targetsr</p></td>
+<td><p>int</p></td>
+<td><p>200000 for GPU, 0 for CPU</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-odd"><td><p>dielectric_ratio</p></td>
+<td><p>real</p></td>
+<td><p>1.0</p></td>
+<td><p>Parameter for dielectric constant: see dielectric.f90 (not tested).</p></td>
+</tr>
+<tr class="row-even"><td><p>dielectric_length</p></td>
+<td><p>real</p></td>
+<td><p>1.0</p></td>
+<td><p>Parameter for dielectric constant: see dielectric.f90 (not tested).</p></td>
+</tr>
+<tr class="row-odd"><td><p>case_diel</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Flag for dielectric constant: see dielectric.f90 (not tested).</p></td>
+</tr>
+<tr class="row-even"><td><p>neigh</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>Neighbors in the Ewald summation (but not used?) unidentified.</p></td>
+</tr>
+<tr class="row-odd"><td><p>novec_loop1</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>Vectorize of subroutine upnewwf (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-even"><td><p>yes_sparse</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-odd"><td><p>yes_sparse_choose</p></td>
+<td><p>bool</p></td>
+<td><p>.false. for DFT, .true. for QMC</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+<tr class="row-even"><td><p>max_sparse_choice</p></td>
+<td><p>int</p></td>
+<td><p>20 for CPU, 100 for GPU</p></td>
+<td><p>Unidentified (This will be moved to /developer/ namelist).</p></td>
+</tr>
+</tbody>
+</table>
+<section id="pseudo-section">
+<h4>Pseudo section<a class="headerlink" href="#pseudo-section" title="Permalink to this heading">¶</a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Datatype</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nintpsa</p></td>
+<td><p>int</p></td>
+<td><p>6, 12, 18, 50</p></td>
+<td><p>Number of integer points for pseudopotential, if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p>npsamax</p></td>
+<td><p>int</p></td>
+<td><p>2</p></td>
+<td><p>Multiplication factor for the number of pseudo integration points.
+Note that, you should use npsmax &gt; 2 if the code terminates with
+the error ‘Increase npsamax’.</p></td>
+</tr>
+<tr class="row-even"><td><p>pseudorandom</p></td>
+<td><p>bool</p></td>
+<td><p>.false. for DFT,
+.true. for QMC</p></td>
+<td><p>Use a random integration mesh for pseudo with the algorithm for
+QMC by R. Fahy.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="vmc-section">
+<h4>VMC section<a class="headerlink" href="#vmc-section" title="Permalink to this heading">¶</a></h4>
+<p>This section should be specified for a VMC or VMCopt run.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter Name</p></th>
+<th class="head"><p>Datatype</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tstep</p></td>
+<td><p>real</p></td>
+<td><p>2.0</p></td>
+<td><p>Time step for VMC moves. Adapted automatically.</p></td>
+</tr>
+<tr class="row-odd"><td><p>hopfraction</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>The hopping ratio used in the MCMC. See. subroutine hopping in detail.</p></td>
+</tr>
+<tr class="row-even"><td><p>epscut</p></td>
+<td><p>real</p></td>
+<td><p>1.0d-5</p></td>
+<td><p>The threshold of regularization. epscut = 0 to be used only in
+the optimization of the Jastrow, when no regularization is
+necessary for finite variance energy derivatives. If epscut &gt; 0,
+a regularization is applied (epscuttype=2) and finite variance
+forces and energy derivatives can be computed. It is tuned
+automatically starting from the value in input.</p></td>
+</tr>
+<tr class="row-odd"><td><p>epstlrat</p></td>
+<td><p>real</p></td>
+<td><p>sqrt(epsmach), where epsmach = dlamch(‘e’)</p></td>
+<td><p>epstl = epstlrat*epscut.  epstl is a precision control parameter used in
+subroutine ratio_psi() (if zero not used)  dlamch(‘e’) is a lapack routine
+that returns the relative machine precision</p></td>
+</tr>
+<tr class="row-even"><td><p>epscuttype</p></td>
+<td><p>int</p></td>
+<td><p>0 or 2</p></td>
+<td><p>Accept default (0,2) determined by epscut. The type of
+regularization applied to the determinant. Type 0: no
+regularization. Type 2: best one. (Other options are possible
+but deprecated).</p></td>
+</tr>
+<tr class="row-odd"><td><p>alat2v</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>not used. This will be removed in the future</p></td>
+</tr>
+<tr class="row-even"><td><p>shift</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>unidentified</p></td>
+</tr>
+<tr class="row-odd"><td><p>change_epscut</p></td>
+<td><p>bool</p></td>
+<td><p>.true. for VMC, otherwise .false.</p></td>
+<td><p>automatic adjustment of epscut</p></td>
+</tr>
+<tr class="row-even"><td><p>change_tstep</p></td>
+<td><p>bool</p></td>
+<td><p>.true. for VMC, otherwise .false.</p></td>
+<td><p>automatic adjustment of tstep</p></td>
+</tr>
+<tr class="row-odd"><td><p>epsvar</p></td>
+<td><p>real</p></td>
+<td><p>1.0d-4</p></td>
+<td><p>epsvar is a precision control parameter used in subroutine ratiovar.f90 (if zero not used)</p></td>
+</tr>
+<tr class="row-even"><td><p>theta_reg</p></td>
+<td><p>real</p></td>
+<td><p>0.375</p></td>
+<td><p>ratiodet = 1.d0/ratiodet**theta_reg used in subroutine ratiovar.f90.
+Eq.(121) in the paper [J. Chem. Phys. 152, 204121 (2020)].</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="dmclrdmc-section">
+<h4>DMCLRDMC section<a class="headerlink" href="#dmclrdmc-section" title="Permalink to this heading">¶</a></h4>
+<p>This section should be specified for a LRDMC or LRDMCopt run.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter name</p></th>
+<th class="head"><p>Datatype</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>etry</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Trial total energy. Please put the DFT or VMC energy.</p></td>
+</tr>
+<tr class="row-odd"><td><p>typereg</p></td>
+<td><p>int</p></td>
+<td><p>6</p></td>
+<td><p>How to deal with the spin-flip term, 0: Standard (Det. + Jas.), 6: only Det.</p></td>
+</tr>
+<tr class="row-even"><td><p>npow</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>The parameter npow gradually sets the degree of localization used
+in the effective Hamiltonian. npow = 0 corresponds to a Fixed
+Node Hamiltonian whereas npow = 1 corresponds to the local
+approximation. Accept default.</p></td>
+</tr>
+<tr class="row-odd"><td><p>tbra</p></td>
+<td><p>real</p></td>
+<td><p>0.1</p></td>
+<td><p>DMC time between consecutive branchings. Do not define when
+nbra &gt; 0 in the simulation section.</p></td>
+</tr>
+<tr class="row-even"><td><p>gamma</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>The γ parameter in LRDMC. Accept default.</p></td>
+</tr>
+<tr class="row-odd"><td><p>plat</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>a function p(r) dividing the dense and coarse regions. Default value is 0.0 for the single-grid LRDMC (i.e.,
+alat2=0.0), automatically adjusted for the double-grid LRDMC (i.e., alat2=finite value)</p></td>
+</tr>
+<tr class="row-even"><td><p>alat2</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Double-grid Lattice space. alat2 = a’/a, where a is the smallest
+regularization grid and a’ is the larger one used in the valence
+region (i.e., far from nuclei). When you put a negative value for
+alat, you should not specify alat2 (i.e., please comment it out).
+The default value of alat2 is determined by Nakano’s algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p>alat</p></td>
+<td><p>real</p></td>
+<td><p>1.0/Z_max</p></td>
+<td><p>Z_max is the largest effective nuclear charge in the system. Lattice space a of the smallest regularization grid.
+Accept default. If you want to do a single-grid LRDMC calculation, please
+put a negative value to satisfy the detailed-balance. If you want
+to do a double-grid LRDMC, please put a positive value and switch
+on iesrandoma.</p></td>
+</tr>
+<tr class="row-even"><td><p>tstepfn</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0 -&gt; Fixed-node, 1.0 -&gt; LRDMC becomes a VMC calc.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Klrdmc</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>η parameter of LRDMC. η = 1 + Ka^2</p></td>
+</tr>
+<tr class="row-even"><td><p>optbra</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>parcutg</p></td>
+<td><p>real</p></td>
+<td><p>1</p></td>
+<td><p>Use parcutg=1. parcutg=0 for standard LRDMC with no cutoff
+(energy unbounded), but it now works.</p></td>
+</tr>
+<tr class="row-even"><td><p>novar</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>unclear, used for evaluating local energies in the subroutines updiag/updiag_complex compute the local energy both
+diagonal and off-diagonal part. Regularization of the Coulomb potential is also computed.</p></td>
+</tr>
+<tr class="row-odd"><td><p>epscutdmc</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>regularization used in a DMC calculation. the detail is under investigation.</p></td>
+</tr>
+<tr class="row-even"><td><p>epstldmc</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>psidetln(j) is smaller than epstldmc, then kill the walker.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rejweight</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>rejecting or rescaling the weights according to the acceptance/rejection step) in standard dmc or non local dmc
+with heat bath after all electron diffusion rejecting or rescaling the weights according to acceptance should be
+the best choice. In non local dmc with heat bath after single particle diffusion the best choice is not to reject
+the weights.</p></td>
+</tr>
+<tr class="row-even"><td><p>cutreg</p></td>
+<td><p>float</p></td>
+<td><p>automatically chosen</p></td>
+<td><p>DMC cutoff on local energy (Ry).</p></td>
+</tr>
+<tr class="row-odd"><td><p>better_dmc</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-even"><td><p>yesalfe</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>safelrdmc</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-even"><td><p>changelambda</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>noblocking</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-even"><td><p>add_diff</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>lrdmc_der</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-even"><td><p>lrdmc_nonodes</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>enforce_detailb</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>enforcing the detailed-balance</p></td>
+</tr>
+<tr class="row-even"><td><p>iesrandoma</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>flag to randomize the direction of the electron’s diffusion.</p></td>
+</tr>
+<tr class="row-odd"><td><p>zmin</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>the minimum effective Z for which the double-grid LRDMC is applied.</p></td>
+</tr>
+<tr class="row-even"><td><p>yes_fastbranch</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>unclear</p></td>
+</tr>
+<tr class="row-odd"><td><p>l0_kousuke</p></td>
+<td><p>real</p></td>
+<td><p>2.0</p></td>
+<td><p>a parameter for the double-grid LRDMC. See “l” in the Eq.6 of the paper (Phys. Rev. B 101, 155106 (2020)).</p></td>
+</tr>
+<tr class="row-even"><td><p>nw_max</p></td>
+<td><p>int</p></td>
+<td><p>-1</p></td>
+<td><p>max number of. walker</p></td>
+</tr>
+<tr class="row-odd"><td><p>true_wagner</p></td>
+<td><p>int</p></td>
+<td><p>-1 for VMC, 2 for DMC</p></td>
+<td><p>if true_wagner=2, the regularization developed by S. Pathak and L.K. Wagner [AIP Advances 10, 085213 (2020)]</p></td>
+</tr>
+<tr class="row-even"><td><p>cutweight</p></td>
+<td><p>real</p></td>
+<td><p>depends on calc. type</p></td>
+<td><p>regularization parameter in eq.4 of S. Pathak and L.K. Wagner [AIP Advances 10, 085213 (2020)]</p></td>
+</tr>
+<tr class="row-odd"><td><p>nbra_cyrus</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>A parameter to compute forces using the practical scheme developed by S. Moroni et al. (originally devised by
+Cyrus Umrigar), corresponding n in Eqs. 12 and 13 of the paper [J. Chem. Theory Comput. 2014, 10, 11, 4823–4829]</p></td>
+</tr>
+<tr class="row-even"><td><p>weight_moroni</p></td>
+<td><p>real</p></td>
+<td><p>1.0</p></td>
+<td><p>unclear</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="readio-section">
+<h4>Readio section<a class="headerlink" href="#readio-section" title="Permalink to this heading">¶</a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Datatype</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>iread</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>For correlated sampling or measuring
+correlation functions with readforward, use
+iread=3.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="optimization-section">
+<h4>Optimization section<a class="headerlink" href="#optimization-section" title="Permalink to this heading">¶</a></h4>
+<p>This section should be specified for a VMCopt or LRDMCopt run.</p>
+<a class="reference internal image-reference" href="../_images/VMC_opt.png"><img alt="../_images/VMC_opt.png" class="align-center" src="../_images/VMC_opt.png" style="width: 688.8000000000001px; height: 293.2px;" /></a>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Datatype</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>kl</p></td>
+<td><p>int</p></td>
+<td><p>-7</p></td>
+<td><p>Method used for the solution of the linear
+equation Sx = f, where f are energy
+derivatives and x parameters change in the
+stochastic reconfiguration. kl=-7 is mandatory
+for signalnoise=.true. optimization method.
+It is faster for large number of parameters
+and small number of sampling per processor.
+kl=-6 may be useful for small systems/computers
+when the number of sampling per processor is
+very large.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ncg</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>If ncg &gt; 1, a conjugate gradient approach is
+used with ncg gradients (generated on fly
+during the run) to accelerate convergence.
+ncg &gt; 1 can be used only with the linear
+method (itestr4 = -4, -8).</p></td>
+</tr>
+<tr class="row-even"><td><p>parcutmin</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>If ncg &gt; 1 is used in the minimization only
+the gradients that have a signal/noise ratio
+larger than parcutmin. If ncg = 0, the standard
+linear method with all parameters included in
+the optimization is used.</p></td>
+</tr>
+<tr class="row-odd"><td><p>npbra</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>If npbra &gt; 0 in the linear method, npbra
+parameters with the largest signal to noise
+ratio are also included.</p></td>
+</tr>
+<tr class="row-even"><td><p>parcutpar</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>If npbra &gt; 0, among the npbra selected, only
+the parameters with signal/noise ratio &gt;
+parcutpar are optimized.</p></td>
+</tr>
+<tr class="row-odd"><td><p>tpar</p></td>
+<td><p>Real</p></td>
+<td><p>0.35</p></td>
+<td><p>Optimization step; in the case of the linear
+method (itestr4 = -4, -8) reduces the step
+from its ideal value (tpar = 1) that is
+unfortunately unstable for large number of
+variational parameters or small statistics.
+In the simpler SR method tpar has to be set
+by hand as in the standard steepest descent
+method.</p></td>
+</tr>
+<tr class="row-even"><td><p>parr</p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Determines the accuracy in the calculation
+of the inverse of the SR matrix. The smaller
+the value, the more accurate (and fast) is
+the optimization, but the stability of the
+method gets worse. It should be decreased
+systematically up to at least 0.001 for fairly
+accurate wavefunction optimizations.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nweight</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>Number of sampling used for each iteration of
+the optimization steps.</p></td>
+</tr>
+<tr class="row-even"><td><p>nbinr</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>Number of bins used in the optimization step
+of length nweight-iboot. This binning is used
+to estimate error bars during the simulation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>iboot</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Number of step before making averages in the
+bin of length nweight. nweight-iboot has to
+be a multiple of nbinr.</p></td>
+</tr>
+<tr class="row-even"><td><p>epsi</p></td>
+<td><p>real</p></td>
+<td><p>10000.0</p></td>
+<td><p>Cutoff for reducing too large changes of WF
+such that Δpsi/|psi| &gt; epsi.</p></td>
+</tr>
+<tr class="row-odd"><td><p>minzj/maxzj</p></td>
+<td><p>real</p></td>
+<td><p>automatic</p></td>
+<td><p>Minimum/Maximum Jastrow orbital exponent Z
+allowed.</p></td>
+</tr>
+<tr class="row-even"><td><p>minz/maxz</p></td>
+<td><p>real</p></td>
+<td><p>automatic</p></td>
+<td><p>Minimum/Maximum AGP orbital exponent Z
+allowed.</p></td>
+</tr>
+<tr class="row-odd"><td><p>molopt</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>If molopt = -1 optimization with fixed number
+of molecular orbitals is performed (nmolmax
+in the &amp;molecul section should be defined in
+this case). If not specified, the standard
+optimization is employed.</p></td>
+</tr>
+<tr class="row-even"><td><p>yesquantum</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>If yesquantum=.true. quantum effects are
+included. No kaverage is possible for the
+time being.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nbead</p></td>
+<td><p>int</p></td>
+<td><p>-1</p></td>
+<td><p>When yesquantum is true, one has to specify
+the number of beads of the corresponding path
+integral. The larger this number, the more
+accurate the Trotter approximation is (error
+vanishing as 1/nbead^2).</p></td>
+</tr>
+<tr class="row-even"><td><p>idyn</p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>To choose the type of ion dynamics. The
+available options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>idyn=0: No dynamic option specified,</dt><dd><p>i.e. standard optimization at
+fixed ion positions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>idyn=1: First order standard steepest</dt><dd><p>descent dynamics.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>idyn=2: Second order standard with</dt><dd><p>damping.</p>
+</dd>
+</dl>
+</li>
+<li><p>idyn=3: More accurate.</p></li>
+<li><dl class="simple">
+<dt>idyn=5: New accelerated molecular</dt><dd><p>dynamics.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>idyn=6: Even more accurate but never</dt><dd><p>published.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>idyn=7: New second order Ornstein Uhlenbeck</dt><dd><p>damped Newton dynamics.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>idyn=8: Standard Ceriotti’s second order</dt><dd><p>damped Newton dynamics.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-odd"><td><p>tion</p></td>
+<td><p>real</p></td>
+<td><p>tpar</p></td>
+<td><p>When dynamics is on (idyn &gt; 0) it represents
+the time-step of the molecular dynamics. With
+idyn=5, has the scale of an energy and should
+be set small enough inversely proportional to
+the number of samples used to evaluate the
+covariance matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p>signalnoise</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>If signalnoise=.true., one optimizes all the
+parameters (including atomic positions with
+ieskin ≠ 0) by following the direction of
+maximum signal to noise ratio. parr is also
+effective in this case to regularize the
+inversion.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nmore_force</p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>If dynamics is employed, the number of samples
+used during the last step of optimization is
+increased by a factor (nmore_force+1).</p></td>
+</tr>
+<tr class="row-even"><td><p>onebodysz</p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>If .true., optimize only the one body part of
+the spin Jastrow factor.</p></td>
+</tr>
+<tr class="row-odd"><td><p>symmetrizeagp</p></td>
+<td><p>bool</p></td>
+<td><p>.true.</p></td>
+<td><p>If .true. (default), symmetrize the agp at
+each iteration step, as it can deteriorate
+due to numerical accuracy.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="parameters-section">
+<h4>Parameters section<a class="headerlink" href="#parameters-section" title="Permalink to this heading">¶</a></h4>
+<p>This section should be specified for a VMCopt or LRDMCopt run.
+Only <code class="docutils literal notranslate"><span class="pre">ieskin</span></code> should be specified for a VMC or LRDMC run if one wants to compute atomic forces.
+This section describes switches for optimizing wavefunction parameters, the ouput printout and on the measures performed during the MC run. For example, value=0 means do not optimize this type, vice versa (<span class="math">iesd=0</span> means that one body and two body Jastrow factors will not be optimized).</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">iesd</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). It acts as a switch for the 1-body and 2-body Jastrow.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">iesinv</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (-1, 0 or 1). If <span class="math">\neq 0</span>, the spin Jastrow factor matrix is optimized, if allowed in the input fort.10.
+If <span class="math">&lt; 0</span>, a range can be defined in the &amp;fitpar section with rmaxinv.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">iesfree</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (-1, 0 or 1). If <span class="math">\neq 0</span>, the density Jastrow factor matrix is optimized.
+If <span class="math">&lt; 0</span>, a range can be defined in the &amp;fitpar section with rmaxj.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">iessw</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (-1, 0 or 1). If <span class="math">\neq 0</span>, the AGP matrix on the localized basis is optimized.
+If <span class="math">&lt; 0</span>, a range can be defined in the &amp;fitpar section with rmax.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">iesm</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). If <span class="math">\neq 0</span>, the exponent and/or the contracted coefficient of the basis defining the Jastrow are optimized.
+When <span class="math">itestr4 = -4,-9</span>, only contracted coefficients are optimized if the basis contains them, otherwise yeszj=.true.
+is switched on and exponents are optimized.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">iesup</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). Same as the above, but for the determinantal part. yeszagp=.true. replaces yeszj in this case.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ieser</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). It specifies which part of the energy is printed out. If <span class="math">ieser = 1</span>, it measures the total energy
+(no optimization assumed).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">iesfix</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). If <span class="math">iesfix = 1</span>, the variance of the energy is printed out (no optimization assumed).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ieskin</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer (0 or 1). If nuclear forces have to be computed (especially with dynamics <span class="math">idyn &gt; 0</span>), set <span class="math">ieskin &gt; 0</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">yeszj</span></code></p></td>
+<td><p>int</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. If <span class="math">yeszj=.true.</span>, exponents of the Jastrow basis are optimized if <span class="math">iesm \neq 0</span>
+even if <span class="math">itestr4 = -4, -9</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">yeszagp</span></code></p></td>
+<td><p>int</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. Same as above, but for the determinantal part.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">real_agp</span></code></p></td>
+<td><p>int</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. For complex wf, if real_agp=.true. and <span class="math">iessw=\neq 0</span>, only the real part of the complex agp matrix
+is optimized. The imaginary part is assumed and set to zero.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">real_contracted</span></code></p></td>
+<td><p>int</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. For complex wf, if real_contracted=.true., only the real part of the contracted coefficient of the basis is optimized.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">typedyncell</span></code></p></td>
+<td><p>int</p></td>
+<td><p>.false.</p></td>
+<td><p>Integer value. <span class="math">typedyncell=0</span> means Standard NVT ensemble with no optimization of cell.
+<span class="math">typedyncell=1</span> implies fixed volume, but optimization of b/a and c/a at fixed volume <span class="math">V = a \times b \times c</span>.
+<span class="math">typedyncell=2</span> stands for constant pressure, variable volume, optimizing a, b and c at pressfixed = constant.
+<span class="math">typedyncell=3</span> represents constant pressure and variable volume but without modifying b/a and c/a.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pressfixed</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Value of the pressure in a.u., for dynamics at fixed pressure. Note: the classical value is not included.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fixa</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. If <span class="math">fixa = .true.</span>, a is kept fixed during dynamics.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fixb</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. If <span class="math">fixb = .true.</span>, b is kept fixed during dynamics.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fixc</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. If <span class="math">fixc = .true.</span>, c is kept fixed during dynamics.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fitpar-section">
+<h4>Fitpar section<a class="headerlink" href="#fitpar-section" title="Permalink to this heading">¶</a></h4>
+<p>This section describes the details of the locality approximations for reducing the number of parameters.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rmax</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. If <span class="math">iessw &lt; 0</span>, then all matrix elements of the AGP at distance larger than rmax are not optimized.
+<span class="math">rmax = 0</span> implies that no matrix elements connecting different atoms are optimized.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rmaxj</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. If <span class="math">iefree &lt; 0</span>, then all matrix elements of the Jastrow at distance larger than rmaxj are not optimized.
+<span class="math">rmaxj = 0</span> has the same meaning as above, implying that only the so-called 3-body Jastrow is optimized.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rmaxinv</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. If <span class="math">iesinv &lt; 0</span>, then all matrix elements of the spin Jastrow at distance larger than rmaxinv are not optimized.
+The rule is the same as the ones above for the spin Jastrow.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="dynamics-section">
+<h4>Dynamics section<a class="headerlink" href="#dynamics-section" title="Permalink to this heading">¶</a></h4>
+<p>This section contains details about ion dynamics.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temp</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. The temperature in a.u. If <span class="math">temp &lt; 0</span>, then <cite>abs(temp)</cite> indicates the temperature in Kelvin. <span class="math">temp = 0</span> can be used for structural optimization. If the temperature is set to 0 K, it is purely structural optimization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">friction</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. It is necessary to keep it non-zero in Newtonian dynamics (<span class="math">idyn=4,7,8</span>) but can be set to zero (recommended) for <span class="math">idyn=5</span> (the recommended dynamics).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">iskipdyn</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>Integer value. After <span class="math">iskipdyn</span> times <span class="math">nweight</span> MC steps, check if <span class="math">dev_mat &lt; maxdev_dyn</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">maxdev_dyn</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. After each WF optimization, it is the maximum value of dev max accepted for an ion move. Deprecated.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">delta0</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. Used with <span class="math">idyn = 5</span>, it is a parameter that can help with convergence in the small time step limit (<span class="math">tion \to 0</span>). It should be set in such a way that the Hessian matrix during the dynamics is well approximated by delta0
+<span class="math">\times</span> Covariance matrix. For other dynamics, it represents a multiplicative factor applied to the covariance matrix used to decrease the correlation times. In these cases, delta0 has to be larger than a critical value depending on the
+time step. However, this is chosen by default.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">addrognoso</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>.false.</p></td>
+<td><p>Logical value. With <span class="math">idyn = 5</span> it has to be set to .true. in order to eliminate the bias in describing the canonical ensemble for <span class="math">tion \to 0</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">normcorr</span></code></p></td>
+<td><p>real</p></td>
+<td><p>0.0</p></td>
+<td><p>Real value. If non-zero and equal to one, it applies the noise correction to reduce the bias implied by the statistical evaluation of forces. In theory it should work, but in practice, it has little effects. So it is recommended to set to zero.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="how-to-get-energy-and-forces-after-a-vmc-or-lrdmc-run-forcevmc-sh-forcefn-sh">
+<h2>How to get energy and forces after a VMC or LRDMC run (forcevmc.sh, forcefn.sh)<a class="headerlink" href="#how-to-get-energy-and-forces-after-a-vmc-or-lrdmc-run-forcevmc-sh-forcefn-sh" title="Permalink to this heading">¶</a></h2>
+<p>After a VMC calculation has finished, you can get the total energy
+(i.e., summation of the local energy), i.e.,</p>
+<div class="math">
+<p><span class="math">E_{tot}=\int d {\bf{x}} \pi({\bf{x}}) e_L ({\bf{x}}) \sim \cfrac{1}{M} \sum_{i=1}^{M}e_L(x_i)</span></p>
+</div><p>by <code class="docutils literal notranslate"><span class="pre">forcevmc.sh</span></code> script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>forcevmc.sh<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>wherein 10, 5, and 1 are <code class="docutils literal notranslate"><span class="pre">bin</span> <span class="pre">length</span></code>, <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">discarded</span> <span class="pre">bins</span></code> (i.e., the number of warm-up steps <code class="docutils literal notranslate"><span class="pre">4</span></code>), and <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">ratio</span> <span class="pre">of</span> <span class="pre">Pulay</span> <span class="pre">force</span></code> (1 is ok), respectively. A reblocked total energy  and its variance is written in <code class="docutils literal notranslate"><span class="pre">pip0.d</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#cat pip0.d</span>
+
+number<span class="w"> </span>of<span class="w"> </span>bins<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="m">1496</span>
+<span class="nv">Energy</span><span class="w"> </span><span class="o">=</span><span class="w">  </span>-1.1379192772188327<span class="w">        </span><span class="m">1</span>.7589095174214898E-004
+Variance<span class="w"> </span><span class="nv">square</span><span class="w"> </span><span class="o">=</span><span class="w">   </span><span class="m">1</span>.7369139136828382E-003<span class="w">   </span><span class="m">2</span>.7618833870090571E-005
+Est.<span class="w"> </span>energy<span class="w"> </span>error<span class="w"> </span><span class="nv">bar</span><span class="w"> </span><span class="o">=</span><span class="w">   </span><span class="m">1</span>.7510470092362484E-004<span class="w">   </span><span class="m">3</span>.9800256121536918E-006
+Est.<span class="w"> </span>corr.<span class="w"> </span><span class="nb">time</span><span class="w">  </span><span class="o">=</span><span class="w">   </span><span class="m">2</span>.6420266523220208<span class="w">       </span><span class="m">0</span>.10738159557488412
+</pre></div>
+</div>
+<p>If you want to calculate forces, put <code class="docutils literal notranslate"><span class="pre">ieskin=1</span></code> in the <code class="docutils literal notranslate"><span class="pre">&amp;parameters</span></code> section.
+you may get <code class="docutils literal notranslate"><span class="pre">forcevmc.dat</span></code> file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#cat forces_vmc.dat</span>
+
+Force<span class="w"> </span>component<span class="w"> </span><span class="m">1</span>
+<span class="nv">Force</span><span class="w">   </span><span class="o">=</span><span class="w">  </span><span class="m">6</span>.004763869201490E-003<span class="w">  </span><span class="m">4</span>.997922374161991E-005
+<span class="m">6</span>.273565633363322E-007
+Der<span class="w"> </span><span class="nv">Eloc</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">6</span>.927675852724724E-003<span class="w">  </span><span class="m">4</span>.999242839793062E-005
+&lt;OH&gt;<span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.557134685159244<span class="w">       </span><span class="m">7</span>.437283601136703E-005
+&lt;O&gt;&lt;H&gt;<span class="w"> </span><span class="o">=</span><span class="w"> </span>-0.557596141151006<span class="w">       </span><span class="m">7</span>.447559481785158E-005
+<span class="m">2</span>*<span class="o">(</span>&lt;OH&gt;<span class="w"> </span>-<span class="w"> </span>&lt;O&gt;&lt;H&gt;<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-9.229119835232336E-004<span class="w">  </span><span class="m">2</span>.922997214772288E-006
+Force<span class="w"> </span>component<span class="w"> </span><span class="m">2</span>
+<span class="nv">Force</span><span class="w">   </span><span class="o">=</span><span class="w"> </span>-6.004763869201487E-003<span class="w">  </span><span class="m">4</span>.997922374182328E-005
+<span class="m">6</span>.273565633389692E-007
+Der<span class="w"> </span><span class="nv">Eloc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-6.927675852724721E-003<span class="w">  </span><span class="m">4</span>.999242839840503E-005
+&lt;OH&gt;<span class="w"> </span><span class="o">=</span><span class="w"> </span>-0.557134685159244<span class="w">       </span><span class="m">7</span>.437283601136703E-005
+&lt;O&gt;&lt;H&gt;<span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.557596141151006<span class="w">       </span><span class="m">7</span>.447559481785158E-005
+<span class="m">2</span>*<span class="o">(</span>&lt;OH&gt;<span class="w"> </span>-<span class="w"> </span>&lt;O&gt;&lt;H&gt;<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">9</span>.229119835232336E-004<span class="w">  </span><span class="m">2</span>.922997214772288E-006
+Force<span class="w"> </span>component<span class="w"> </span><span class="m">3</span>
+<span class="nv">Force</span><span class="w">   </span><span class="o">=</span><span class="w">  </span><span class="m">1</span>.200952773851219E-002<span class="w">  </span><span class="m">9</span>.995844747822329E-005
+<span class="m">1</span>.254713126751116E-006
+Der<span class="w"> </span><span class="nv">Eloc</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">1</span>.385535170544853E-002<span class="w">  </span><span class="m">9</span>.998485679843661E-005
+&lt;OH&gt;<span class="w"> </span><span class="o">=</span><span class="w">   </span><span class="m">1</span>.11426937031852<span class="w">       </span><span class="m">1</span>.487456727691242E-004
+&lt;O&gt;&lt;H&gt;<span class="w"> </span><span class="o">=</span><span class="w">  </span>-1.11519228230199<span class="w">       </span><span class="m">1</span>.489511903810635E-004
+<span class="m">2</span>*<span class="o">(</span>&lt;OH&gt;<span class="w"> </span>-<span class="w"> </span>&lt;O&gt;&lt;H&gt;<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-1.845823966936333E-003<span class="w">  </span><span class="m">5</span>.845994429761913E-006
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">Force</span></code> are total forces, <code class="docutils literal notranslate"><span class="pre">Der</span> <span class="pre">Eloc</span></code> are Hellman-Feyman contributions, and <code class="docutils literal notranslate"><span class="pre">2*(&lt;OH&gt;</span> <span class="pre">-</span> <span class="pre">&lt;O&gt;&lt;H&gt;)</span></code> are Pulay contributions. In detail,</p>
+<div class="math">
+<p><span class="math">F_{\alpha} = - \braket{\cfrac{d}{d{\bf R}_{\alpha}}E_L} - 2 \left(\braket{E_L \cdot \cfrac{d}{d{\bf R}_{\alpha}} \log (J^{1/2} \Psi)} - \braket{E_L} \cdot \braket{\cfrac{d}{d{\bf R}_{\alpha}} \log (J^{1/2} \Psi)}\right),</span></p>
+</div><p>where <span class="math">J</span> is the Jacobian of the <a class="reference external" href="https://doi.org/10.1063/1.3516208">warp transformation</a> if it is employed:</p>
+<div class="math">
+<p><span class="math">\bar{\bm {r}_i} = \bm{r}_i + \Delta \bm{R}_{a}\omega_{a} \left({\bm{r}_i} \right), {\rm{where}} ,\,\ \omega_{a} = \cfrac{F \left( |\bm{r}-\bm{R_{a}}| \right)}{\sum_{M}^{b=1} F \left( |\bm{r}-\bm{R_{b}}| \right)}.</span></p>
+</div><p>Indeed,</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Der</span> <span class="pre">Eloc</span></code> corresponds to <span class="math">- \braket{\cfrac{d}{d{\bf R}_{\alpha}}E_L}</span>, and</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2*(&lt;OH&gt;</span> <span class="pre">-</span> <span class="pre">&lt;O&gt;&lt;H&gt;)</span></code> corresponds to <span class="math">2 \left(\braket{E_L} \cdot \braket{\cfrac{d}{d{\bf R}_{\alpha}} \log (J^{1/2} \Psi)} \braket{E_L \cdot \cfrac{d}{d{\bf R}_{\alpha}} \log (J^{1/2} \Psi)} \right)</span>.</p></li>
+</ul>
+</div></blockquote>
+<p>Note that the obtained force is the sum of force components when you specify the symmetry, i.e.,
+<code class="docutils literal notranslate"><span class="pre">Force</span></code> = <span class="math">F_{1,x} + F_{2,z}</span> for:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Constraints for forces: ion - coordinate</span>
+           <span class="mi">2</span>      <span class="mi">1</span>      <span class="mi">1</span>      <span class="mi">2</span>      <span class="mi">3</span>
+</pre></div>
+</div>
+<p>By the way, local energies, it derivatives, … etc are saved in <code class="docutils literal notranslate"><span class="pre">fort.12</span></code>.
+This is a binary file. So, if you want to see it, please use the following python code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>from<span class="w"> </span>scipy.io<span class="w"> </span>import<span class="w"> </span>FortranFile
+import<span class="w"> </span>numpy<span class="w"> </span>as<span class="w"> </span>np
+
+<span class="c1"># check length of fort.12</span>
+<span class="nv">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>FortranFile<span class="o">(</span><span class="s1">&#39;fort.12&#39;</span>,<span class="w"> </span><span class="s1">&#39;r&#39;</span><span class="o">)</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f.read_reals<span class="o">(</span><span class="nv">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="o">)</span>
+<span class="nv">column_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>len<span class="o">(</span>a<span class="o">)</span>
+f.close<span class="o">()</span>
+
+<span class="c1"># start reading fort.12</span>
+<span class="nv">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="s2">&quot;head&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;i&quot;</span><span class="o">)</span>
+<span class="nv">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="s2">&quot;tail&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;i&quot;</span><span class="o">)</span>
+<span class="nv">dt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>np.dtype<span class="o">([</span>head,<span class="w"> </span><span class="o">(</span><span class="s2">&quot;a&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;{}d&quot;</span>.format<span class="o">(</span>column_length<span class="o">))</span>,<span class="w"> </span>tail<span class="o">])</span>
+<span class="nv">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>open<span class="o">(</span><span class="s1">&#39;fort.12&#39;</span>,<span class="w"> </span><span class="s2">&quot;r&quot;</span><span class="o">)</span>
+<span class="nv">fort12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>np.fromfile<span class="o">(</span>fd,<span class="w"> </span><span class="nv">dtype</span><span class="o">=</span>dt,<span class="w"> </span><span class="nv">count</span><span class="o">=</span>-1<span class="o">)</span>
+<span class="nv">data_length</span><span class="o">=</span>len<span class="o">(</span>fort12<span class="o">)</span>
+fd.close<span class="o">()</span>
+<span class="c1"># end reading fort.12</span>
+
+print<span class="o">(</span>fort12<span class="o">)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># for ngen=10</span>
+&gt;&gt;&gt;<span class="w"> </span>fort12
+array<span class="o">([(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.23924971,<span class="w"> </span>-11.23924971,<span class="w"> </span><span class="m">126</span>.32073395<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.4465321<span class="w"> </span>,<span class="w"> </span>-11.4465321<span class="w"> </span>,<span class="w"> </span><span class="m">131</span>.02309712<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.25058355,<span class="w"> </span>-11.25058355,<span class="w"> </span><span class="m">126</span>.57563015<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.88021352,<span class="w"> </span>-11.88021352,<span class="w"> </span><span class="m">141</span>.13947319<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-10.89686295,<span class="w"> </span>-10.89686295,<span class="w"> </span><span class="m">118</span>.74162225<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.8906161<span class="w"> </span>,<span class="w"> </span>-11.8906161<span class="w"> </span>,<span class="w"> </span><span class="m">141</span>.38675112<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-10.50040878,<span class="w"> </span>-10.50040878,<span class="w"> </span><span class="m">110</span>.25858451<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-10.85804034,<span class="w"> </span>-10.85804034,<span class="w"> </span><span class="m">117</span>.89704005<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-11.3042634<span class="w"> </span>,<span class="w"> </span>-11.3042634<span class="w"> </span>,<span class="w"> </span><span class="m">127</span>.78637111<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)</span>,
+<span class="w">    </span><span class="o">(</span><span class="m">40</span>,<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">1</span>.<span class="w">        </span>,<span class="w">   </span><span class="m">1</span>.<span class="w">        </span>,<span class="w"> </span>-10.86745849,<span class="w"> </span>-10.86745849,<span class="w"> </span><span class="m">118</span>.10165397<span class="o">]</span>,<span class="w"> </span><span class="m">40</span><span class="o">)]</span>,
+<span class="w">    </span><span class="nv">dtype</span><span class="o">=[(</span><span class="s1">&#39;head&#39;</span>,<span class="w"> </span><span class="s1">&#39;&lt;i4&#39;</span><span class="o">)</span>,<span class="w"> </span><span class="o">(</span><span class="s1">&#39;a&#39;</span>,<span class="w"> </span><span class="s1">&#39;&lt;f8&#39;</span>,<span class="w"> </span><span class="o">(</span><span class="m">5</span>,<span class="o">))</span>,<span class="w"> </span><span class="o">(</span><span class="s1">&#39;tail&#39;</span>,<span class="w"> </span><span class="s1">&#39;&lt;i4&#39;</span><span class="o">)])</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># for ngen=10, ieskin=1 (force)</span>
+&gt;&gt;&gt;<span class="w"> </span>print<span class="o">(</span>fort12<span class="o">)</span>
+<span class="o">[(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.11415166e+01,<span class="w"> </span>-1.11415166e+01,<span class="w"> </span>-6.76788096e-02,<span class="w"> </span>-3.24756797e-01,<span class="w">  </span><span class="m">7</span>.54044578e-01,<span class="w">  </span><span class="m">1</span>.24133391e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.03517873e+01,<span class="w"> </span>-1.03517873e+01,<span class="w"> </span>-6.11591170e-01,<span class="w"> </span>-1.58829951e-01,<span class="w">  </span><span class="m">6</span>.33106171e+00,<span class="w">  </span><span class="m">1</span>.07159501e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.10816574e+01,<span class="w"> </span>-1.10816574e+01,<span class="w"> </span>-9.54555883e-02,<span class="w"> </span>-1.03302282e-01,<span class="w">  </span><span class="m">1</span>.05780612e+00,<span class="w">  </span><span class="m">1</span>.22803130e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.10699873e+01,<span class="w"> </span>-1.10699873e+01,<span class="w"> </span>-4.56617640e-01,<span class="w"> </span>-5.06874793e-02,<span class="w">  </span><span class="m">5</span>.05475147e+00,<span class="w">  </span><span class="m">1</span>.22544618e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.11472251e+01,<span class="w"> </span>-1.11472251e+01,<span class="w"> </span>-2.66696199e-01,<span class="w"> </span>-6.23362748e-02,<span class="w">  </span><span class="m">2</span>.97292255e+00,<span class="w">  </span><span class="m">1</span>.24260627e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.12157075e+01,<span class="w"> </span>-1.12157075e+01,<span class="w">  </span><span class="m">1</span>.11745432e-01,<span class="w"> </span>-4.24133841e-02,<span class="w"> </span>-1.25330408e+00,<span class="w">  </span><span class="m">1</span>.25792096e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.21590572e+01,<span class="w"> </span>-1.21590572e+01,<span class="w">  </span><span class="m">7</span>.54759031e-02,<span class="w"> </span>-1.60694240e-01,<span class="w"> </span>-9.17715821e-01,<span class="w">  </span><span class="m">1</span>.47842672e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.06346744e+01,<span class="w"> </span>-1.06346744e+01,<span class="w">  </span><span class="m">1</span>.97122176e-03,<span class="w"> </span>-8.72304548e-01,<span class="w"> </span>-2.09633016e-02,<span class="w">  </span><span class="m">1</span>.13096300e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.09934275e+01,<span class="w"> </span>-1.09934275e+01,<span class="w">  </span><span class="m">4</span>.44874974e-01,<span class="w">  </span><span class="m">5</span>.13646778e-01,<span class="w"> </span>-4.89070079e+00,<span class="w">  </span><span class="m">1</span>.20855449e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)</span>
+<span class="o">(</span><span class="m">64</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00000000e+00,<span class="w">  </span><span class="m">1</span>.00000000e+00,<span class="w"> </span>-1.10323163e+01,<span class="w"> </span>-1.10323163e+01,<span class="w"> </span>-8.96736584e-02,<span class="w">  </span><span class="m">3</span>.65895834e-02,<span class="w">  </span><span class="m">9</span>.89308167e-01,<span class="w">  </span><span class="m">1</span>.21712004e+02<span class="o">]</span>,<span class="w"> </span><span class="m">64</span><span class="o">)]</span>
+</pre></div>
+</div>
+<p>It is a similar procedure in a LRDMC calculation. After a LRDMC calculation has finished, you can get the total energy by <code class="docutils literal notranslate"><span class="pre">forcefn.sh</span></code> script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>forcefn.sh<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>wherein <code class="docutils literal notranslate"><span class="pre">10</span></code>, <code class="docutils literal notranslate"><span class="pre">3</span></code>, <code class="docutils literal notranslate"><span class="pre">5</span></code>, and <code class="docutils literal notranslate"><span class="pre">1</span></code> are <code class="docutils literal notranslate"><span class="pre">bin</span> <span class="pre">length</span></code>, <code class="docutils literal notranslate"><span class="pre">correcting</span> <span class="pre">factor</span></code> (i.e., <span class="math">p</span> in the above expression), <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">discarded</span> <span class="pre">bins</span></code> (i.e., the number of warm-up steps is <code class="docutils literal notranslate"><span class="pre">4</span></code>), and <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">ratio</span> <span class="pre">of</span> <span class="pre">Pulay</span> <span class="pre">force</span></code> (1 is ok), respectively. A reblocked total energy and its variance is written in pip0_fn.d.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>cat<span class="w"> </span>pip0_fn.d
+number<span class="w"> </span>of<span class="w"> </span>bins<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="m">1201</span>
+<span class="nv">Energy</span><span class="w"> </span><span class="o">=</span><span class="w">  </span>-11.0854289356563<span class="w">       </span><span class="m">1</span>.239503202184784E-004
+Variance<span class="w"> </span><span class="nv">square</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.126708380716482<span class="w">       </span><span class="m">1</span>.148750765092961E-003
+Est.<span class="w"> </span>energy<span class="w"> </span>error<span class="w"> </span><span class="nv">bar</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">1</span>.234807072779590E-004<span class="w">  </span><span class="m">2</span>.503947626011507E-006
+Est.<span class="w"> </span>corr.<span class="w"> </span><span class="nb">time</span><span class="w">  </span><span class="o">=</span><span class="w">   </span><span class="m">1</span>.85075908836029<span class="w">       </span><span class="m">7</span>.596952532743223E-002
+Energy<span class="w"> </span><span class="o">(</span>ave<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-11.0854159959592<span class="w"> </span><span class="m">1</span>.144905833254917E-004
+</pre></div>
+</div>
+<p>In detail, local energies, it derivatives, … etc are saved in <code class="docutils literal notranslate"><span class="pre">fort.12</span></code>.
+This is a binary file. So, if you want to see it, please use the following python code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>from<span class="w"> </span>scipy.io<span class="w"> </span>import<span class="w"> </span>FortranFile
+import<span class="w"> </span>numpy<span class="w"> </span>as<span class="w"> </span>np
+
+<span class="c1"># check length of fort.12</span>
+<span class="nv">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>FortranFile<span class="o">(</span><span class="s1">&#39;fort.12&#39;</span>,<span class="w"> </span><span class="s1">&#39;r&#39;</span><span class="o">)</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f.read_reals<span class="o">(</span><span class="nv">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="o">)</span>
+<span class="nv">column_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>len<span class="o">(</span>a<span class="o">)</span>
+f.close<span class="o">()</span>
+
+<span class="c1"># start reading fort.12</span>
+<span class="nv">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="s2">&quot;head&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;i&quot;</span><span class="o">)</span>
+<span class="nv">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="s2">&quot;tail&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;i&quot;</span><span class="o">)</span>
+<span class="nv">dt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>np.dtype<span class="o">([</span>head,<span class="w"> </span><span class="o">(</span><span class="s2">&quot;a&quot;</span>,<span class="w"> </span><span class="s2">&quot;&lt;{}d&quot;</span>.format<span class="o">(</span>column_length<span class="o">))</span>,<span class="w"> </span>tail<span class="o">])</span>
+<span class="nv">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>open<span class="o">(</span><span class="s1">&#39;fort.12&#39;</span>,<span class="w"> </span><span class="s2">&quot;r&quot;</span><span class="o">)</span>
+<span class="nv">fort12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>np.fromfile<span class="o">(</span>fd,<span class="w"> </span><span class="nv">dtype</span><span class="o">=</span>dt,<span class="w"> </span><span class="nv">count</span><span class="o">=</span>-1<span class="o">)</span>
+<span class="nv">data_length</span><span class="o">=</span>len<span class="o">(</span>fort12<span class="o">)</span>
+fd.close<span class="o">()</span>
+<span class="c1"># end reading fort.12</span>
+
+print<span class="o">(</span>fort12<span class="o">)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># for ngen=10</span>
+<span class="o">[(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">9</span>.86170773e-01,<span class="w">  </span><span class="m">4</span>.99135464e-02,<span class="w">  </span><span class="m">9</span>.86170773e-01,<span class="w"> </span>-1.10385005e+01,<span class="w"> </span>-1.10168388e+01,<span class="w">  </span><span class="m">1</span>.15291960e+01,<span class="w">  </span><span class="m">8</span>.81420567e-01,<span class="w">  </span><span class="m">6</span>.98486471e-01,<span class="w">  </span><span class="m">2</span>.36894962e+01,<span class="w">  </span><span class="m">2</span>.43879827e+01,<span class="w">  </span><span class="m">1</span>.21370738e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">9</span>.98338830e-01,<span class="w">  </span><span class="m">4</span>.99721051e-02,<span class="w">  </span><span class="m">9</span>.98338830e-01,<span class="w"> </span>-1.10927678e+01,<span class="w"> </span>-1.09222941e+01,<span class="w">  </span><span class="m">1</span>.19273579e+01,<span class="w">  </span><span class="m">8</span>.78528014e-01,<span class="w">  </span><span class="m">3</span>.38981825e+00,<span class="w">  </span><span class="m">2</span>.41699956e+01,<span class="w">  </span><span class="m">2</span>.75598139e+01,<span class="w">  </span><span class="m">1</span>.19296508e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00471589e+00,<span class="w">  </span><span class="m">4</span>.99333686e-02,<span class="w">  </span><span class="m">1</span>.00471589e+00,<span class="w"> </span>-1.10613899e+01,<span class="w"> </span>-1.12830842e+01,<span class="w">  </span><span class="m">1</span>.13634444e+01,<span class="w">  </span><span class="m">8</span>.85749131e-01,<span class="w">  </span><span class="m">1</span>.00489789e+00,<span class="w">  </span><span class="m">1</span>.45340719e+01,<span class="w">  </span><span class="m">1</span>.55389698e+01,<span class="w">  </span><span class="m">1</span>.27307988e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.01299329e+00,<span class="w">  </span><span class="m">5</span>.05361181e-02,<span class="w">  </span><span class="m">1</span>.01299329e+00,<span class="w"> </span>-1.11285545e+01,<span class="w"> </span>-1.09451392e+01,<span class="w">  </span><span class="m">7</span>.04597311e+00,<span class="w">  </span><span class="m">9</span>.31592950e-01,<span class="w">  </span><span class="m">7</span>.90368785e-01,<span class="w">  </span><span class="m">1</span>.20981738e+01,<span class="w">  </span><span class="m">1</span>.28885425e+01,<span class="w">  </span><span class="m">1</span>.19796072e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00768515e+00,<span class="w">  </span><span class="m">5</span>.01575002e-02,<span class="w">  </span><span class="m">1</span>.00768515e+00,<span class="w"> </span>-1.10766102e+01,<span class="w"> </span>-1.10519487e+01,<span class="w">  </span><span class="m">6</span>.23060416e+00,<span class="w">  </span><span class="m">9</span>.38800823e-01,<span class="w">  </span><span class="m">3</span>.91804603e-01,<span class="w">  </span><span class="m">1</span>.15920122e+01,<span class="w">  </span><span class="m">1</span>.19838168e+01,<span class="w">  </span><span class="m">1</span>.22145570e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00453664e+00,<span class="w">  </span><span class="m">5</span>.01341628e-02,<span class="w">  </span><span class="m">1</span>.00453664e+00,<span class="w"> </span>-1.10452450e+01,<span class="w"> </span>-1.11455370e+01,<span class="w">  </span><span class="m">6</span>.20564485e+00,<span class="w">  </span><span class="m">9</span>.37336722e-01,<span class="w">  </span><span class="m">1</span>.41905072e-01,<span class="w">  </span><span class="m">1</span>.17873053e+01,<span class="w">  </span><span class="m">1</span>.19292104e+01,<span class="w">  </span><span class="m">1</span>.24222994e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00089023e+00,<span class="w">  </span><span class="m">5</span>.01634269e-02,<span class="w">  </span><span class="m">1</span>.00089023e+00,<span class="w"> </span>-1.10088733e+01,<span class="w"> </span>-1.08850832e+01,<span class="w">  </span><span class="m">7</span>.46071511e+00,<span class="w">  </span><span class="m">9</span>.24659908e-01,<span class="w">  </span><span class="m">8</span>.62370954e-01,<span class="w">  </span><span class="m">1</span>.72063107e+01,<span class="w">  </span><span class="m">1</span>.80686817e+01,<span class="w">  </span><span class="m">1</span>.18485037e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">9</span>.75216423e-01,<span class="w">  </span><span class="m">4</span>.94485892e-02,<span class="w">  </span><span class="m">9</span>.75216423e-01,<span class="w"> </span>-1.07494006e+01,<span class="w"> </span>-1.07035718e+01,<span class="w">  </span><span class="m">1</span>.08297761e+01,<span class="w">  </span><span class="m">8</span>.93990117e-01,<span class="w">  </span><span class="m">1</span>.53318195e+00,<span class="w">  </span><span class="m">2</span>.25737265e+01,<span class="w">  </span><span class="m">2</span>.41069084e+01,<span class="w">  </span><span class="m">1</span>.14566449e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">1</span>.00020845e+00,<span class="w">  </span><span class="m">5</span>.00654152e-02,<span class="w">  </span><span class="m">1</span>.00020845e+00,<span class="w"> </span>-1.10020818e+01,<span class="w"> </span>-1.09391772e+01,<span class="w">  </span><span class="m">9</span>.92690439e+00,<span class="w">  </span><span class="m">8</span>.99350239e-01,<span class="w">  </span><span class="m">2</span>.44630615e-01,<span class="w">  </span><span class="m">1</span>.76602181e+01,<span class="w">  </span><span class="m">1</span>.79048487e+01,<span class="w">  </span><span class="m">1</span>.19665598e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)</span>
+<span class="o">(</span><span class="m">88</span>,<span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="m">9</span>.98680471e-01,<span class="w">  </span><span class="m">4</span>.99068560e-02,<span class="w">  </span><span class="m">9</span>.98680471e-01,<span class="w"> </span>-1.09867801e+01,<span class="w"> </span>-1.11478923e+01,<span class="w">  </span><span class="m">1</span>.14530815e+01,<span class="w">  </span><span class="m">9</span>.02006051e-01,<span class="w">  </span><span class="m">5</span>.49970529e+00,<span class="w">  </span><span class="m">1</span>.87028590e+01,<span class="w">  </span><span class="m">2</span>.42025643e+01,<span class="w">  </span><span class="m">1</span>.24275504e+02<span class="o">]</span>,<span class="w"> </span><span class="m">88</span><span class="o">)]</span>
+</pre></div>
+</div>
+<p>When you do LRDMC calculations with several <span class="math">a</span>, extrapolation <span class="math">a \rightarrow 0</span> by <code class="docutils literal notranslate"><span class="pre">funvsa.x</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># See. Readme of funvsa.x in detail.</span>
+<span class="c1"># 2=(up to a^4) number of data 4 1</span>
+<span class="m">2</span><span class="w">  </span><span class="m">5</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">1</span>
+<span class="m">0</span>.10<span class="w"> </span>-11.0850188375511<span class="w"> </span><span class="m">1</span>.250592379643920E-004
+<span class="m">0</span>.20<span class="w"> </span>-11.0854289356563<span class="w"> </span><span class="m">1</span>.239503202184784E-004
+<span class="m">0</span>.30<span class="w"> </span>-11.0855955871707<span class="w"> </span><span class="m">1</span>.334024389855123E-004
+<span class="m">0</span>.40<span class="w"> </span>-11.0860656088368<span class="w"> </span><span class="m">1</span>.279739901272860E-004
+<span class="m">0</span>.50<span class="w"> </span>-11.0868942724581<span class="w"> </span><span class="m">1</span>.340429878094154E-004
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>cat<span class="w"> </span>evsa.out
+Reduced<span class="w"> </span>chi^2<span class="w">  </span><span class="o">=</span><span class="w">   </span><span class="m">3</span>.24139195024559
+Coefficient<span class="w"> </span>found
+<span class="m">1</span><span class="w">  </span>-11.0529822174764<span class="w">       </span><span class="m">1</span>.886835280808058E-004<span class="w">  </span>&lt;-<span class="w"> </span>E_0
+<span class="m">2</span><span class="w"> </span>-3.752828455181791E-003<span class="w">  </span><span class="m">3</span>.868657694133935E-003<span class="w">  </span>&lt;-<span class="w"> </span>k_1
+<span class="m">3</span><span class="w"> </span>-2.343738962778753E-002<span class="w">  </span><span class="m">1</span>.487080872118977E-002<span class="w">  </span>&lt;-<span class="w"> </span>k_2
+</pre></div>
+</div>
+</section>
+<section id="extrapolation-of-lrdmc-energies-with-respect-to-the-lattice-space-funvsa-x">
+<h2>Extrapolation of LRDMC energies with respect to the lattice space (funvsa.x)<a class="headerlink" href="#extrapolation-of-lrdmc-energies-with-respect-to-the-lattice-space-funvsa-x" title="Permalink to this heading">¶</a></h2>
+<p>Please collect all LRDMC energies into <code class="docutils literal notranslate"><span class="pre">evsa.in</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">2</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">1</span>
+<span class="m">0</span>.10<span class="w"> </span>-1.13810148463746<span class="w">       </span><span class="m">1</span>.081107885639917E-004
+<span class="m">0</span>.20<span class="w"> </span>-1.13799520203238<span class="w">       </span><span class="m">9</span>.985034545291718E-005
+<span class="m">0</span>.40<span class="w"> </span>-1.13811591303364<span class="w">       </span><span class="m">1</span>.092139729594029E-004
+<span class="m">0</span>.60<span class="w"> </span>-1.13785055959330<span class="w">       </span><span class="m">1</span>.244613258193110E-004
+</pre></div>
+</div>
+<p>wherein</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># See. Readme of funvsa.x in detail.</span>
+<span class="c1"># 2  number of data 4 1</span>
+<span class="w">  </span><span class="m">2</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>for a quadratic fitting i.e., <span class="math">E(a)=E(0) + k_{1} \cdots a^2 + k_{2} \cdots a^4</span> and</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># alat    LRDMC energy            Its error bar</span>
+<span class="w">  </span><span class="m">0</span>.10<span class="w">    </span>-1.13810148463746<span class="w">       </span><span class="m">1</span>.081107885639917E-004
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">funvsa.x</span></code> is a tool for a quadratic fitting:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>funvsa.x<span class="w"> </span>&lt;<span class="w"> </span>evsa.in<span class="w"> </span>&gt;<span class="w"> </span>evsa.out
+</pre></div>
+</div>
+<p>You can see</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Reduced<span class="w"> </span>chi^2<span class="w">  </span><span class="o">=</span><span class="w">   </span><span class="m">0</span>.876592055494152
+Coefficient<span class="w"> </span>found
+<span class="w"> </span><span class="m">1</span><span class="w">  </span>-1.13803097957683<span class="w">       </span><span class="m">1</span>.045060026486010E-004<span class="w">  </span>&lt;-<span class="w"> </span>E_0
+<span class="w"> </span><span class="m">2</span><span class="w"> </span>-1.039867020790643E-003<span class="w">  </span><span class="m">1</span>.780475364652620E-003<span class="w">  </span>&lt;-<span class="w"> </span>k_1
+<span class="w"> </span><span class="m">3</span><span class="w">  </span><span class="m">4</span>.237124912102820E-003<span class="w">  </span><span class="m">4</span>.688879337831868E-003<span class="w">  </span>&lt;-<span class="w"> </span>k_2
+</pre></div>
+</div>
+<p>If you want to do a linear fitting, i.e, i.e., <span class="math">E(a)=E(0) + k_{1} \cdots a^2</span>, put evsa.in</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">1</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">1</span>
+<span class="m">0</span>.10<span class="w"> </span>-1.13810148463746<span class="w">       </span><span class="m">1</span>.081107885639917E-004
+<span class="m">0</span>.20<span class="w"> </span>-1.13799520203238<span class="w">       </span><span class="m">9</span>.985034545291718E-005
+<span class="m">0</span>.40<span class="w"> </span>-1.13811591303364<span class="w">       </span><span class="m">1</span>.092139729594029E-004
+<span class="m">0</span>.60<span class="w"> </span>-1.13785055959330<span class="w">       </span><span class="m">1</span>.244613258193110E-004
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">funvsa.x</span></code> can also do a linear fitting:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>funvsa.x<span class="w"> </span>&lt;<span class="w"> </span>evsa.in<span class="w"> </span>&gt;<span class="w"> </span>evsa.out
+</pre></div>
+</div>
+<p>Check evsa.out</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Reduced<span class="w"> </span>chi^2<span class="w">  </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.873603895738953
+Coefficient<span class="w"> </span>found
+<span class="w"> </span><span class="m">1</span><span class="w">  </span>-1.13808947524004<span class="w">       </span><span class="m">8</span>.025420272361147E-005<span class="w">  </span>&lt;-<span class="w"> </span>E_0
+<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="m">5</span>.210500236482952E-004<span class="w">  </span><span class="m">4</span>.472096760481409E-004<span class="w">  </span>&lt;-<span class="w"> </span>k_1
+</pre></div>
+</div>
+<p>Thus, we get <span class="math">E(a \to 0)</span> = -1.13808(8) Ha.</p>
+</section>
+<section id="how-to-average-variational-parameters-after-a-vmcopt-or-lrdmcopt-run-readalles-x">
+<h2>How to average variational parameters after a VMCopt or LRDMCopt run (readalles.x)<a class="headerlink" href="#how-to-average-variational-parameters-after-a-vmcopt-or-lrdmcopt-run-readalles-x" title="Permalink to this heading">¶</a></h2>
+<p>You can confirm energy convergence by typing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%plot_Energy.sh<span class="w"> </span>out_min
+</pre></div>
+</div>
+<p>Alternatively, you may check the convergence using row data:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%grep<span class="w"> </span>New<span class="w"> </span>out_min
+</pre></div>
+</div>
+<p>Next, check the convergence of devmax by typing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%plot_devmax.sh<span class="w"> </span>out_min
+</pre></div>
+</div>
+<p>Alternatively, you may check the convergence using row data:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%grep<span class="w"> </span>devmax<span class="w"> </span>out_min
+</pre></div>
+</div>
+<p>Next step is to average optimized variational parameters.
+First of all, you can check variational parameters v.s. optimization step:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%readalles.x
+bin<span class="w"> </span>length,<span class="w"> </span>ibinit,<span class="w"> </span>write<span class="w"> </span>fort.10<span class="w"> </span><span class="o">(</span><span class="m">0</span>/1<span class="o">)</span>,<span class="w"> </span>draw<span class="w"> </span><span class="o">(</span><span class="m">0</span>/1<span class="o">)</span><span class="w"> </span>?
+<span class="m">1</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>
+number<span class="w"> </span>of<span class="w"> </span>generations<span class="w"> </span>from<span class="w"> </span>standard<span class="w"> </span>input?<span class="w"> </span><span class="o">(</span><span class="m">1</span><span class="w">  </span>yes,<span class="w"> </span><span class="m">0</span><span class="w"> </span>no<span class="o">)</span>
+<span class="m">0</span>
+max<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>ind<span class="w"> </span>par<span class="w">  </span><span class="k">for</span><span class="w"> </span>each<span class="w"> </span>part<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>wf
+<span class="m">1000</span>
+</pre></div>
+</div>
+<p>Here:</p>
+<p><code class="docutils literal notranslate"><span class="pre">bin</span> <span class="pre">length</span></code> is the number of steps per bin.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ibinit</span></code> is the number of disregarded steps for averaging, i.e, , 1 to (<code class="docutils literal notranslate"><span class="pre">ibinit</span></code> - 1) steps are discarded, and remaining steps starting from <code class="docutils literal notranslate"><span class="pre">ibinit</span></code> are averaged. This is used at the next step.</p>
+<p><code class="docutils literal notranslate"><span class="pre">write</span> <span class="pre">fort.10</span> <span class="pre">(0/1)</span></code> indicates whether the averaged variational parameters is written to fort.10.</p>
+<p><code class="docutils literal notranslate"><span class="pre">draw</span> <span class="pre">(0/1)</span></code> plot optimized parameters using gnuplot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">max</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">ind</span> <span class="pre">par</span></code> is the number of the parameters plotted using gnuplot.</p>
+<p>You may know the number of steps that required to obtain converged parameters (e.g, 201-).
+Since QMC calculations always suffers from statistical noises, the variational parameters also fluctuate.
+Therefore, one should average the optimized variational parameters in the converged region (e.g, 201-300).
+The average can be also done by <cite>readalles.x</cite> module.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>readalles.x
+bin<span class="w"> </span>length,<span class="w"> </span>ibinit,<span class="w"> </span>write<span class="w"> </span>fort.10<span class="w"> </span><span class="o">(</span><span class="m">0</span>/1<span class="o">)</span>,<span class="w"> </span>draw<span class="w"> </span><span class="o">(</span><span class="m">0</span>/1<span class="o">)</span><span class="w"> </span>?
+<span class="m">1</span><span class="w"> </span><span class="m">201</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">0</span>
+number<span class="w"> </span>of<span class="w"> </span>generations<span class="w"> </span>from<span class="w"> </span>standard<span class="w"> </span>input?<span class="w"> </span><span class="o">(</span><span class="m">1</span><span class="w">  </span>yes,<span class="w"> </span><span class="m">0</span><span class="w"> </span>no<span class="o">)</span>
+<span class="m">0</span>
+max<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>ind<span class="w"> </span>par<span class="w">  </span><span class="k">for</span><span class="w"> </span>each<span class="w"> </span>part<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>wf
+<span class="m">1000</span>
+
+...
+
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">290</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">291</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">292</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">293</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">294</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">295</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">296</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">297</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">298</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">299</span>
+record<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">300</span>
+number<span class="w"> </span>of<span class="w"> </span>measures<span class="w"> </span><span class="k">done</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="m">100</span><span class="w">  </span>&lt;-<span class="w"> </span>the<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>averaged<span class="w"> </span>steps
+</pre></div>
+</div>
+<p>Thus, variational parameters will be averaged over the remaining last 100 steps.
+<code class="docutils literal notranslate"><span class="pre">readalles.x</span></code> writes the averaged variational parameters in the end of <code class="docutils literal notranslate"><span class="pre">fort.10</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># fort.10</span>
+
+...
+<span class="c1"># new parameters</span>
+<span class="m">0</span>.290626442260694E+00<span class="w">   </span><span class="m">0</span>.108521356525542E+01<span class="w">  </span>-0.301131622319121E+00<span class="w">  </span>-0.102380295055131E+01<span class="w">   </span><span class="m">0</span>.229700639835700E+01<span class="w">  </span>-0.220409737565913E-02<span class="w">  </span>-0.609584028614942E-02<span class="w">   </span><span class="m">0</span>.272306548035257E-01<span class="w">   </span><span class="m">0</span>.734700209267177E-01<span class="w">  </span>-0.182065664321832E-01<span class="w">   </span><span class="m">0</span>.453293541473009E+00<span class="w">   </span><span class="m">0</span>.164648614827512E+00<span class="w">   </span><span class="m">0</span>.173486608007203E-02<span class="w">   </span><span class="m">0</span>.583308470999047E-02<span class="w">  </span>-0.188429085081367E-01<span class="w">   </span><span class="m">0</span>.248889135790375E-01<span class="w">  </span>-0.138300779564990E+00<span class="w">   </span><span class="m">0</span>.440777377680407E+00<span class="w">  </span>-0.134604374717883E+01<span class="w">  </span>-0.707524794465785E-03<span class="w">   </span><span class="m">0</span>.780729515612661E-03<span class="w">  </span>-0.151361566539925E-01<span class="w">  </span>-0.522035153211261E-01<span class="w">   </span><span class="m">0</span>.366708625842555E-01<span class="w">  </span>-0.175477073796467E+00<span class="w">   </span><span class="m">0</span>.211200067156240E+00<span class="w">   </span><span class="m">0</span>.925206078797516E-03<span class="w">   </span><span class="m">0</span>.334330184442289E-02<span class="w">  </span>-0.556589712590827E-02<span class="w">   </span><span class="m">0</span>.324861920952639E-01<span class="w">   </span><span class="m">0</span>.941094689163063E-01<span class="w">  </span>-0.387403732714091E+01<span class="w">  </span>-0.872987341975953E+01<span class="w">  </span>-0.489666531788676E-01<span class="w">   </span><span class="m">0</span>.509954432475785E-01<span class="w">  </span>-0.151442414
+</pre></div>
+</div>
+<p>The next step is to write the optimized parameters. Run a dummy VMCopt/LRDMCopt calculation.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>./datasmin.input<span class="w"> </span>ave.in
+</pre></div>
+</div>
+<p>You must rewrite value of <code class="docutils literal notranslate"><span class="pre">ngen</span></code> in <code class="docutils literal notranslate"><span class="pre">ave.in</span></code> as <code class="docutils literal notranslate"><span class="pre">ngen</span> <span class="pre">=</span> <span class="pre">1</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">ngen</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<p>Next, replace the following line of <code class="docutils literal notranslate"><span class="pre">fort.10</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># unconstrained iesfree,iessw,ieskinr,I/O flag</span>
+<span class="w">     </span><span class="m">435</span><span class="w">         </span><span class="m">466</span><span class="w">           </span><span class="m">6</span><span class="w">           </span><span class="m">0</span>
+</pre></div>
+</div>
+<p>with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># unconstrained iesfree,iessw,ieskinr,I/O flag</span>
+<span class="w">     </span><span class="m">435</span><span class="w">         </span><span class="m">466</span><span class="w">           </span><span class="m">6</span><span class="w">           </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">I/O</span> <span class="pre">flag</span></code> is changed to <code class="docutils literal notranslate"><span class="pre">1</span></code>, which allows us to write the optimized variational parameters.</p>
+<p>Run the dummy VMCopt/LRDMCopt calculation by typing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>turborvb-serial.x<span class="w"> </span>&lt;<span class="w"> </span>ave.in<span class="w"> </span>&gt;<span class="w"> </span>out_ave
+</pre></div>
+</div>
+<p>If you do a twist-averaged calculation, you should copy the averaged Jastrow parameters for all the k point files.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>turborvb.scratch
+cp<span class="w"> </span>../fort.10<span class="w"> </span>./
+cp<span class="w"> </span>../fort.10<span class="w"> </span>./fort.10_new
+copyjas.x<span class="w"> </span>kpoints
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="05conversions.html" class="btn btn-neutral float-left" title="Wavefunction conversions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kosuke Nakano (NIMS) and collaborators..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

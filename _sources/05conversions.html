@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wavefunction conversions &mdash; TurboRVB userguides Updated on 26/06/2023 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/roles.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quantum Monte Carlo calculations" href="06qmc_driver.html" />
+    <link rel="prev" title="Initializations of Wavefunctions" href="04DFT_driver.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TurboRVB userguides
+          </a>
+              <div class="version">
+                Updated on 26/06/2023
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="01nutshell.html">TurboRVB in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03wavefunction.html">Wavefunction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04DFT_driver.html">Initializations of Wavefunctions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Wavefunction conversions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#converting-a-wf-to-agp-convertfort10-x">Converting a WF to AGP (convertfort10.x)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#converting-a-wf-to-agpn-sd-convertfort10mol-x">Converting a WF to AGPn/SD (convertfort10mol.x)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="06qmc_driver.html">Quantum Monte Carlo calculations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TurboRVB userguides</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Wavefunction conversions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/05conversions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wavefunction-conversions">
+<h1>Wavefunction conversions<a class="headerlink" href="#wavefunction-conversions" title="Permalink to this heading">¶</a></h1>
+<p>TurboRVB implements different types of <em>Ansatz</em>:</p>
+<ol class="arabic simple">
+<li><p>Pfaffian (Pf)</p></li>
+<li><p>Pfaffian with a constrained number of molecular orbitals (Pfn)</p></li>
+<li><p>Antisymmetrized Geminal Power (AGP)</p></li>
+<li><p>Antisymmetrized Geminal Power with a constrained number of molecular orbitals (AGPn)</p></li>
+<li><p>Single Slater determinant (SD)</p></li>
+</ol>
+<p>One can go back and forth between various <em>Ansatz</em> using the modules implemented in TurboRVB.
+Figures below show the hierarchy of <em>Ansatz</em> implemented in TurboRVB and their inter-conversion.</p>
+<a class="reference internal image-reference" href="../_images/ansatz_hierarchy.png"><img alt="../_images/ansatz_hierarchy.png" class="align-center" src="../_images/ansatz_hierarchy.png" style="width: 296.8px; height: 236.8px;" /></a>
+<a class="reference internal image-reference" href="../_images/ansatz_conversion.png"><img alt="../_images/ansatz_conversion.png" class="align-center" src="../_images/ansatz_conversion.png" style="width: 246.0px; height: 282.0px;" /></a>
+<ul class="simple">
+<li><p>Adding molecular orbitals to an <em>Ansatz</em> (convertfort10mol.x): The first case is to add molecular orbitals to an <em>Ansatz</em>, i.e. JAGP =&gt; JSD, JAGP =&gt; JAGPn, or JPf =&gt; JPfn.
+In TurboRVB, this is done by rewriting the expansion of the geminal in terms of molecular orbitals.</p></li>
+<li><p>The second important case is to convert an <em>Ansatz</em> among the available ones, i.e.,
+JSD, JAGP, or JAGPn =&gt; JAGP.
+This is done using the convertfort10.x tool and is achieved by maximizing the overlap
+between the two WFs (the input <code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code> and the output <code class="docutils literal notranslate"><span class="pre">fort.10_out</span></code>) to be filled
+by new geminal matrix coefficients (<code class="docutils literal notranslate"><span class="pre">fort.10_new</span></code>).
+The following overlap between two geminals is maximized:</p></li>
+</ul>
+<blockquote>
+<div><div class="math">
+<p><span class="math">max \: Q = \frac{\left \langle g^{new}|g^{ori} \right \rangle^2}{\left \langle g^{new}|g^{new} \right \rangle \left \langle g^{ori}|g^{ori} \right \rangle} \,,</span></p>
+</div></div></blockquote>
+<p>in order to obtain new geminal matrix coefficients <span class="math">A^{new}_{\mu,\nu}</span>, defining
+the new pairing function as</p>
+<div class="math">
+<p><span class="math">g^{new}(\mathbf{i}, \mathbf{j}) = \sum_{\mu.\nu} A^{new}_{\mu.\nu} \psi^{new}_\mu(\mathbf{i}) \psi^{new}_\nu(\mathbf{j}) \,,</span></p>
+</div><p>while the original geminal was given in terms of the parameter matrix <span class="math">A^{ori}_{\mu, \nu}</span>,</p>
+<div class="math">
+<p><span class="math">g^{ori}(\mathbf{i}, \mathbf{j}) = \sum_{\mu.\nu} A^{ori}_{\mu.\nu} \psi^{ori}_\mu(\mathbf{i}) \psi^{ori}_\nu(\mathbf{j}) .</span></p>
+</div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><span class="math">0 \leq Q \leq 1</span>; so, the larger the <span class="math">Q</span>, the better is the conversion.
+<span class="math">Q</span> approaches unity if the conversion is perfect.</p>
+</div>
+<ul>
+<li><p>The final case is to convert a JAGP <em>ansatz</em> to JPf. Since the JAGP <em>ansatz</em> is a special case
+of the JPf <em>ansatz</em>, where only <span class="math">G_{ud}</span> and <span class="math">G_{du}</span> terms are defined, the
+conversion can just be realized by direct substitution.
+The primary challenge is to find a reasonable initialization for the two spin-triplet sectors,
+<span class="math">G_{uu}</span> and <span class="math">G_{dd}</span> that are not described in the JAGP and that otherwise
+have to be set to 0. There are two possible approaches:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>For polarized systems, we can build the <span class="math">G_{uu}</span> block of the matrix by using an even number of <span class="math">\{ \phi_i\}</span> and build an antisymmetric <span class="math">g_{uu}</span>, where the eigenvalues <span class="math">\lambda_k</span> are chosen to be large enough to occupy certainly  these unpaired states, as in  the standard Slater determinant used for our initialization. Again, we emphasize that  this works only for polarized systems.</p></li>
+<li><p>The second approach that also works in a spin-unpolarized case is to determine a standard broken symmetry single determinant <em>ansatz</em> (<em>e.g.</em>, by TurboRVB built-in DFT within the LSDA)  and modify it with a global  spin rotation. Indeed, in the presence of finite local magnetic moments, it is often convenient to rotate the spin moments of the WF in a direction perpendicular to  the spin quantization axis chosen for  our spin-dependent Jastrow factor, <em>i.e.</em>, the <span class="math">z</span> quantization axis. In this way one can obtain reasonable initializations for  <span class="math">G_{uu}</span> and <span class="math">G_{dd}</span>. TurboRVB allows every possible rotation, including an arbitrary small one close to the identity. A particularly important case is when  a rotation of <span class="math">\pi/2</span> is applied around the <span class="math">y</span> direction. This operation maps <span class="math">|\uparrow \rangle \rightarrow \frac{1} {\sqrt{2}} \left( |  \uparrow \rangle + |\downarrow \rangle \right)   \mbox{ and }  |\downarrow  \rangle  \rightarrow  \frac 1 {\sqrt{2}} \left( | \uparrow  \rangle - |\downarrow \rangle \right).</span> One can convert from a AGP the pairing function that is obtained from a VMC optimization <span class="math">{g_{ud}}(\mathbf{i},\mathbf{j}) = {f_S}({{\mathbf{r}}_i}, {{\mathbf{r}}_j})\frac{{\left| { \uparrow  \downarrow } \right\rangle  - \left| { \downarrow  \uparrow } \right\rangle }}{{\sqrt 2 }} + {f_T}({{\mathbf{r}}_i},{{\mathbf{r}}_j})\frac{{\left| { \uparrow  \downarrow } \right\rangle  + \left| { \downarrow  \uparrow } \right\rangle }}{{\sqrt 2 }}</span> to a Pf one <span class="math">{g_{ud}}(\mathbf{i},\mathbf{j}) \to g\left( {\mathbf{i},\mathbf{j}} \right){\text{ }} = {f_S}({{\mathbf{r}}_i},{{\mathbf{r}}_j})\frac{{\left| { \uparrow  \downarrow } \right\rangle  - \left| { \downarrow  \uparrow } \right\rangle }}{{\sqrt 2 }} + {f_T}({{\mathbf{r}}_i},{{\mathbf{r}}_j})\left( {\left| { \uparrow  \uparrow } \right\rangle  - \left| { \downarrow  \downarrow } \right\rangle } \right).</span> This transformation provides a meaningful initialization to the Pfaffian WF that can be  then optimized for reaching the best possible description of the ground state within this <em>ansatz</em>.</p></li>
+</ol>
+</div></blockquote>
+</li>
+</ul>
+<section id="converting-a-wf-to-agp-convertfort10-x">
+<h2>Converting a WF to AGP (convertfort10.x)<a class="headerlink" href="#converting-a-wf-to-agp-convertfort10-x" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Rename a <code class="docutils literal notranslate"><span class="pre">fort.10</span></code> that you want to convert AGP as  <code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code></p></li>
+<li><p>Prepare a template of an AGP <code class="docutils literal notranslate"><span class="pre">fort.10</span></code> with new basis/new exponents… as <code class="docutils literal notranslate"><span class="pre">fort.10_out</span></code></p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">convertfort10.x</span> <span class="pre">&lt;</span> <span class="pre">convertfort10.input</span></code></p></li>
+</ol>
+<p>The output is the <code class="docutils literal notranslate"><span class="pre">fort.10_new</span></code> is the converted file (with maximum
+overlap with the input) in the basis set you have decided in <code class="docutils literal notranslate"><span class="pre">fort.10_out</span></code></p>
+<p>The input parameters are as follows</p>
+<table class="docutils align-default" id="option">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bigram</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it uses RAM to store the initial file.</p></td>
+</tr>
+<tr class="row-odd"><td><p>symiesup</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it uses symmetries for contracted orbitals in AGP.</p></td>
+</tr>
+<tr class="row-even"><td><p>eqion</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. When set to .false., you can allow for a permutation of ions but the corresponding pseudo to fort.10_out has to be defined (if pseudos are used) named pseudo_out.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="control">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>change_jas</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .false., it does not compute the output Jastrow (read in fort.10_out).</p></td>
+</tr>
+<tr class="row-odd"><td><p>change_contr</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it does not compute contracted coefficient Det (read in fort.10_out).</p></td>
+</tr>
+<tr class="row-even"><td><p>force_real</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., the output contracted orbitals are real.</p></td>
+</tr>
+<tr class="row-odd"><td><p>real_agp</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it uses the numerical algorithm to obtain a real AGP with the maximum overlap.</p></td>
+</tr>
+<tr class="row-even"><td><p>rmax</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. It uses the numerical algorithm to obtain an AGP with a cutoff radius of rmax (bohr) and with the maximum overlap.</p></td>
+</tr>
+<tr class="row-odd"><td><p>max_iter</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Integer value. It represents the maximum number of iterations for the numerical algorithm (not much more than 10000 is suggested).</p></td>
+</tr>
+<tr class="row-even"><td><p>prec</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. It represents the required precision for the numerical version of the algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p>epsdgel</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. The default is 1d-15.</p></td>
+</tr>
+<tr class="row-even"><td><p>yespardiag</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it uses the parallelized matrix-matrix multiplication.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="mesh-info">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nx</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. It is not necessary with optbin=.true. (the mesh is given).</p></td>
+</tr>
+<tr class="row-odd"><td><p>ax</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. This is the IMPORTANT section you have always to define (the default is OK for the rest) use DFT mesh as an hint.</p></td>
+</tr>
+<tr class="row-even"><td><p>nbufd</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. You can reduce the size of nbufd for reducing the RAM memory used.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It works also with molecular orbitals. The unpaired orbitals are
+always assumed to be the last molecular orbitals in the order written
+in <code class="docutils literal notranslate"><span class="pre">fort.10_out</span></code> <code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The numerical version of the algorithm (real_agp=.true. or rmax=xx) works
+only with AGPs, if you want to use it with molecular orbitals, convert the
+molecular WF in a AGP and then use the numerical version</p>
+</div>
+</section>
+<section id="converting-a-wf-to-agpn-sd-convertfort10mol-x">
+<h2>Converting a WF to AGPn/SD (convertfort10mol.x)<a class="headerlink" href="#converting-a-wf-to-agpn-sd-convertfort10mol-x" title="Permalink to this heading">¶</a></h2>
+<p>This tool converts a generic input wf (<code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code>) written with generic
+atomic orbitals into a new wf (<code class="docutils literal notranslate"><span class="pre">fort.10_new</span></code>) that includes  the corresponding
+molecular orbitals. The unpaired orbitals are always assumed to be the last molecular orbitals in fort.10_new. The number of molecular orbitals  appended in <code class="docutils literal notranslate"><span class="pre">fort.10_new</span></code>
+is  the sum of <code class="docutils literal notranslate"><span class="pre">nmol</span></code> (input)  and the number of
+unpaired orbitals= <code class="docutils literal notranslate"><span class="pre">nelup</span></code>-<code class="docutils literal notranslate"><span class="pre">neldo</span></code>.</p>
+<p>Only the parameter <code class="docutils literal notranslate"><span class="pre">molopt</span></code> requires detailed explanation in this tool.</p>
+<p>After running this tool the coefficient of the contracted atomic orbitals
+are  arbitrary because all the original  wave function (in <code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code>)
+is rewritten (in <code class="docutils literal notranslate"><span class="pre">fort.10_new</span></code>)  in terms of molecular orbitals defined
+in the original primitive basis (e.g. all independent atomic gaussian basis
+defining the original <code class="docutils literal notranslate"><span class="pre">fort.10_in</span></code>).</p>
+<p>if molopt&gt;= 2  then the coefficients of the contracted atomic
+orbitals will no longer be optimizable in a subsequent minimization.
+Otherwise all contracted atomic orbitals will be optimized with
+the corresponding option molopt=1 in datasminmol.input
+or molopt=0 (default) in datasmin.input</p>
+<p>By using abs(molopt)&gt;=2 this subroutine initialize the coefficients
+of the contracted atomic orbitals,using dmrg (the system
+has to represent at best the universe) to evaluate
+the best atomic contracted orbitals (the system) that can be connected
+to the full AGP matrix squared  (the universe now written in terms
+of molecular orbitals). See the DMRG paper by S.R. White PRB 48, 10345 (1993).
+The algorithm is: be f(r1,r) the AGP obtained by restricting r1 to all
+atomic orbitals of given type (s,p,d) acting on a given atom.
+The density matrix is DMRG(r1,r2)=int_(r’ in universe)  f(r1,r’) f(r2,r’).
+The best atomic orbitals are the eigenvector of the density matrix
+with highest eigenvalue.</p>
+<p>In the code care should be taken because the localized basis used is
+not orthonormal, being the overlap matrix between atomic orbitals
+a generic full symmetric matrix.
+If unpaired orbitals are used (nelup&gt; neldo) the DMRG is modified by
+adding the contribution of unpaired orbitals normalized to nelup-neldo
+vs a total norm = nelup+neldo.</p>
+<p>When preparing input to DFT useful parameter input in the control section  are:</p>
+<p>only_molecular=.true./.false. ! If .true. only molecular orbitals are assumed in  the contracted basis in order to minimize memory.
+It is  not allowed for AGP optimization,  rather for DFT or VMC/DMC at fixed variational parameters or optimization in the restricted molecular orbital basis.</p>
+<p>add_offmol=.true./.false.  If the above is true , add also off diagonal elements in the molecular orbital basis defined by the above option.</p>
+<p>The input parameters are as follows:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>molopt</p></td>
+<td><p>NA</p></td>
+<td><p>0</p></td>
+<td><p>Numeric value. If molopt&gt;2, the best atomic contracted are evaluated using DMRG. molopt=2 for only AGP, molopt=3 for AGP and Jastrow.</p></td>
+</tr>
+<tr class="row-odd"><td><p>epsdgm</p></td>
+<td><p>NA</p></td>
+<td><p>1d-14</p></td>
+<td><p>Numeric value. If epsdgm&lt;0, fast routine with no diag is used. Only filling random molecular orbitals. When epsdgm=-1.0, it converts a symmagp=.true. to a symmagp=.false fort.10.</p></td>
+</tr>
+<tr class="row-even"><td><p>orthoyes</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., orthogonalization of unpaired orbitals is employed.</p></td>
+</tr>
+<tr class="row-odd"><td><p>membig</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .false., coefficients of molecular orbitals are changed to allow stable optimization.</p></td>
+</tr>
+<tr class="row-even"><td><p>only_molecular</p></td>
+<td><p>NA
+NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., only molecular orbitals are assumed in the contracted basis to minimize memory. It is not allowed for full AGP optimization,
+rather for DFT or VMC/DMC at fixed variational parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ax</p></td>
+<td><p>NA</p></td>
+<td><p>0.1</p></td>
+<td><p>Numeric value. Lattice mesh on the x direction, not used for PBC.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nx</p></td>
+<td><p>NA</p></td>
+<td><p>20</p></td>
+<td><p>Numeric value. Number of mesh points in the x direction to evaluate overlaps.</p></td>
+</tr>
+<tr class="row-even"><td><p>ny</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. Default is nx.</p></td>
+</tr>
+<tr class="row-odd"><td><p>nz</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Numeric value. Default is ny.</p></td>
+</tr>
+<tr class="row-even"><td><p>nbufd</p></td>
+<td><p>NA</p></td>
+<td><p>10000</p></td>
+<td><p>Numeric value. Represents buffer default.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameter name</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nmol</p></td>
+<td><p>NA</p></td>
+<td><p>136</p></td>
+<td><p>Numeric value. Number of molecular orbitals in fort.10 in the AGP, if nmol&gt;0 and unpaired orbitals are present the total number of molecular orbitals in fort.10 is
+molecular = nmol+#unpaired orbitals (nelup-neldo)</p></td>
+</tr>
+<tr class="row-odd"><td><p>nmolmax</p></td>
+<td><p>NA</p></td>
+<td><p>136</p></td>
+<td><p>Numeric value. Used in projection (default nmolmax=nmol).</p></td>
+</tr>
+<tr class="row-even"><td><p>nmolmin</p></td>
+<td><p>NA</p></td>
+<td><p>128</p></td>
+<td><p>Numeric value. The first nmolmin molecular eigenvalue are set to one. If nmolmin=nmolmax=Nel/2, a perfect Slater determinant is projected.</p></td>
+</tr>
+<tr class="row-odd"><td><p>printoverlap</p></td>
+<td><p>NA</p></td>
+<td><p>NA</p></td>
+<td><p>Logical value. If set to .true., it prints overlaps between nmolmin, nmolmax orbitals.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="04DFT_driver.html" class="btn btn-neutral float-left" title="Initializations of Wavefunctions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="06qmc_driver.html" class="btn btn-neutral float-right" title="Quantum Monte Carlo calculations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Kosuke Nakano (NIMS) and collaborators..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
