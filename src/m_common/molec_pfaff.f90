@@ -162,7 +162,7 @@ subroutine symmtriang(nelorb_c, ipc, detmattr, lambdars, U3)
 
     lambdaih_test = lambdaih_test - lambdars_test
     write (6, *) "If everything is correct no output before <Check U3 Completed>"
-    call print_matrix(lda, nelorb_c, 2, lambdaih_test)
+    call print_matrix(nelorb_c, nelorb_c, 2, lambdaih_test)
     write (6, *) "Check U3 Completed"
 
     deallocate (lambdars_test, lambdaih_test, auxmat)
@@ -392,7 +392,7 @@ subroutine finalize_mopfaff(lda, nelorb_c, ipc, U1, U3, eigvalues, eigvect, outv
             auxmat(2*(2*i) - 1, 2*i - 1) = outvl(i)
         end do
         call ZGEMM("N", "N", nelorb_c, nelorb_c, nelorb_c, zone, outvct, lda, &
-                   auxmat, lda zzero, auxvect2, nelorb_c)
+                   auxmat, lda, zzero, auxvect2, nelorb_c)
         call ZGEMM("N", "T", nelorb_c, nelorb_c, nelorb_c, zone, auxvect2, nelorb_c, &
                    outvct, lda, zzero, auxmat, lda)
     end if
