@@ -12,7 +12,9 @@ TurboRVB is distinguishable from other QMC codes in the following features:
 
 - The code implements the so-called lattice regularized diffusion Monte Carlo method, which provides a numerically stable diffusion quantum Monte Carlo calculation.
 
-- The implementation of an adjoint algorithmic differentiation allows us to differentiate many-body wave functions efficiently and to perform structural optimizations and calculate molecular dynamics.
+- The implementation of an adjoint algorithmic differentiation allows us to differentiate many-body wave functions efficiently and to perform structural optimizations and calculate molecular dynamics, thanks to an efficient and accurate evaluation of ionic forces.
+
+- The possibility of performing different flavors of molecular dynamics, from classical to path integral, seamlessly integrated in the package, with original integration algorithms.
 
 # Developers
 
