@@ -278,7 +278,6 @@ Readio section
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. table::
-   :align: left
 
    +----------+----------+---------+----------------------------------------------+
    | Parameter| Datatype | Default | Description                                  |
@@ -445,52 +444,52 @@ This section describes switches for optimizing wavefunction parameters, the oupu
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
    | parameter name      | datatype | default | description                                                                                                                            |
    +=====================+==========+=========+========================================================================================================================================+
-   | ``iesd``            | NA       | NA      | Integer (0 or 1). It acts as a switch for the 1-body and 2-body Jastrow.                                                               |
+   | ``iesd``            | int      | 0       | Integer (0 or 1). It acts as a switch for the 1-body and 2-body Jastrow.                                                               |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iesinv``          | NA       | NA      | Integer (-1, 0 or 1). If :math:`\neq 0`, the spin Jastrow factor matrix is optimized, if allowed in the input fort.10. If :math:`< 0`, |
-   |                     |          |         | a range can be defined in the &fitpar section with rmaxinv.                                                                            |
+   | ``iesinv``          | int      | 0       | Integer (-1, 0 or 1). If :math:`\neq 0`, the spin Jastrow factor matrix is optimized, if allowed in the input fort.10.                 |
+   |                     |          |         | If :math:`< 0`, a range can be defined in the &fitpar section with rmaxinv.                                                            |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iesfree``         | NA       | NA      | Integer (-1, 0 or 1). If :math:`\neq 0`, the density Jastrow factor matrix is optimized. If :math:`< 0`, a range can be defined        |
-   |                     |          |         | in the &fitpar section with rmaxj.                                                                                                     |
+   | ``iesfree``         | int      | 0       | Integer (-1, 0 or 1). If :math:`\neq 0`, the density Jastrow factor matrix is optimized.                                               |
+   |                     |          |         | If :math:`< 0`, a range can be defined in the &fitpar section with rmaxj.                                                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iessw``           | NA       | NA      | Integer (-1, 0 or 1). If :math:`\neq 0`, the AGP matrix on the localized basis is optimized. If :math:`< 0`, a range can be defined    |
-   |                     |          |         | in the &fitpar section with rmax.                                                                                                      |
+   | ``iessw``           | int      | 0       | Integer (-1, 0 or 1). If :math:`\neq 0`, the AGP matrix on the localized basis is optimized.                                           |
+   |                     |          |         | If :math:`< 0`, a range can be defined in the &fitpar section with rmax.                                                               |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iesm``            | NA       | NA      | Integer (0 or 1). If :math:`\neq 0`, the exponent and/or the contracted coefficient of the basis defining the Jastrow are optimized.   |
+   | ``iesm``            | int      | 0       | Integer (0 or 1). If :math:`\neq 0`, the exponent and/or the contracted coefficient of the basis defining the Jastrow are optimized.   |
    |                     |          |         | When :math:`itestr4 = -4,-9`, only contracted coefficients are optimized if the basis contains them, otherwise yeszj=.true.            |
    |                     |          |         | is switched on and exponents are optimized.                                                                                            |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iesup``           | NA       | NA      | Integer (0 or 1). Same as the above, but for the determinantal part. yeszagp=.true. replaces yeszj in this case.                       |
+   | ``iesup``           | int      | 0       | Integer (0 or 1). Same as the above, but for the determinantal part. yeszagp=.true. replaces yeszj in this case.                       |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``ieser``           | NA       | NA      | Integer (0 or 1). It specifies which part of the energy is printed out. If :math:`ieser = 1`, it measures the total energy             |
+   | ``ieser``           | int      | 0       | Integer (0 or 1). It specifies which part of the energy is printed out. If :math:`ieser = 1`, it measures the total energy             |
    |                     |          |         | (no optimization assumed).                                                                                                             |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iesfix``          | NA       | NA      | Integer (0 or 1). If :math:`iesfix = 1`, the variance of the energy is printed out (no optimization assumed).                          |
+   | ``iesfix``          | int      | 0       | Integer (0 or 1). If :math:`iesfix = 1`, the variance of the energy is printed out (no optimization assumed).                          |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``ieskin``          | NA       | NA      | Integer (0 or 1). If nuclear forces have to be computed (especially with dynamics :math:`idyn > 0`), set :math:`ieskin > 0`.           |
+   | ``ieskin``          | int      | 0       | Integer (0 or 1). If nuclear forces have to be computed (especially with dynamics :math:`idyn > 0`), set :math:`ieskin > 0`.           |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``yeszj``           | NA       | NA      | Logical value. If :math:`yeszj=.true.`, exponents of the Jastrow basis are optimized if :math:`iesm \neq 0`                            |
+   | ``yeszj``           | int      | .false. | Logical value. If :math:`yeszj=.true.`, exponents of the Jastrow basis are optimized if :math:`iesm \neq 0`                            |
    |                     |          |         | even if :math:`itestr4 = -4, -9`.                                                                                                      |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``yeszagp``         | NA       | NA      | Logical value. Same as above, but for the determinantal part.                                                                          |
+   | ``yeszagp``         | int      | .false. | Logical value. Same as above, but for the determinantal part.                                                                          |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``real_agp``        | NA       | NA      | Logical value. For complex wf, if real_agp=.true. and :math:`iessw=\neq 0`, only the real part of the complex agp matrix               |
+   | ``real_agp``        | int      | .false. | Logical value. For complex wf, if real_agp=.true. and :math:`iessw=\neq 0`, only the real part of the complex agp matrix               |
    |                     |          |         | is optimized. The imaginary part is assumed and set to zero.                                                                           |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``real_contracted`` | NA       | NA      | Logical value. For complex wf, if real_contracted=.true., only the real part of the contracted coefficient of the basis is optimized.  |
+   | ``real_contracted`` | int      | .false. | Logical value. For complex wf, if real_contracted=.true., only the real part of the contracted coefficient of the basis is optimized.  |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``typedyncell``     | NA       | NA      | Integer value. :math:`typedyncell=0` means Standard NVT ensemble with no optimization of cell.                                         |
+   | ``typedyncell``     | int      | .false. | Integer value. :math:`typedyncell=0` means Standard NVT ensemble with no optimization of cell.                                         |
    |                     |          |         | :math:`typedyncell=1` implies fixed volume, but optimization of b/a and c/a at fixed volume :math:`V = a \times b \times c`.           |
    |                     |          |         | :math:`typedyncell=2` stands for constant pressure, variable volume, optimizing a, b and c at pressfixed = constant.                   |
    |                     |          |         | :math:`typedyncell=3` represents constant pressure and variable volume but without modifying b/a and c/a.                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``pressfixed``      | NA       | NA      | Value of the pressure in a.u., for dynamics at fixed pressure. Note: the classical value is not included.                              |
+   | ``pressfixed``      | int      | 0       | Value of the pressure in a.u., for dynamics at fixed pressure. Note: the classical value is not included.                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``fixa``            | NA       | NA      | Logical value. If :math:`fixa = .true.`, a is kept fixed during dynamics.                                                              |
+   | ``fixa``            | bool     | .false. | Logical value. If :math:`fixa = .true.`, a is kept fixed during dynamics.                                                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``fixb``            | NA       | NA      | Logical value. If :math:`fixb = .true.`, b is kept fixed during dynamics.                                                              |
+   | ``fixb``            | bool     | .false. | Logical value. If :math:`fixb = .true.`, b is kept fixed during dynamics.                                                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
-   | ``fixc``            | NA       | NA      | Logical value. If :math:`fixc = .true.`, c is kept fixed during dynamics.                                                              |
+   | ``fixc``            | bool     | .false. | Logical value. If :math:`fixc = .true.`, c is kept fixed during dynamics.                                                              |
    +---------------------+----------+---------+----------------------------------------------------------------------------------------------------------------------------------------+
 
 
@@ -505,13 +504,13 @@ This section describes the details of the locality approximations for reducing t
    +-----------------+----------+---------+------------------------------------------------------------------------------------------------------------------------------------------------------+
    | parameter name  | datatype | default | description                                                                                                                                          |
    +=================+==========+=========+======================================================================================================================================================+
-   | ``rmax``        | NA       | NA      | Real value. If :math:`iessw < 0`, then all matrix elements of the AGP at distance larger than rmax are not optimized.                                |
+   | ``rmax``        | real     | 0.0     | Real value. If :math:`iessw < 0`, then all matrix elements of the AGP at distance larger than rmax are not optimized.                                |
    |                 |          |         | :math:`rmax = 0` implies that no matrix elements connecting different atoms are optimized.                                                           |
    +-----------------+----------+---------+------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``rmaxj``       | NA       | NA      | Real value. If :math:`iefree < 0`, then all matrix elements of the Jastrow at distance larger than rmaxj are not optimized.                          |
+   | ``rmaxj``       | real     | 0.0     | Real value. If :math:`iefree < 0`, then all matrix elements of the Jastrow at distance larger than rmaxj are not optimized.                          |
    |                 |          |         | :math:`rmaxj = 0` has the same meaning as above, implying that only the so-called 3-body Jastrow is optimized.                                       |
    +-----------------+----------+---------+------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``rmaxinv``     | NA       | NA      | Real value. If :math:`iesinv < 0`, then all matrix elements of the spin Jastrow at distance larger than rmaxinv are not optimized.                   |
+   | ``rmaxinv``     | real     | 0.0     | Real value. If :math:`iesinv < 0`, then all matrix elements of the spin Jastrow at distance larger than rmaxinv are not optimized.                   |
    |                 |          |         | The rule is the same as the ones above for the spin Jastrow.                                                                                         |
    +-----------------+----------+---------+------------------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -526,21 +525,21 @@ This section contains details about ion dynamics.
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | parameter name  | datatype | default | description                                                                                                                                                                                                                                           |
    +=================+==========+=========+=======================================================================================================================================================================================================================================================+
-   | ``temp``        | NA       | NA      | Real value. The temperature in a.u. If :math:`temp < 0`, then `abs(temp)` indicates the temperature in Kelvin. :math:`temp = 0` can be used for structural optimization. If the temperature is set to 0 K, it is purely structural optimization.      |
+   | ``temp``        | real     | 0.0     | Real value. The temperature in a.u. If :math:`temp < 0`, then `abs(temp)` indicates the temperature in Kelvin. :math:`temp = 0` can be used for structural optimization. If the temperature is set to 0 K, it is purely structural optimization.      |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``friction``    | NA       | NA      | Real value. It is necessary to keep it non-zero in Newtonian dynamics (:math:`idyn=4,7,8`) but can be set to zero (recommended) for :math:`idyn=5` (the recommended dynamics).                                                                        |
+   | ``friction``    | real     | 0.0     | Real value. It is necessary to keep it non-zero in Newtonian dynamics (:math:`idyn=4,7,8`) but can be set to zero (recommended) for :math:`idyn=5` (the recommended dynamics).                                                                        |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``iskipdyn``    | NA       | NA      | Integer value. After :math:`iskipdyn` times :math:`nweight` MC steps, check if :math:`dev_mat < maxdev_dyn`.                                                                                                                                          |
+   | ``iskipdyn``    | int      | 0       | Integer value. After :math:`iskipdyn` times :math:`nweight` MC steps, check if :math:`dev_mat < maxdev_dyn`.                                                                                                                                          |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``maxdev_dyn``  | NA       | NA      | Real value. After each WF optimization, it is the maximum value of dev max accepted for an ion move. Deprecated.                                                                                                                                      |
+   | ``maxdev_dyn``  | real     | 0.0     | Real value. After each WF optimization, it is the maximum value of dev max accepted for an ion move. Deprecated.                                                                                                                                      |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``delta0``      | NA       | NA      | Real value. Used with :math:`idyn = 5`, it is a parameter that can help with convergence in the small time step limit (:math:`tion \to 0`). It should be set in such a way that the Hessian matrix during the dynamics is well approximated by delta0 |
+   | ``delta0``      | real     | 0.0     | Real value. Used with :math:`idyn = 5`, it is a parameter that can help with convergence in the small time step limit (:math:`tion \to 0`). It should be set in such a way that the Hessian matrix during the dynamics is well approximated by delta0 |
    |                 |          |         | :math:`\times` Covariance matrix. For other dynamics, it represents a multiplicative factor applied to the covariance matrix used to decrease the correlation times. In these cases, delta0 has to be larger than a critical value depending on the   |
    |                 |          |         | time step. However, this is chosen by default.                                                                                                                                                                                                        |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``addrognoso``  | NA       | NA      | Logical value. With :math:`idyn = 5` it has to be set to .true. in order to eliminate the bias in describing the canonical ensemble for :math:`tion \to 0`.                                                                                           |
+   | ``addrognoso``  | bool     | .false. | Logical value. With :math:`idyn = 5` it has to be set to .true. in order to eliminate the bias in describing the canonical ensemble for :math:`tion \to 0`.                                                                                           |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | ``normcorr``    | NA       | NA      | Real value. If non-zero and equal to one, it applies the noise correction to reduce the bias implied by the statistical evaluation of forces. In theory it should work, but in practice, it has little effects. So it is recommended to set to zero.  |
+   | ``normcorr``    | real     | 0.0     | Real value. If non-zero and equal to one, it applies the noise correction to reduce the bias implied by the statistical evaluation of forces. In theory it should work, but in practice, it has little effects. So it is recommended to set to zero.  |
    +-----------------+----------+---------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ---------------------------------------------------------------------------------------
