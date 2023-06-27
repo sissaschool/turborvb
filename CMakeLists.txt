@@ -493,13 +493,18 @@ if(EXT_TOOLS)
 
   # These tools have to be threaded in special way:
   
-  # serial and parallel tools
+  # serial tools
   add_target_exe_serial_wrapper( makefort10 )
   add_target_exe_serial_wrapper( readforward-serial )
   add_target_exe_serial_wrapper( convertfort10-serial )
   add_target_exe_serial_wrapper( convertfort10mol-serial )
-
-  # serial tools
+  
+  # parallel tools
+  add_target_exe_parallel_wrapper( readforward-mpi )
+  add_target_exe_parallel_wrapper( convertfort10-mpi )
+  add_target_exe_parallel_wrapper( convertfort10mol-mpi )
+  
+  # simple serial tools
   list(APPEND TOOLS_LIST_SIMPLE corrvar )
   list(APPEND TOOLS_LIST_SIMPLE corrforza )
   list(APPEND TOOLS_LIST_SIMPLE corrforzap )
@@ -516,18 +521,33 @@ if(EXT_TOOLS)
   list(APPEND TOOLS_LIST_SIMPLE orthomol )
 
   add_target_lib_serial_wrapper(pfapack)
+
   if(EXT_GPU)
+      #serial
       add_target_lib_serial_wrapper(common-nogpu-serial)
       add_target_lib_serial_wrapper(complex-nogpu-serial)
       add_target_lib_serial_wrapper(qlapack-nogpu-serial)
       add_target_lib_serial_wrapper(adjoint-forward-nogpu-serial)
       add_target_lib_serial_wrapper(adjoint-backward-nogpu-serial)
+      #parallel
+      add_target_lib_parallel_wrapper(common-nogpu-mpi)
+      add_target_lib_parallel_wrapper(complex-nogpu-mpi)
+      add_target_lib_parallel_wrapper(qlapack-nogpu-mpi)
+      add_target_lib_parallel_wrapper(adjoint-forward-nogpu-mpi)
+      add_target_lib_parallel_wrapper(adjoint-backward-nogpu-mpi)
   else()
+      #serial
       add_target_lib_serial_wrapper(common-serial)
       add_target_lib_serial_wrapper(complex-serial)
       add_target_lib_serial_wrapper(qlapack-serial)
       add_target_lib_serial_wrapper(adjoint-forward-serial)
       add_target_lib_serial_wrapper(adjoint-backward-serial)
+      #parallel
+      add_target_lib_parallel_wrapper(common-mpi)
+      add_target_lib_parallel_wrapper(complex-mpi)
+      add_target_lib_parallel_wrapper(qlapack-mpi)
+      add_target_lib_parallel_wrapper(adjoint-forward-mpi)
+      add_target_lib_parallel_wrapper(adjoint-backward-mpi)
   endif()
 
   foreach(TOOL_NAME ${TOOLS_LIST_SIMPLE})
