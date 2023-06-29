@@ -167,7 +167,7 @@ We recommend you should run `jobcheck_serial.sh` in `test` directory every time 
 
 # Manuals for users
 
-There is a Read the Docs in the `doc` directory. You can generate a html file using `sphinx`. Go to the `doc` directory, and type `make html`. The document is generated in `doc/_build/html`. `index.html` is the main page.
+There is a Read the Docs in the `doc` directory. Documented by `Sphinx`. The manual is deployed from [GitHub Pages](https://sissaschool.github.io/turborvb/).
 
 # Tutorials for users
 
