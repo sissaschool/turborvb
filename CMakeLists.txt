@@ -495,6 +495,7 @@ if(EXT_TOOLS)
   
   # serial tools
   add_target_exe_serial_wrapper( makefort10 )
+  add_target_exe_serial_wrapper( convertpfaff )
   add_target_exe_serial_wrapper( readforward-serial )
   add_target_exe_serial_wrapper( convertfort10-serial )
   add_target_exe_serial_wrapper( convertfort10mol-serial )
@@ -700,6 +701,7 @@ add_subdirectory(src/a_tools)
 add_subdirectory(src/a_readforward)
 add_subdirectory(src/a_module_tests)
 add_subdirectory(src/a_makefort10)
+add_subdirectory(src/a_convertfortpfaff)
 add_subdirectory(src/a_convertfort10mol)
 add_subdirectory(src/a_convertfort10)
 
