@@ -491,76 +491,65 @@ endif()
 
 if(EXT_TOOLS)
 
-  # These tools have to be threaded in special way:
-  
-  # serial tools
-  add_target_exe_serial_wrapper( makefort10 )
-  add_target_exe_serial_wrapper( convertpfaff )
-  add_target_exe_serial_wrapper( readforward-serial )
-  add_target_exe_serial_wrapper( convertfort10-serial )
-  add_target_exe_serial_wrapper( convertfort10mol-serial )
+  if(EXT_SERIAL)
+
+    # simple serial tools
+    list(APPEND TOOLS_LIST_SIMPLE corrvar )
+    list(APPEND TOOLS_LIST_SIMPLE corrforza )
+    list(APPEND TOOLS_LIST_SIMPLE corrforzap )
+    list(APPEND TOOLS_LIST_SIMPLE corrforzap_complex )
+    list(APPEND TOOLS_LIST_SIMPLE readf )
+    list(APPEND TOOLS_LIST_SIMPLE readffn )
+    list(APPEND TOOLS_LIST_SIMPLE readalles )
+    list(APPEND TOOLS_LIST_SIMPLE funvsa )
+    list(APPEND TOOLS_LIST_SIMPLE copyjas )
+    list(APPEND TOOLS_LIST_SIMPLE copydet )
+    list(APPEND TOOLS_LIST_SIMPLE pseudo )
+    list(APPEND TOOLS_LIST_SIMPLE plot_orbitals )
+    list(APPEND TOOLS_LIST_SIMPLE assembling_pseudo)
+    list(APPEND TOOLS_LIST_SIMPLE orthomol )
+
+    foreach(TOOL_NAME ${TOOLS_LIST_SIMPLE})
+        add_target_exe_serial_wrapper(${TOOL_NAME})
+    endforeach()
+
+    # serial tools
+    add_target_exe_serial_wrapper( makefort10 )
+    add_target_exe_serial_wrapper( readforward-serial )
+    add_target_exe_serial_wrapper( convertfort10-serial )
+    add_target_exe_serial_wrapper( convertfort10mol-serial )
+
+    if(EXT_GPU)
+        # Non-gpu version is important only for testad
+
+        add_target_lib_serial_wrapper(common-nogpu-serial)
+        add_target_lib_serial_wrapper(complex-nogpu-serial)
+        add_target_lib_serial_wrapper(qlapack-nogpu-serial)
+        add_target_lib_serial_wrapper(adjoint-forward-nogpu-serial)
+        add_target_lib_serial_wrapper(adjoint-backward-nogpu-serial)
+    endif()
+
+    add_target_lib_serial_wrapper(pfapack)
+    add_target_lib_serial_wrapper(common-serial)
+    add_target_lib_serial_wrapper(complex-serial)
+    add_target_lib_serial_wrapper(qlapack-serial)
+    add_target_lib_serial_wrapper(adjoint-forward-serial)
+    add_target_lib_serial_wrapper(adjoint-backward-serial)
+  endif()
   
   # parallel tools
   if(EXT_PARALLEL)
-      add_target_exe_parallel_wrapper( readforward-mpi )
-      add_target_exe_parallel_wrapper( convertfort10-mpi )
-      add_target_exe_parallel_wrapper( convertfort10mol-mpi )
+    add_target_exe_parallel_wrapper( readforward-mpi )
+    add_target_exe_parallel_wrapper( convertfort10-mpi )
+    add_target_exe_parallel_wrapper( convertfort10mol-mpi )
+
+    add_target_lib_serial_wrapper(pfapack)
+    add_target_lib_parallel_wrapper(common-mpi)
+    add_target_lib_parallel_wrapper(complex-mpi)
+    add_target_lib_parallel_wrapper(qlapack-mpi)
+    add_target_lib_parallel_wrapper(adjoint-forward-mpi)
+    add_target_lib_parallel_wrapper(adjoint-backward-mpi)
   endif()
-
-  # simple serial tools
-  list(APPEND TOOLS_LIST_SIMPLE corrvar )
-  list(APPEND TOOLS_LIST_SIMPLE corrforza )
-  list(APPEND TOOLS_LIST_SIMPLE corrforzap )
-  list(APPEND TOOLS_LIST_SIMPLE corrforzap_complex )
-  list(APPEND TOOLS_LIST_SIMPLE readf )
-  list(APPEND TOOLS_LIST_SIMPLE readffn )
-  list(APPEND TOOLS_LIST_SIMPLE readalles )
-  list(APPEND TOOLS_LIST_SIMPLE funvsa )
-  list(APPEND TOOLS_LIST_SIMPLE copyjas )
-  list(APPEND TOOLS_LIST_SIMPLE copydet )
-  list(APPEND TOOLS_LIST_SIMPLE pseudo )
-  list(APPEND TOOLS_LIST_SIMPLE plot_orbitals )
-  list(APPEND TOOLS_LIST_SIMPLE assembling_pseudo)
-  list(APPEND TOOLS_LIST_SIMPLE orthomol )
-
-  add_target_lib_serial_wrapper(pfapack)
-
-  if(EXT_GPU)
-      #serial
-      add_target_lib_serial_wrapper(common-nogpu-serial)
-      add_target_lib_serial_wrapper(complex-nogpu-serial)
-      add_target_lib_serial_wrapper(qlapack-nogpu-serial)
-      add_target_lib_serial_wrapper(adjoint-forward-nogpu-serial)
-      add_target_lib_serial_wrapper(adjoint-backward-nogpu-serial)
-      #parallel
-      if(EXT_PARALLEL)
-          add_target_lib_parallel_wrapper(common-mpi)
-          add_target_lib_parallel_wrapper(complex-mpi)
-          add_target_lib_parallel_wrapper(qlapack-mpi)
-          add_target_lib_parallel_wrapper(adjoint-forward-mpi)
-          add_target_lib_parallel_wrapper(adjoint-backward-mpi)
-      endif()
-  else()
-      #serial
-      add_target_lib_serial_wrapper(common-serial)
-      add_target_lib_serial_wrapper(complex-serial)
-      add_target_lib_serial_wrapper(qlapack-serial)
-      add_target_lib_serial_wrapper(adjoint-forward-serial)
-      add_target_lib_serial_wrapper(adjoint-backward-serial)
-      #parallel
-      if(EXT_PARALLEL)
-          add_target_lib_parallel_wrapper(common-mpi)
-          add_target_lib_parallel_wrapper(complex-mpi)
-          add_target_lib_parallel_wrapper(qlapack-mpi)
-          add_target_lib_parallel_wrapper(adjoint-forward-mpi)
-          add_target_lib_parallel_wrapper(adjoint-backward-mpi)
-      endif()
-  endif()
-
-  foreach(TOOL_NAME ${TOOLS_LIST_SIMPLE})
-      add_target_exe_serial_wrapper(${TOOL_NAME})
-  endforeach()
-
 endif()
 
 if(EXT_MODTEST)
