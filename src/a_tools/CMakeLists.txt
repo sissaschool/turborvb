@@ -28,11 +28,11 @@
       )
     endif()
       
-    if(EXT_GPU)
-        target_link_libraries( ${TOOL_NAME}
+    if( ${EXT_GPU} AND ${TOOL_NAME} MATCHES testad )
+        target_link_libraries( ${TOOL_NAME} 
          PRIVATE
          complex-nogpu-serial
-        )
+		)
     else()
         target_link_libraries( ${TOOL_NAME}
          PRIVATE
