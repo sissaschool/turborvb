@@ -1,0 +1,51 @@
+# This workflow will build and test TurboRVB.
+
+name: TurboRVB linter-check, build, and test (GNU)
+
+on:
+  push:
+    branches: [ "main", "devel" ]
+  pull_request:
+    branches: [ "main", "devel" ]
+
+jobs:
+  gnu-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install gfortran and gcc
+      run: |
+        sudo apt-get update
+        sudo apt-get install gfortran
+
+    - name: Install OpenBLAS and LAPACK
+      run: sudo apt-get install libopenblas-dev liblapack-dev
+
+    - name: Install OpenMPI
+      run: sudo apt-get install openmpi-bin libopenmpi-dev
+
+    - name: Install CMake
+      run: sudo apt-get install cmake
+
+    - name: Install and Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+
+    - name: Install python dependencies
+      run: pip install numpy scipy pandas
+
+    - name: Checkout the project repository
+      uses: actions/checkout@v2
+
+    - name: Lint TurboRVB with devel_tools/run_linter.py
+      run: |
+        python ./devel_tools/run_linter.py .
+
+    - name: Build TurboRVB with cmake serial and parallel versions
+      run: |
+        cmake -S. -Bbuild -DEXT_PARALLEL=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_Fortran_COMPILER=gfortran
+        cmake --build build -j 2
+
+    - name: Test TurboRVB with ctest both serial and parallel versions
+      run: |
+        ctest --test-dir build --output-on-failure -j 2

@@ -1,0 +1,67 @@
+﻿DEVELOPERS INFROMATION ABOUT makesolid.f90
+
+Note 1: all the variables relative to the symmetries are in the file 
+      symm_data.f90 with relative description
+        
+Note 2: norb is the total orbital number and not the shell number,
+	namely if you have an orbital s and one p norb=4
+
+This is what the code does subroutine by subroutine 
+in order of execution 
+
+1) makesolid.x finds all the rotations compatible with the cell
+   and the atoms using the subroutine  call find_rotation().
+   Inside this subroutine the  PWSCF are used.
+   The code generates:
+   nsym --> number of rotations of the system
+   isymm(nsym:,3,3) --> the list of symmetry matrices used for Jastrow and Det 
+   irt(natoms,nsym) --> the list of how atoms are connect by each symmetry for example
+                        i2=irt(i1,is) means that the atom i1 goes in the position of i2 by
+			the symmetry is 
+
+2)  call generate_translations()
+    as in makes2sp.x it generates all the translation vectors among atoms, and evaluate
+    the sign for the lambda in case of APBC
+     At this point the code generates:
+     trasl(4,natoms*ncell,natoms*nell)  
+     trasl(1:3,i1,i2)= pos(1:3,i1)-pos(1:3,i2)  (the I apply the PBC to trasl(1:3,i2,i2) )
+     trasl(4,:,:)  that contains the sign for APBC   
+
+3) call generate_cellmap
+    The code applies all the symmetries in order to find the independent translation vectors
+    this subroutine produce a map of the translation vectors one in another cellmap(:,:,:)
+    see the file  symm_data.f90 for a description of this array
+
+4) call generate_orbmap
+    check which orbitals are compatibles with a given symmetry and how they are transformed 
+    for example an orbital  p_x->p_y etc.. if then a symmetry is not compatible, 
+    for instance 60degree rotation the code sets orb_map%comp(i1,is)=.false.
+
+5) call make_orb_equalities
+   check if pair of orbitals are equivalent by rotation to another pair in the primitive cell,
+   and make new index newidx(1:2,i1,i2) that says that orbitals i1,i2 are equivalents to the 
+   newidx(1,i1,i2)  newidx(2,i1,i2) by some symmetry
+   Notice that it can happen that there are two symmetries connecting two pair of orbitals
+   with an opposite sign, in this case it means that the lambda that connect this orbitals
+   has to be zero by symmetries so the code sets newidx(4,:,:) to zero.
+
+6) call make_lambda_equalities 
+   more nasty subroutine, here all the information obtained by the previous ones are gathered 
+   to create the symmetry for the lambda. The symmetries are stored in an array
+   lsym(ntranslation,norb*norb) that represent the maximum possible number of independent
+   lambda.
+   Here the code use cellmap to checks which translations are mapped in other, than checks
+   if the symmetry that map this translation is compatible with the orbitals and in this case
+   add the corresponding lambda lambda_i, lambda_j in the position  
+   lsym(itral,(iorb-1)*norb+jorb)%idx(1:2,neq) if the symmetry is not compatible 
+   it use all the translation, position  itralnosym 
+   Notice that some orbitals in the primitive cell are equivalent to other by symmetries 
+   so to decide the position of a lambda the indexes newidx(1:2,i1,i2) generated
+   by make_orb_equalities  are employed.
+
+7) call par_symm 
+   find the symmetries among the parameters of the orbitals, it employs more symmetries 
+   that make_orbmap, namely also rotation of any degree
+
+8) call write_fort10
+   write a nice fort.10_new :-)

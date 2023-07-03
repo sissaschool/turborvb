@@ -1,0 +1,114 @@
+&simulation   ! sample optimization for 64 Si atom on 16 processors,                            all definitions are the same as in datasmin.input                               (type  'turborvb-serial.x opt') 
+itestr4=-4
+ngen=5000
+iseedr=236413883
+iopt=1
+!nproc_diag=0   ! if > 0 and compilation option __CASO is used, the diagonalization routines will use                   only nproc_diag processors (all processors  are  too many sometimes).
+!disk_io='default' ! 'default' spits out one file per rank,                                  'nocont' spits nothing, 'mpiio' splits one file for all ranks.
+/
+&pseudo 
+/
+&vmc
+!tstep=3.
+!epscut=-100.d0
+!zeta_reg=1.0 ! Used by epscutype=3, open system
+/
+&optimization
+!kl=-7        ! kl=-6 Use conjugate gradients to solve Sx=f                                     convenient for nweight> # parameters,                                           otherwise use kl=-7 (default)  x= direction in parameter space,                 f= QMC energy deriv. 
+molopt=-1   ! molecular optimization option  
+! molopt=-1 allows the optimization of contracted. The molecular orbitals are written                        implicitly in the contracted basis. Input is better if satisfy this kind, e.g. Use DFT with                   contracted_on=.true., or convertfort10mol on an AGP with contracted orbitals.
+!idyn=0        ! if idyn>0 read the &dynamic section below (remove comment "!")
+!yesquantum=.false. ! If true MD with quantum correction to protons within BO and no statistics, # beads define in dynamics section
+!yesfort10=.false. ! If yesquantum=.true. large output for this case (fort.10_# beads and position.dat larger)
+
+ifreqmol=1     ! each ifreqmol  iterations performs a diagonalization of the                   ! overlap matrix and recompute the eigenvalues and corresponding                ! molecular orbitals.For large basis use always ifreqmol<=1                     ! (default) much faster.                                                        ! ifreqmol=0 no projection. Works implicitly in the restricted                    space with molopt=4. Does not work in other cases.
+!ifreqdmrg=5 ! With |molopt|>=2 to make DMRG each ifreqdmrg steps to speed up
+
+!membig=.true.  ! if memory is not enough use membig=.false. and  use                       readalles for averaging variational parameters of the last                      iterations only for molopt=4. Not possible for molopt=2
+!yesconv=.true. ! To save output file dimension (fort.12) use yesconv=.false.                     Not possible to average variational parameters with readalles.
+nbinr=1
+ncg=1
+nweight=100
+!nmore_force=1 ! if using dynamics the corresponding nweight is multiplied by nmore_force only when computing                  ionic forces (ieskin>0). iboot=0 in this case (otherwise forced).
+iboot=1
+!epsdgel=1d-4 ! threshold for the elimination of parameters from minimization.
+!tolcg=1d-8  ! Accuracy in solving S x =f in SR step in parallel mode by                       conjugate gradients.
+parr=0.001d0
+minz=0.001d0
+maxz=2000.d0
+minzj=0.002d0
+maxzj=50.d0
+!fixpar=.false. ! If .true. fixes the parameters outside the above limits.
+tpar=0.25
+!tion=0.5  ! dt for dynamic when idyn>0 and  ieskin>0.
+epsi=10.
+! optzagp=.true. ! Default, with itestr4=-8 optimize the exponents of the AGP,                     if  optagp=.false --> optimize only the Jastrow exponents.
+! onebodysz=.false. ! if .true. optimize only the one body part of the spin Jast row factor.
+! twobodyoff=.false. ! if .true. optimize only the one body part of the spin/density  Jastrow factor.
+!epscutrat=0.001 ! if non zero change the value of                                                 epscut = epsucutrat  x < A inv>                                                 effective only if epscut>0
+!parcutmin=3 ! uses only previous SR directions with signal/noise > 3 (if ncg>1)
+!symiesup=.false. ! if .true. symmetrize contracted orbitals determined by DMRG 
+!                   (slightly asymmetric even for symmetric input)
+!detc_contr=.false. ! if .true. optimize contracted coefficients with molopt>0                                      (DMRG not necessary)
+parcutpar=5.
+npbra=100   ! put in the hessian also normal parameters with signal/noise (devmax) > parcutpar
+!allowed_averagek=.true. ! if false disable the k-average option to use the same
+                           variational parameters for each k.
+/
+&readio
+!writescratch=1 ! Default use RAM, writescratch=0 use discspace defined                           by 'wherescratch'  in optimization section.
+!wherescratch='/scratch/sorella/' ! the scratch extension where the turborvb.scratch directory is created (default current directory).
+/
+&parameters
+iesd=1
+iesm=1
+iesfree=-1   ! negative value means the matrix is parametrized the section                     &fitpar (see below) is requested.                                               See trunk/test/parametrization/README for the input meaning. 
+iesinv=-1     ! spin Jastrow factor
+iessw=-1     ! 
+iesup=1
+!ieskin=1    ! if idyn>0 calculation of atomic forces is necessary.
+! OPTIONS for quantum case (yesquantum=.true.) 
+!yesavopt=.false. ! If true all  beads have the same coefficients in the wf's (only ionic centers change)
+!yesavcov=.false. ! if true Average the covariance matrix among different beads. The right option is chosen automatically for yesturboq=.true. (the default, in this case has not the same meaning) 
+!nrep_bead=1      ! If larger than one, ( yesavopt=.false.) groups nrep_bead  beads are assumed with the same wavefunction (nrep_bead=nbeads is equivalent to yesavopt=.true.)
+!yesperiodize=.false. ! In the path integral PBC case with idyn=/6 we can also make exact summation on periodic images, usually worth only for very large temperatures and very small boxes for periodic systems (see RMP '95 by D.M. Ceperley). 
+/
+&fitpar       ! This section should be put only if some input is negative above
+rmax=5.d0       ! optimize only matrix elements < rmax (a.u.) in iessw <0
+rmaxj=0.d0     ! short range charge part r<= rmaxj with no parametrization.
+powermin=0     !  minimum power fit iesfree, 0=log(r) n = r^{-n} in the s channel.
+npower=3       ! number of powers in the fit for iesfree
+powerminsz=1   !  same as powermin for spin Jastrow iesinv
+npowersz=3     !  ==   as npower    iesinv ! belowe is the explicit input
+! allfit=.true. ! if .false. reduces number of parameters for polyatomic systems within some                        approximation. default=.true. 
+!npar=12        ! 12 parameters for the charge Jastrow (4 log(r), 4 r^-1, 4 r^-2)
+!initpar=-2     ! Initial power log(r) for charge Jastrow.
+rmaxinv=0.d0   ! short range spin part r < = rmaxinv with no parametrization. 
+!nparinv=8      ! 8 parameters for spin Jastrow (4  for r^-2  and 4 for r^-3). 
+!initparinv=-4  ! long range spin Jastrow starting from r^{-2} power.
+/
+!&dynamic
+!temp=0.0009d0  ! if temp>0, temp is the value of K_B*T, in a.u. ; if temp<0, the absolute value of temp is the Temperature in K
+!delta0=1.0d0  ! unit 1/tion=dt  delta0>=1 for idyn=3 delta0>=2 for idyn=4
+!delta0k=1.d0  ! default for idyn=7 quantum dynamics.
+!delta0q=friction ! for idyn=7 quantum dynamics correspond to 1/tau0 Ceriotti's                     notations. Default=friction.
+!friction=0.3d0   ! constant diagonal value added to friction matrix.
+!cutdyn=1000d0
+!iskipdyn=6  ! Each 6 steps make a dynamic move.
+!nbead=1  ! Number of beads in the quantum path integral case (yesquantum=.true. in optimization section)
+!yesturboq=.true. ! If true a more efficient algorithm is used (yesperiodize=.false.) allowing larger tion
+!yessecond=.true. ! If true idyn=3/6/7 gives an error proportional to tion^2 (tion-->0) instead of linear in tion,  yesturboq=.true. and yessecond=.true. should be the optimal method (default).
+!/
+&molecul        ! section molecular orbitals, put only if |molopt|>0 in                         ! &optimization
+nx=80           ! # of lattice points in the direction x
+! ny=80         ! default ny=nx
+! nz=80         ! default nz=ny
+ax=0.1          ! necessary only for open systems.
+!nmol=128        ! total number of molecular orbital used in AGP (as read                         in fort.10). With option molopt=4 is instead the total                          # molecular orbitals considered in the molecular basis                          (unchanged in this case).
+! nmolj=0       ! the same for the density and the spin Jastrow independently.
+nmolmin=128     ! the largest |eigenvalues| of the AGP are set to one up to                     ! nmolmin and the other rescaled to the minimum eigenvalue                      ! set to one. 
+!nmol_min=0     ! default nmol_min=0 during optimization do not change the                        first  nmol_min molecular orbitals. N.B. nmol_min has a                         different meaning of nmolmin. nmolmin>=nmol_min clearly
+nmolmax=128     ! the maximum number of molecular orbitals considered <= nmol                     in the projection scheme. After each projection                                 the determinant has only nmolmax non zero eigenvalues. 
+! nmoljmax=0    ! the same for the Jastrow 
+! epsrem_contr=epsdgel ! with molopt=4 remove the contracted orbitals with Norm                          < epsrem_contr after projection.                                                epsrem_contr<0 no elimination.
+/
