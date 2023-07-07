@@ -24,7 +24,7 @@ program test_zgeru
     complex*16, allocatable, dimension(:, :) :: A, A_orig
     complex*16, allocatable, dimension(:) :: X, Y
     real*8, allocatable, dimension(:, :) :: helper_r, helper_c
-    real*8 :: one = 1.d0, zero = 0.d0
+    complex*16 :: one = 1.d0, zero = 0.d0
     integer :: s, ii, jj
 
 #if defined(_OFFLOAD)
