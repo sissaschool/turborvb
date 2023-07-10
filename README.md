@@ -159,11 +159,24 @@ By addition one can run `make speed_tests` evaluating speed of TurboRVB package 
 
 # Running a docker container
 
-There is a possibility to run TurboRVB from a docker container. One only has to pull the docker image:
+Before you start, make sure Docker is installed and set up on your machine.
+
+You can run TurboRVB from a Docker container by pulling the following Docker image:
 
 `docker pull addman151/turborvb:latest`
 
-All the executables are in path directory of the container you can run the directly. Only thing you have to set is working directory, which has to be properly mounted or if needed setting environment variables. Here are few examples:
+The Docker container has all the required executables in its PATH. You can run them directly, just ensure the working directory is properly mounted and environment variables are set as needed.
+
+In the commands below:
+
+The `-i` flag starts the container in interactive mode.
+The `-e` flag sets an environment variable inside the container. Here `OMP_NUM_THREADS=4` specifies the number of threads that OpenMP should use.
+The `-v` flag mounts the current directory (as returned by $(pwd)) to `/app` inside the container. This allows the container to read and write files from your current directory.
+The `-w` flag sets the working directory inside the Docker container. Here, it's set to `/app`.
+
+Note: Ensure that the datasvmc.input and prep.input files are present in your current directory before running the commands.
+
+Here are a few example commands to run TurboRVB:
 
 ```
 docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest turborvb-serial.x < datasvmc.input
