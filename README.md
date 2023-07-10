@@ -165,16 +165,16 @@ You can run TurboRVB from a Docker container by pulling the following Docker ima
 
 `docker pull addman151/turborvb:latest`
 
-The Docker container has all the required executables in its PATH. You can run them directly, just ensure the working directory is properly mounted and environment variables are set as needed.
+The Docker container has all the required executables in its `PATH`. You can run them directly, just ensure the working directory is properly mounted and environment variables are set as needed.
 
 In the commands below:
 
-The `-i` flag starts the container in interactive mode.
-The `-e` flag sets an environment variable inside the container. Here `OMP_NUM_THREADS=4` specifies the number of threads that OpenMP should use.
-The `-v` flag mounts the current directory (as returned by $(pwd)) to `/app` inside the container. This allows the container to read and write files from your current directory.
-The `-w` flag sets the working directory inside the Docker container. Here, it's set to `/app`.
+- The `-i` flag starts the container in interactive mode.
+- The `-e` flag sets an environment variable inside the container. Here `OMP_NUM_THREADS=4` specifies the number of threads that OpenMP should use.
+- The `-v` flag mounts the current directory (as returned by `$(pwd)`) to `/app` inside the container. This allows the container to read and write files from your current directory.
+- The `-w` flag sets the working directory inside the Docker container. Here, it's set to `/app`.
 
-Note: Ensure that the datasvmc.input and prep.input files are present in your current directory before running the commands.
+Note: Ensure that the `datasvmc.input` and `prep.input` files are present in your current directory before running the commands.
 
 Here are a few example commands to run TurboRVB:
 
