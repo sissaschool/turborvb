@@ -157,6 +157,21 @@ By addition one can run `make speed_tests` evaluating speed of TurboRVB package 
 
 3) There is an issue with some version of BLAS provided by Accelerate Framework library. If test zdotc will not pas try to add -DEXT_FLAGS="_FIXBUG_ZDOTC", it should fix the problem.
 
+# Running a docker container
+
+There is a possibility to run TurboRVB from a docker container. One only has to pull the docker image:
+
+`docker pull addman151/turborvb:latest`
+
+All the executables are in path directory of the container you can run the directly. Only thing you have to set is working directory, which has to be properly mounted or if needed setting environment variables. Here are few examples:
+
+```
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest turborvb-serial.x < datasvmc.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe turborvb-mpi.x < datasvmc.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest prep-serial.x < prep.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe prep-mpi.x < prep.input
+
+
 # Environmental variable
 
 In order to run correctly all the tools, you should put in your path the `turborvb/bin` directory of `TurboRVB`;  e.g. by using bash shell you should edit the file `.bashrc` in your home directory and you should add the line:
