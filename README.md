@@ -170,7 +170,7 @@ docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:l
 docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe turborvb-mpi.x < datasvmc.input
 docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest prep-serial.x < prep.input
 docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe prep-mpi.x < prep.input
-
+```
 
 # Environmental variable
 
