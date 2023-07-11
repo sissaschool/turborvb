@@ -157,6 +157,34 @@ By addition one can run `make speed_tests` evaluating speed of TurboRVB package 
 
 3) There is an issue with some version of BLAS provided by Accelerate Framework library. If test zdotc will not pas try to add -DEXT_FLAGS="_FIXBUG_ZDOTC", it should fix the problem.
 
+# Running a docker container
+
+Before you start, make sure Docker is installed and set up on your machine.
+
+You can run TurboRVB from a Docker container by pulling the following Docker image:
+
+`docker pull addman151/turborvb:latest`
+
+The Docker container has all the required executables in its `PATH`. You can run them directly, just ensure the working directory is properly mounted and environment variables are set as needed.
+
+In the commands below:
+
+- The `-i` flag starts the container in interactive mode.
+- The `-e` flag sets an environment variable inside the container. Here `OMP_NUM_THREADS=4` specifies the number of threads that OpenMP should use.
+- The `-v` flag mounts the current directory (as returned by `$(pwd)`) to `/app` inside the container. This allows the container to read and write files from your current directory.
+- The `-w` flag sets the working directory inside the Docker container. Here, it's set to `/app`.
+
+Note: Ensure that the `datasvmc.input` and `prep.input` files are present in your current directory before running the commands.
+
+Here are a few example commands to run TurboRVB:
+
+```
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest turborvb-serial.x < datasvmc.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe turborvb-mpi.x < datasvmc.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest prep-serial.x < prep.input
+docker run -i -e OMP_NUM_THREADS=4 -v "$(pwd):/app" -w /app addman151/turborvb:latest mpirun -np 2 --oversubscribe prep-mpi.x < prep.input
+```
+
 # Environmental variable
 
 In order to run correctly all the tools, you should put in your path the `turborvb/bin` directory of `TurboRVB`;  e.g. by using bash shell you should edit the file `.bashrc` in your home directory and you should add the line:
