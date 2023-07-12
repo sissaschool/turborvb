@@ -50,7 +50,10 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 
 # Generic rule for compiling Fortran files
 $(ADJOINT_FORWARD_BUILD_DIR)/%.f90.o: %.f90 
-	$(FC) $(FCFLAGS) -J$(MODULE_DIR) -c $< -o $@
+	$(FC) $(FCFLAGS) \
+		$(MODULE_STORE) $(MODULE_DIR) \
+ 	        $(MODULE_INCLUDE) $(MODULE_DIR) \
+		-c $< -o $@
 
 # Generic rule for compiling C files
 $(ADJOINT_FORWARD_BUILD_DIR)/%.c.o: %.c

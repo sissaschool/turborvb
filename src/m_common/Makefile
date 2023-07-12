@@ -6,6 +6,7 @@ include ../../make.inc
 
 SRC_DIR := .
 COMMON_BUILD_DIR := $(BUILD_DIR)/common
+COMMON_MODULES_BUILD_DIR := $(BUILD_DIR)/common
 MODULE_DIR := $(BUILD_DIR)/modules
 TARGET := $(BUILD_DIR)/common.a
 TARGET_MODULES := $(BUILD_DIR)/common_module.a
@@ -27,7 +28,7 @@ MODULE_SRCS := $(SRC_DIR)/constants.f90    \
 	       $(SRC_DIR)/mpiio.f90        \
 	       $(SRC_DIR)/kind.f90         \
 
-MODULE_OBJS := $(MODULE_SRCS:%=$(COMMON_BUILD_DIR)/%.o)
+MODULE_OBJS := $(MODULE_SRCS:%=$(COMMON_MODULES_BUILD_DIR)/%.o)
 MODULE_MODS := $(MODULE_SRCS:%=$(BUILD_DIR)/%.mod)
 
 # Set rest files
@@ -42,15 +43,11 @@ all: dirs $(TARGET)
 # Rule for making the build directory
 dirs:
 	mkdir -p $(COMMON_BUILD_DIR)
+	mkdir -p $(COMMON_MODULES_BUILD_DIR)
 	mkdir -p $(MODULE_DIR)
-	echo $(MODULE_OBJ)
-
-# Compile modules
-$(COMMON_BUILD_DIR)/%.f90.o: %.f90
-	$(FC) $(FCFLAGS) \
-       	-I $(MODULE_DIR) \
-       	-J $(MODULE_DIR) \
-       	-c $< -o $@
+	@echo "------------------"
+	@echo $(MODULE_OBJS)
+	@echo "------------------"
 
 # Common module
 $(TARGET_MODULES): $(MODULE_OBJS)
@@ -64,7 +61,7 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 
 # Generic rule for compiling Fortran files
 $(COMMON_BUILD_DIR)/%.f90.o: %.f90 
-	$(FC) $(FCFLAGS) -I $(MODULE_DIR) -c $< -o $@
+	$(FC) $(FCFLAGS) -J $(MODULE_DIR) -c $< -o $@
 
 # Generic rule for compiling C files
 $(COMMON_BUILD_DIR)/%.c.o: %.c

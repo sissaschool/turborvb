@@ -23,7 +23,10 @@ dirs:
 
 # Generic rule for compiling Fortran files
 $(QLAPACK_BUILD_DIR)/%.f.o: %.f 
-	$(FC) $(FCFLAGS) -J$(MODULE_DIR) -c $< -o $@
+	$(FC) $(FCFLAGS) \
+		$(MODULE_STORE) $(MODULE_DIR) \
+ 	        $(MODULE_INCLUDE) $(MODULE_DIR) \
+		-c $< -o $@
 
 # Rule for making the target
 $(TARGET): $(OBJS)
