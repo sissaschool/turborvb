@@ -36,7 +36,7 @@ program convertpfaff
 
     ! output version information
     call print_version
-    
+
     !reading and saving the quantities of the fort.10_in
 
     open (unit=10, file='fort.10_in', form='formatted', status='unknown')

@@ -64,7 +64,7 @@ program convertfort10mol
 #endif
     ! output version information
     if (rankn .eq. 0) call print_version
-    
+
     nprocu = nprocn
     nproc_diag = nprocu
     call mpi_sub_comm_create(comm_mpi, nproc_diag, sub_comm_diag, ierr)

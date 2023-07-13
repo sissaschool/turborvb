@@ -112,7 +112,7 @@ program makefort10
 
     ! output version information
     call print_version
-    
+
     namelist /system/ natoms, posunits, nxyz, celldm, at, phase, phasedo&
             &, pbcfort10, complexfort10, real_contracted&
             &, ntyp, rs_read, write_log, axyz, nel_read, L_read, yes_pfaff&
