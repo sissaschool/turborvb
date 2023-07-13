@@ -233,6 +233,9 @@ program readforward
     sizep = 1
 #endif
 
+    ! output version information
+    if (rank .eq. 0) call print_version
+
     zero = 0.d0
     max_shells = 20000 ! max number of k-shells allowed
 
