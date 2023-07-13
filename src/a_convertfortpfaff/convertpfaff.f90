@@ -34,6 +34,9 @@ program convertpfaff
     real*8 scale_unp, angle_rot, phi_rot
     real*8, dimension(:, :), allocatable :: surot, suscra, sutry
 
+    ! output version information
+    call print_version
+    
     !reading and saving the quantities of the fort.10_in
 
     open (unit=10, file='fort.10_in', form='formatted', status='unknown')

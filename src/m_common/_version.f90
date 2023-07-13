@@ -1,6 +1,6 @@
 subroutine print_version
     implicit none
-    character(LEN=6) :: version_number = '0.0.1'
+    character(LEN=6) :: version_number = '1.0.0'
     character(LEN=40) :: git_revision = 'unknown'
 
     write (6, *) "----------------------------------------------------------------------------"
