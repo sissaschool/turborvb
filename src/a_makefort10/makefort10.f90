@@ -110,9 +110,6 @@ program makefort10
     logical :: readunpaired, forcesymm
     real*8 scale_jasfat
 
-    ! output version information
-    call print_version
-
     namelist /system/ natoms, posunits, nxyz, celldm, at, phase, phasedo&
             &, pbcfort10, complexfort10, real_contracted&
             &, ntyp, rs_read, write_log, axyz, nel_read, L_read, yes_pfaff&
@@ -150,6 +147,9 @@ program makefort10
         call help_online(name_tool)
         stop
     end if
+
+    ! output version information
+    call print_version
 
     write (*, *)
     write (*, *) ' * * * Creates fort.10 for solids and open systems * * * '
