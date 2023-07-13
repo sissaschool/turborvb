@@ -45,9 +45,6 @@ dirs:
 	mkdir -p $(COMMON_BUILD_DIR)
 	mkdir -p $(COMMON_MODULES_BUILD_DIR)
 	mkdir -p $(MODULE_DIR)
-	@echo "------------------"
-	@echo $(MODULE_OBJS)
-	@echo "------------------"
 
 # Common module
 $(TARGET_MODULES): $(MODULE_OBJS)
@@ -60,12 +57,16 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 ################################################################################
 
 # Generic rule for compiling Fortran files
-$(COMMON_BUILD_DIR)/%.f90.o: %.f90 
-	$(FC) $(FCFLAGS) -J $(MODULE_DIR) -c $< -o $@
+#$(COMMON_BUILD_DIR)/%.f90.o: %.f90 
+$(COMMON_BUILD_DIR)/%.f90.o: %.f90
+	$(FC) $(FCFLAGS) \
+	-J$(MODULE_DIR) \
+	-c $< -o $@
 
 # Generic rule for compiling C files
 $(COMMON_BUILD_DIR)/%.c.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) \
+	-c $< -o $@
 
 # Cleaning everything
 clean:
