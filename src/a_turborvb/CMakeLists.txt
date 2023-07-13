@@ -37,7 +37,6 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
         evalgren.f90
         gather_avgs.f90
         gemm.f90
-        handle.f90
         hopping_pbc.f90
         jastrow_exp.f90
         main.f90
