@@ -61,6 +61,10 @@ program main
     old_threads = 1
 #endif
 
+    ! output version information
+    if (rank .eq. 0) call print_version
+
+    ! print threads and mpi info.
     if (rank .eq. 0) write (6, *) ' Number of threads /mpi proc =', old_threads
 
 #if defined UNREL_SMP

@@ -121,6 +121,9 @@ program convertfort10
     nprocn = 1
     commopt_mpi = 0
 #endif
+    ! output version information
+    if (rankn .eq. 0) call print_version
+
     proc8 = nprocn
     !#ifdef __CASO
     !#else

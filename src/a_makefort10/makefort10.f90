@@ -148,6 +148,9 @@ program makefort10
         stop
     end if
 
+    ! output version information
+    call print_version
+
     write (*, *)
     write (*, *) ' * * * Creates fort.10 for solids and open systems * * * '
     write (*, *)
