@@ -1,6 +1,7 @@
 # Load settings
 
 include ../../make.inc
+include ../../make.txt
 
 # Variables
 

@@ -8,14 +8,14 @@ SRC_DIR := .
 MAIN_BUILD_DIR := $(BUILD_DIR)/main
 MODULE_DIR := $(BUILD_DIR)/modules
 TARGET := $(BUILD_DIR)/turborvb.x
+TARGET_NAME := $(BUILD_DIR)/turborvb$(SUFFIX).x
 TARGET_MODULES := $(BUILD_DIR)/adjoint_forward_module.a
 
 # File Lists
 #
 # First set modules:
 
-MODULE_SRCS := $(SRC_DIR)/handle.f90 \
-	       $(SRC_DIR)/scal_lins.f90
+MODULE_SRCS := $(SRC_DIR)/scal_lins.f90
 
 MODULE_OBJS := $(MODULE_SRCS:%=$(MAIN_BUILD_DIR)/%.o)
 MODULE_MODS := $(MODULE_SRCS:%=$(BUILD_DIR)/%.mod)
@@ -81,7 +81,7 @@ $(MAIN_BUILD_DIR)/%.f90.o: %.f90
 
 # Generic rule for compiling C files
 $(MAIN_BUILD_DIR)/%.c.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $(SUFFIX)
 
 # Cleaning everything
 clean:
