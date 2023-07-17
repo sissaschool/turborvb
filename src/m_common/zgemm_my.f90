@@ -13,6 +13,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> This subroutine is a wrapper for the LAPACK zgemm routine
 subroutine ZGEMM_MY(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA&
         &, B, LDB, BETA, C, LDC, nproc, rank, comm_mpi)
     implicit none

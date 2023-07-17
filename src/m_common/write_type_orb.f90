@@ -13,9 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> This subroutine returns typeorb for jastrow orbitals
 subroutine write_type_orb(nshellj, multij, ioccj, typeorb)
     implicit none
-    integer nshellj, multij(*), ioccj(*), typeorb(*)
+
+    ! argument parameters
+    integer, intent(in) :: nshellj, multij(*), ioccj(*)
+    integer, intent(out) :: typeorb(*)
+
+    ! local variables
     integer i, ii, j, ind_type
 
     ii = 0

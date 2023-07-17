@@ -1,4 +1,4 @@
-! Copyright (C) 2022 TurboRVB group
+! Copyright (C) 2023- TurboRVB group
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,11 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> This subroutine solves A X = B
+!> To be deleted!
 subroutine zsktrs(uplo, n, nhrs, a, b, ldb, x, info)
     implicit none
-    integer n, nhrs, ldb, info, i, j
-    complex*16 a(*), b(ldb, nhrs), x(nhrs, *)
-    character uplo
+
+    ! argument parameters
+    integer, intent(in) :: n, nhrs, ldb
+    integer, intent(out) :: info
+    complex*16, intent(in out) :: a(*), b(ldb, nhrs)
+    complex*16, intent(out) :: x(nhrs, *)
+    character, intent(in) :: uplo
+
+    ! local variables
+    integer i, j
+
+    info = 0
     if (uplo .eq. 'l' .or. uplo .eq. 'L') then
         a(1:n - 1) = -a(1:n - 1)
     end if
