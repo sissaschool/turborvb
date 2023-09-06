@@ -142,7 +142,7 @@ do
 	touch forces_vmc.dat
 
 	# calc forces
-    forcevmc.sh $1 $2 ${scale_pulay} 1 1>out_K${i}.o 2>err_K${i}.o & # run background
+    ${BASEDIR}/forcevmc.sh $1 $2 ${scale_pulay} 1 1>out_K${i}.o 2>err_K${i}.o & # run background
 	echo "  calculating for K${i}..., pid = $!, counter = ${counter_for_parallel_calc}"
         counter_for_parallel_calc=`expr ${counter_for_parallel_calc} + 1`
 
@@ -184,10 +184,10 @@ done
 
 echo "done."
 
-python $(which energy.py)  > pip0.d
+python ${BASEDIR}/energy.py  > pip0.d
 
 if [ $ntot -gt 0 ]; then
-	python $(which force.py)  > forces_vmc.dat
+	python ${BASEDIR}/force.py  > forces_vmc.dat
 fi
 
 cd $root_dir

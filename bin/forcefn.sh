@@ -94,7 +94,7 @@ else
 
     # read all values here
     echo "  reading all values in fort.12...."
-    echo " $2 $1 $3 ${num_all_columns} " | readffn.x $5
+    echo " $2 $1 $3 ${num_all_columns} " | $BASEDIR/readffn.x $5
     mv fort.21 fort.21_master
 
     # make each fort.21_col
@@ -112,7 +112,7 @@ if [ ${flag_read_once} = True ]; then
     cp ./fort.21_tmp/fort.21_col_1 ./fort.21
     mv ./fort.21 fort.21.1
 else
-    echo " $2 $1 $3 1 " | readffn.x $5
+    echo " $2 $1 $3 1 " | $BASEDIR/readffn.x $5
     mv fort.21 fort.21.1
 fi
 
@@ -122,7 +122,7 @@ if [ "$ipc" -gt 1 ]; then
         cp ./fort.21_tmp/fort.21_col_2 ./fort.21
         mv ./fort.21 fort.21.1i
     else
-        echo " $2 $1 $3 2 " | readffn.x $5
+        echo " $2 $1 $3 2 " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.1i
     fi
 fi
@@ -138,7 +138,7 @@ do
         cp ./fort.21_tmp/fort.21_col_$n ./fort.21
         mv fort.21 fort.21.2
     else
-        echo " $2 $1 $3 $n " | readffn.x $5
+        echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.2
     fi
 
@@ -149,7 +149,7 @@ do
         cp ./fort.21_tmp/fort.21_col_$n ./fort.21
         mv fort.21 fort.21.3
     else
-        echo " $2 $1 $3 $n " | readffn.x $5
+        echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.3
     fi
 
@@ -160,7 +160,7 @@ do
         cp ./fort.21_tmp/fort.21_col_$n ./fort.21
         mv fort.21 fort.21.4
     else
-        echo " $2 $1 $3 $n " | readffn.x $5
+        echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.4
     fi
 
@@ -183,7 +183,7 @@ do
         cp ./fort.21_tmp/fort.21_col_$n ./fort.21
         mv fort.21 fort.21.2
     else
-        echo " $2 $1 $3 $n " | readffn.x $5
+        echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.2
     fi
 
@@ -194,7 +194,7 @@ do
         cp ./fort.21_tmp/fort.21_col_$n ./fort.21
         mv fort.21 fort.21.3
     else
-        echo " $2 $1 $3 $n " | readffn.x $5
+        echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
         mv fort.21 fort.21.3
     fi
 
@@ -212,13 +212,13 @@ if [ ${flag_read_once} = True ]; then
     cp fort.21 fort.22
     cp fort.21.1 fort.21
 else
-    echo " $2 $1 $3 $n " | readffn.x $5
+    echo " $2 $1 $3 $n " | $BASEDIR/readffn.x $5
     cp fort.21 fort.22
     cp fort.21.1 fort.21
 fi
 
 echo "$1" | corrvar.x > pip0_fn.d
-    echo " $2 $1 $3 1 " | readf.x $5
+    echo " $2 $1 $3 1 " | $BASEDIR/readf.x $5
 
     tail -1 fort.20 >  c1val
     awk ' NR == 1 {print "  Energy (ave) =",$1,$2}' c1val >> pip0_fn.d
