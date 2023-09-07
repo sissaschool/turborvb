@@ -239,6 +239,15 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
       )
   endif()
 
+  if(${EXECUTABLE} STREQUAL test_openmp_parallel)
+    set_target_properties( ${EXECUTABLE} PROPERTIES SUFFIX ".x")
+    
+    target_sources( ${EXECUTABLE}
+      PRIVATE
+        openmp_parallel.f90
+      )
+  endif()
+
   if(${EXECUTABLE} STREQUAL test_openmp_reduction_real)
     set_target_properties( ${EXECUTABLE} PROPERTIES SUFFIX ".x")
     

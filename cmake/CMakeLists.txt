@@ -57,6 +57,15 @@ endmacro()
 #
 ######################################################################
 
+macro(ADD_TARGET_LINK_FLAG)
+    foreach( TARGET IN LISTS EXECUTABLES_S_L
+                             EXECUTABLES_P_L
+                             LIBRARIES_S_L
+                             LIBRARIES_P_L)
+        target_link_options( ${TARGET} PRIVATE ${ARGV0} )
+    endforeach()
+endmacro()
+
 macro(SET_MODULE_PATH_DIRECTORY)
     if( ${ARGV1} MATCHES "serial")
         set_target_properties(${ARGV0} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/serial_modules)
