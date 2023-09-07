@@ -165,7 +165,7 @@ do
     fi
 
     echo " Force component $i " >> forces_fn.dat
-    echo "${scale_pulay}" | corrforza.x >> forces_fn.dat
+    echo "${scale_pulay}" | $BASEDIR/corrforza.x >> forces_fn.dat
 
 done
 fi
@@ -199,7 +199,7 @@ do
     fi
 
     echo "Parameter number $i" >> forces_fn.dat
-    corrforzap.x >> forces_fn.dat
+    $BASEDIR/corrforzap.x >> forces_fn.dat
 
 done
 fi
@@ -217,7 +217,7 @@ else
     cp fort.21.1 fort.21
 fi
 
-echo "$1" | corrvar.x > pip0_fn.d
+echo "$1" | $BASEDIR/corrvar.x > pip0_fn.d
     echo " $2 $1 $3 1 " | $BASEDIR/readf.x $5
 
     tail -1 fort.20 >  c1val
