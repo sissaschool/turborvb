@@ -21,6 +21,8 @@
 
 start_time=`date +%s`
 
+BASEDIR=$(dirname "$0")
+
 awk ' NR == 1 {print $7}' parminimized.d  > c1val
 read nvar < c1val
 awk ' NR == 1 {print $8}' parminimized.d  > c1val
@@ -81,11 +83,11 @@ do
 if [ ! -z $4 ]
 then
 
-forcefn.sh $1 $2 $3 $4 $i
+$BASEDIR/forcefn.sh $1 $2 $3 $4 $i
 
 else
 
-forcefn.sh $1 $2 $3 1 $i
+$BASEDIR/forcefn.sh $1 $2 $3 1 $i
 
 fi
 
@@ -102,12 +104,12 @@ done
 
 
 
-python $(which energyfn.py)  > pip0_fn.d
+python $BASEDIR/energyfn.py  > pip0_fn.d
 
 
 if [ $ntot -gt 0 ]
 then
-python $(which force.py)  > forces_fn.dat
+python $BASEDIR/force.py  > forces_fn.dat
 fi
 
 exit

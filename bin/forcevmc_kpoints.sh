@@ -24,6 +24,8 @@
 
 start_time=`date +%s`
 
+BASEDIR=$(dirname "$0")
+
 awk ' NR == 1 {print $7}' parminimized.d  > c1val
 read nvar < c1val
 awk ' NR == 1 {print $8}' parminimized.d  > c1val
@@ -90,7 +92,7 @@ touch forces_vmc.dat
 
 for i in `seq 1 $nkps`
 do
-    forcevmc.sh $1 $2 ${scale_pulay} $i
+    $BASEDIR/forcevmc.sh $1 $2 ${scale_pulay} $i
 
     wkp=$(awk -v ind="${i}" ' NR == ind+2 {print $5} ' kp_info.dat)
     #echo " $i $wkp " >> prova
@@ -102,10 +104,10 @@ do
     fi
 done
 
-python $(which energy.py)  > pip0.d
+python $BASEDIR/energy.py > pip0.d
 
 if [ $ntot -gt 0 ]; then
-    python $(which force.py)  > forces_vmc.dat
+    python $BASEDIR/force.py > forces_vmc.dat
 fi
 
 end_time=`date +%s`
