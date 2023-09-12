@@ -16,8 +16,8 @@
 program test_zsktrs
     implicit none
 
-    complex*16, allocatable, dimension(:, :) :: B, B_orig
-    complex*16, allocatable, dimension(:) :: A, X
+    complex*16, allocatable, dimension(:, :) :: B, B_orig, X
+    complex*16, allocatable, dimension(:) :: A
     real*8, allocatable, dimension(:) :: helper_r, helper_c
     complex*16 :: one = 1.d0, zero = 0.d0
     integer :: s, gen, ii, jj, info
@@ -32,7 +32,7 @@ program test_zsktrs
     allocate (A(s - 1))
     allocate (B(s, s))
     allocate (B_orig(s, s))
-    allocate (X(s - 1))
+    allocate (X(s, s))
     allocate (helper_r(s - 1))
     allocate (helper_c(s - 1))
 
