@@ -29,12 +29,12 @@ program test_zsktrs
     write (*, *) 's, uplo, gen'
     read (*, *) s, uplo, gen
 
-    allocate (A(s-1))
+    allocate (A(s - 1))
     allocate (B(s, s))
     allocate (B_orig(s, s))
-    allocate (X(s-1))
-    allocate (helper_r(s-1))
-    allocate (helper_c(s-1))
+    allocate (X(s - 1))
+    allocate (helper_r(s - 1))
+    allocate (helper_c(s - 1))
 
     if (gen .eq. 1) then
 
@@ -42,7 +42,7 @@ program test_zsktrs
         call random_number(helper_r)
         call random_number(helper_c)
         A = cmplx(helper_r, helper_c)
-        
+
     else
         open (unit=10, form="unformatted", file="A", action="read")
         read (10) A

@@ -23,7 +23,7 @@ program test_zsktri
     complex*16 :: one = 1.d0, zero = 0.d0
     integer :: s, gen, ii, jj, info
     character(len=1) :: uplo
-    
+
     ! s dimension of the test matrix, s x s.
     ! uplo: U->upper triangular, L->lower triangular
     ! gen = 0 : Compare matrices, gen = 1 : Generate matrices
@@ -34,28 +34,28 @@ program test_zsktri
     allocate (A(s, s))
     allocate (A_inv(s, s))
     allocate (A_inv_orig(s, s))
-    allocate (W(s**2+12*s-2))
+    allocate (W(s**2 + 12*s - 2))
     allocate (helper_r(s, s))
     allocate (helper_c(s, s))
-    
+
     if (gen .eq. 1) then
 
         ! generate a skew_symmetric matrix A
         call random_number(helper_r)
         call random_number(helper_c)
-    
+
         do ii = 1, s
             do jj = 1, ii - 1
                 helper_c(jj, ii) = -helper_c(ii, jj)
                 helper_r(jj, ii) = -helper_r(ii, jj)
             end do
         end do
-        
+
         do ii = 1, s
             helper_r(ii, ii) = 0
             helper_c(ii, ii) = 0
         end do
-    
+
         A = cmplx(helper_r, helper_c)
 
     else
@@ -70,7 +70,7 @@ program test_zsktri
     W = 0
 
     do ii = 1, s
-        ipiv(ii)=ii
+        ipiv(ii) = ii
     end do
 
     call zsktri(uplo, s, A, s, A_inv, s, ipiv, W, info)
@@ -90,7 +90,7 @@ program test_zsktri
             print *, "OK"
         end if
     end if
-    
+
     deallocate (A, A_inv, A_inv_orig, W, helper_r, helper_c)
 
 end program test_zsktri
