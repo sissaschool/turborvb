@@ -577,8 +577,11 @@ if(EXT_MODTEST)
   add_target_exe_serial_wrapper(test_zgetrf test_tools)
   add_target_exe_serial_wrapper(test_dgetrfi test_tools)
   add_target_exe_serial_wrapper(test_zgetrfi test_tools)
+  add_target_exe_serial_wrapper(test_zsktri test_tools)
+  add_target_exe_serial_wrapper(test_zsktrs test_tools)
   add_target_exe_serial_wrapper(test_openmp_reduction_real test_tools)
   add_target_exe_serial_wrapper(test_openmp_reduction_complex test_tools)
+
 
   if(EXT_GPU)
 
