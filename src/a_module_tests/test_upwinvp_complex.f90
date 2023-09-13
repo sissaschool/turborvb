@@ -23,6 +23,9 @@ program test_upwinvp_complex
 
     yes_ontarget = .true.
 
+    ! sleep to avoid unexpected corruptions.
+    call sleep(1)
+
     ! Initialize test data
     winv = cmplx(0.0, 0.0)
     do i = 1, indt

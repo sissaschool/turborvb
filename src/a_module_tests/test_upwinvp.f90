@@ -23,6 +23,9 @@ program test_upwinvp
 
     yes_ontarget = .true.
 
+    ! sleep to avoid unexpected corruptions.
+    call sleep(2)
+
     ! Initialize test data
     winv = 0.0
     do i = 1, indt
