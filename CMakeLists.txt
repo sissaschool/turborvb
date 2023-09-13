@@ -581,7 +581,10 @@ if(EXT_MODTEST)
   add_target_exe_serial_wrapper(test_zsktrs test_tools)
   add_target_exe_serial_wrapper(test_openmp_reduction_real test_tools)
   add_target_exe_serial_wrapper(test_openmp_reduction_complex test_tools)
-
+  add_target_exe_serial_wrapper(test_upwinvp test_tools)
+  add_target_exe_serial_wrapper(test_upwinvp_complex test_tools)
+  add_target_exe_serial_wrapper(test_upwinvp_pfaff test_tools)
+  add_target_exe_serial_wrapper(test_upwinvp_pfaff_complex test_tools)
 
   if(EXT_GPU)
 
