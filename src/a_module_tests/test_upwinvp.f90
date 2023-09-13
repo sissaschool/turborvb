@@ -19,16 +19,16 @@ program test_upwinvp
     integer, parameter :: nel = 3, indt = 4
     real*8 :: psi(indt, nel, 2), ainv(nel), ainvn(nel), winv(nel, indt)
     integer :: i, j, k
-    real*8, parameter :: eps = 1.0e-10  ! A small value for numerical comparison
-    
+    real*8, parameter :: eps = 1.0e-10 ! A small value for numerical comparison
+
     yes_ontarget = .true.
-    
+
     ! Initialize test data
     winv = 0.0
     do i = 1, indt
         do j = 1, nel
             do k = 1, 2
-                psi(i, j, k) = i * j * k
+                psi(i, j, k) = i*j*k
             end do
         end do
     end do
