@@ -164,6 +164,44 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
 
   ######################################################################
   #
+  # Add sources and link libraries for zsktr[ri] wrapper tests
+  #
+
+  if(${EXECUTABLE} MATCHES test_zsktr[si])
+      set_target_properties( ${EXECUTABLE} PROPERTIES SUFFIX ".x")
+    
+    target_sources( ${EXECUTABLE}
+      PRIVATE
+      ${EXECUTABLE}.f90
+      )
+    
+    target_link_libraries( ${EXECUTABLE}
+      PRIVATE
+        common-serial
+      )
+  endif()
+
+  ######################################################################
+  #
+  # Add sources and link libraries for upwinvp wrapper tests
+  #
+
+  if(${EXECUTABLE} MATCHES test_upwinvp.*)
+      set_target_properties( ${EXECUTABLE} PROPERTIES SUFFIX ".x")
+    
+    target_sources( ${EXECUTABLE}
+      PRIVATE
+      ${EXECUTABLE}.f90
+      )
+    
+    target_link_libraries( ${EXECUTABLE}
+      PRIVATE
+        common-serial
+      )
+  endif()
+
+  ######################################################################
+  #
   #
   
   if(${EXECUTABLE} STREQUAL test_offload_pointer_transcription)

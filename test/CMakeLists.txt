@@ -129,7 +129,18 @@ if(EXT_MODTEST)
   add_subdirectory(test_zgetrf_128)
   add_subdirectory(test_dgetrfi_128)
   add_subdirectory(test_zgetrfi_128)
+  
+  add_subdirectory(test_zsktri_128_L)
+  add_subdirectory(test_zsktri_128_U)
 
+  add_subdirectory(test_zsktrs_128_L)
+  add_subdirectory(test_zsktrs_128_U)
+
+  add_subdirectory(test_upwinvp)
+  add_subdirectory(test_upwinvp_complex)
+  #add_subdirectory(test_upwinvp_pfaff)
+  #add_subdirectory(test_upwinvp_pfaff_complex)
+  
   #
   ######################################################################
 

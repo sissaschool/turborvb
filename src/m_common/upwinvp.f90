@@ -13,11 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> subroutine to update the matrix winv, for real(8)
 subroutine upwinvp(nel, indt, winv, ainv, ainvn, psi)
     use constants, only: yes_ontarget
     implicit none
-    integer nel, indt, i, j
-    real*8 winv(nel, indt), psi(indt, nel, 2), ainv(nel), ainvn(nel)
+
+    ! argument parameters
+    integer, intent(in) :: nel, indt
+    real*8, intent(in) :: psi(indt, nel, 2), ainv(nel), ainvn(nel)
+    real*8, intent(inout) :: winv(nel, indt)
+
+    ! local variables
+    integer :: i, j
+
 #ifdef _OFFLOAD
     if (yes_ontarget) then
 !$omp target teams distribute parallel do collapse(2)
@@ -42,12 +50,48 @@ subroutine upwinvp(nel, indt, winv, ainv, ainvn, psi)
 #endif
     return
 end
+
+!> subroutine to update the matrix winv, for complex(16)
+subroutine upwinvp_complex(nel, indt, winv, ainv, ainvn, psi)
+    use constants, only: yes_ontarget
+    implicit none
+
+    ! argument parameters
+    integer, intent(in) :: nel, indt
+    complex*16, intent(in) :: psi(indt, nel, 2), ainv(nel), ainvn(nel)
+    complex*16, intent(inout) :: winv(nel, indt)
+
+    ! local variables
+    integer i, j
+
+#ifdef _OFFLOAD
+!$omp target teams distribute parallel do collapse(2) if(yes_ontarget)
+#endif
+    do i = 1, indt
+        do j = 1, nel
+            winv(j, i) = winv(j, i) + ainv(j)*psi(i, j, 1) + ainvn(j)*psi(i, j, 2)
+        end do
+    end do
+#ifdef _OFFLOAD
+!$omp end target teams distribute parallel do
+#endif
+    return
+end
+
+!> subroutine to update the matrix winv of Pfaffian, for real(8)
 subroutine upwinvp_pfaff(nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt, winvup, winvdo, psi, ainv)
     use constants, only: yes_ontarget
     implicit none
-    integer nelc, nelcdo, nelup, neldo, nmol, nmolipf, nmolshift, indt, i, j
-    real*8 winvup(nelup, indt), winvdo(neldo, indt), psi(nmolipf, indt), ainv(nmol)
+
+    ! argument parameters
+    integer, intent(in) :: nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt
+    real*8, intent(in) :: psi(nmolipf, indt), ainv(nmol)
+    real*8, intent(inout) :: winvup(nelup, indt), winvdo(neldo, indt)
+
+    ! local variables
+    integer i, j, nelcdo
     real*8 csum
+
     if (yes_ontarget) then
     if (nelc .le. nelup) then
 #ifdef _OFFLOAD
@@ -116,11 +160,19 @@ subroutine upwinvp_pfaff(nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt, win
     end if
     return
 end
+
+!> subroutine to update the matrix winv of Pfaffian, for complex(16)
 subroutine upwinvp_pfaff_complex(nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt, winvup, winvdo, psi, ainv)
     use constants, only: yes_ontarget
     implicit none
-    integer nelc, nelcdo, nelup, neldo, nmol, nmolipf, nmolshift, indt, i, j
-    complex*16 winvup(nelup, indt), winvdo(neldo, indt), psi(nmolipf, indt), ainv(nmol)
+
+    ! argument parameters
+    integer, intent(in) :: nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt
+    complex*16, intent(in) :: psi(nmolipf, indt), ainv(nmol)
+    complex*16, intent(inout) :: winvup(nelup, indt), winvdo(neldo, indt)
+
+    ! local variables
+    integer i, j, nelcdo
     complex*16 csum
     if (yes_ontarget) then
         if (nelc .le. nelup) then
@@ -192,23 +244,5 @@ subroutine upwinvp_pfaff_complex(nelc, nelup, neldo, nmol, nmolipf, nmolshift, i
             end do
         end if
     end if
-    return
-end
-subroutine upwinvp_complex(nel, indt, winv, ainv, ainvn, psi)
-    use constants, only: yes_ontarget
-    implicit none
-    integer nel, indt, i, j
-    complex*16 winv(nel, indt), psi(indt, nel, 2), ainv(nel), ainvn(nel)
-#ifdef _OFFLOAD
-!$omp target teams distribute parallel do collapse(2) if(yes_ontarget)
-#endif
-    do i = 1, indt
-        do j = 1, nel
-            winv(j, i) = winv(j, i) + ainv(j)*psi(i, j, 1) + ainvn(j)*psi(i, j, 2)
-        end do
-    end do
-#ifdef _OFFLOAD
-!$omp end target teams distribute parallel do
-#endif
     return
 end
