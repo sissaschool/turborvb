@@ -399,7 +399,10 @@ contains
     end subroutine ApplyPBC
 
     function map(x, cell_period)
-        real(8) :: x, cell_period
+        implicit none
+        ! argument variables
+        real(8), intent(in) :: x, cell_period
+        ! local variables
         real(8) :: map
         if (cell_period .eq. 0.d0) then
             map = x
@@ -409,6 +412,7 @@ contains
     end function map
 
     function dmap(x, cell_period)
+        implicit none
         real(8) :: x, cell_period
         real(8) :: dmap
         !   dmap=dcos(x/cell_period)
@@ -420,6 +424,7 @@ contains
     end function dmap
 
     function ddmap(x, cell_period)
+        implicit none
         real(8) :: x, cell_period
         real(8) :: ddmap
         if (cell_period .eq. 0.d0) then
@@ -430,7 +435,11 @@ contains
     end function ddmap
 
     function map0(x)
-        real(8) :: x, xc, map0
+        implicit none
+        ! argument variables
+        real(8), intent(in) :: x
+        ! local variables
+        real(8) xc, map0
         integer p
         ! this function depend only on x and is such that f'=1 and f(1/2)=0
         select case (case_map)

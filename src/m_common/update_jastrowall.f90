@@ -18,8 +18,14 @@
 ! -----------------------------------------
 subroutine upjastrowall(nel, jastrowall, psip)
     implicit none
-    integer j, k, nel
-    real*8 psip(nel, *), jastrowall(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel
+    real*8, intent(in) :: psip(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer j, k
 
     do j = 1, nel
         do k = 1, nel
@@ -31,8 +37,14 @@ end subroutine upjastrowall
 
 subroutine upjastrowall_sz(nel, nelup, jastrowall, psip)
     implicit none
-    integer j, k, nel, nelup
-    real*8 psip(nel, *), jastrowall(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel, nelup
+    real*8, intent(in) :: psip(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer j, k
 
     do j = 1, nelup
         do k = 1, nelup
@@ -59,8 +71,14 @@ end subroutine upjastrowall_sz
 ! -----------------------------------------
 subroutine upjastrowallfat(nel, jastrowall, psipmu)
     implicit none
-    integer nel, i, j
-    real*8 jastrowall(nel, *), psipmu(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel
+    real*8, intent(in) :: psipmu(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer i, j
 
     do i = 1, nel
         do j = 1, nel
@@ -73,8 +91,14 @@ end subroutine upjastrowallfat
 
 subroutine upjastrowallfat_sz(nel, nelup, jastrowall, psipmu)
     implicit none
-    integer nel, nelup, i, j
-    real*8 jastrowall(nel, *), psipmu(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel, nelup
+    real*8, intent(in) :: psipmu(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer i, j
 
     do i = 1, nelup
         do j = 1, nelup
@@ -103,8 +127,14 @@ end subroutine upjastrowallfat_sz
 ! ------------------------------------------
 subroutine upjastrowallpsi(nel, jastrowall, psip)
     implicit none
-    integer j, k, nel
-    real*8 psip(nel, *), jastrowall(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel
+    real*8, intent(in) :: psip(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer j, k
 
     do j = 1, nel
         do k = 1, nel
@@ -117,8 +147,14 @@ end subroutine upjastrowallpsi
 
 subroutine upjastrowallpsi_sz(nel, nelup, jastrowall, psip)
     implicit none
-    integer j, k, nel, nelup
-    real*8 psip(nel, *), jastrowall(nel, *)
+
+    ! argument variables
+    integer, intent(in) :: nel, nelup
+    real*8, intent(in) :: psip(nel, *)
+    real*8, intent(inout) :: jastrowall(nel, *)
+
+    ! local variables
+    integer j, k
 
     do j = 1, nelup
         do k = j + 1, nelup

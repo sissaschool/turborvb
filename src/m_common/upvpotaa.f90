@@ -14,12 +14,21 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 function upvpotaa(zeta, iond, nion, kappa, LBox)
-    use dielectric
+    use dielectric, only: veps, rep_erfc, epsilon0
     use allio, only: iond_cart, x_neigh, neigh, dist_shift, rank
+
     implicit none
-    integer nel, i, j, ii, jj, nion
+
+    ! argument parameters
+    integer, intent(in) :: nion
+    real(8), intent(in) :: zeta(nion), iond(nion, nion), kappa, LBox
+
+    ! local variables
+    integer nel, i, j, ii, jj
     real(8) :: derfc, x_shift(3), cost_z
-    real(8) zeta(nion), iond(nion, nion), kappa, LBox, pot_aa, upvpotaa, eself1b
+    real(8) pot_aa, eself1b
+    real(8) upvpotaa
+
     double precision, parameter :: PI = 3.14159265358979323846d0
 
     pot_aa = 0.d0
@@ -28,7 +37,7 @@ function upvpotaa(zeta, iond, nion, kappa, LBox)
         do i = 1, nion
             do j = i + 1, nion
                 if (zeta(i)*zeta(j) .ne. 0.d0) &
-       &pot_aa = pot_aa + 2.d0*zeta(i)*zeta(j)*veps(iond(i, j))
+                    pot_aa = pot_aa + 2.d0*zeta(i)*zeta(j)*veps(iond(i, j))
             end do
         end do
         ! ********  EWALD REAL PART *************
@@ -45,10 +54,9 @@ function upvpotaa(zeta, iond, nion, kappa, LBox)
 !$omp simd
 #endif
                     do ii = 1, neigh
-                        dist_shift(ii) = dsqrt((iond_cart(1, jj)&
-                           & + x_neigh(ii, 1))**2 + (iond_cart(2, jj)&
-                           & + x_neigh(ii, 2))**2 + (iond_cart(3, jj)&
-                           & + x_neigh(ii, 3))**2)
+                        dist_shift(ii) = dsqrt((iond_cart(1, jj) + x_neigh(ii, 1))**2 + &
+                                               (iond_cart(2, jj) + x_neigh(ii, 2))**2 + &
+                                               (iond_cart(3, jj) + x_neigh(ii, 3))**2)
                         dist_shift(ii) = cost_z*rep_erfc(dist_shift(ii), kappa)
                     end do
 !                   pot_aa = pot_aa + cost_z*rep_erfc(dist_shift(ii),kappa)

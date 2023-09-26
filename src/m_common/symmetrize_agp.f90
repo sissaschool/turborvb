@@ -18,15 +18,21 @@ subroutine symmetrizeagp(nnozero_c, nozero_c, jbradet, jbradetn, dsw&
         &, symmagp, yes_hermite)
     use constants, only: ipc, ipf, deps
     use cell, only: cellscale, phase2pi
-    use allio, only: rank, rion, yes_crystal, real_agp, molyes&
-            &, pfaffup, kiontot
+    use allio, only: rank, rion, yes_crystal, real_agp, molyes, pfaffup, kiontot
     implicit none
-    integer nnozero_c, iessw0, iesswt, ii, jj, kk, ind, ix, iy&
-            &, nelorb_c, nelcol_c, indc, iessw, nelorb_at, iyr, ierr, ndim
-    integer nozero_c(*), itouch(*), jbradet(*), jbradetn(*)
-    real*8 dsw(*), dsw0, detmat_c(ipc*nelorb_c*nelcol_c), scale_c(*)
-    real*8 dswc(2), riondiff(3), cosphihalf, sinphihalf, cost, detr, deti
-    logical symmagp, yes_hermite
+
+    ! argument variables
+    integer, intent(in) :: nnozero_c, iessw0, nelorb_c, nelcol_c, nelorb_at, &
+                        &  nozero_c(*), jbradet(*), jbradetn(*)
+    integer, intent(inout) :: itouch(*)
+    real*8, intent(inout) :: dsw(*)
+    real*8, intent(inout) :: detmat_c(ipc*nelorb_c*nelcol_c), scale_c(*)
+    logical, intent(in) :: symmagp, yes_hermite
+
+    ! local variables
+    integer ii, jj, kk, ind, indc, iessw, iesswt, ix, iy, iyr, ierr, ndim
+    real*8 dsw0, dswc(2), riondiff(3), cosphihalf, sinphihalf, cost, detr, deti
+
     !     Input detmat_c output detmat_c symmetrized
     do ii = 1, nnozero_c
         scale_c(ipc*(ii - 1) + 1:ipc*ii) = detmat_c(ipc*(nozero_c(ii) - 1) + 1:ipc*nozero_c(ii))

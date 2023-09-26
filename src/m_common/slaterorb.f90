@@ -16,7 +16,7 @@
 function slaterorb(ioptorb)
     use constants, only: iflagerr
     implicit none
-    integer ioptorb
+    integer, intent(in) :: ioptorb
     logical slaterorb
     select case (ioptorb)
         !     case(34,10,12,28,57,80) !  Slater s

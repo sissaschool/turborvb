@@ -25,11 +25,12 @@ subroutine save_jall(yesfn, jastrowall_ee, winvjbar, winvjbarsz, winvj, psip)
     use allio, only: nel, nelup, neldo, indt, indt4j, nelorbj, nelorbjh, iessz
 
     implicit none
-    ! input
+    ! argument variables
     real(8), intent(inout) :: jastrowall_ee(nelup + neldo, nelup + neldo, 0:indt4j), psip(nel, nel)
     real(8), intent(in) :: winvj(max(nelorbjh, 1), 0:indt4j, *), winvjbar(*), winvjbarsz(*)
+
+    ! local variables
     integer :: nelused
-    ! local
     integer :: i, k, nelorbj5
     logical yesfn
 

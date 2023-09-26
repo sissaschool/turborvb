@@ -17,9 +17,15 @@ subroutine upsim(amat, ndim, ind, value, symmagp, ipf)
     use allio, only: nelorb_at, pfaffup, kiontot
     implicit none
 
-    integer ndim, ndimh, ind, i, j, ipf
-    real(8) amat(ndim, *), value
-    logical symmagp
+    ! argument parameters
+    integer, intent(in) :: ndim, ind, ipf
+    real(8), intent(in) :: value
+    real(8), intent(inout) :: amat(ndim, *)
+    logical, intent(in) :: symmagp
+
+    ! local variables
+    integer :: i, j, ndimh
+
     if (ipf .eq. 1) then
         j = (ind - 1)/ndim + 1
         i = ind - ndim*(j - 1)
@@ -59,9 +65,16 @@ end subroutine upsim
 subroutine upsim_complex(amat, ndim, ind, value, symmagp, ipf)
     use allio, only: yes_hermite, nelorb_at, pfaffup, kiontot
     implicit none
-    integer ndim, ndimh, ind, i, j, ipf
-    complex*16 amat(ndim, *), value(*)
-    logical symmagp
+
+    ! argument parameters
+    integer, intent(in) :: ndim, ind, ipf
+    complex*16, intent(in) :: value(*)
+    complex*16, intent(inout) :: amat(ndim, *)
+    logical, intent(in) :: symmagp
+
+    ! local variables
+    integer i, j, ndimh
+
     !      write(6,*) value
     if (ipf .eq. 1) then
         j = (ind - 1)/ndim + 1
