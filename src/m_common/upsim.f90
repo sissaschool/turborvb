@@ -19,8 +19,8 @@ subroutine upsim(amat, ndim, ind, value, symmagp, ipf)
 
     ! argument parameters
     integer, intent(in) :: ndim, ind, ipf
-    real(8), intent(in) :: value
-    real(8), intent(inout) :: amat(ndim, *)
+    real*8, intent(in) :: value
+    real*8, intent(inout) :: amat(ndim, *)
     logical, intent(in) :: symmagp
 
     ! local variables

@@ -401,9 +401,9 @@ contains
     function map(x, cell_period)
         implicit none
         ! argument variables
-        real(8), intent(in) :: x, cell_period
+        real*8, intent(in) :: x, cell_period
         ! local variables
-        real(8) :: map
+        real*8 :: map
         if (cell_period .eq. 0.d0) then
             map = x
         else
@@ -437,9 +437,9 @@ contains
     function map0(x)
         implicit none
         ! argument variables
-        real(8), intent(in) :: x
+        real*8, intent(in) :: x
         ! local variables
-        real(8) xc, map0
+        real*8 xc, map0
         integer p
         ! this function depend only on x and is such that f'=1 and f(1/2)=0
         select case (case_map)

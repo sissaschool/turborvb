@@ -35,13 +35,13 @@ module types
     ! ex. for Jastrow I have:
     ! vj,vju,winvj,jasmat,jasmat_sz,jasmat_c,jasmatsz_c
     type wf_factor
-        real(8), allocatable :: twobody_par(:)
-        real(8), allocatable :: exps(:)
-        real(8), allocatable :: bas_mat(:)
-        real(8), allocatable :: exp_mat(:)
-        real(8), allocatable :: exp_mat_sz(:)
-        real(8), allocatable :: exp_mat_c(:)
-        real(8), allocatable :: exp_mat_sz_c(:)
+        real*8, allocatable :: twobody_par(:)
+        real*8, allocatable :: exps(:)
+        real*8, allocatable :: bas_mat(:)
+        real*8, allocatable :: exp_mat(:)
+        real*8, allocatable :: exp_mat_sz(:)
+        real*8, allocatable :: exp_mat_c(:)
+        real*8, allocatable :: exp_mat_sz_c(:)
     end type
 
 end module types

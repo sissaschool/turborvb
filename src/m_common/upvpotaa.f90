@@ -21,13 +21,13 @@ function upvpotaa(zeta, iond, nion, kappa, LBox)
 
     ! argument parameters
     integer, intent(in) :: nion
-    real(8), intent(in) :: zeta(nion), iond(nion, nion), kappa, LBox
+    real*8, intent(in) :: zeta(nion), iond(nion, nion), kappa, LBox
 
     ! local variables
     integer nel, i, j, ii, jj
-    real(8) :: derfc, x_shift(3), cost_z
-    real(8) pot_aa, eself1b
-    real(8) upvpotaa
+    real*8 :: derfc, x_shift(3), cost_z
+    real*8 pot_aa, eself1b
+    real*8 upvpotaa
 
     double precision, parameter :: PI = 3.14159265358979323846d0
 
