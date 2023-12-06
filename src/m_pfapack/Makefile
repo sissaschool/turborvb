@@ -21,11 +21,13 @@ dirs:
 
 # Rule for making the target
 $(TARGET): $(OBJS)
+	@echo "\e[34m Linking $(notdir $(TARGET))\e[0m"
 	$(AR) $(ARFLAGS) $(TARGET) $(OBJS)
 
-# Generic rule for compiling CPP files
+# Generic rule for compiling Fortran files
 $(PFAPACK_BUILD_DIR)/%.f.o: %.f
-	$(FC) $(FCFLAGS) -c $< -o $@
+	@echo "\e[31m Compiling $< with aggressive optimization\e[0m"
+	$(FC) $(FCFLAGS) $(FCFLAGS_AGGRESSIVE) -c $< -o $@
 
 # Cleaning everything
 clean:

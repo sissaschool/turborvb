@@ -9,7 +9,7 @@ MAIN_BUILD_DIR := $(BUILD_DIR)/main
 MODULE_DIR := $(BUILD_DIR)/modules
 TARGET := $(BUILD_DIR)/turborvb.x
 TARGET_NAME := $(BUILD_DIR)/turborvb$(SUFFIX).x
-TARGET_MODULES := $(BUILD_DIR)/adjoint_forward_module.a
+TARGET_MODULES := $(BUILD_DIR)/turborvb$(SUFFIX)_module.a
 
 # File Lists
 #
@@ -37,14 +37,20 @@ dirs:
 
 # Compile modules
 $(MAIN_BUILD_DIR)/%.f90.o: %.f90
-	$(FC) $(FCFLAGS) -J $(MODULE_DIR) -I $(MODULE_DIR) -c $< -o $@
+	$(FC) $(FCFLAGS) \
+		$(MODULE_STORE) $(MODULE_DIR) \
+ 	        $(MODULE_INCLUDE) $(MODULE_DIR) \
+		-c $< -o $@
+
 
 # Common module
 $(TARGET_MODULES): $(MODULE_OBJS)
+	@echo "\e[34m Linking $(notdir $(TARGET))\e[0m"
 	$(AR) $(ARFLAGS) $(TARGET_MODULES) $(MODULE_OBJS)
 
 # Rule for making the target
 $(TARGET): $(TARGET_MODULES) $(OBJS)
+	@echo "\e[34m Linking $(notdir $(TARGET))\e[0m"
 	$(FC) $(FLINK) \
 	$(OBJS) \
 	$(MODULE_OBJS) \
@@ -74,13 +80,25 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 
 # Generic rule for compiling Fortran files
 $(MAIN_BUILD_DIR)/%.f90.o: %.f90 
-	$(FC) $(FCFLAGS) \
-		$(MODULE_STORE) $(MODULE_DIR) \
-		-c $< -o $@ \
- 	        $(MODULE_INCLUDE) $(MODULE_DIR)
+
+	$(if $(filter $<, $(SOURCES_AGGRESSIVE)), \
+	@echo "\e[31m Compiling $< with aggressive optimization\e[0m", \
+	@echo "\e[32m Compiling $<\e[0m" \
+	)
+
+	$(eval FCFLAGS_SPECIAL=$(if $(filter $<, $(SOURCES_AGGRESSIVE)), \
+	$(FCFLAGS_AGGRESSIVE), \
+	$(FCFLAGS_PASSIVE)) \
+	)
+
+	$(FC) $(FCFLAGS) $(FCFLAGS_SPECIAL) \
+	        $(MODULE_STORE) $(MODULE_DIR) \
+	        $(MODULE_INCLUDE) $(MODULE_DIR) \
+	        -c $< -o $@
 
 # Generic rule for compiling C files
 $(MAIN_BUILD_DIR)/%.c.o: %.c
+	@echo "\e[32m Compiling $<\e[0m"
 	$(CC) $(CFLAGS) -c $< -o $(SUFFIX)
 
 # Cleaning everything

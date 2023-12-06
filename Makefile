@@ -1,4 +1,92 @@
+$(info ===================================================)
+$(info )
+$(info TurboRVB Legacy build system)
+$(info )
+$(info ===================================================)
+$(info )
+
+# Test if make.inc exists
+
+make_inc_c := e
+make_txt_c := e
+
+ifeq ($(wildcard make.inc),)
+$(info )
+$(warning make.inc not found. )
+
+make_inc_c := $(shell read -p "Do you want to create make.inc? [y/n]: " ans; \
+if [ "$$ans" = "y" ]; then \
+cp devel_tools/make.inc.examples/make.inc.example.gcc make.inc; \
+echo "c"; \
+else \
+echo "n"; \
+fi)
+
+endif
+
+ifeq ($(wildcard make.txt),)
+$(info )
+$(warning make.txt not found. )
+
+make_txt_c := $(shell read -p "Do you want to create make.txt? [y/n]: " ans; \
+if [ "$$ans" = "y" ]; then \
+cp devel_tools/make.inc.examples/make.txt.example.gcc make.txt; \
+echo "c"; \
+else \
+echo "n"; \
+fi)
+
+endif
+
+$(info )
+
+ifeq ($(make_inc_c),c)
+$(info make.inc created. Please edit it.)
+endif
+
+ifeq ($(make_txt_c),c)
+$(info make.txt created. Please edit it.)
+endif
+
+ifeq ($(make_inc_c),n)
+$(info make.inc not created. Exiting.)
+endif
+
+ifeq ($(make_inc_c),n)
+$(info make.inc not created. Exiting.)
+endif
+
+ifneq ($(make_inc_c),e)
+$(info )
+$(error Exiting.)
+endif
+
+ifneq ($(make_txt_c),e)
+$(info )
+$(error Exiting.)
+endif
+
 include make.inc
+
+$(info )
+$(info Using make.inc found in $(CURDIR))
+$(info Building in $(BUILD_DIR))
+$(info )
+$(info Fortran compiler: $(FC))
+$(info Fortran compiler flags: $(FCFLAGS))
+$(info Fortran passive flags: $(FCFLAGS_PASSIVE))
+$(info Fortran aggressive flags: $(FCFLAGS_AGGRESSIVE))
+$(info )
+$(info C compiler: $(CC))
+$(info C compiler flags: $(CFLAGS))
+$(info )
+$(info Linker: $(LD))
+$(info Linker flags: $(FLINK))
+$(info )
+$(info Libraries: $(LINK_LIBS))
+$(info )
+$(info ===================================================)
+
 
 all:
 	make -C src/m_pfapack -f Makefile
@@ -8,6 +96,10 @@ all:
 	make -C src/c_adjoint_backward -f Makefile
 	make -C src/b_complex -f Makefile
 	make -C src/a_turborvb -f Makefile
+	
+	@echo " "
+	@echo " DONE - Enjoy TurboRVB! "
+	@echo " "
 
 clean:
 	rm -rf $(BUILD_DIR)

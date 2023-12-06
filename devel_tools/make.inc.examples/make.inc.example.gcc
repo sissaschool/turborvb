@@ -1,0 +1,84 @@
+# Makefile inc for TurboRVB
+
+# This make.inc is also a tutorial how to setup Makefile for TurboRVB.
+# This one is set up for GNU Compilers Collection (GCC) and Netlib LAPACK.
+# You might have to check your compiler and LAPACK installation and change
+
+# First we specifies suffix for our executable. This is not necessary but it is good practice.
+
+SUFFIX=-serial.x
+
+# This Makefile uses out-of-source build. This means that all object files and modules
+# will be stored in separate directory. This directory is specified here.
+# Keep in mind this have to be ABSOLUTE PATH. This file is loaded by sub-makefiles
+# therefore $(pwd) or $(CURDIR) will not work.
+
+BUILD_DIR=/home/addman/Software/turborvb-rm/build-serial
+
+# Setup compilers Fortran and C. Note that for MPI version Fortran compiler wrapper should be used.
+# For this FC and CC variables are used respectively.
+
+FC=gfortran
+CC=gcc
+
+# Setup compiler flags. Note that for MPI version Fortran compiler wrapper should be used.
+# For this FCFLAGS and CFLAGS variables are used respectively.
+
+# It is important NOT to specify optimization flags here!
+
+# First we have to specify that Fortran should use C preprocessor.
+# This is important for gfortran it is "-cpp" flag. However, for other compilers,
+# such as Intel Fortran, it is "-fpp" flag.
+
+FCFLAGS=-cpp
+
+# Now we have to disable compilers check for argument mismatch. This is important for gfortran.
+
+FCFLAGS+=-fallow-argument-mismatch
+
+# Now we have to disable compilers check for line length.
+
+FCFLAGS+=-ffree-line-length-none
+
+# One might like to use OpenMP parallelism
+
+FCFLAGS+=-fopenmp
+
+# Debug -g flag is not slowing down modern code so we can use it all the time.
+
+FCFLAGS+=-g
+
+# Here we specify optimization flags. Note that for gfortran it is "-O" flag.
+# C optimization flags CAN be specified here. This is one difference between C and Fortran flags.
+
+CFLAGS=-O3 -g -fopenmp
+
+# Here we specify flags for aggressive optimization. Note that for gfortran it is "-O" flag.
+# Not all source files can be compiled with aggressive optimization. These files has to
+# carefully selected and precified in the file make.txt
+
+FCFLAGS_AGGRESSIVE=-O3
+FCFLAGS_PASSIVE=-O0
+
+# Here we specify flags that control storing and including of modules.
+# For gfortran it is "-J" and "-I" flags respectively. This is true for most compilers.
+# Normally, it is not necessary to specify these flags.
+
+MODULE_STORE=-J
+MODULE_INCLUDE=-I
+
+# Here we can add preprocessort directives. Keep in mind it is good add them to FCFLAGS
+# as well as to CFLAGS. For this a helper variable PP_DIRECTIVES is used.
+
+PP_DIRECTIVES=-D_TIME
+
+FCFLAGS+=$(PP_DIRECTIVES)
+CFLAGS+=$(PP_DIRECTIVES)
+
+# Link options. Here we specify libraries that are needed for linking.
+
+FLINK=-fopenmp
+
+# Here we specify libraries that are needed for linking.
+
+LINK_LIBS=-L/opt/addman/spack/opt/spack/linux-debian11-zen/gcc-12.3.0/netlib-lapack-3.11.0-y7uuukt5z6xv6gquhqe6lmificwmatuj/lib -llapack -lblas
