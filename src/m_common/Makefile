@@ -28,6 +28,7 @@ MODULE_SRCS := $(SRC_DIR)/constants.f90    \
 	       $(SRC_DIR)/sub_comm.f90     \
 	       $(SRC_DIR)/mpiio.f90        \
 	       $(SRC_DIR)/kind.f90         \
+	       $(SRC_DIR)/allio.f90        \
 
 MODULE_OBJS := $(MODULE_SRCS:%=$(COMMON_MODULES_BUILD_DIR)/%.o)
 MODULE_MODS := $(MODULE_SRCS:%=$(BUILD_DIR)/%.mod)

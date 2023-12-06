@@ -15,12 +15,28 @@ $(info )
 $(warning make.inc not found. )
 
 make_inc_c := $(shell read -p "Do you want to create make.inc? [y/n]: " ans; \
-if [ "$$ans" = "y" ]; then \
-cp devel_tools/make.inc.examples/make.inc.example.gcc make.inc; \
-echo "c"; \
-else \
-echo "n"; \
-fi)
+                  if [ "$$ans" = "y" ]; then \
+                      cp devel_tools/configs/make.inc.example.gcc make.inc; \
+                      echo "c"; \
+                  else \
+                      echo "n"; \
+                  fi)
+
+ifeq ($(make_inc_c) ,c)
+    $(info )	
+    $(info Please select an example: )
+    $(info )
+    $(info 1 GNU Fortran Compiler )
+    $(info 2 GNU Fortran Compiler with MPI) 
+    $(info )
+    $(shell read -p "Select an example [1-2]: " ans; \
+        if [ "$$ans" = "1" ]; then \
+            cp devel_tools/make.inc.examples/make.inc.example.gcc make.inc; \
+        elif [ "$$ans" = "2" ]; then \
+            cp devel_tools/configs/make.inc.example.gccmpi make.inc; \
+        fi)
+
+endif
 
 endif
 
@@ -29,12 +45,12 @@ $(info )
 $(warning make.txt not found. )
 
 make_txt_c := $(shell read -p "Do you want to create make.txt? [y/n]: " ans; \
-if [ "$$ans" = "y" ]; then \
-cp devel_tools/make.inc.examples/make.txt.example.gcc make.txt; \
-echo "c"; \
-else \
-echo "n"; \
-fi)
+                  if [ "$$ans" = "y" ]; then \
+                      cp devel_tools/configs/make.txt.example make.txt; \
+                      echo "c"; \
+                  else \
+                      echo "n"; \
+                  fi)
 
 endif
 
