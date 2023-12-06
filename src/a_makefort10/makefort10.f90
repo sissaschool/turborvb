@@ -126,11 +126,23 @@ program makefort10
     write (*, *)
     write (*, *)
 #else
+#ifdef __AMD
+    namelist /electrons/ twobody, filling, noonebody, readatoms&
+            &, orbtype, nel, neldiff, numpaired, jorbtype, onlycontrdet&
+            &, onlycontrjas, shiftbeta, readunpaired, vecpbc, yesbump&
+            &, niesd, yes_crystal, yes_crystalj, no_4body_jas&
+            &, nopseudo, scale_jasfat
+    write (*, *)
+    write (*, *) ' ! ! ! WARNING DUE TO POSSIBLE BUG IN AMD COMPILER IS NOT POSSIBLE TO SET ONEBODY AND TWOBODY PAR ! ! ! '
+    write (*, *)
+    write (*, *)
+#else
     namelist /electrons/ twobody, twobodypar, filling, noonebody, readatoms&
             &, orbtype, nel, neldiff, numpaired, jorbtype, onlycontrdet&
             &, onlycontrjas, shiftbeta, readunpaired, vecpbc, yesbump&
             &, onebodypar, niesd, yes_crystal, yes_crystalj, no_4body_jas&
             &, nopseudo, scale_jasfat
+#endif
 #endif
 
     namelist /symmetries/ nosym, notra, forces_sym, notra_forces, nosym_forces&

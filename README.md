@@ -149,6 +149,21 @@ It is important to note, the parallel make does not work. Successfull compilatio
 
 By addition one can run `make speed_tests` evaluating speed of TurboRVB package on her/his machine.
 
+## Preprocessor Macros
+
+This project uses preprocessor macros for configuration. Here are descriptions of each macro and when they should be defined:
+
+- `_CUBLAS`: Define this macro if you plan to use the cuBLAS library for linear algebra operations. Macro `_OFFLOAD` has to be set on as well.
+- `_OFFLOAD`: Define this macro if you want to use OpenMP for offloading computations to another processing unit such as a GPU.
+- `_SIMD`: This macro forces the compiler to use more SIMD (Single Instruction, Multiple Data) instructions for parallel computing. Be cautious with this option as it may not always lead to increased performance and can make the code more complex.
+- `__FFTW`: Define this macro to enable the use of the FFTW library for Fast Fourier Transform computations.
+- `__PORT`: This macro should be defined when compiling with the Nvidia (Portland Group) Fortran compiler.
+- `__AMD`: This macro should be defined when compiling with the AMD compiler collection.
+- `__SCALAPACK`: Define this macro to enable the use of the ScaLAPACK library for linear algebra operations on distributed memory systems. Macro `PARALLEL` has to be set to on as well.
+- `__USE_INTERNAL_FFTW`: This macro is used to switch to the internal FFTW library included with the project. If this macro is defined, the project will ignore system-installed FFTW libraries and use the included one instead.
+- `PARALLEL`: Define this macro to enable compilation of the project's MPI parallelized code. MPI (Message Passing Interface) is a standardized and portable message-passing system designed to function efficiently on a wide variety of parallel computing architectures.
+- `RISC`: This macro should be defined when compiling with the IBM XL compiler.
+
 ## Notes & known compilation issues
 
 1) If present, intel `ifort` compiler with `MKL` should be preferred to gnu `gfortran` compiler with `BLAS` and `LAPACK`, because it has been tested more and yields consistently more reliable and faster binaries.

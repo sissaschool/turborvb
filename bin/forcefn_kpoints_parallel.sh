@@ -152,7 +152,7 @@ do
 	touch forces_fn.dat
 
     # calc forces
-    forcefn.sh $1 $2 $3 ${scale_pulay}  1 1>out_K${i}.o 2>err_K${i}.o & # run background
+    $BASEDIR/forcefn.sh $1 $2 $3 ${scale_pulay}  1 1>out_K${i}.o 2>err_K${i}.o & # run background
 	echo "  calculating for K${i}..., pid = $!, counter = ${counter_for_parallel_calc}"
     counter_for_parallel_calc=`expr ${counter_for_parallel_calc} + 1`
 
@@ -193,10 +193,10 @@ done
 
 echo "done."
 
-python $(which energyfn.py)  > pip0_fn.d
+python $BASEDIR/energyfn.py  > pip0_fn.d
 
 if [ $ntot -gt 0 ]; then
-    python $(which force.py)  > forces_fn.dat
+    python $BASEDIR/force.py  > forces_fn.dat
 fi
 
 cd $root_dir

@@ -19,6 +19,7 @@ add_subdirectory(intel)
 add_subdirectory(oneapi)
 add_subdirectory(ibm)
 add_subdirectory(appleclang)
+add_subdirectory(amd)
 
 #
 #####################################################################

@@ -16,8 +16,15 @@
 subroutine upwinv(nel, jel, indt, nelorb, winv, v, psi)
     use constants, only: yes_ontarget
     implicit none
-    integer nel, indt, i, j, jel, nelorb
-    real*8 winv(nel, indt), psi(indt, nel), v(nel)
+
+    ! argument parameters
+    integer, intent(in) :: nel, indt, jel, nelorb
+    real*8, intent(in) :: psi(indt, nel), v(nel)
+    real*8, intent(inout) :: winv(nel, indt)
+
+    ! local variables
+    integer i, j
+
 #ifdef _OFFLOAD
 !$omp target teams distribute parallel do collapse(2) if(yes_ontarget)
 #endif
@@ -43,11 +50,18 @@ subroutine upwinv(nel, jel, indt, nelorb, winv, v, psi)
     end do
     return
 end
+
 subroutine upwinv_complex(nel, jel, indt, nelorb, winv, v, psi)
     use constants, only: yes_ontarget
     implicit none
-    integer nel, indt, i, j, jel, nelorb
-    complex*16 winv(nel, indt), psi(indt, nel), v(nel)
+
+    ! argument parameters
+    integer, intent(in) :: nel, indt, jel, nelorb
+    complex*16, intent(in) :: psi(indt, nel), v(nel)
+    complex*16, intent(inout) :: winv(nel, indt)
+
+    ! local variables
+    integer i, j
 #ifdef _OFFLOAD
 !$omp target teams distribute parallel do collapse(2) if(yes_ontarget)
 #endif
