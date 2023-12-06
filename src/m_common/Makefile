@@ -58,11 +58,22 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 ################################################################################
 
 # Generic rule for compiling Fortran files
-#$(COMMON_BUILD_DIR)/%.f90.o: %.f90 
 $(COMMON_BUILD_DIR)/%.f90.o: %.f90
-	$(FC) $(FCFLAGS) \
-	-J$(MODULE_DIR) \
-	-c $< -o $@
+
+	$(if $(filter $<, $(SOURCES_AGGRESSIVE)), \
+	@echo "\e[31m Compiling $< with aggressive optimization\e[0m", \
+	@echo "\e[32m Compiling $<\e[0m" \
+	)
+
+	$(eval FCFLAGS_SPECIAL=$(if $(filter $<, $(SOURCES_AGGRESSIVE)), \
+	$(FCFLAGS_AGGRESSIVE), \
+	$(FCFLAGS_PASSIVE)) \
+	)
+
+	$(FC) $(FCFLAGS) $(FCFLAGS_SPECIAL) \
+	        $(MODULE_STORE) $(MODULE_DIR) \
+	        $(MODULE_INCLUDE) $(MODULE_DIR) \
+	        -c $< -o $@
 
 # Generic rule for compiling C files
 $(COMMON_BUILD_DIR)/%.c.o: %.c
