@@ -297,6 +297,26 @@ foreach(OTHER_LIB ${EXT_OTHER_LIB})
   link_libraries(${OTHER_LIB})
 endforeach()
 
+find_package(TREXIO)
+if (TREXIO_FOUND)
+    list( APPEND PPDIRECTIVES _TREXIO )
+    link_libraries(${TREXIO_LIBRARIES})
+    include_directories( ${TREXIO_INCLUDE_DIRS} )
+endif()
+
+find_package(QMCKL)
+if (QMCKL_FOUND)
+    list( APPEND PPDIRECTIVES _QMCKL )
+    link_libraries(${QMCKL_LIBRARIES})
+    include_directories( ${QMCKL_INCLUDE_DIRS} )
+endif()
+
+find_package(QMCKL_GPU)
+if (QMCKL_GPU_FOUND)
+    list( APPEND PPDIRECTIVES _QMCKL_GPU )
+    link_libraries(${QMCKL_GPU_LIBRARIES})
+    include_directories( ${QMCKL_GPU_INCLUDE_DIRS} )
+endif()
 ######################################################################
 #
 # Setting native OMP to off
