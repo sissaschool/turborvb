@@ -17,12 +17,19 @@ subroutine read_datasmin
     use allio
     use Thomas_Fermi_model !!!! new !!!! added by K.Nakano 11/09/2019
     use dielectric
+    use qmckl
+    use cartesian2spherical
     implicit none
-    integer :: i, j, ind
+    integer :: i, ii, j, ind
     real(8) :: num_ele_core_r_c, r_c, beta_for_r_c, kappa_for_r_c !!!! new !!!! added by K.Nakano 11/09/2019
     real(8), external :: dlamch
     logical noreadnpbra, def_nscra
     real*8 derfc, err_derfc
+    integer(kind=qmckl_exit_code) :: rc
+    integer(kind=8) :: qmckl_shell_num, qmckl_prim_num, qmckl_index(10000), npoints_qmckl, ao_num
+    integer(kind=4) :: qmckl_index4(10000)
+    real*8 :: electrons(3, 2)
+    real*8, allocatable :: ao_value_qmckl(:)
 #ifdef _OFFLOAD
     integer*8, parameter :: max_sparse = 40
 #else
@@ -651,6 +658,50 @@ subroutine read_datasmin
         if (iread .eq. 3) write (6, *) 'CORRELATED SAMPLING'
         if (iread .eq. 2 .or. iread .eq. 3) then
             write (6, *) 'dumping configurations each', ifreqdump, 'generations'
+        end if
+
+        if (trexiofile.ne.'') then
+#ifdef _QMCKL
+            use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx, trim(trexiofile), 1_8*len(trim(trexiofile))))
+            if (use_qmckl) then
+                write (6, *) "Loading TREXIO file:", trexiofile
+            else
+                write (6, *) "Failed to load TREXIO file:", trexiofile
+            end if
+
+            rc = qmckl_get_ao_basis_shell_num(qmckl_ctx, qmckl_shell_num)
+
+            if (rc.ne.QMCKL_SUCCESS) then
+                write (0, *) "Failed to get number of shells from TREXIO file"
+                use_qmckl = .false.
+            end if
+
+            allocate(shell_ang_moms(qmckl_shell_num))
+
+            rc = qmckl_get_ao_basis_shell_ang_mom(qmckl_ctx&
+                                               &, shell_ang_moms&
+                                               &, 1_8*qmckl_shell_num)
+
+            if (rc.ne.QMCKL_SUCCESS) then
+                write (0, *) "Failed to get angular momentum of shells from TREXIO file"
+                use_qmckl = .false.
+            end if
+
+            allocate(cart_shell_inds(qmckl_shell_num))
+            allocate(spher_shell_inds(qmckl_shell_num))
+
+            ! Calculate indeces of cartesian and spherical shells
+            cart_shell_inds(1) = 1
+            spher_shell_inds(1) = 1
+            do ii = 2, qmckl_shell_num
+                cart_shell_inds(ii) = cart_shell_inds(ii-1) + cart_multiplicity(shell_ang_moms(ii-1))
+                spher_shell_inds(ii) = spher_shell_inds(ii-1) + spher_multiplicity(shell_ang_moms(ii-1))
+            end do
+
+#else
+            write (6, *) "Ignoring TREXIO file, TurboRVB was not compiled with QMCkl support"
+            use_qmckl = .false.
+#endif
         end if
 
         !          default values parameters vmc with calculation of variance

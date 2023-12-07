@@ -18,6 +18,7 @@ program main
     use allio
     use convertmod
     use IO_m
+    use trexio
     ! by E. Coccia (8/11/10)
     use extpot
     ! by E. Coccia (28/12/10)
@@ -5444,6 +5445,7 @@ contains
 
     subroutine Initializeall
         use allio
+        use qmckl
         ! by E. Coccia (9/11/10)
         use extpot, only: mm_restr, n_x, n_y, n_z, delta, x0, ext_pot, link_atom, write_rwalk
         use splines, only: bscoef
@@ -5464,6 +5466,16 @@ contains
 #if defined (_OPENMP) && defined (__NOOMP)
         integer, external :: omp_get_max_threads
         call omp_set_num_threads(1) ! scalar code
+#endif
+
+#ifdef _QMCKL
+        qmckl_ctx = qmckl_context_create()
+        if (qmckl_ctx.eq.0_8) then
+            write (0,*) "QMCKL context is a null pointer, but it should never happen"
+            stop 1
+        else
+            write (6,*) "QMCKL context created"
+        end if
 #endif
 
 !  Definition once for all machine precision and safemin as in lapack (more strict)
@@ -8711,15 +8723,29 @@ contains
         use extpot, only: ext_pot, mm_restr, write_rwalk
 ! by E. Coccia (4/2/11): deallocate arrays for van_der_waals
         use van_der_waals, only: vdw
+        use qmckl
 
         implicit none
         real*8, external :: dnrm2
         real*8 drand1, enercont, jacobian, mapping
         integer iend_sav
+        integer(kind=qmckl_exit_code) :: rc
 #if defined (_OPENMP) && defined (__NOOMP)
         integer, external :: omp_get_max_threads
         call omp_set_num_threads(1) ! scalar code
 #endif
+
+#ifdef _QMCKL
+        rc = qmckl_context_destroy(qmckl_ctx)
+        if (rc.ne.QMCKL_SUCCESS) then
+            write (0, *) "Unable to destroy QMCkl context"
+        end if
+
+        if (allocated(cart_shell_inds)) deallocate(cart_shell_inds)
+        if (allocated(spher_shell_inds)) deallocate(spher_shell_inds)
+        if (allocated(shell_ang_moms)) deallocate(shell_ang_moms)
+#endif
+        
 
 ! by E. Coccia (20/12/11): writing electronic random walk
         if (rank .eq. 0 .and. write_rwalk) close (671)
