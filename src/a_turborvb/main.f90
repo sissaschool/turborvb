@@ -8740,10 +8740,6 @@ contains
         if (rc.ne.QMCKL_SUCCESS) then
             write (0, *) "Unable to destroy QMCkl context"
         end if
-
-        if (allocated(cart_shell_inds)) deallocate(cart_shell_inds)
-        if (allocated(spher_shell_inds)) deallocate(spher_shell_inds)
-        if (allocated(shell_ang_moms)) deallocate(shell_ang_moms)
 #endif
         
 

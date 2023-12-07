@@ -667,36 +667,6 @@ subroutine read_datasmin
             else
                 write (6, *) "Failed to load TREXIO file:", trexiofile
             end if
-
-            rc = qmckl_get_ao_basis_shell_num(qmckl_ctx, qmckl_shell_num)
-
-            if (rc.ne.QMCKL_SUCCESS) then
-                write (0, *) "Failed to get number of shells from TREXIO file"
-                use_qmckl = .false.
-            end if
-
-            allocate(shell_ang_moms(qmckl_shell_num))
-
-            rc = qmckl_get_ao_basis_shell_ang_mom(qmckl_ctx&
-                                               &, shell_ang_moms&
-                                               &, 1_8*qmckl_shell_num)
-
-            if (rc.ne.QMCKL_SUCCESS) then
-                write (0, *) "Failed to get angular momentum of shells from TREXIO file"
-                use_qmckl = .false.
-            end if
-
-            allocate(cart_shell_inds(qmckl_shell_num))
-            allocate(spher_shell_inds(qmckl_shell_num))
-
-            ! Calculate indeces of cartesian and spherical shells
-            cart_shell_inds(1) = 1
-            spher_shell_inds(1) = 1
-            do ii = 2, qmckl_shell_num
-                cart_shell_inds(ii) = cart_shell_inds(ii-1) + cart_multiplicity(shell_ang_moms(ii-1))
-                spher_shell_inds(ii) = spher_shell_inds(ii-1) + spher_multiplicity(shell_ang_moms(ii-1))
-            end do
-
 #else
             write (6, *) "Ignoring TREXIO file, TurboRVB was not compiled with QMCkl support"
             use_qmckl = .false.
