@@ -18,7 +18,6 @@ subroutine read_datasmin
     use Thomas_Fermi_model !!!! new !!!! added by K.Nakano 11/09/2019
     use dielectric
     use qmckl
-    use cartesian2spherical
     implicit none
     integer :: i, ii, j, ind
     real(8) :: num_ele_core_r_c, r_c, beta_for_r_c, kappa_for_r_c !!!! new !!!! added by K.Nakano 11/09/2019
