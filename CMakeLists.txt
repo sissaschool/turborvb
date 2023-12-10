@@ -317,6 +317,7 @@ if (QMCKL_GPU_FOUND)
     link_libraries(${QMCKL_GPU_LIBRARIES})
     include_directories( ${QMCKL_GPU_INCLUDE_DIRS} )
 endif()
+
 ######################################################################
 #
 # Setting native OMP to off
