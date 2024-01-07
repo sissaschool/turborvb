@@ -452,6 +452,8 @@ function multioptorb(ioptorb)
         multioptorb = 11 ! h
     case (73, 900)
         multioptorb = 13 ! i
+    case(90:99)
+        multioptorb = (ioptorb - 90 + 2) * (ioptorb - 90 + 1) / 2
     case default
         multioptorb = 0
     end select
