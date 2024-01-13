@@ -34,7 +34,7 @@ function slaterorb(ioptorb)
         slaterorb = .true.
     case (16:19, 36, 37, 44:49, 51:54, 58:59, 60:65, 68:69, 72, 73, 90:99, 100:105, 108, 109, &
           131, 132, 145:155, 161, 1000:1099, 2000:2099, 1100:1199, &
-          2100:2199, 1200:1299, 2200:2299, 200)
+          2100:2199, 1200:1299, 2200:2299, 200, 10000:11000)
 ! the constant orbital is considered Gaussian
         slaterorb = .false.
     case default
