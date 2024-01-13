@@ -1,4 +1,3 @@
-!TL off
 
 
 !###########################################################
@@ -7,7 +6,8 @@
 !#                                                         #
 !###########################################################
 
-    SUBROUTINE makefun0_bump (iopt,iocc,indt,typec,indpar,indorb,indshell,nelskip,z,dd,r,rmu,distp,iflagnorm_fake,c)
+    !TL off
+SUBROUTINE makefun0_bump (iopt,iocc,indt,typec,indpar,indorb,indshell,nelskip,z,dd,r,rmu,distp,iflagnorm_fake,c)
 
          use allio, only: cutoff_p ! user-defined cutoff for bump orbitals (see file bump_orbitals_new.f90)
          use constants

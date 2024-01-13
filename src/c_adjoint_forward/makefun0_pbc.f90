@@ -1,4 +1,3 @@
-!TL off
 
 
 !###########################################################
@@ -7,7 +6,8 @@
 !#                                                         #
 !###########################################################
 
-    SUBROUTINE makefun0_pbc (iopt,iocc,indt,typec,indpar,indorb,indshell,nelskip,z,dd,r,rmu,distp,iflagnorm_fake,c,rmucos,rmusin,sinphase,cosphase)
+    !TL off
+SUBROUTINE makefun0_pbc (iopt,iocc,indt,typec,indpar,indorb,indshell,nelskip,z,dd,r,rmu,distp,iflagnorm_fake,c,rmucos,rmusin,sinphase,cosphase)
 
          use constants
          use Cell,      only:cellscale,rphase
