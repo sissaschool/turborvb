@@ -8217,11 +8217,11 @@ case (90:99)
     dd1=dd(indpar+1)
     multiplicity = (iopt - 90 + 2) * (iopt - 90 + 1) / 2
     powers(:,0,:) = 1.0d0
-    do i = 1, max_power
+    do ii = 1, max_power
         do k = 0, 0
-            powers(1, i, k) = powers(1, i-1, k) * rmu(1, k)
-            powers(2, i, k) = powers(2, i-1, k) * rmu(2, k)
-            powers(3, i, k) = powers(3, i-1, k) * rmu(3, k)
+            powers(1, ii, k) = powers(1, ii-1, k) * rmu(1, k)
+            powers(2, ii, k) = powers(2, ii-1, k) * rmu(2, k)
+            powers(3, ii, k) = powers(3, ii-1, k) * rmu(3, k)
         end do
     end do
     c = 0.712705470354990_8 * dd1 ** 0.75_8! * 2.829

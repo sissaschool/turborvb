@@ -154,6 +154,7 @@ if(EXT_DFT)
   #
   
   add_subdirectory(test_dft_open)
+  add_subdirectory(test_dft_open_cartesian)
   add_subdirectory(test_dft_pbc_gamma)
   add_subdirectory(test_dft_pbc_twist_real)
   add_subdirectory(test_dft_pbc_twist_complex)
