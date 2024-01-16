@@ -673,6 +673,16 @@ subroutine read_datasmin
 #endif
         end if
 
+        if (setup_qmckl) then
+#ifdef _QMCKL
+            call setup_qmckl_ctx(&
+                          &  atom_number&
+                          &, rion&
+                          &, nion&
+                          &, qmckl_ctx)
+#endif
+        end if
+
         !          default values parameters vmc with calculation of variance
 
         ieser = -1

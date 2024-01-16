@@ -17,9 +17,14 @@ subroutine upnewwf(indt, i0, indtm, typecomp, nshell, ioptorb, iocc, kel, nel, r
                    nion, kion, iflagnorm, cnorm, LBox, rmucos, rmusin, mindist, indpar_tab, indorb_tab, indshell_tab, yesupel)
 
     use allio, only: ikshift, iespbc, rank, gamma_point, yes_crystalj&
-        &, yes_scemama, lepsbas, novec_loop1, slaterorb_read, nshell_det
+        &, yes_scemama, lepsbas, novec_loop1, slaterorb_read, nshell_det&
+        &, use_qmckl, qmckl_ctx
     use Cell, only: cellscale, cellpi, rphase, phase2pi, phase2pi_down, sinphase, cosphase, s2r, car2cry
     use Constants, only: ipc
+    use qmckl
+#ifdef _QMCKL_GPU
+    !use qmckl_gpu
+#endif
 
     implicit none
     ! input
@@ -51,6 +56,11 @@ subroutine upnewwf(indt, i0, indtm, typecomp, nshell, ioptorb, iocc, kel, nel, r
     integer :: iocc(indshell_tab(nshell + 1))
     real*8 dd(indpar_tab(nshell + 1))
     real*8 phs(3) ! scratch phase for Lbox=3
+    !
+    ! QMCKL
+    integer*4                      :: rc
+    integer*8, save                :: ao_num=0, npoints_qmckl=0
+    double precision, allocatable  :: ao_vgl_qmckl(:,:), ao_value_qmckl(:,:)
     !
     integer, external :: omp_get_num_threads
     ! ---------------------------------------------------------------------
@@ -316,56 +326,151 @@ subroutine upnewwf(indt, i0, indtm, typecomp, nshell, ioptorb, iocc, kel, nel, r
                     &, kion, ioptorb, indpar_tab, indorb_tab, indshell_tab, mindist, phs, dd, z, dimx, dimy&
                     &, nelskip, iesjas, rmu, rion, cnorm, zeta, rmucos)
         else
+            if (.not.use_qmckl) then
 !$omp parallel do default(shared)&
 !$omp private(i,ll,i_ion,indpar,indorb,indshell,do_makefun,yeszero_z)
-            do i = 1, nshell
-                indpar = max(indpar_tab(i), 0)
-                indorb = indorb_tab(i)
-                indshell = indshell_tab(i)
-                do_makefun = .true.
-                if (yes_scemama .and. ioptorb(i) .ne. 200) then
-                    i_ion = kion(i)
-!           do_makefun=.false.
-                    if (slaterorb_read(i + mshift)) then
-                        do ll = i0u, indtm
-                            if (dd(indpar + 1)*r(ll, i_ion) .lt. lepsbas) then
-!              do_makefun=.true.
-                                yeszero_z(ll) = .false.
-                            else
-                                yeszero_z(ll) = .true.
-                            end if
-                        end do
-                    else
-!             do_makefun=.true. ! I am afraid the compiler vectorize  wrong
-                        do ll = i0u, indtm
-                            if (dd(indpar + 1)*r(ll, i_ion)*r(ll, i_ion) .lt. lepsbas) then
-                                yeszero_z(ll) = .false.
-                            else
-                                yeszero_z(ll) = .true.
-                            end if
-                        end do
+                do i = 1, nshell
+                    indpar = max(indpar_tab(i), 0)
+                    indorb = indorb_tab(i)
+                    indshell = indshell_tab(i)
+                    do_makefun = .true.
+                    if (yes_scemama .and. ioptorb(i) .ne. 200) then
+                        i_ion = kion(i)
+                        !           do_makefun=.false.
+                        if (slaterorb_read(i + mshift)) then
+                            do ll = i0u, indtm
+                                if (dd(indpar + 1)*r(ll, i_ion) .lt. lepsbas) then
+                                    yeszero_z(ll) = .false.
+                                else
+                                    yeszero_z(ll) = .true.
+                                end if
+                            end do
+                        else
+                            do ll = i0u, indtm
+                                if (dd(indpar + 1)*r(ll, i_ion)*r(ll, i_ion) .lt. lepsbas) then
+                                    yeszero_z(ll) = .false.
+                                else
+                                    yeszero_z(ll) = .true.
+                                end if
+                            end do
+                        end if
+                        do_makefun = .not. all(yeszero_z(i0u:indtm))
                     end if
-                    do_makefun = .not. all(yeszero_z(i0u:indtm))
-                end if
-                if (do_makefun) then
-                    call makefun(ioptorb(i), indt, i0, indtmin, indtm, typecomp &
-                                 , indpar, indorb, indshell, nelskip, z, dd, zeta(kion(i)), r(0, kion(i)), rmu(1, 0, kion(i)) &
-                                 , distp(dimp*(i - 1) + 1), iflagnorm, cnorm(i))
-                    if (yes_scemama .and. indtm .gt. 0 .and. ioptorb(i) .ne. 200) then
-                        do ll = i0, indtm
-                            if (yeszero_z(ll)) then
-                                z(indorb_tab(i) + 1:indorb_tab(i + 1), ll) = 0.d0
+                    if (do_makefun) then
+                        call makefun(ioptorb(i), indt, i0, indtmin, indtm, typecomp&
+                               &, indpar, indorb, indshell, nelskip, z, dd, zeta(kion(i)), r(0, kion(i)), rmu(1, 0, kion(i))&
+                               &, distp(dimp*(i - 1) + 1), iflagnorm, cnorm(i))
+                        if (yes_scemama .and. indtm .gt. 0 .and. ioptorb(i) .ne. 200) then
+                            do ll = i0, indtm
+                                if (yeszero_z(ll)) then
+                                    z(indorb_tab(i) + 1:indorb_tab(i + 1), ll) = 0.d0
+                                end if
+                            end do
+                            if (yeszero_z(0) .and. typecomp .ne. 1) then
+                                do ll = indt + 1, indt + 4
+                                    z(indorb_tab(i) + 1:indorb_tab(i + 1), ll) = 0.d0
+                                end do
                             end if
-                        end do
-                        if (yeszero_z(0) .and. typecomp .ne. 1) then
-                        do ll = indt + 1, indt + 4
-                            z(indorb_tab(i) + 1:indorb_tab(i + 1), ll) = 0.d0
-                        end do
                         end if
                     end if
-                end if
-            end do
+                end do
 !$omp end parallel do
+#ifdef _QMCKL
+            else
+                if (npoints_qmckl == 0) then
+                    rc = qmckl_get_ao_basis_ao_num(qmckl_ctx, ao_num)
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error getting ao_num'
+                        call abort()
+                    end if
+                end if
+
+                if (typecomp.eq.1) then   ! Only values
+                    npoints_qmckl = (indtm-i0+1)*1_8
+                    allocate(ao_value_qmckl(ao_num, i0:indtm))
+                    rc = qmckl_set_point(qmckl_ctx, 'N', npoints_qmckl, kel(1:3,1,i0:indtm), 3_8*npoints_qmckl)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error setting electron coords'
+                        call abort()
+                    end if
+
+                    rc = qmckl_get_ao_basis_ao_value_inplace(        &
+                            qmckl_ctx,                               &
+                            ao_value_qmckl,                          &
+                            ao_num*npoints_qmckl)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error getting AOs from QMCkl'
+                        call abort()
+                    end if
+
+                    do jj=i0,indtm
+                        do ii=1,ao_num
+                            z(ii,jj) = ao_value_qmckl(ii,jj)
+                        end do
+                    end do
+
+                    deallocate(ao_value_qmckl)
+                else
+                    npoints_qmckl = (indtm-i0)*1_8
+                    allocate(ao_vgl_qmckl(ao_num, 5))
+                    allocate(ao_value_qmckl(ao_num, i0+1:indtm))
+                    rc = qmckl_set_point(qmckl_ctx, 'N', npoints_qmckl, kel(1:3,1,i0+1:indtm), 3_8*npoints_qmckl)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error setting electron coords'
+                        call abort()
+                    end if
+
+                    rc = qmckl_get_ao_basis_ao_value_inplace(        &
+                            qmckl_ctx,                               &
+                            ao_value_qmckl,                          &
+                            ao_num*npoints_qmckl)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error getting AOs from QMCkl'
+                        call abort()
+                    end if
+
+                    rc = qmckl_set_point(qmckl_ctx, 'N', 1_8, kel(1:3,1,i0), 3_8)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error setting electron coords 2'
+                        call abort()
+                    end if
+
+                    rc = qmckl_get_ao_basis_ao_vgl_inplace(          &
+                            qmckl_ctx,                               &
+                            ao_vgl_qmckl,                            &
+                            ao_num*5_8)
+
+                    print *, ao_vgl_qmckl(1:3,1)
+
+                    if (rc /= QMCKL_SUCCESS) then
+                        print *, 'Error getting AOs from QMCkl 2'
+                        call abort()
+                    end if
+
+                    do jj=i0+1,indtm
+                        do ii=1,ao_num
+                            z(ii,jj) = ao_value_qmckl(ii,jj)
+                        end do
+                    end do
+
+                    do ii=1,ao_num
+                        z(ii,i0)     = ao_vgl_qmckl(ii,1)
+                        z(ii,indt+1) = ao_vgl_qmckl(ii,2)
+                        z(ii,indt+2) = ao_vgl_qmckl(ii,3)
+                        z(ii,indt+3) = ao_vgl_qmckl(ii,4)
+                        z(ii,indt+4) = ao_vgl_qmckl(ii,5)
+                    end do
+
+                    deallocate(ao_value_qmckl)
+                    deallocate(ao_vgl_qmckl)
+                end if
+#endif
+            end if
         end if
 
         !  if(iflagnorm.lt.0) then
@@ -875,16 +980,13 @@ subroutine upnewwf0(indt, typecomp, nshell, ioptorb, iocc, kel, nel, r, rmu, dd,
             do_makefun = .true.
             if (yes_scemama .and. ioptorb(i) .ne. 200) then
                 i_ion = kion(i)
-!           do_makefun=.false.
                 if (slaterorb_read(i + mshift)) then
                     if (dd(indpar + 1)*r(0, i_ion) .lt. lepsbas) then
-!              do_makefun=.true.
                         yeszero_z = .false.
                     else
                         yeszero_z = .true.
                     end if
                 else
-!             do_makefun=.true. ! I am afraid the compiler vectorize  wrong
                     if (dd(indpar + 1)*r(0, i_ion)*r(0, i_ion) .lt. lepsbas) then
                         yeszero_z = .false.
                     else

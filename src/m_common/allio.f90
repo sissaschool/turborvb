@@ -19,6 +19,7 @@ module allio
     use Ewald
     use types
     use kpoints_mod
+    use qmckl
     use io_m, only: lchlen
     ! by E. Coccia (22/11/10)
     use extpot, only: ext_pot, link_atom, mm_restr, write_rwalk
@@ -126,7 +127,8 @@ module allio
         divide_tpar, multiply_tpar, n_sigmas_tpar
     !end added Andrea Tirelli
 
-    integer*8 :: handle, qmckl_ctx
+    integer(kind=qmckl_context) :: qmckl_ctx
+    integer(kind=8) :: handle
     integer*4 ldworkspace, lzworkspace, dev_Info(1)
     real*8, allocatable, dimension(:) :: dev_dgetrf_workspace
     complex*16, allocatable, dimension(:) :: dev_zgetrf_workspace
@@ -306,7 +308,7 @@ module allio
    &, real_contracted, gauge_fixing, yesmin_read&
    &, noopt_onebody, real_agp, softcusp, scalermax, yeswritebead, yes_hessc&
    &, no_sjbra, manyfort10, shift_origin, shiftx, shifty, shiftz&
-   &, double_mesh, change_parr, use_qmckl&
+   &, double_mesh, change_parr, use_qmckl, setup_qmckl&
    &, default_epsdgel, read_molecul, hybyes, pfaffup, k6gen, noblocking, add_diff&
    &, lrdmc_der, lrdmc_nonodes, nosingledet, enforce_detailb, nowrite12&
    &, yes_fastbranch, flush_write, yes_adams, only_molecular, add_offmol, novec_loop1
@@ -368,7 +370,8 @@ module allio
 
     namelist /pseudo/ nintpsa, npsamax, pseudorandom
 
-    namelist /readio/ ncore, np3, np, iread, writescratch, wherescratch, unreliable, ifreqdump, nowrite12, flush_write, trexiofile
+    namelist /readio/ ncore, np3, np, iread, writescratch, wherescratch&
+    &, unreliable, ifreqdump, nowrite12, flush_write, trexiofile, setup_qmckl
 
     namelist /vmc/ tstep, hopfraction, epscut, epstlrat, epscuttype, alat2v, shift, change_epscut, change_tstep &
     &, epsvar, theta_reg, true_wagner, cutweight, nbra_cyrus, typereg, npow
