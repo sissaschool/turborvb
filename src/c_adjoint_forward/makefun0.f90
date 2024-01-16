@@ -8216,6 +8216,8 @@ case (90:99)
     indorbp=indorb+1
     dd1=dd(indpar+1)
     multiplicity = (iopt - 90 + 2) * (iopt - 90 + 1) / 2
+    powers(:,-2,:) = 0.0d0
+    powers(:,-1,:) = 0.0d0
     powers(:,0,:) = 1.0d0
     do ii = 1, max_power
         do k = 0, 0

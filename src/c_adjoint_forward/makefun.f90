@@ -10152,6 +10152,8 @@ case (90:99)
 
     multiplicity = (iopt - 90 + 2) * (iopt - 90 + 1) / 2
 
+    powers(:,-2,:) = 0.0d0
+    powers(:,-1,:) = 0.0d0
     powers(:,0,:) = 1.0d0
 
     do ii = 1, max_power
@@ -10161,7 +10163,6 @@ case (90:99)
             powers(3, ii, k) = powers(3, ii-1, k) * rmu(3, k)
         end do
     end do
-
 
     c = 0.712705470354990_8 * dd1 ** 0.75_8! * 2.829
     if (iopt - 90 .ne. 0) then
