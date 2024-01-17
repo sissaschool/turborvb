@@ -17,7 +17,7 @@ subroutine makefun(iopt,indt,i0,indtmin,indtm,typec,indpar               &
 
     integer :: count, multiplicity
     integer, parameter :: max_power = 20
-    real*8 :: powers(3,0:max_power,0:indtm)
+    real*8 :: powers(3,-2:max_power,0:indtm)
   !
   ! indorb are the number of orbitals occupied before calling
   ! this subroutine
