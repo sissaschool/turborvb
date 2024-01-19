@@ -140,6 +140,8 @@ if(EXT_MODTEST)
   add_subdirectory(test_upwinvp_complex)
   #add_subdirectory(test_upwinvp_pfaff)
   #add_subdirectory(test_upwinvp_pfaff_complex)
+
+  add_subdirectory(test_makefun)
   
   #
   ######################################################################
