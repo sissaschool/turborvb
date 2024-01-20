@@ -674,13 +674,17 @@ subroutine read_datasmin
         end if
 
         if (setup_qmckl) then
-#ifdef _QMCKL
-            call setup_qmckl_ctx(&
-                          &  atom_number&
-                          &, rion&
-                          &, nion&
-                          &, qmckl_ctx)
-#endif
+!!#ifdef _QMCKL
+!!            !call setup_qmckl_ctx(&
+!!            !              &  atom_number&
+!!            !              &, rion&
+!!            !              &, nion&
+!!            !              &, kion&
+!!            !              &, qmckl_ctx)
+!!            print *, "Atom number = ", nion
+!!            stop
+!!            call setup_qmckl_ctx(nion, qmckl_ctx)
+!!#endif
         end if
 
         !          default values parameters vmc with calculation of variance

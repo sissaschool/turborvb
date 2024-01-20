@@ -5468,15 +5468,6 @@ contains
         call omp_set_num_threads(1) ! scalar code
 #endif
 
-#ifdef _QMCKL
-        qmckl_ctx = qmckl_context_create()
-        if (qmckl_ctx.eq.0_8) then
-            write (0,*) "QMCKL context is a null pointer, but it should never happen"
-            stop 1
-        else
-            write (6,*) "QMCKL context created"
-        end if
-#endif
 
 !  Definition once for all machine precision and safemin as in lapack (more strict)
         epsmach = dlamch('e')
@@ -8715,6 +8706,32 @@ contains
             write (6, *) ' Warning using SPARSE matrix algorithm for Jastrow '
         end if
         enerdiff = 0.d0 ! just to be sure it is initialized.
+#ifdef _QMCKL
+        !qmckl_ctx = qmckl_context_create()
+        !if (qmckl_ctx.eq.0_8) then
+        !    write (0,*) "QMCKL context is a null pointer, but it should never happen"
+        !    stop 1
+        !else
+        !    write (6,*) "QMCKL context created"
+        !end if
+!!#ifdef _QMCKL
+!!            !call setup_qmckl_ctx(&
+!!            !              &  atom_number&
+!!            !              &, rion&
+!!            !              &, nion&
+!!            !              &, kion&
+!!            !              &, qmckl_ctx)
+!!            print *, "Atom number = ", nion
+!!            stop
+!!            call setup_qmckl_ctx(nion, qmckl_ctx)
+!!#endif
+        print *, "number of atoms = ", nion
+        print *, "atomix numbers = ", atom_number
+        print *, "atomic positions = ", rion
+        print *, "number of shells = ", nshell
+        print *, "shell types to ions = ", kion
+        call setup_qmckl_ctx(nion, nshell, atom_number, rion, kion, qmckl_ctx)
+#endif
     end subroutine Initializeall
 
     subroutine Finalizeall
