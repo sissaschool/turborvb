@@ -1,17 +1,23 @@
-  ! R(r)=r**2*exp(-z1*r)
-
-
+  ! s orbital
+  ! 
+  ! - angmom = 0
+  ! - type = Slater
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 1
+  !
+  ! = N * R
+  !
+  ! 3s single zeta
+  ! and R is the radial part
+  ! R(r) = r**2*exp(-z1*r)
+  !
 
   indshellp=indshell+1
-
-  !        if(iocc(indshellp).eq.1) then
-
   indorbp=indorb+1
   dd1=dd(indpar+1)
-  !           if(iflagnorm.gt.2) then
-  !           c=dsqrt((2*dd1)**7/720.d0/pi)/2.d0
   c=dd1**3.5d0*0.11894160774351807429d0
-  !           endif
 
   do k=indtmin,indtm
     distp(k,1)=c*dexp(-dd1*r(k))
@@ -31,10 +37,5 @@
   end if
 
   indorb=indorbp
-
-  !        endif
   indpar=indpar+1
   indshell=indshellp
-
-
-  ! 3s double zeta
