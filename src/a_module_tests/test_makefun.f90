@@ -17,7 +17,7 @@ program makefun_tester
     end interface
 
     integer*4 :: iorb, indt, indpar, indorb, indshell, i0, iflagnorm_unused&
-              &, indtm, indtmin, typec, nelskip, num_lines, ii
+              &, indtm, indtmin, typec, nelskip, num_lines, ii, iostat
     real*8 :: cr 
     real*8, dimension(:), allocatable :: dd, zeta, r
     real*8, dimension(:,:), allocatable :: z, rmu, distp
@@ -43,17 +43,21 @@ program makefun_tester
     ! Count number of lines
     num_lines = 0
     do
-        read(10,*,iostat=iflagnorm_unused)
-        if (iflagnorm_unused /= 0) exit
+        read(10,*,iostat=iostat)
+        if (iostat /= 0) exit
         num_lines = num_lines + 1
     end do
     ! Allocate arrays
+    if (allocated(iorbs)) deallocate(iorbs)
     allocate(iorbs(num_lines))
+    if (allocated(multiplicities)) deallocate(multiplicities)
     allocate(multiplicities(num_lines))
+    if (allocated(npars)) deallocate(npars)
     allocate(npars(num_lines))
+    if (allocated(failed_test)) deallocate(failed_test)
     allocate(failed_test(num_lines))
-    ! Zeta is never more than 3
-    !allocate(zeta(3))
+    if (allocated(zeta)) deallocate(zeta)
+    allocate(zeta(3)) ! Zeta is never more than 3
 
     ! Set default zeta. Zeta is technically not used anymore
     ! is here only for legacy reasons
@@ -90,7 +94,7 @@ program makefun_tester
         allocate(z(multiplicities(ii),0:indt+4))
 
         if (allocated(distp)) deallocate(distp)
-        allocate(distp(0:indt+4,20))
+        allocate(distp(0:indtm,20))
     
         !call create_single_value()
         !call create_pa_value()
@@ -106,11 +110,11 @@ program makefun_tester
             write(error_message, '(A,A,I3.3)') trim(tmp), ",", iorbs(ii)
         end if
     
-        deallocate(distp)
-        deallocate(z)
-        deallocate(r)
-        deallocate(dd)
-        deallocate(rmu)
+        !deallocate(distp)
+        !deallocate(z)
+        !deallocate(r)
+        !deallocate(dd)
+        !deallocate(rmu)
 
         write(*, *)
         write(*, '("Result = ", L1)') .not. failed
@@ -126,6 +130,7 @@ program makefun_tester
     
     if (allocated(zeta)) deallocate(zeta)
     if (allocated(r)) deallocate(r)
+        stop
 
     print *, "Failed tests: ", trim(error_message)
     if (len_trim(error_message) > 0) then
@@ -229,6 +234,24 @@ subroutine check_index_movement
     indshell = 0
     z = 0.0d0
     
+    !print *, "indorbs(ii) = ", iorbs(ii)
+    !print *, "indt = ", indt
+    !print *, "i0 = ", i0
+    !print *, "indtmin = ", indtmin
+    !print *, "indtm = ", indtm
+    !print *, "typec = ", typec
+    !print *, "indpar = ", indpar
+    !print *, "indorb = ", indorb
+    !print *, "indshell = ", indshell
+    !print *, "multiplicities(ii) = ", multiplicities(ii)
+    !print *, "z = ", z
+    !print *, "dd = ", dd
+    !print *, "zeta = ", zeta
+    !print *, "r = ", r
+    !print *, "rmu = ", rmu
+    !print *, "distp = ", distp
+    !print *, "iflagnorm_unused = ", iflagnorm_unused
+    !print *, "cr = ", cr
     call makefun(iorbs(ii),indt,i0,indtmin,indtm,typec,indpar      &
                &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
                &,iflagnorm_unused,cr)

@@ -15,7 +15,7 @@ SUBROUTINE makefun0 (iopt,indt,typec,indpar,indorb,indshell,nelskip,z,dd,zeta,r,
     real*8 z(nelskip,0:*),dd(*),zeta(*),rmu(3,0:0)                  ,r(0:0)                                                  ,distp(0:0,20),peff,fun,fun0,fun2                        ,rp1,rp2,rp3,rp4,rp5,rp6,rp7,rp8                             ,dd1,dd2,dd3,dd4,dd5,c,cr,funp,fun2p,funb                    ,peff2,arg,c0,c1,cost,zv(6),yv(6),xv(6),r2,r4,r6 ! up to i
     integer :: count, multiplicity
     integer, parameter :: max_power = 20
-    real*8 :: powers(3,0:max_power,0:0)
+    real*8 :: powers(3,-2:max_power,0:0)
   !
   ! indorb are the number of orbitals occupied before calling
   ! this subroutine
@@ -433,9 +433,6 @@ indshell=indshellp
 indorb=indorbp
 case (10000:11000)
   ! Reserved for dummy orbitals
-  indpar=indpar+0
-  indshell=indshell+(iopt - 10000)
-  indorb=indorbp + (iopt - 10000)
 case (107)
 !     2p single  lorentian  parent of 103
 dd2=dd(indpar+1)
@@ -791,12 +788,27 @@ indpar=indpar+1
 indshell=indshellp
 indorb=indorbp
 case (16)
-  ! R(r)=exp(-z*r**2) single zeta
+  ! s orbital
+  !
+  ! - angmom = 0
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 1
+  !
+  ! = N * R
+  !
+  ! where N is the normalization constant
+  ! N = (2*alpha/pi)**(3/4)
+  !
+  ! and R is the radial part
+  ! R = exp(-alpha*r**2)
+  !
   indshellp=indshell+1
   indorbp=indorb+1
   dd1=dd(indpar+1)
   if(dd1.ne.0.) then
-    ! c=(2.d0*dd1/pi)**(3.d0/4.d0)
     c=0.71270547035499016d0*dd1**0.75d0
   else
     c=1.d0
@@ -817,6 +829,7 @@ case (16)
     end do
     z(indorbp,indt+4)=2.d0*fun+fun2
     if(typec.eq.2) then
+      ! Backflow
       funb=(fun2-fun)/(r(0)*r(0))
       z(indorbp,indt+5)=funb*rmu(1,0)*rmu(1,0)+fun
       z(indorbp,indt+6)=funb*rmu(2,0)*rmu(2,0)+fun
@@ -1257,15 +1270,25 @@ case (17)
   indshell=indshellp
   ! 2s gaussian for pseudo
 case (10)
-  ! R(r)=r**2*exp(-z1*r)
+  ! s orbital
+  !
+  ! - angmom = 0
+  ! - type = Slater
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 1
+  !
+  ! = N * R
+  !
+  ! 3s single zeta
+  ! and R is the radial part
+  ! R(r) = r**2*exp(-z1*r)
+  !
   indshellp=indshell+1
-  !        if(iocc(indshellp).eq.1) then
   indorbp=indorb+1
   dd1=dd(indpar+1)
-  !           if(iflagnorm.gt.2) then
-  !           c=dsqrt((2*dd1)**7/720.d0/pi)/2.d0
   c=dd1**3.5d0*0.11894160774351807429d0
-  !           endif
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k))
   end do
@@ -1281,10 +1304,8 @@ case (10)
     z(indorbp,indt+4)=2.d0*fun+fun2
   end if
   indorb=indorbp
-  !        endif
   indpar=indpar+1
   indshell=indshellp
-  ! 3s double zeta
 case (129)
 !     2p single exponential  r e^{-z r}  ! parent of 121
 dd2=dd(indpar+1)
@@ -1508,43 +1529,38 @@ case (7)
   indshell=indshellp
   ! 2s double Z WITH CUSP
 case (36)
+  ! p orbital
+  !
+  ! - angmom = 1
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 3
+  !
   dd1=dd(indpar+1)
-  !\print *, "0, 0, 0"
-  !\print *,0, 0, 0
-  !        if(iflagnorm.gt.2) then
-  !        c=dsqrt(2.d0)*pi**(-0.75d0)*(2.d0*dd1)**1.25d0
   c=dd1**1.25d0*1.42541094070998d0
-  !        endif
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k)**2)
   end do
-  !        indorbp=indorb
-  !
   do ic=1,3
-    !           if(iocc(indshell+ic).eq.1) then
     indorbp=indorb+ic
     do i=0,0
       z(indorbp,i)=rmu(ic,i)*distp(i,1)
     end do
-    !           endif
   end do
   if(typec.ne.1) then
     fun0=distp(0,1)
     fun=-2.d0*dd1*distp(0,1)
     fun2=fun*(1.d0-2.d0*dd1*r(0)**2)
-    !              indorbp=indorb
     do ic=1,3
-      !                if(iocc(indshell+ic).eq.1) then
       indorbp=indorb+ic
       do i=1,3
-        z(indorbp,indt+i)=rmu(ic,0)*rmu(i,0)*                        &
-            fun
+        z(indorbp,indt+i)=rmu(ic,0)*rmu(i,0)*fun
       end do
       z(indorbp,indt+ic)=z(indorbp,indt+ic)+fun0
       z(indorbp,indt+4)=rmu(ic,0)*(4.d0*fun+fun2)
-      !                 endif
     end do
-    !endif for indt
   end if
   indpar=indpar+1
   indshell=indshell+3
@@ -2675,17 +2691,18 @@ indpar=indpar+3
 indshell=indshell+3
 indorb=indorbp
 case (48)
-  ! f single gaussian orbital
-  ! R(r)= exp(-alpha r^2)
-  ! normalized
-  !        indorbp=indorb
+  ! f orbital
+  !
+  ! - angmom = 3
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 7
+  !
   indparp=indpar+1
   dd1=dd(indparp)
-  !        if(iflagnorm.gt.2) then
-  ! overall normalization
-  !        c=8.d0/dsqrt(15.d0)*(2.d0/pi)**(3.d0/4.d0)*dd1**(9.d0/4.d0)
   c=dd1**2.25d0*1.47215808929909374563d0
-  !        endif
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k)**2)
   end do
@@ -2713,21 +2730,17 @@ case (48)
     ! lz=+/-3
   end do
   do ic=1,7
-    !           if(iocc(indshell+ic).eq.1) then
     indorbp=indorb+ic
     do k=0,0
       z(indorbp,k)=distp(k,1)*distp(k,1+ic)
     end do
-    !           endif
   end do
   if(typec.ne.1) then
     dd1=dd(indparp)
     fun0=distp(0,1)
     fun=-2.d0*dd1*distp(0,1)
     fun2=fun*(1.d0-2.d0*dd1*r(0)**2)
-    !              indorbp=indorb
     do ic=1,7
-      !                 if(iocc(indshell+ic).eq.1) then
       indorbp=indorb+ic
       do i=1,3
         z(indorbp,indt+i)=distp(0,1+ic)*rmu(i,0)                     &
@@ -2780,16 +2793,11 @@ case (48)
             3.d0*cost4f*fun0*(rmu(1,0)**2-rmu(2,0)**2)
       end if
       z(indorbp,indt+4)=distp(0,1+ic)*(8.d0*fun+fun2)
-      !endif for iocc
-      !                endif
-      ! enddo fot ic
     end do
-    !endif for indt
   end if
   indpar=indpar+1
   indshell=indshell+7
   indorb=indorbp
-  ! derivative of 48 with respect to z
 case (102)
   !     2s double gaussian with constant
   !     (dd3+ exp (-dd2 r^2)+dd4*exp(-dd5*r^2))
@@ -3627,13 +3635,18 @@ case (56)
   indshell=indshell+9
   indorb=indorbp
 case (1)
+  ! s orbital
+  !
+  ! - angmom = 0
+  ! - type = Slater
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 1
+  !
   indshellp=indshell+1
-  !        if(iocc(indshellp).eq.1) then
   dd1=dd(indpar+1)
-  !           if(iflagnorm.gt.2) then
-  !           c=dd1*dsqrt(dd1)/dsqrt(pi)
   c=dd1*dsqrt(dd1)*0.56418958354775628695d0
-  !           endif
   indorbp=indorb+1
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k))
@@ -3646,14 +3659,11 @@ case (1)
     do i=1,3
       z(indorbp,indt+i)=fun*rmu(i,0)/r(0)
     end do
-    z(indorbp,indt+4)=(-2.d0*dd1/r(0)+dd1**2)                        &
-        *distp(0,1)
+    z(indorbp,indt+4)=(-2.d0*dd1/r(0)+dd1**2)*distp(0,1)
   end if
   indorb=indorbp
-  !        endif
   indpar=indpar+1
   indshell=indshellp
-  ! 1s double Z with cusp cond
 case (49)
   ! f orbitals
   ! R(r)= c*exp(-z r^2)*(9/4/z-r^2)
@@ -3831,18 +3841,26 @@ indshell=indshell+3
 indorb=indorbp
 ! der of 127
 case (26)
-  !     2p without cusp condition
+  ! s orbital
+  !
+  ! - angmom = 1
+  ! - type = Slater
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 5
+  ! - multiplicity = 3
+  !
+  ! 2p with cusp conditions
+  !
   dd1=dd(indpar+1)
   dd2=dd(indpar+2)
   peff=dd(indpar+3)
   dd3=dd(indpar+4)
   peff2=dd(indpar+5)
-  !        if(iflagnorm.gt.2) then
   c=1.d0/2.d0/dsqrt(8.d0*pi*(1.d0/(2.d0*dd1)**5                      &
       +2.d0*peff/(dd1+dd2)**5+peff**2/(2.d0*dd2)**5                  &
       +2.d0*peff2/(dd1+dd3)**5+peff2**2/(2.d0*dd3)**5                &
       +2.d0*peff2*peff/(dd2+dd3)**5))
-  !        endif
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k))
     distp(k,2)=c*dexp(-dd2*r(k))
@@ -3851,37 +3869,29 @@ case (26)
   do i=0,0
     distp(i,4)=distp(i,1)+peff*distp(i,2)+peff2*distp(i,3)
   end do
-  !        indorbp=indorb
   do ic=1,3
-    !           if(iocc(indshell+ic).eq.1) then
     indorbp=indorb+ic
     do i=0,0
       z(indorbp,i)=rmu(ic,i)*distp(i,4)
     end do
-    !           endif
   end do
   if(typec.ne.1) then
     fun=(-dd1*distp(0,1)-dd2*peff*distp(0,2)                         &
         -dd3*peff2*distp(0,3))/r(0)
     fun2=dd1**2*distp(0,1)+peff*dd2**2*distp(0,2)                    &
         +peff2*dd3**2*distp(0,3)
-    !              indorbp=indorb
     do ic=1,3
-      !                 if(iocc(indshell+ic).eq.1) then
       indorbp=indorb+ic
       do i=1,3
         z(indorbp,indt+i)=rmu(ic,0)*rmu(i,0)*fun
         if(i.eq.ic) z(indorbp,indt+i)=z(indorbp,indt+i)+distp(0,4)
       end do
       z(indorbp,indt+4)=rmu(ic,0)*(4.d0*fun+fun2)
-      !                 endif
     end do
-    !endif for indt
   end if
   indpar=indpar+5
   indshell=indshell+3
   indorb=indorbp
-  ! 3p triple zeta
 case (86)
   ! f single gaussian orbital
   ! R(r)= exp(-alpha r^2)
@@ -4913,17 +4923,18 @@ case (13)
   indshell=indshellp
   ! 1s single Z pseudo
 case (37,68)
-  ! d orbitals
-  ! R(r)= exp(-alpha r^2)
-  ! each gaussian term is normalized
-  !        indorbp=indorb
+  ! d orbital
+  !
+  ! - angmom = 2
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 1
+  ! - multiplicity = 5
+  !
   indparp=indpar+1
   dd1=dd(indparp)
-  !        if(iflagnorm.gt.2) then
-  ! overall normalization
-  !        c=4.d0/dsqrt(3.d0)*(2.d0/pi)**(3.d0/4.d0)*dd1**(7.d0/4.d0)
   c=dd1**1.75d0*1.64592278064948967213d0
-  !        endif
   do k=0,0
     distp(k,1)=c*dexp(-dd1*r(k)**2)
   end do
@@ -4940,79 +4951,52 @@ case (37,68)
     distp(i,6)=rmu(1,i)*rmu(3,i)*cost3d
   end do
   do ic=1,5
-    !           if(iocc(indshell+ic).eq.1) then
     indorbp=indorb+ic
     do k=0,0
       z(indorbp,k)=distp(k,1)*distp(k,1+ic)
     end do
-    !           endif
   end do
   if(typec.ne.1) then
     dd1=dd(indparp)
     fun0=distp(0,1)
     fun=-2.d0*dd1*distp(0,1)
     fun2=fun*(1.d0-2.d0*dd1*r(0)**2)
-    !              indorbp=indorb
     do ic=1,5
-      !                 if(iocc(indshell+ic).eq.1) then
       indorbp=indorb+ic
       do i=1,3
         z(indorbp,indt+i)=distp(0,1+ic)*rmu(i,0)                     &
             *fun
       end do
       if(ic.eq.1) then
-        !                         if(i.ne.3) then
         z(indorbp,indt+1)=z(indorbp,indt+1)-                         &
             2.d0*rmu(1,0)*fun0*cost1d
         z(indorbp,indt+2)=z(indorbp,indt+2)-                         &
             2.d0*rmu(2,0)*fun0*cost1d
-        !                         else
         z(indorbp,indt+3)=z(indorbp,indt+3)+                         &
             4.d0*rmu(3,0)*fun0*cost1d
-        !                         endif
       elseif(ic.eq.2) then
-        !                         if(i.eq.1) then
         z(indorbp,indt+1)=z(indorbp,indt+1)+                         &
             2.d0*rmu(1,0)*fun0*cost2d
-        !                         elseif(i.eq.2) then
         z(indorbp,indt+2)=z(indorbp,indt+2)-                         &
             2.d0*rmu(2,0)*fun0*cost2d
-        !                         endif
       elseif(ic.eq.3) then
-        !                         if(i.eq.1) then
         z(indorbp,indt+1)=z(indorbp,indt+1)+                         &
             rmu(2,0)*fun0*cost3d
-        !                         elseif(i.eq.2) then
         z(indorbp,indt+2)=z(indorbp,indt+2)+                         &
             rmu(1,0)*fun0*cost3d
-        !                         endif
       elseif(ic.eq.4) then
-        !                         if(i.eq.2) then
         z(indorbp,indt+2)=z(indorbp,indt+2)+                         &
             rmu(3,0)*fun0*cost3d
-        !                         elseif(i.eq.3) then
         z(indorbp,indt+3)=z(indorbp,indt+3)+                         &
             rmu(2,0)*fun0*cost3d
-        !                         endif
       elseif(ic.eq.5) then
-        !                         if(i.eq.1) then
         z(indorbp,indt+1)=z(indorbp,indt+1)+                         &
             rmu(3,0)*fun0*cost3d
-        !                         elseif(i.eq.3) then
         z(indorbp,indt+3)=z(indorbp,indt+3)+                         &
             rmu(1,0)*fun0*cost3d
-        !endif for i
-        !                         endif
-        !endif for ic
       end if
-      !enddo for i
-      !                   enddo
       z(indorbp,indt+4)=distp(0,1+ic)*(6.d0*fun+fun2)
-      !endif for iocc
-      !                endif
-      ! enddo fot ic
     end do
-    !endif for indt
   end if
   indpar=indpar+1
   indshell=indshell+5
@@ -7747,10 +7731,20 @@ indpar=indpar+1
 indshell=indshellp
 indorb=indorbp
 case (8)
-  ! normalized
-  ! exp(-dd1*r) + (dd1-zeta) * r * exp(-dd2*r)
+  ! s orbital
+  !
+  ! - angmom = 0
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = spherical
+  ! - npar = 2
+  ! - multiplicity = 1
+  !
+  ! = exp(-dd1*r) + (dd1-zeta) * r * exp(-dd2*r)
+  !
+  ! 2s double Z WITH CUSP
+  !
   indshellp=indshell+1
-  !        if(iocc(indshellp).eq.1) then
   indorbp=indorb+1
   dd1=dd(indpar+1)
   dd2=dd(indpar+2)
@@ -7759,27 +7753,23 @@ case (8)
     distp(k,1)=dexp(-dd1*r(k))
     distp(k,2)=dexp(-dd2*r(k))
   end do
-  !           if(iflagnorm.gt.2) then
-  c=1.d0/dsqrt(1/4.d0/dd1**3+12*peff/(dd1+dd2)**4+                   &
-      3*peff**2/4/dd2**5)/dsqrt(4.0*pi)
-  !           endif
+  c= 1.d0/dsqrt(1.d0/4.d0/dd1**3+12.d0*peff/(dd1+dd2)**4&
+  &+ 3*peff**2/4/dd2**5)/dsqrt(4.0*pi)
   do i=0,0
     z(indorbp,i)=c*(distp(i,1)+r(i)*distp(i,2)*peff)
   end do
   if(typec.ne.1) then
     fun=-dd1*distp(0,1)+peff*distp(0,2)*(1.d0-dd2*r(0))
-    fun2=distp(0,1)*dd1**2                                           &
-        +peff*distp(0,2)*(dd2**2*r(0)-2.d0*dd2)
+    fun2=distp(0,1)*dd1**2&
+      &+ peff*distp(0,2)*(dd2**2*r(0)-2.d0*dd2)
     do i=1,3
       z(indorbp,indt+i)=fun*c*rmu(i,0)/r(0)
     end do
     z(indorbp,indt+4)=c*(2.d0*fun/r(0)+fun2)
   end if
   indorb=indorbp
-  !        endif
   indpar=indpar+2
   indshell=indshellp
-  ! 3s single zeta
 case (109)
 !     2p  double  Lorentian
 !       dd1 * x_mu  (L(dd2 r^2)+dd3 * L(dd4*r^2)) ; L(x)=1/(1+x^2)
@@ -8212,6 +8202,15 @@ indpar=indpar+1
 indshell=indshell+5
 indorb=indorbp
 case (90:99)
+  ! cartesian orbitals
+  !
+  ! - angmom := iopt - 90
+  ! - type = Gaussian
+  ! - normalized = yes
+  ! - angtype = cartesian
+  ! - npar = 1
+  ! - multiplicity := (iopt - 90 + 2) * (iopt - 90  + 1) // 2
+  !
     indshellp=indshell+1
     indorbp=indorb+1
     dd1=dd(indpar+1)
