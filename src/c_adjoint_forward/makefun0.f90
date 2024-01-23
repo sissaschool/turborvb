@@ -8218,7 +8218,7 @@ case (90:99)
     powers(:,-2,:) = 0.0d0
     powers(:,-1,:) = 0.0d0
     powers(:,0,:) = 1.0d0
-    do ii = 1, max_power
+    do ii = 1, iopt - 90
         do k = 0, 0
             powers(1, ii, k) = powers(1, ii-1, k) * rmu(1, k)
             powers(2, ii, k) = powers(2, ii-1, k) * rmu(2, k)

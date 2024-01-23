@@ -10,6 +10,10 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &  distp, distpb, iflagnorm_unused, cr)
   USE CONSTANTS
   IMPLICIT NONE
+! TAPENADE adBuffer vars
+  integer :: adi4ibuf,adr8ibuf,adi4buf(1024)
+  real*8  :: adr8buf(1024)
+! ---
   INTEGER :: iopt, indt, i, k, nelskip, indpar, indorbp, indorb, &
 &  indshell, indshellp, ic, indtmin, i0, iflagnorm_unused, indparp, indtm&
 &  , npower, typec, ii, jj, kk
@@ -25,8 +29,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &  r2b, r4b, r6b
   INTEGER :: count, multiplicity
   INTEGER, PARAMETER :: max_power=20
-  REAL*8 :: powers(3, 0:max_power, 0:indtm)
-  REAL*8 :: powersb(3, 0:max_power, 0:indtm)
+  REAL*8 :: powers(3, -2:max_power, 0:indtm)
+  REAL*8 :: powersb(3, -2:max_power, 0:indtm)
   REAL*8 :: tmp
   REAL*8 :: tmp0
   REAL*8 :: tmp1
@@ -147,6 +151,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp455
   REAL*8 :: temp457b
   REAL*8 :: temp486b0
+  REAL*8 :: temp501b
   REAL*8 :: temp7b
   REAL*8 :: temp8b52
   REAL*8 :: temp21b
@@ -320,7 +325,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp479b1
   REAL*8 :: temp485
   REAL*8 :: temp506b0
-  REAL*8 :: temp504b
+  REAL*8 :: temp523b1
   REAL*8 :: temp24b
   REAL*8 :: temp49b25
   REAL*8 :: temp50b23
@@ -342,6 +347,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp468b
   REAL*8 :: temp479b0
   REAL*8 :: temp484
+  REAL*8 :: temp512b
+  REAL*8 :: temp523b0
   REAL*8 :: tempb9
   REAL*8 :: temp32b
   REAL*8 :: temp49b24
@@ -430,6 +437,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp431b22
   REAL*8 :: temp457b0
   REAL*8 :: temp480
+  REAL*8 :: temp501b0
   REAL*8 :: tempb5
   REAL*8 :: temp49b20
   REAL*8 :: temp50b55
@@ -466,8 +474,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp371b3
   REAL*8 :: temp426b
   REAL*8 :: temp431b20
-  REAL*8 :: temp498b36
-  REAL*8 :: temp521b11
+  REAL*8 :: temp507b
   REAL*8 :: tempb3
   REAL*8 :: temp50b53
   DOUBLE PRECISION :: temp85
@@ -487,8 +494,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp353b
   REAL*8 :: temp371b2
   REAL*8 :: temp467b6
-  REAL*8 :: temp498b35
-  REAL*8 :: temp521b10
   REAL*8 :: tempb2
   REAL*8 :: temp45b1
   REAL*8 :: temp50b52
@@ -510,7 +515,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b39
   REAL*8 :: temp467b5
   REAL*8 :: temp479b
-  REAL*8 :: temp498b34
+  REAL*8 :: temp523b
   REAL*8 :: tempb1
   REAL*8 :: temp43b
   REAL*8 :: temp45b0
@@ -533,7 +538,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b38
   REAL*8 :: temp467b4
   REAL*8 :: temp487b
-  REAL*8 :: temp498b33
+  REAL*8 :: temp499b9
   REAL*8 :: tempb0
   REAL*8 :: temp0b
   REAL*8 :: temp8b19
@@ -556,7 +561,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b37
   REAL*8 :: temp467b3
   REAL*8 :: temp495b
-  REAL*8 :: temp498b32
+  REAL*8 :: temp499b8
   REAL*8 :: temp8b18
   REAL*8 :: temp81
   REAL*8 :: temp96b
@@ -576,7 +581,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp339
   REAL*8 :: temp448b36
   REAL*8 :: temp467b2
-  REAL*8 :: temp498b31
+  REAL*8 :: temp499b7
   REAL*8 :: temp8b17
   DOUBLE PRECISION :: temp80
   REAL*8 :: temp131b3
@@ -599,8 +604,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp419
   REAL*8 :: temp448b35
   REAL*8 :: temp467b1
-  REAL*8 :: temp498b30
-  REAL*8 :: temp511b1
+  REAL*8 :: temp499b6
   REAL*8 :: temp8b16
   REAL*8 :: temp23b0
   REAL*8 :: temp131b2
@@ -622,8 +626,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b34
   REAL*8 :: temp467b0
   REAL*8 :: tmpb
-  REAL*8 :: temp511b0
-  REAL*8 :: temp521b9
+  REAL*8 :: temp499b5
   REAL*8 :: tempb11
   REAL*8 :: temp8b15
   REAL*8 :: temp50b9
@@ -646,8 +649,9 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp445b3
   REAL*8 :: temp448b33
   REAL*8 :: temp484b0
+  REAL*8 :: temp499b4
+  REAL*8 :: temp499b37
   REAL*8 :: temp518b
-  REAL*8 :: temp521b8
   REAL*8 :: tempb10
   REAL*8 :: temp8b14
   REAL*8 :: temp50b8
@@ -671,8 +675,10 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b32
   REAL*8 :: temp448b69
   REAL*8 :: tmp0b
-  REAL*8 :: temp509b1
-  REAL*8 :: temp521b7
+  REAL*8 :: temp499b3
+  REAL*8 :: temp499b36
+  REAL*8 :: temp522b11
+  REAL*8 :: temp526b
   REAL*8 :: temp8b13
   REAL*8 :: temp50b7
   REAL*8 :: temp124b7
@@ -693,8 +699,10 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b31
   REAL*8 :: temp448b68
   REAL*8 :: temp453b
+  REAL*8 :: temp499b2
+  REAL*8 :: temp499b35
   REAL*8 :: temp509b0
-  REAL*8 :: temp521b6
+  REAL*8 :: temp522b10
   REAL*8 :: temp3b
   REAL*8 :: temp8b12
   REAL*8 :: temp8b49
@@ -719,7 +727,9 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b67
   REAL*8 :: temp461b
   REAL*8 :: temp498b
-  REAL*8 :: temp521b5
+  REAL*8 :: temp499b1
+  REAL*8 :: temp499b34
+  REAL*8 :: temp526b0
   REAL*8 :: temp8b11
   REAL*8 :: temp8b48
   REAL*8 :: temp16b3
@@ -746,7 +756,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b66
   DOUBLE PRECISION :: temp462b0
   REAL*8 :: temp499b0
-  REAL*8 :: temp521b4
+  REAL*8 :: temp499b33
   REAL*8 :: temp7b0
   REAL*8 :: temp8b10
   REAL*8 :: temp8b47
@@ -773,7 +783,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp440b3
   REAL*8 :: temp448b65
   REAL*8 :: temp449
-  REAL*8 :: temp521b3
+  REAL*8 :: temp499b32
   REAL*8 :: temp8b46
   REAL*8 :: temp16b1
   REAL*8 :: temp19
@@ -800,7 +810,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp440b2
   REAL*8 :: temp448b64
   REAL*8 :: temp448
-  REAL*8 :: temp521b2
+  REAL*8 :: temp499b31
   REAL*8 :: temp8b45
   REAL*8 :: temp16b0
   REAL*8 :: temp18
@@ -830,8 +840,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp447
   REAL*8 :: temp448b63
   REAL*8 :: temp455b5
-  REAL*8 :: temp504b0
-  REAL*8 :: temp521b1
+  REAL*8 :: temp499b30
   REAL*8 :: temp8b44
   REAL*8 :: temp17
   REAL*8 :: temp50b1
@@ -883,6 +892,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp455b3
   REAL*8 :: temp456b
   REAL*8 :: temp500b
+  REAL*8 :: temp526
   REAL*8 :: temp2b0
   REAL*8 :: temp8b42
   REAL*8 :: temp15
@@ -931,7 +941,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp443
   REAL*8 :: temp448b9
   REAL*8 :: temp455b1
-  REAL*8 :: temp519b0
   REAL*8 :: temp524
   REAL*8 :: temp8b40
   REAL*8 :: temp13
@@ -1077,6 +1086,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp459b
   REAL*8 :: temp475
   REAL*8 :: temp487b1
+  REAL*8 :: temp503b
   REAL*8 :: temp23b
   REAL*8 :: temp43b0
   INTEGER :: temp45
@@ -1105,7 +1115,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp467b
   REAL*8 :: temp474
   REAL*8 :: temp487b0
-  REAL*8 :: temp511b
   REAL*8 :: temp31b
   REAL*8 :: temp44
   REAL*8 :: temp49b14
@@ -1186,7 +1195,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b0
   DOUBLE PRECISION :: temp471
   REAL*8 :: temp497b6
-  REAL*8 :: temp498b29
   REAL*8 :: temp41
   REAL*8 :: temp49b11
   REAL*8 :: temp50b46
@@ -1215,7 +1223,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp431b12
   DOUBLE PRECISION :: temp470
   REAL*8 :: temp497b5
-  REAL*8 :: temp498b28
   REAL*8 :: temp40
   REAL*8 :: temp49b10
   REAL*8 :: temp50b45
@@ -1239,7 +1246,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp421b7
   REAL*8 :: temp431b11
   REAL*8 :: temp497b4
-  REAL*8 :: temp498b27
   REAL*8 :: temp31b7
   REAL*8 :: temp50b44
   REAL*8 :: temp76
@@ -1260,7 +1266,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp421b6
   REAL*8 :: temp431b10
   REAL*8 :: temp497b3
-  REAL*8 :: temp498b26
   REAL*8 :: temp506b
   REAL*8 :: temp19b0
   REAL*8 :: temp31b6
@@ -1281,7 +1286,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp421b5
   REAL*8 :: temp443b1
   REAL*8 :: temp497b2
-  REAL*8 :: temp498b25
+  REAL*8 :: temp507b0
   REAL*8 :: temp31b5
   REAL*8 :: temp34b
   REAL*8 :: temp50b42
@@ -1303,7 +1308,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp475b5
   REAL*8 :: temp478b
   REAL*8 :: temp497b1
-  REAL*8 :: temp498b24
   REAL*8 :: temp522b
   REAL*8 :: temp31b4
   REAL*8 :: temp42b
@@ -1328,7 +1332,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp475b4
   REAL*8 :: temp486b
   REAL*8 :: temp497b0
-  REAL*8 :: temp498b23
   REAL*8 :: temp31b3
   REAL*8 :: temp50b
   REAL*8 :: temp50b40
@@ -1351,7 +1354,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp432b15
   REAL*8 :: temp448b27
   REAL*8 :: temp475b3
-  REAL*8 :: temp498b22
   REAL*8 :: tempb
   REAL*8 :: temp31b2
   REAL*8 :: temp71
@@ -1375,7 +1377,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp432b14
   REAL*8 :: temp448b26
   REAL*8 :: temp475b2
-  REAL*8 :: temp498b21
   REAL*8 :: temp31b1
   REAL*8 :: temp70
   REAL*8 :: temp137b6
@@ -1398,7 +1399,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp432b13
   REAL*8 :: temp448b25
   REAL*8 :: temp475b1
-  REAL*8 :: temp498b20
+  REAL*8 :: temp499b29
   REAL*8 :: temp31b0
   REAL*8 :: temp68b0
   REAL*8 :: temp137b5
@@ -1420,6 +1421,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b24
   REAL*8 :: temp475b0
   REAL*8 :: temp485b9
+  REAL*8 :: temp499b28
   REAL*8 :: temp509b
   REAL*8 :: temp137b4
   REAL*8 :: temp155b28
@@ -1439,7 +1441,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b23
   REAL*8 :: temp485b8
   REAL*8 :: temp492b0
-  REAL*8 :: temp517b
+  REAL*8 :: temp499b27
   REAL*8 :: temp0b0
   REAL*8 :: temp37b
   REAL*8 :: temp137b3
@@ -1463,6 +1465,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b22
   REAL*8 :: temp448b59
   REAL*8 :: temp485b7
+  REAL*8 :: temp499b26
   REAL*8 :: temp525b
   REAL*8 :: temp45b
   REAL*8 :: temp137b2
@@ -1487,6 +1490,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp452b
   REAL*8 :: temp453b1
   REAL*8 :: temp485b6
+  REAL*8 :: temp499b25
   REAL*8 :: temp2b
   REAL*8 :: temp8b39
   REAL*8 :: temp127b
@@ -1511,6 +1515,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp468b4
   REAL*8 :: temp485b5
   REAL*8 :: temp497b
+  REAL*8 :: temp499b24
   REAL*8 :: temp8b9
   REAL*8 :: temp8b38
   REAL*8 :: temp24b3
@@ -1534,6 +1539,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b56
   REAL*8 :: temp468b3
   REAL*8 :: temp485b4
+  REAL*8 :: temp499b23
   REAL*8 :: temp8b8
   REAL*8 :: temp8b37
   REAL*8 :: temp24b2
@@ -1560,6 +1566,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b55
   REAL*8 :: temp468b2
   REAL*8 :: temp485b3
+  REAL*8 :: temp499b22
   REAL*8 :: temp8b7
   REAL*8 :: temp8b36
   REAL*8 :: temp24b1
@@ -1588,6 +1595,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp463b6
   REAL*8 :: temp468b1
   REAL*8 :: temp485b2
+  REAL*8 :: temp499b21
+  REAL*8 :: temp512b1
   REAL*8 :: temp519
   REAL*8 :: temp8b6
   REAL*8 :: temp8b35
@@ -1617,7 +1626,10 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp463b5
   REAL*8 :: temp468b0
   REAL*8 :: temp485b1
+  REAL*8 :: temp499b20
+  REAL*8 :: temp512b0
   REAL*8 :: temp518
+  REAL*8 :: temp522b9
   REAL*8 :: temp8b5
   REAL*8 :: temp8b34
   REAL*8 :: temp73b5
@@ -1646,7 +1658,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp463b4
   REAL*8 :: temp485b0
   REAL*8 :: tmp2b
-  REAL*8 :: temp517
+  DOUBLE PRECISION :: temp517
+  REAL*8 :: temp522b8
   REAL*8 :: temp3b9
   REAL*8 :: temp8b4
   REAL*8 :: temp8b33
@@ -1674,7 +1687,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b88
   REAL*8 :: temp455b
   REAL*8 :: temp463b3
-  DOUBLE PRECISION :: temp516
+  REAL*8 :: temp516
+  REAL*8 :: temp522b7
   REAL*8 :: temp3b8
   REAL*8 :: temp5b
   REAL*8 :: temp8b3
@@ -1708,6 +1722,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp463b
   REAL*8 :: temp463b2
   REAL*8 :: temp515
+  REAL*8 :: temp522b6
   REAL*8 :: temp3b7
   REAL*8 :: temp8b2
   REAL*8 :: temp8b31
@@ -1739,7 +1754,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp446b0
   REAL*8 :: temp448b86
   REAL*8 :: temp463b1
-  REAL*8 :: temp514
+  DOUBLE PRECISION :: temp514
+  REAL*8 :: temp522b5
   REAL*8 :: temp3b6
   REAL*8 :: temp8b1
   REAL*8 :: temp8b30
@@ -1771,6 +1787,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp463b0
   DOUBLE PRECISION :: temp469
   DOUBLE PRECISION :: temp513
+  REAL*8 :: temp522b4
   REAL*8 :: temp3b5
   REAL*8 :: temp8b0
   REAL*8 :: temp34b3
@@ -1803,6 +1820,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp468
   REAL*8 :: temp480b0
   DOUBLE PRECISION :: temp512
+  REAL*8 :: temp522b3
   REAL*8 :: temp3b4
   REAL*8 :: temp34b2
   REAL*8 :: temp38
@@ -1829,7 +1847,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp430
   REAL*8 :: temp448b83
   REAL*8 :: temp467
-  DOUBLE PRECISION :: temp511
+  REAL*8 :: temp511
+  REAL*8 :: temp522b2
   REAL*8 :: temp3b3
   REAL*8 :: temp17b0
   REAL*8 :: temp34b1
@@ -1889,7 +1908,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp441b0
   REAL*8 :: temp448b81
   DOUBLE PRECISION :: temp465
-  REAL*8 :: temp502b
   REAL*8 :: temp522b0
   REAL*8 :: temp3b1
   REAL*8 :: temp8b
@@ -1916,6 +1934,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp385b
   REAL*8 :: temp448b80
   REAL*8 :: temp464
+  REAL*8 :: temp510b
   REAL*8 :: temp3b0
   DOUBLE PRECISION :: temp34
   REAL*8 :: temp49b2
@@ -1990,7 +2009,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp456b0
   REAL*8 :: temp461
   REAL*8 :: temp490b
-  REAL*8 :: temp498b19
   REAL*8 :: temp498
   REAL*8 :: temp500b0
   REAL*8 :: temp31
@@ -2014,7 +2032,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   DOUBLE PRECISION :: temp392b0
   REAL*8 :: temp460
   REAL(8) :: temp497
-  REAL*8 :: temp498b18
   REAL*8 :: temp3b17
   REAL*8 :: temp22b7
   REAL*8 :: temp30
@@ -2037,7 +2054,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp370b3
   REAL*8 :: temp416b
   REAL*8 :: temp496
-  REAL*8 :: temp498b17
   REAL*8 :: temp3b16
   REAL*8 :: temp17b
   DOUBLE PRECISION :: temp22b6
@@ -2059,7 +2075,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp370b2
   REAL*8 :: temp424b
   REAL*8 :: temp495
-  REAL*8 :: temp498b16
   REAL*8 :: temp505b
   REAL*8 :: temp3b15
   REAL*8 :: temp22b5
@@ -2080,7 +2095,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp432b
   DOUBLE PRECISION :: temp469b
   REAL*8 :: temp494
-  REAL*8 :: temp498b15
   REAL*8 :: temp3b14
   REAL*8 :: temp22b4
   REAL*8 :: temp44b0
@@ -2100,8 +2114,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b19
   REAL*8 :: temp477b
   INTEGER :: temp493
-  REAL*8 :: temp498b9
-  REAL*8 :: temp498b14
   REAL*8 :: temp521b
   REAL*8 :: temp3b13
   REAL*8 :: temp22b3
@@ -2124,8 +2136,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b18
   REAL*8 :: temp485b
   REAL*8 :: temp492
-  REAL*8 :: temp498b8
-  REAL*8 :: temp498b13
   REAL*8 :: temp3b12
   REAL*8 :: temp22b2
   REAL*8 :: temp50b30
@@ -2145,8 +2155,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b17
   DOUBLE PRECISION :: temp491
   REAL*8 :: temp493b
-  REAL*8 :: temp498b7
-  REAL*8 :: temp498b12
   REAL*8 :: temp3b11
   REAL*8 :: temp22b1
   DOUBLE PRECISION :: temp61
@@ -2167,8 +2175,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp385b1
   REAL*8 :: temp448b16
   DOUBLE PRECISION :: temp490
-  REAL*8 :: temp498b6
-  REAL*8 :: temp498b11
+  REAL*8 :: temp510b1
   REAL*8 :: temp3b10
   REAL*8 :: temp22b0
   DOUBLE PRECISION :: temp60
@@ -2191,8 +2198,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp385b0
   REAL*8 :: temp419b
   REAL*8 :: temp448b15
-  REAL*8 :: temp498b5
-  REAL*8 :: temp498b10
+  REAL*8 :: temp499b19
+  REAL*8 :: temp510b0
   REAL*8 :: temp96
   REAL*8 :: temp124b31
   REAL*8 :: temp155b19
@@ -2208,8 +2215,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp427b
   REAL*8 :: temp448b14
   REAL*8 :: temp483b0
-  REAL*8 :: temp498b4
-  REAL*8 :: temp508b
+  REAL*8 :: temp499b18
   REAL*8 :: temp95
   REAL*8 :: temp124b30
   REAL*8 :: temp154
@@ -2224,7 +2230,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp354b
   REAL*8 :: temp380b3
   REAL*8 :: temp448b13
-  REAL*8 :: temp498b3
+  REAL*8 :: temp499b17
   REAL*8 :: temp15b5
   REAL*8 :: temp94
   REAL*8 :: temp153
@@ -2243,9 +2249,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp443b
   REAL*8 :: temp448b12
   REAL*8 :: temp448b49
-  REAL*8 :: temp498b2
-  REAL*8 :: temp508b0
-  REAL*8 :: temp524b
+  REAL*8 :: temp499b16
   REAL*8 :: temp15b4
   REAL*8 :: temp37b0
   REAL*8 :: temp44b
@@ -2270,8 +2274,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp451b
   REAL*8 :: temp461b1
   REAL*8 :: temp488b
-  REAL*8 :: temp498b1
-  REAL*8 :: temp525b0
+  REAL*8 :: temp499b15
   REAL*8 :: temp1b
   REAL*8 :: temp8b29
   REAL*8 :: temp15b3
@@ -2298,7 +2301,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp461b0
   REAL*8 :: temp493b5
   REAL*8 :: temp496b
-  REAL*8 :: temp498b0
+  REAL*8 :: temp499b14
   INTRINSIC DSQRT
   REAL*8 :: temp
   REAL*8 :: temp8b28
@@ -2325,6 +2328,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp349
   REAL*8 :: temp448b46
   REAL*8 :: temp493b4
+  REAL*8 :: temp499b13
   REAL*8 :: temp8b27
   REAL*8 :: temp15b1
   REAL*8 :: temp32b2
@@ -2352,6 +2356,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b45
   REAL*8 :: temp459b1
   REAL*8 :: temp493b3
+  REAL*8 :: temp499b12
   REAL*8 :: temp8b26
   REAL*8 :: temp15b0
   REAL*8 :: temp32b1
@@ -2381,6 +2386,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b44
   REAL*8 :: temp459b0
   REAL*8 :: temp493b2
+  REAL*8 :: temp499b11
   REAL*8 :: temp509
   REAL*8 :: temp8b25
   DOUBLE PRECISION :: temp9
@@ -2404,9 +2410,10 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp432b8
   REAL*8 :: temp448b43
   REAL*8 :: temp493b1
-  REAL*8 :: temp508
-  REAL*8 :: temp520b0
+  REAL*8 :: temp499b10
+  INTEGER :: temp508
   REAL*8 :: temp519b
+  REAL*8 :: temp520b0
   REAL*8 :: temp8b24
   DOUBLE PRECISION :: temp8
   REAL*8 :: temp131b16
@@ -2432,7 +2439,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   REAL*8 :: temp448b79
   REAL*8 :: temp493b0
   REAL*8 :: tmp1b
-  INTEGER :: temp507
+  REAL*8 :: temp507
   REAL*8 :: temp7
   REAL*8 :: temp8b23
   REAL*8 :: temp47b
@@ -2547,15 +2554,18 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 ! z(i,indt+mu) contains the gradient of the orbital i (mu=1,2,3)
 ! In the following given a radial part of the orbital f(r)
 ! fun=1/r  d f(r)/d r
-!print *,__FILE__
+!print *,"minicode/src/c_adjoint_forward/makefun.f90"
 !print *,'makefun: iopt=',iopt
 !print *,'makefun: i=',i0,' a=',indtmin,' b=',indtm
 !print *,'makefun: indpar=',indpar,' indorb=',indorb,' indshell=',indshell
 !print *,'makefun: nelskip=',nelskip
-  integer :: adi4ibuf,adr8ibuf,adi4buf(1024)
-  real*8  :: adr8buf(1024)
+
+
+
+
   adi4ibuf=1
   adr8ibuf=1
+
   SELECT CASE  (iopt) 
   CASE (105) 
 !     2s double gaussian without  constant
@@ -3574,6 +3584,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
   CASE (10000:11000) 
     distpb = 0.0_8
   CASE (107) 
+! Reserved for dummy orbitals
 !     2p single  lorentian  parent of 103
     dd2 = dd(indpar+1)
     DO k=indtmin,indtm
@@ -4321,11 +4332,26 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     ddb(indpar+1) = ddb(indpar+1) + dd2b
   CASE (16) 
-! R(r)=exp(-z*r**2) single zeta
+! s orbital
+! 
+! - angmom = 0
+! - type = Gaussian
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 1
+!
+! = N * R
+!
+! where N is the normalization constant
+! N = (2*alpha/pi)**(3/4)
+!
+! and R is the radial part
+! R = exp(-alpha*r**2)
+!
     indorbp = indorb + 1
     dd1 = dd(indpar+1)
     IF (dd1 .NE. 0.) THEN
-! c=(2.d0*dd1/pi)**(3.d0/4.d0)
       c = 0.71270547035499016d0*dd1**0.75d0
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,1)
     ELSE
@@ -4341,6 +4367,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 ! the second derivative
       fun2 = fun*(1.d0-2.d0*dd1*r(0)*r(0))
       IF (typec .EQ. 2) THEN
+! Backflow
         funb = (fun2-fun)/(r(0)*r(0))
         funbb = rmu(3, 0)*rmu(2, 0)*zb(indorbp, indt+10)
         rmub(2, 0) = rmub(2, 0) + rmu(3, 0)*funb*zb(indorbp, indt+10)
@@ -5496,14 +5523,24 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (10) 
 ! 2s gaussian for pseudo
-! R(r)=r**2*exp(-z1*r)
-!        if(iocc(indshellp).eq.1) then
+! s orbital
+! 
+! - angmom = 0
+! - type = Slater
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 1
+!
+! = N * R
+!
+! 3s single zeta
+! and R is the radial part
+! R(r) = r**2*exp(-z1*r)
+!
     indorbp = indorb + 1
     dd1 = dd(indpar+1)
-!           if(iflagnorm.gt.2) then
-!           c=dsqrt((2*dd1)**7/720.d0/pi)/2.d0
     c = dd1**3.5d0*0.11894160774351807429d0
-!           endif
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)))
     END DO
@@ -5545,7 +5582,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     dd1b = dd1b + 0.11894160774351807429d0*3.5d0*dd1**2.5D0*cb
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (129) 
-! 3s double zeta
 !     2p single exponential  r e^{-z r}  ! parent of 121
     dd2 = dd(indpar+1)
     DO k=indtmin,indtm
@@ -6044,31 +6080,29 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (36) 
 ! 2s double Z WITH CUSP
+! p orbital
+! 
+! - angmom = 1
+! - type = Gaussian
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 3
+!
     dd1 = dd(indpar+1)
-!\print *, "i0, indtmin, indtm"
-!\print *,i0, indtmin, indtm
-!        if(iflagnorm.gt.2) then
-!        c=dsqrt(2.d0)*pi**(-0.75d0)*(2.d0*dd1)**1.25d0
     c = dd1**1.25d0*1.42541094070998d0
-!        endif
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)**2))
     END DO
-!        indorbp=indorb
-!
     DO ic=1,3
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!           if(iocc(indshell+ic).eq.1) then
       indorbp = indorb + ic
     END DO
-!           endif
     IF (typec .NE. 1) THEN
       fun = -(2.d0*dd1*distp(0, 1))
       fun2 = fun*(1.d0-2.d0*dd1*r(0)**2)
-!              indorbp=indorb
       DO ic=1,3
         CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!                if(iocc(indshell+ic).eq.1) then
         indorbp = indorb + ic
       END DO
       funb0 = 0.0_8
@@ -8590,17 +8624,18 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+2) = ddb(indpar+2) + dd3b
     ddb(indpar+1) = ddb(indpar+1) + dd2b
   CASE (48) 
-! f single gaussian orbital
-! R(r)= exp(-alpha r^2)
-! normalized
-!        indorbp=indorb
+! f orbital
+! 
+! - angmom = 3
+! - type = Gaussian
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 7
+!
     indparp = indpar + 1
     dd1 = dd(indparp)
-!        if(iflagnorm.gt.2) then
-! overall normalization
-!        c=8.d0/dsqrt(15.d0)*(2.d0/pi)**(3.d0/4.d0)*dd1**(9.d0/4.d0)
     c = dd1**2.25d0*1.47215808929909374563d0
-!        endif
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)**2))
     END DO
@@ -8622,20 +8657,16 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 ! lz=+/-3
     DO ic=1,7
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!           if(iocc(indshell+ic).eq.1) then
       indorbp = indorb + ic
     END DO
-!           endif
     IF (typec .NE. 1) THEN
       CALL PUSHREAL8(adr8ibuf,adr8buf,dd1)
       dd1 = dd(indparp)
       fun0 = distp(0, 1)
       fun = -(2.d0*dd1*distp(0, 1))
       fun2 = fun*(1.d0-2.d0*dd1*r(0)**2)
-!              indorbp=indorb
       DO ic=1,7
         CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!                 if(iocc(indshell+ic).eq.1) then
         indorbp = indorb + ic
         IF (ic .EQ. 1) THEN
           CALL PUSHINTEGER4(adi4ibuf,adi4buf,0)
@@ -8835,7 +8866,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     dd1b = dd1b + 1.47215808929909374563d0*2.25d0*dd1**1.25D0*cb
     ddb(indparp) = ddb(indparp) + dd1b
   CASE (102) 
-! derivative of 48 with respect to z
 !     2s double gaussian with constant
 !     (dd3+ exp (-dd2 r^2)+dd4*exp(-dd5*r^2))
     dd2 = dd(indpar+1)
@@ -10766,12 +10796,17 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     dd1b = dd1b + .020104801169736915d0*5.5d0*dd1**4.5D0*cb
     ddb(indparp) = ddb(indparp) + dd1b
   CASE (1) 
-!        if(iocc(indshellp).eq.1) then
+! s orbital
+! 
+! - angmom = 0
+! - type = Slater
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 1
+!
     dd1 = dd(indpar+1)
-!           if(iflagnorm.gt.2) then
-!           c=dd1*dsqrt(dd1)/dsqrt(pi)
     c = dd1*DSQRT(dd1)*0.56418958354775628695d0
-!           endif
     indorbp = indorb + 1
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)))
@@ -10821,7 +10856,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END IF
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (49) 
-! 1s double Z with cusp cond
 ! f orbitals
 ! R(r)= c*exp(-z r^2)*(9/4/z-r^2)
 !        indorbp=indorb
@@ -11229,17 +11263,25 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+1) = ddb(indpar+1) + dd2b
   CASE (26) 
 ! der of 127
-!     2p without cusp condition
+! s orbital
+! 
+! - angmom = 1
+! - type = Slater
+! - normalized = yes
+! - angtype = spherical
+! - npar = 5
+! - multiplicity = 3
+!
+! 2p with cusp conditions
+!
     dd1 = dd(indpar+1)
     dd2 = dd(indpar+2)
     peff = dd(indpar+3)
     dd3 = dd(indpar+4)
     peff2 = dd(indpar+5)
-!        if(iflagnorm.gt.2) then
     c = 1.d0/2.d0/DSQRT(8.d0*pi*(1.d0/(2.d0*dd1)**5+2.d0*peff/(dd1+dd2)&
 &      **5+peff**2/(2.d0*dd2)**5+2.d0*peff2/(dd1+dd3)**5+peff2**2/(2.d0*&
 &      dd3)**5+2.d0*peff2*peff/(dd2+dd3)**5))
-!        endif
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)))
       distp(k, 2) = c*DEXP(-(dd2*r(k)))
@@ -11249,22 +11291,17 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       CALL PUSHREAL8(adr8ibuf,adr8buf,distp(i, 4))
       distp(i, 4) = distp(i, 1) + peff*distp(i, 2) + peff2*distp(i, 3)
     END DO
-!        indorbp=indorb
     DO ic=1,3
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!           if(iocc(indshell+ic).eq.1) then
       indorbp = indorb + ic
     END DO
-!           endif
     IF (typec .NE. 1) THEN
       fun = (-(dd1*distp(0, 1))-dd2*peff*distp(0, 2)-dd3*peff2*distp(0, &
 &        3))/r(0)
       fun2 = dd1**2*distp(0, 1) + peff*dd2**2*distp(0, 2) + peff2*dd3**2&
 &        *distp(0, 3)
-!              indorbp=indorb
       DO ic=1,3
         CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!                 if(iocc(indshell+ic).eq.1) then
         indorbp = indorb + ic
         DO i=1,3
           IF (i .EQ. ic) THEN
@@ -11394,7 +11431,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+2) = ddb(indpar+2) + dd2b
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (86) 
-! 3p triple zeta
 ! f single gaussian orbital
 ! R(r)= exp(-alpha r^2)
 ! normalized
@@ -13990,17 +14026,18 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (37, 68) 
 ! 1s single Z pseudo
-! d orbitals
-! R(r)= exp(-alpha r^2)
-! each gaussian term is normalized
-!        indorbp=indorb
+! d orbital
+! 
+! - angmom = 2
+! - type = Gaussian
+! - normalized = yes
+! - angtype = spherical
+! - npar = 1
+! - multiplicity = 5
+!
     indparp = indpar + 1
     dd1 = dd(indparp)
-!        if(iflagnorm.gt.2) then
-! overall normalization
-!        c=4.d0/dsqrt(3.d0)*(2.d0/pi)**(3.d0/4.d0)*dd1**(7.d0/4.d0)
     c = dd1**1.75d0*1.64592278064948967213d0
-!        endif
     DO k=indtmin,indtm
       distp(k, 1) = c*DEXP(-(dd1*r(k)**2))
     END DO
@@ -14018,20 +14055,16 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     DO ic=1,5
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!           if(iocc(indshell+ic).eq.1) then
       indorbp = indorb + ic
     END DO
-!           endif
     IF (typec .NE. 1) THEN
       CALL PUSHREAL8(adr8ibuf,adr8buf,dd1)
       dd1 = dd(indparp)
       fun0 = distp(0, 1)
       fun = -(2.d0*dd1*distp(0, 1))
       fun2 = fun*(1.d0-2.d0*dd1*r(0)**2)
-!              indorbp=indorb
       DO ic=1,5
         CALL PUSHINTEGER4(adi4ibuf,adi4buf,indorbp)
-!                 if(iocc(indshell+ic).eq.1) then
         indorbp = indorb + ic
         IF (ic .EQ. 1) THEN
           CALL PUSHINTEGER4(adi4ibuf,adi4buf,0)
@@ -20803,9 +20836,19 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     ddb(indpar+1) = ddb(indpar+1) + dd2b
   CASE (8) 
-! normalized
-! exp(-dd1*r) + (dd1-zeta) * r * exp(-dd2*r)
-!        if(iocc(indshellp).eq.1) then
+! s orbital
+! 
+! - angmom = 0
+! - type = Gaussian
+! - normalized = yes
+! - angtype = spherical
+! - npar = 2
+! - multiplicity = 1
+!
+! = exp(-dd1*r) + (dd1-zeta) * r * exp(-dd2*r)
+!
+! 2s double Z WITH CUSP
+!
     indorbp = indorb + 1
     dd1 = dd(indpar+1)
     dd2 = dd(indpar+2)
@@ -20814,9 +20857,8 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       distp(k, 1) = DEXP(-(dd1*r(k)))
       distp(k, 2) = DEXP(-(dd2*r(k)))
     END DO
-!           if(iflagnorm.gt.2) then
-    c = 1.d0/DSQRT(1/4.d0/dd1**3+12*peff/(dd1+dd2)**4+3*peff**2/4/dd2**5&
-&      )/DSQRT(4.0*pi)
+    c = 1.d0/DSQRT(1.d0/4.d0/dd1**3+12.d0*peff/(dd1+dd2)**4+3*peff**2/4/&
+&      dd2**5)/DSQRT(4.0*pi)
     IF (typec .NE. 1) THEN
       fun = -(dd1*distp(0, 1)) + peff*distp(0, 2)*(1.d0-dd2*r(0))
       fun2 = distp(0, 1)*dd1**2 + peff*distp(0, 2)*(dd2**2*r(0)-2.d0*dd2&
@@ -20870,7 +20912,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     temp468 = peff**2/temp474
     temp473 = (dd1+dd2)**4
     temp472 = 4.d0*dd1**3
-    temp469 = 1.0/temp472 + 12*(peff/temp473) + 3*temp468
+    temp469 = 1.0/temp472 + 12.d0*peff/temp473 + 3*temp468
     temp471 = DSQRT(temp469)
     temp470 = DSQRT(4.0*pi)
     IF (temp469 .EQ. 0.0) THEN
@@ -20878,7 +20920,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ELSE
       temp469b = -(cb/(temp470*temp471**2*2.D0*DSQRT(temp469)))
     END IF
-    temp469b0 = 12*temp469b/temp473
+    temp469b0 = 12.d0*temp469b/temp473
     temp469b1 = -(peff*4*(dd1+dd2)**3*temp469b0/temp473)
     temp468b4 = 3*temp469b/temp474
     dd1b = dd1b + temp469b1 - 4.d0*3*dd1**2*temp469b/temp472**2
@@ -20897,7 +20939,6 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     ddb(indpar+2) = ddb(indpar+2) + dd2b
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (109) 
-! 3s single zeta
 !     2p  double  Lorentian
 !       dd1 * x_mu  (L(dd2 r^2)+dd3 * L(dd4*r^2)) ; L(x)=1/(1+x^2)
     dd2 = dd(indpar+1)
@@ -21832,13 +21873,22 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     ddb(indpar+1) = ddb(indpar+1) + dd2b
   CASE (90:99) 
+! cartesian orbitals
+! 
+! - angmom := iopt - 90
+! - type = Gaussian
+! - normalized = yes
+! - angtype = cartesian
+! - npar = 1
+! - multiplicity := (iopt - 90 + 2) * (iopt - 90  + 1) // 2
+!
     indorbp = indorb + 1
     dd1 = dd(indpar+1)
     multiplicity = (iopt-90+2)*(iopt-90+1)/2
     powers(:, -2, :) = 0.0d0
     powers(:, -1, :) = 0.0d0
     powers(:, 0, :) = 1.0d0
-    DO ii=1,max_power
+    DO ii=1,iopt-90
       DO k=indtmin,indtm
         CALL PUSHREAL8(adr8ibuf,adr8buf,powers(1, ii, k))
         powers(1, ii, k) = powers(1, ii-1, k)*rmu(1, k)
@@ -21858,7 +21908,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,0)
     END IF
     DO k=i0,indtm
-      distp(k, 1) = DEXP(-(1.0_8*dd1))*c
+      distp(k, 1) = DEXP(-(1.0_8*dd1*r(k)*r(k)))*c
     END DO
     DO k=i0,indtm
       count = 0
@@ -21949,7 +21999,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       tmp1 = -(2.0d0*dd1*rmu(3, 0)*distp(0, 1))
       CALL PUSHREAL8(adr8ibuf,adr8buf,distp(indt+3, 1))
       distp(indt+3, 1) = tmp1
-      tmp2 = dd1*(4.0d0*dd1*(-6.0d0))*distp(0, 1)
+      tmp2 = dd1*(4.0d0*dd1*(r(0)*r(0))-6.0d0)*distp(0, 1)
       CALL PUSHREAL8(adr8ibuf,adr8buf,distp(indt+4, 1))
       distp(indt+4, 1) = tmp2
       CALL PUSHINTEGER4(adi4ibuf,adi4buf,1)
@@ -22221,34 +22271,34 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
         END IF
       ELSE
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+4))
-        temp498b3 = zb(indorbp+2, indt+4)/rp1
+        temp499b4 = zb(indorbp+2, indt+4)/rp1
         distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(3, indtmin)*&
-&          temp498b3
-        rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+4, 1)*temp498b3
-        distpb(indt+3, 1) = distpb(indt+3, 1) + 2.0d0*temp498b3
+&          temp499b4
+        rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+4, 1)*temp499b4
+        distpb(indt+3, 1) = distpb(indt+3, 1) + 2.0d0*temp499b4
         zb(indorbp+2, indt+4) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+4))
-        temp498b4 = zb(indorbp+1, indt+4)/rp1
+        temp499b5 = zb(indorbp+1, indt+4)/rp1
         distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(2, indtmin)*&
-&          temp498b4
-        rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+4, 1)*temp498b4
-        distpb(indt+2, 1) = distpb(indt+2, 1) + 2.0d0*temp498b4
+&          temp499b5
+        rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+4, 1)*temp499b5
+        distpb(indt+2, 1) = distpb(indt+2, 1) + 2.0d0*temp499b5
         zb(indorbp+1, indt+4) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp, indt+4))
-        temp498b5 = zb(indorbp, indt+4)/rp1
+        temp499b6 = zb(indorbp, indt+4)/rp1
         distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(1, indtmin)*&
-&          temp498b5
-        rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+4, 1)*temp498b5
-        distpb(indt+1, 1) = distpb(indt+1, 1) + 2.0d0*temp498b5
+&          temp499b6
+        rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+4, 1)*temp499b6
+        distpb(indt+1, 1) = distpb(indt+1, 1) + 2.0d0*temp499b6
         zb(indorbp, indt+4) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+3))
-        temp498b6 = zb(indorbp+2, indt+3)/rp1
+        temp499b7 = zb(indorbp+2, indt+3)/rp1
         distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(3, indtmin)*&
-&          temp498b6
+&          temp499b7
         zb(indorbp+2, indt+3) = 0.0_8
         rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+2, 1)*zb(&
-&          indorbp+2, indt+2)/rp1 + distp(indt+3, 1)*temp498b6
-        distpb(0, 1) = distpb(0, 1) + temp498b6
+&          indorbp+2, indt+2)/rp1 + distp(indt+3, 1)*temp499b7
+        distpb(0, 1) = distpb(0, 1) + temp499b7
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+2))
         distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(3, indtmin)*zb(&
 &          indorbp+2, indt+2)/rp1
@@ -22266,13 +22316,13 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &          indorbp+1, indt+3)/rp1
         zb(indorbp+1, indt+3) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+2))
-        temp498b7 = zb(indorbp+1, indt+2)/rp1
+        temp499b8 = zb(indorbp+1, indt+2)/rp1
         distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(2, indtmin)*&
-&          temp498b7
+&          temp499b8
         zb(indorbp+1, indt+2) = 0.0_8
         rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+1, 1)*zb(&
-&          indorbp+1, indt+1)/rp1 + distp(indt+2, 1)*temp498b7
-        distpb(0, 1) = distpb(0, 1) + temp498b7
+&          indorbp+1, indt+1)/rp1 + distp(indt+2, 1)*temp499b8
+        distpb(0, 1) = distpb(0, 1) + temp499b8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+1))
         distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(2, indtmin)*zb(&
 &          indorbp+1, indt+1)/rp1
@@ -22290,97 +22340,97 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &          indorbp, indt+2)/rp1
         zb(indorbp, indt+2) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp, indt+1))
-        temp498b8 = zb(indorbp, indt+1)/rp1
+        temp499b9 = zb(indorbp, indt+1)/rp1
         distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(1, indtmin)*&
-&          temp498b8
-        rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+1, 1)*temp498b8
-        distpb(0, 1) = distpb(0, 1) + temp498b8
+&          temp499b9
+        rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+1, 1)*temp499b9
+        distpb(0, 1) = distpb(0, 1) + temp499b9
         zb(indorbp, indt+1) = 0.0_8
         CALL POPREAL8(adr8ibuf,adr8buf,rp1)
         powersb = 0.0_8
       END IF
     ELSE IF (branch .LT. 4) THEN
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+5, indt+4))
-      temp498b9 = zb(indorbp+5, indt+4)/rp2
+      temp499b10 = zb(indorbp+5, indt+4)/rp2
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(3, indtmin)**2*&
-&        temp498b9
+&        temp499b10
       rmub(3, indtmin) = rmub(3, indtmin) + (4.0d0*distp(indt+3, 1)+&
-&        distp(indt+4, 1)*2*rmu(3, indtmin))*temp498b9
+&        distp(indt+4, 1)*2*rmu(3, indtmin))*temp499b10
       distpb(indt+3, 1) = distpb(indt+3, 1) + 4.0d0*rmu(3, indtmin)*&
-&        temp498b9
-      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp498b9
+&        temp499b10
+      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp499b10
       zb(indorbp+5, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+4, indt+4))
-      temp498b10 = zb(indorbp+4, indt+4)/rp1
-      temp498b11 = distp(indt+4, 1)*temp498b10
+      temp499b11 = zb(indorbp+4, indt+4)/rp1
+      temp499b12 = distp(indt+4, 1)*temp499b11
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(2, indtmin)*rmu(3, &
-&        indtmin)*temp498b10
+&        indtmin)*temp499b11
       rmub(2, indtmin) = rmub(2, indtmin) + 2.0d0*distp(indt+3, 1)*&
-&        temp498b10 + rmu(3, indtmin)*temp498b11
+&        temp499b11 + rmu(3, indtmin)*temp499b12
       rmub(3, indtmin) = rmub(3, indtmin) + 2.0d0*distp(indt+2, 1)*&
-&        temp498b10 + rmu(2, indtmin)*temp498b11
+&        temp499b11 + rmu(2, indtmin)*temp499b12
       distpb(indt+3, 1) = distpb(indt+3, 1) + 2.0d0*rmu(2, indtmin)*&
-&        temp498b10
+&        temp499b11
       distpb(indt+2, 1) = distpb(indt+2, 1) + 2.0d0*rmu(3, indtmin)*&
-&        temp498b10
+&        temp499b11
       zb(indorbp+4, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+3, indt+4))
-      temp498b12 = zb(indorbp+3, indt+4)/rp2
+      temp499b13 = zb(indorbp+3, indt+4)/rp2
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(2, indtmin)**2*&
-&        temp498b12
+&        temp499b13
       rmub(2, indtmin) = rmub(2, indtmin) + (4.0d0*distp(indt+2, 1)+&
-&        distp(indt+4, 1)*2*rmu(2, indtmin))*temp498b12
+&        distp(indt+4, 1)*2*rmu(2, indtmin))*temp499b13
       distpb(indt+2, 1) = distpb(indt+2, 1) + 4.0d0*rmu(2, indtmin)*&
-&        temp498b12
-      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp498b12
+&        temp499b13
+      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp499b13
       zb(indorbp+3, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+4))
-      temp498b13 = zb(indorbp+2, indt+4)/rp1
-      temp498b14 = distp(indt+4, 1)*temp498b13
+      temp499b14 = zb(indorbp+2, indt+4)/rp1
+      temp499b15 = distp(indt+4, 1)*temp499b14
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(1, indtmin)*rmu(3, &
-&        indtmin)*temp498b13
+&        indtmin)*temp499b14
       rmub(1, indtmin) = rmub(1, indtmin) + 2.0d0*distp(indt+3, 1)*&
-&        temp498b13 + rmu(3, indtmin)*temp498b14
+&        temp499b14 + rmu(3, indtmin)*temp499b15
       rmub(3, indtmin) = rmub(3, indtmin) + 2.0d0*distp(indt+1, 1)*&
-&        temp498b13 + rmu(1, indtmin)*temp498b14
+&        temp499b14 + rmu(1, indtmin)*temp499b15
       distpb(indt+3, 1) = distpb(indt+3, 1) + 2.0d0*rmu(1, indtmin)*&
-&        temp498b13
+&        temp499b14
       distpb(indt+1, 1) = distpb(indt+1, 1) + 2.0d0*rmu(3, indtmin)*&
-&        temp498b13
+&        temp499b14
       zb(indorbp+2, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+4))
-      temp498b15 = zb(indorbp+1, indt+4)/rp1
-      temp498b16 = distp(indt+4, 1)*temp498b15
+      temp499b16 = zb(indorbp+1, indt+4)/rp1
+      temp499b17 = distp(indt+4, 1)*temp499b16
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(1, indtmin)*rmu(2, &
-&        indtmin)*temp498b15
+&        indtmin)*temp499b16
       rmub(1, indtmin) = rmub(1, indtmin) + 2.0d0*distp(indt+2, 1)*&
-&        temp498b15 + rmu(2, indtmin)*temp498b16
+&        temp499b16 + rmu(2, indtmin)*temp499b17
       rmub(2, indtmin) = rmub(2, indtmin) + 2.0d0*distp(indt+1, 1)*&
-&        temp498b15 + rmu(1, indtmin)*temp498b16
+&        temp499b16 + rmu(1, indtmin)*temp499b17
       distpb(indt+2, 1) = distpb(indt+2, 1) + 2.0d0*rmu(1, indtmin)*&
-&        temp498b15
+&        temp499b16
       distpb(indt+1, 1) = distpb(indt+1, 1) + 2.0d0*rmu(2, indtmin)*&
-&        temp498b15
+&        temp499b16
       zb(indorbp+1, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp, indt+4))
-      temp498b17 = zb(indorbp, indt+4)/rp2
+      temp499b18 = zb(indorbp, indt+4)/rp2
       distpb(indt+4, 1) = distpb(indt+4, 1) + rmu(1, indtmin)**2*&
-&        temp498b17
+&        temp499b18
       rmub(1, indtmin) = rmub(1, indtmin) + (4.0d0*distp(indt+1, 1)+&
-&        distp(indt+4, 1)*2*rmu(1, indtmin))*temp498b17
+&        distp(indt+4, 1)*2*rmu(1, indtmin))*temp499b18
       distpb(indt+1, 1) = distpb(indt+1, 1) + 4.0d0*rmu(1, indtmin)*&
-&        temp498b17
-      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp498b17
+&        temp499b18
+      distpb(0, 1) = distpb(0, 1) + 2.0d0*temp499b18
       zb(indorbp, indt+4) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+5, indt+3))
-      temp498b18 = zb(indorbp+5, indt+3)/rp2
+      temp499b19 = zb(indorbp+5, indt+3)/rp2
       distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(3, indtmin)**2*&
-&        temp498b18
+&        temp499b19
       zb(indorbp+5, indt+3) = 0.0_8
       rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+2, 1)*2*rmu(3, &
 &        indtmin)*zb(indorbp+5, indt+2)/rp2 + (2*distp(0, 1)+distp(indt+3&
-&        , 1)*2*rmu(3, indtmin))*temp498b18
-      distpb(0, 1) = distpb(0, 1) + 2*rmu(3, indtmin)*temp498b18
+&        , 1)*2*rmu(3, indtmin))*temp499b19
+      distpb(0, 1) = distpb(0, 1) + 2*rmu(3, indtmin)*temp499b19
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+5, indt+2))
       distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(3, indtmin)**2*zb(&
 &        indorbp+5, indt+2)/rp2
@@ -22392,28 +22442,28 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &        indtmin)*zb(indorbp+5, indt+1)/rp2
       zb(indorbp+5, indt+1) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+4, indt+3))
-      temp498b19 = zb(indorbp+4, indt+3)/rp1
-      temp498b20 = distp(indt+3, 1)*temp498b19
+      temp499b20 = zb(indorbp+4, indt+3)/rp1
+      temp499b21 = distp(indt+3, 1)*temp499b20
       distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(2, indtmin)*rmu(3, &
-&        indtmin)*temp498b19
-      rmub(2, indtmin) = rmub(2, indtmin) + distp(0, 1)*temp498b19 + rmu&
-&        (3, indtmin)*temp498b20
-      rmub(3, indtmin) = rmub(3, indtmin) + rmu(2, indtmin)*temp498b20
-      distpb(0, 1) = distpb(0, 1) + rmu(2, indtmin)*temp498b19
+&        indtmin)*temp499b20
+      rmub(2, indtmin) = rmub(2, indtmin) + distp(0, 1)*temp499b20 + rmu&
+&        (3, indtmin)*temp499b21
+      rmub(3, indtmin) = rmub(3, indtmin) + rmu(2, indtmin)*temp499b21
+      distpb(0, 1) = distpb(0, 1) + rmu(2, indtmin)*temp499b20
       zb(indorbp+4, indt+3) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+4, indt+2))
-      temp498b21 = zb(indorbp+4, indt+2)/rp1
-      temp498b22 = distp(indt+2, 1)*temp498b21
+      temp499b22 = zb(indorbp+4, indt+2)/rp1
+      temp499b23 = distp(indt+2, 1)*temp499b22
       distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(2, indtmin)*rmu(3, &
-&        indtmin)*temp498b21
-      rmub(2, indtmin) = rmub(2, indtmin) + rmu(3, indtmin)*temp498b22
+&        indtmin)*temp499b22
+      rmub(2, indtmin) = rmub(2, indtmin) + rmu(3, indtmin)*temp499b23
       zb(indorbp+4, indt+2) = 0.0_8
-      temp498b23 = rmu(2, indtmin)*zb(indorbp+4, indt+1)/rp1
-      rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+1, 1)*temp498b23 &
-&        + distp(0, 1)*temp498b21 + rmu(2, indtmin)*temp498b22
-      distpb(0, 1) = distpb(0, 1) + rmu(3, indtmin)*temp498b21
+      temp499b24 = rmu(2, indtmin)*zb(indorbp+4, indt+1)/rp1
+      rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+1, 1)*temp499b24 &
+&        + distp(0, 1)*temp499b22 + rmu(2, indtmin)*temp499b23
+      distpb(0, 1) = distpb(0, 1) + rmu(3, indtmin)*temp499b22
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+4, indt+1))
-      distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(3, indtmin)*temp498b23
+      distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(3, indtmin)*temp499b24
       rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+1, 1)*rmu(3, &
 &        indtmin)*zb(indorbp+4, indt+1)/rp1
       zb(indorbp+4, indt+1) = 0.0_8
@@ -22424,71 +22474,71 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &        indtmin)*zb(indorbp+3, indt+3)/rp2
       zb(indorbp+3, indt+3) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+3, indt+2))
-      temp498b24 = zb(indorbp+3, indt+2)/rp2
+      temp499b25 = zb(indorbp+3, indt+2)/rp2
       distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(2, indtmin)**2*&
-&        temp498b24
+&        temp499b25
       zb(indorbp+3, indt+2) = 0.0_8
       rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+1, 1)*2*rmu(2, &
 &        indtmin)*zb(indorbp+3, indt+1)/rp2 + (2*distp(0, 1)+distp(indt+2&
-&        , 1)*2*rmu(2, indtmin))*temp498b24
-      distpb(0, 1) = distpb(0, 1) + 2*rmu(2, indtmin)*temp498b24
+&        , 1)*2*rmu(2, indtmin))*temp499b25
+      distpb(0, 1) = distpb(0, 1) + 2*rmu(2, indtmin)*temp499b25
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+3, indt+1))
       distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(2, indtmin)**2*zb(&
 &        indorbp+3, indt+1)/rp2
       zb(indorbp+3, indt+1) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+3))
-      temp498b25 = distp(indt+3, 1)*zb(indorbp+2, indt+3)
+      temp499b26 = distp(indt+3, 1)*zb(indorbp+2, indt+3)
       distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(1, indtmin)*rmu(3, &
 &        indtmin)*zb(indorbp+2, indt+3)
       rmub(1, indtmin) = rmub(1, indtmin) + distp(0, 1)*zb(indorbp+2, &
-&        indt+3)/rp1 + rmu(3, indtmin)*temp498b25
+&        indt+3)/rp1 + rmu(3, indtmin)*temp499b26
       distpb(0, 1) = distpb(0, 1) + rmu(1, indtmin)*zb(indorbp+2, indt+3&
 &        )/rp1
       zb(indorbp+2, indt+3) = 0.0_8
-      temp498b26 = rmu(1, indtmin)*zb(indorbp+2, indt+2)/rp1
-      rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+2, 1)*temp498b26 &
-&        + rmu(1, indtmin)*temp498b25
+      temp499b27 = rmu(1, indtmin)*zb(indorbp+2, indt+2)/rp1
+      rmub(3, indtmin) = rmub(3, indtmin) + distp(indt+2, 1)*temp499b27 &
+&        + rmu(1, indtmin)*temp499b26
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+2))
-      distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(3, indtmin)*temp498b26
+      distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(3, indtmin)*temp499b27
       rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+2, 1)*rmu(3, &
 &        indtmin)*zb(indorbp+2, indt+2)/rp1
       zb(indorbp+2, indt+2) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+2, indt+1))
-      temp498b27 = zb(indorbp+2, indt+1)/rp1
-      temp498b28 = distp(indt+1, 1)*temp498b27
+      temp499b28 = zb(indorbp+2, indt+1)/rp1
+      temp499b29 = distp(indt+1, 1)*temp499b28
       distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(1, indtmin)*rmu(3, &
-&        indtmin)*temp498b27
-      rmub(1, indtmin) = rmub(1, indtmin) + rmu(3, indtmin)*temp498b28
-      rmub(3, indtmin) = rmub(3, indtmin) + distp(0, 1)*temp498b27 + rmu&
-&        (1, indtmin)*temp498b28
-      distpb(0, 1) = distpb(0, 1) + rmu(3, indtmin)*temp498b27
+&        indtmin)*temp499b28
+      rmub(1, indtmin) = rmub(1, indtmin) + rmu(3, indtmin)*temp499b29
+      rmub(3, indtmin) = rmub(3, indtmin) + distp(0, 1)*temp499b28 + rmu&
+&        (1, indtmin)*temp499b29
+      distpb(0, 1) = distpb(0, 1) + rmu(3, indtmin)*temp499b28
       zb(indorbp+2, indt+1) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+3))
-      temp498b29 = rmu(1, indtmin)*zb(indorbp+1, indt+3)/rp1
-      distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(2, indtmin)*temp498b29
-      rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+3, 1)*temp498b29
+      temp499b30 = rmu(1, indtmin)*zb(indorbp+1, indt+3)/rp1
+      distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(2, indtmin)*temp499b30
+      rmub(2, indtmin) = rmub(2, indtmin) + distp(indt+3, 1)*temp499b30
       rmub(1, indtmin) = rmub(1, indtmin) + distp(indt+3, 1)*rmu(2, &
 &        indtmin)*zb(indorbp+1, indt+3)/rp1
       zb(indorbp+1, indt+3) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+2))
-      temp498b30 = zb(indorbp+1, indt+2)/rp1
-      temp498b31 = distp(indt+2, 1)*temp498b30
+      temp499b31 = zb(indorbp+1, indt+2)/rp1
+      temp499b32 = distp(indt+2, 1)*temp499b31
       distpb(indt+2, 1) = distpb(indt+2, 1) + rmu(1, indtmin)*rmu(2, &
-&        indtmin)*temp498b30
-      rmub(1, indtmin) = rmub(1, indtmin) + distp(0, 1)*temp498b30 + rmu&
-&        (2, indtmin)*temp498b31
-      rmub(2, indtmin) = rmub(2, indtmin) + rmu(1, indtmin)*temp498b31
-      distpb(0, 1) = distpb(0, 1) + rmu(1, indtmin)*temp498b30
+&        indtmin)*temp499b31
+      rmub(1, indtmin) = rmub(1, indtmin) + distp(0, 1)*temp499b31 + rmu&
+&        (2, indtmin)*temp499b32
+      rmub(2, indtmin) = rmub(2, indtmin) + rmu(1, indtmin)*temp499b32
+      distpb(0, 1) = distpb(0, 1) + rmu(1, indtmin)*temp499b31
       zb(indorbp+1, indt+2) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+1, indt+1))
-      temp498b32 = zb(indorbp+1, indt+1)/rp1
-      temp498b33 = distp(indt+1, 1)*temp498b32
+      temp499b33 = zb(indorbp+1, indt+1)/rp1
+      temp499b34 = distp(indt+1, 1)*temp499b33
       distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(1, indtmin)*rmu(2, &
-&        indtmin)*temp498b32
-      rmub(1, indtmin) = rmub(1, indtmin) + rmu(2, indtmin)*temp498b33
-      rmub(2, indtmin) = rmub(2, indtmin) + distp(0, 1)*temp498b32 + rmu&
-&        (1, indtmin)*temp498b33
-      distpb(0, 1) = distpb(0, 1) + rmu(2, indtmin)*temp498b32
+&        indtmin)*temp499b33
+      rmub(1, indtmin) = rmub(1, indtmin) + rmu(2, indtmin)*temp499b34
+      rmub(2, indtmin) = rmub(2, indtmin) + distp(0, 1)*temp499b33 + rmu&
+&        (1, indtmin)*temp499b34
+      distpb(0, 1) = distpb(0, 1) + rmu(2, indtmin)*temp499b33
       zb(indorbp+1, indt+1) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp, indt+3))
       distpb(indt+3, 1) = distpb(indt+3, 1) + rmu(1, indtmin)**2*zb(&
@@ -22503,12 +22553,12 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
 &        indtmin)*zb(indorbp, indt+2)/rp2
       zb(indorbp, indt+2) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp, indt+1))
-      temp498b34 = zb(indorbp, indt+1)/rp2
+      temp499b35 = zb(indorbp, indt+1)/rp2
       distpb(indt+1, 1) = distpb(indt+1, 1) + rmu(1, indtmin)**2*&
-&        temp498b34
+&        temp499b35
       rmub(1, indtmin) = rmub(1, indtmin) + (2*distp(0, 1)+distp(indt+1&
-&        , 1)*2*rmu(1, indtmin))*temp498b34
-      distpb(0, 1) = distpb(0, 1) + 2*rmu(1, indtmin)*temp498b34
+&        , 1)*2*rmu(1, indtmin))*temp499b35
+      distpb(0, 1) = distpb(0, 1) + 2*rmu(1, indtmin)*temp499b35
       zb(indorbp, indt+1) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,rp1)
       powersb = 0.0_8
@@ -22563,28 +22613,28 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
           distpb(indt+4, 1) = distpb(indt+4, 1) + z(indorbp+count, &
 &            indtmin)*tmp3b
           CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+count, indt+4))
-          temp501 = powers(3, kk-2, 0)
-          temp500 = powers(1, ii, 0)*powers(2, jj, 0)
-          temp498 = powers(1, ii, 0)*powers(3, kk, 0)
-          temp499 = powers(2, jj, 0)*powers(3, kk, 0)
-          temp500b = z(indorbp+count, indt+4)*zb(indorbp+count, indt+4)
-          temp500b0 = ii*(ii-1)*temp500b
-          temp499b = powers(1, ii-2, 0)*temp500b0
-          temp499b0 = jj*(jj-1)*temp500b
-          temp498b35 = powers(2, jj-2, 0)*temp499b0
-          temp498b36 = kk*(kk-1)*temp500b
-          powersb(1, ii-2, 0) = powersb(1, ii-2, 0) + temp499*temp500b0
-          powersb(2, jj, 0) = powersb(2, jj, 0) + temp501*powers(1, ii, &
-&            0)*temp498b36 + powers(3, kk, 0)*temp499b
+          temp502 = powers(3, kk-2, 0)
+          temp501 = powers(1, ii, 0)*powers(2, jj, 0)
+          temp499 = powers(1, ii, 0)*powers(3, kk, 0)
+          temp500 = powers(2, jj, 0)*powers(3, kk, 0)
+          temp501b = z(indorbp+count, indt+4)*zb(indorbp+count, indt+4)
+          temp501b0 = ii*(ii-1)*temp501b
+          temp500b = powers(1, ii-2, 0)*temp501b0
+          temp500b0 = jj*(jj-1)*temp501b
+          temp499b36 = powers(2, jj-2, 0)*temp500b0
+          temp499b37 = kk*(kk-1)*temp501b
+          powersb(1, ii-2, 0) = powersb(1, ii-2, 0) + temp500*temp501b0
+          powersb(2, jj, 0) = powersb(2, jj, 0) + temp502*powers(1, ii, &
+&            0)*temp499b37 + powers(3, kk, 0)*temp500b
           powersb(3, kk, 0) = powersb(3, kk, 0) + powers(1, ii, 0)*&
-&            temp498b35 + powers(2, jj, 0)*temp499b
-          powersb(2, jj-2, 0) = powersb(2, jj-2, 0) + temp498*temp499b0
-          powersb(1, ii, 0) = powersb(1, ii, 0) + temp501*powers(2, jj, &
-&            0)*temp498b36 + powers(3, kk, 0)*temp498b35
-          powersb(3, kk-2, 0) = powersb(3, kk-2, 0) + temp500*temp498b36
+&            temp499b36 + powers(2, jj, 0)*temp500b
+          powersb(2, jj-2, 0) = powersb(2, jj-2, 0) + temp499*temp500b0
+          powersb(1, ii, 0) = powersb(1, ii, 0) + temp502*powers(2, jj, &
+&            0)*temp499b37 + powers(3, kk, 0)*temp499b36
+          powersb(3, kk-2, 0) = powersb(3, kk-2, 0) + temp501*temp499b37
           zb(indorbp+count, indt+4) = (ii*(ii-1)*(powers(1, ii-2, 0)*&
-&            temp499)+jj*(jj-1)*(powers(2, jj-2, 0)*temp498)+kk*(kk-1)*(&
-&            temp500*temp501))*zb(indorbp+count, indt+4)
+&            temp500)+jj*(jj-1)*(powers(2, jj-2, 0)*temp499)+kk*(kk-1)*(&
+&            temp501*temp502))*zb(indorbp+count, indt+4)
           CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+count, indt+3))
           zb(indorbp+count, indt+3) = kk*zb(indorbp+count, indt+3)
           CALL POPREAL8(adr8ibuf,adr8buf,z(indorbp+count, indt+3))
@@ -22668,28 +22718,30 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       CALL POPREAL8(adr8ibuf,adr8buf,distp(indt+4, 1))
       tmp2b = distpb(indt+4, 1)
       distpb(indt+4, 1) = 0.0_8
-      temp498b = -(6.0d0*4.0d0*tmp2b)
-      dd1b = distp(0, 1)*2*dd1*temp498b
-      distpb(0, 1) = distpb(0, 1) + dd1**2*temp498b
+      temp499b = dd1*distp(0, 1)*4.0d0*tmp2b
+      temp499b0 = (4.0d0*(dd1*r(0)**2)-6.0d0)*tmp2b
+      dd1b = distp(0, 1)*temp499b0 + r(0)**2*temp499b
+      rb(0) = rb(0) + dd1*2*r(0)*temp499b
+      distpb(0, 1) = distpb(0, 1) + dd1*temp499b0
       CALL POPREAL8(adr8ibuf,adr8buf,distp(indt+3, 1))
       tmp1b = distpb(indt+3, 1)
       distpb(indt+3, 1) = 0.0_8
-      temp498b0 = -(2.0d0*distp(0, 1)*tmp1b)
+      temp499b1 = -(2.0d0*distp(0, 1)*tmp1b)
       distpb(0, 1) = distpb(0, 1) - 2.0d0*dd1*rmu(3, 0)*tmp1b
       CALL POPREAL8(adr8ibuf,adr8buf,distp(indt+2, 1))
       tmp0b = distpb(indt+2, 1)
       distpb(indt+2, 1) = 0.0_8
-      temp498b1 = -(2.0d0*distp(0, 1)*tmp0b)
+      temp499b2 = -(2.0d0*distp(0, 1)*tmp0b)
       distpb(0, 1) = distpb(0, 1) - 2.0d0*dd1*rmu(2, 0)*tmp0b
       CALL POPREAL8(adr8ibuf,adr8buf,distp(indt+1, 1))
       tmpb = distpb(indt+1, 1)
-      temp498b2 = -(2.0d0*distp(0, 1)*tmpb)
-      dd1b = dd1b + rmu(2, 0)*temp498b1 + rmu(1, 0)*temp498b2 + rmu(3, 0&
-&        )*temp498b0
-      rmub(3, 0) = rmub(3, 0) + dd1*temp498b0
-      rmub(2, 0) = rmub(2, 0) + dd1*temp498b1
+      temp499b3 = -(2.0d0*distp(0, 1)*tmpb)
+      dd1b = dd1b + rmu(2, 0)*temp499b2 + rmu(1, 0)*temp499b3 + rmu(3, 0&
+&        )*temp499b1
+      rmub(3, 0) = rmub(3, 0) + dd1*temp499b1
+      rmub(2, 0) = rmub(2, 0) + dd1*temp499b2
       distpb(indt+1, 1) = 0.0_8
-      rmub(1, 0) = rmub(1, 0) + dd1*temp498b2
+      rmub(1, 0) = rmub(1, 0) + dd1*temp499b3
       distpb(0, 1) = distpb(0, 1) - 2.0d0*dd1*rmu(1, 0)*tmpb
     END IF
     CALL POPINTEGER4(adi4ibuf,adi4buf,branch)
@@ -22749,8 +22801,11 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     cb = 0.0_8
     DO k=indtm,i0,-1
-      dd1b = dd1b - c*DEXP(-dd1)*distpb(k, 1)
-      cb = cb + DEXP(-dd1)*distpb(k, 1)
+      temp498 = r(k)**2
+      temp498b = c*DEXP(-(dd1*temp498))*distpb(k, 1)
+      dd1b = dd1b - temp498*temp498b
+      rb(k) = rb(k) - dd1*2*r(k)*temp498b
+      cb = cb + DEXP(-(dd1*temp498))*distpb(k, 1)
       distpb(k, 1) = 0.0_8
     END DO
     CALL POPINTEGER4(adi4ibuf,adi4buf,branch)
@@ -22763,7 +22818,7 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       cb = (8_4*dd1)**temp497*cb
     END IF
     dd1b = dd1b + 0.712705470354990_8*0.75_8*dd1**(-0.242)*cb
-    DO ii=max_power,1,-1
+    DO ii=iopt-90,1,-1
       DO k=indtm,indtmin,-1
         CALL POPREAL8(adr8ibuf,adr8buf,powers(3, ii, k))
         powersb(3, ii-1, k) = powersb(3, ii-1, k) + rmu(3, k)*powersb(3&
@@ -22800,20 +22855,20 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
         rmub(i, 0) = rmub(i, 0) + fun*zb(indorbp, indt+i)
         zb(indorbp, indt+i) = 0.0_8
       END DO
-      temp506 = (dd5*r(0)+1.d0)**6
-      temp505 = r(0)/temp506
-      temp506b = 2.d0*temp505*fun2b
-      temp506b0 = 2*dd5*r(0)*temp506b
-      temp505b = 2.d0*((dd5*r(0))**2-6.d0*(dd5*r(0))+3.d0)*fun2b/temp506
-      temp505b0 = -(temp505*6*(dd5*r(0)+1.d0)**5*temp505b)
-      temp504 = (dd5*r(0)+1.d0)**5
-      temp504b = -(funb0/temp504)
-      temp504b0 = -(r(0)*(dd5*r(0)-3.d0)*5*(dd5*r(0)+1.d0)**4*temp504b/&
-&        temp504)
-      dd5b = r(0)**2*temp504b + r(0)*temp504b0 + r(0)*temp505b0 - 6.d0*r&
-&        (0)*temp506b + r(0)*temp506b0
-      rb(0) = rb(0) + (r(0)*dd5+dd5*r(0)-3.d0)*temp504b + dd5*temp504b0 &
-&        + dd5*temp505b0 + temp505b - 6.d0*dd5*temp506b + dd5*temp506b0
+      temp507 = (dd5*r(0)+1.d0)**6
+      temp506 = r(0)/temp507
+      temp507b = 2.d0*temp506*fun2b
+      temp507b0 = 2*dd5*r(0)*temp507b
+      temp506b = 2.d0*((dd5*r(0))**2-6.d0*(dd5*r(0))+3.d0)*fun2b/temp507
+      temp506b0 = -(temp506*6*(dd5*r(0)+1.d0)**5*temp506b)
+      temp505 = (dd5*r(0)+1.d0)**5
+      temp505b = -(funb0/temp505)
+      temp505b0 = -(r(0)*(dd5*r(0)-3.d0)*5*(dd5*r(0)+1.d0)**4*temp505b/&
+&        temp505)
+      dd5b = r(0)**2*temp505b + r(0)*temp505b0 + r(0)*temp506b0 - 6.d0*r&
+&        (0)*temp507b + r(0)*temp507b0
+      rb(0) = rb(0) + (r(0)*dd5+dd5*r(0)-3.d0)*temp505b + dd5*temp505b0 &
+&        + dd5*temp506b0 + temp506b - 6.d0*dd5*temp507b + dd5*temp507b0
     ELSE
       dd5b = 0.0_8
     END IF
@@ -22825,11 +22880,11 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       zb(indorbp, i) = 0.0_8
     END DO
     DO k=indtm,indtmin,-1
-      temp502 = dd5*r(k) + 1.d0
-      temp503 = temp502**4
-      temp502b = -(r(k)**3*4*temp502**3*distpb(k, 1)/temp503**2)
-      rb(k) = rb(k) + dd5*temp502b + 3*r(k)**2*distpb(k, 1)/temp503
-      dd5b = dd5b + r(k)*temp502b
+      temp503 = dd5*r(k) + 1.d0
+      temp504 = temp503**4
+      temp503b = -(r(k)**3*4*temp503**3*distpb(k, 1)/temp504**2)
+      rb(k) = rb(k) + dd5*temp503b + 3*r(k)**2*distpb(k, 1)/temp504
+      dd5b = dd5b + r(k)*temp503b
       distpb(k, 1) = 0.0_8
     END DO
     ddb(indpar+2) = ddb(indpar+2) + dd5b
@@ -22864,19 +22919,19 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
         zb(indorbp, indt+i) = 0.0_8
       END DO
       distpb = 0.0_8
-      temp510 = rp2 - 8.d0*rp1 + 12.d0
-      temp509 = c0*r(0)
-      temp509b0 = distp(0, 1)*fun2b
-      distpb(0, 1) = (temp509*temp510+c1*(rp2-6*rp1+6.d0))*fun2b - (c0*r&
+      temp511 = rp2 - 8.d0*rp1 + 12.d0
+      temp510 = c0*r(0)
+      temp510b0 = distp(0, 1)*fun2b
+      distpb(0, 1) = (temp510*temp511+c1*(rp2-6*rp1+6.d0))*fun2b - (c0*r&
 &        (0)*(rp1-4.d0)+c1*(rp1-3.d0))*funb0
-      temp509b1 = -(distp(0, 1)*funb0)
-      c0b = (rp1-4.d0)*r(0)*temp509b1 + temp510*r(0)*temp509b0
-      rp2b = (c1+temp509)*temp509b0
-      rp1b = (c1+c0*r(0))*temp509b1 + 2*rp1*rp2b + ((-6)*c1-temp509*8.d0&
-&        )*temp509b0
-      rb(0) = rb(0) + (rp1-4.d0)*c0*temp509b1 + dd1*rp1b + temp510*c0*&
-&        temp509b0
-      c1b = (rp1-3.d0)*temp509b1 + (rp2-6*rp1+6.d0)*temp509b0
+      temp510b1 = -(distp(0, 1)*funb0)
+      c0b = (rp1-4.d0)*r(0)*temp510b1 + temp511*r(0)*temp510b0
+      rp2b = (c1+temp510)*temp510b0
+      rp1b = (c1+c0*r(0))*temp510b1 + 2*rp1*rp2b + ((-6)*c1-temp510*8.d0&
+&        )*temp510b0
+      rb(0) = rb(0) + (rp1-4.d0)*c0*temp510b1 + dd1*rp1b + temp511*c0*&
+&        temp510b0
+      c1b = (rp1-3.d0)*temp510b1 + (rp2-6*rp1+6.d0)*temp510b0
       dd1b = r(0)*rp1b
     ELSE
       distpb = 0.0_8
@@ -22885,29 +22940,29 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       dd1b = 0.0_8
     END IF
     DO i=indtm,i0,-1
-      temp509b = distp(i, 1)*zb(indorbp, i)
-      temp508 = r(i)**3
-      c0b = c0b + temp508*temp509b
-      rb(i) = rb(i) + (c1*2*r(i)+c0*3*r(i)**2)*temp509b
-      c1b = c1b + r(i)**2*temp509b
-      distpb(i, 1) = distpb(i, 1) + (c0*temp508+c1*r(i)**2)*zb(indorbp, &
+      temp510b = distp(i, 1)*zb(indorbp, i)
+      temp509 = r(i)**3
+      c0b = c0b + temp509*temp510b
+      rb(i) = rb(i) + (c1*2*r(i)+c0*3*r(i)**2)*temp510b
+      c1b = c1b + r(i)**2*temp510b
+      distpb(i, 1) = distpb(i, 1) + (c0*temp509+c1*r(i)**2)*zb(indorbp, &
 &        i)
       zb(indorbp, i) = 0.0_8
     END DO
     DO k=indtm,indtmin,-1
-      temp508b0 = r(k)*DEXP(-(dd1*r(k)))*distpb(k, 1)
-      rb(k) = rb(k) + DEXP(-(dd1*r(k)))*distpb(k, 1) - dd1*temp508b0
-      dd1b = dd1b - r(k)*temp508b0
+      temp509b0 = r(k)*DEXP(-(dd1*r(k)))*distpb(k, 1)
+      rb(k) = rb(k) + DEXP(-(dd1*r(k)))*distpb(k, 1) - dd1*temp509b0
+      dd1b = dd1b - r(k)*temp509b0
       distpb(k, 1) = 0.0_8
     END DO
-    temp508b = 4.5d0*c1b/dd1
-    cb = temp508b - c0b
-    temp507 = 2**9
-    IF (temp507*(dd1**9/(40320.d0*pi)) .EQ. 0.0) THEN
-      dd1b = dd1b - c*temp508b/dd1
+    temp509b = 4.5d0*c1b/dd1
+    cb = temp509b - c0b
+    temp508 = 2**9
+    IF (temp508*(dd1**9/(40320.d0*pi)) .EQ. 0.0) THEN
+      dd1b = dd1b - c*temp509b/dd1
     ELSE
-      dd1b = dd1b + temp507*9*dd1**8*cb/(2.d0*2.D0*DSQRT(temp507*(dd1**9&
-&        /(40320.d0*pi)))*40320.d0*pi) - c*temp508b/dd1
+      dd1b = dd1b + temp508*9*dd1**8*cb/(2.d0*2.D0*DSQRT(temp508*(dd1**9&
+&        /(40320.d0*pi)))*40320.d0*pi) - c*temp509b/dd1
     END IF
     ddb(indpar+1) = ddb(indpar+1) + dd1b
   CASE (3) 
@@ -22933,26 +22988,26 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     IF (typec .NE. 1) THEN
       fun = -(dd1*distp(0, 1)) - peff*dd2*distp(0, 2)
       distpb = 0.0_8
-      temp520 = dd1/r(0)
-      temp520b = -(distp(0, 1)*2.d0*zb(indorbp, indt+4)/r(0))
-      temp520b0 = peff*distp(0, 2)*zb(indorbp, indt+4)
-      temp519 = dd2/r(0)
-      temp519b = -(2.d0*temp520b0/r(0))
-      temp519b0 = (dd2**2-2.d0*temp519)*zb(indorbp, indt+4)
-      dd1b = temp520b + distp(0, 1)*2*dd1*zb(indorbp, indt+4)
-      rb(0) = rb(0) - temp519*temp519b - temp520*temp520b
-      distpb(0, 1) = (dd1**2-2.d0*temp520)*zb(indorbp, indt+4)
-      dd2b = temp519b + 2*dd2*temp520b0
-      peffb = distp(0, 2)*temp519b0
-      distpb(0, 2) = peff*temp519b0
+      temp521 = dd1/r(0)
+      temp521b = -(distp(0, 1)*2.d0*zb(indorbp, indt+4)/r(0))
+      temp521b0 = peff*distp(0, 2)*zb(indorbp, indt+4)
+      temp520 = dd2/r(0)
+      temp520b = -(2.d0*temp521b0/r(0))
+      temp520b0 = (dd2**2-2.d0*temp520)*zb(indorbp, indt+4)
+      dd1b = temp521b + distp(0, 1)*2*dd1*zb(indorbp, indt+4)
+      rb(0) = rb(0) - temp520*temp520b - temp521*temp521b
+      distpb(0, 1) = (dd1**2-2.d0*temp521)*zb(indorbp, indt+4)
+      dd2b = temp520b + 2*dd2*temp521b0
+      peffb = distp(0, 2)*temp520b0
+      distpb(0, 2) = peff*temp520b0
       zb(indorbp, indt+4) = 0.0_8
       funb0 = 0.0_8
       DO i=3,1,-1
-        temp518 = fun/r(0)
-        temp518b = rmu(i, 0)*zb(indorbp, indt+i)/r(0)
-        rmub(i, 0) = rmub(i, 0) + temp518*zb(indorbp, indt+i)
-        funb0 = funb0 + temp518b
-        rb(0) = rb(0) - temp518*temp518b
+        temp519 = fun/r(0)
+        temp519b = rmu(i, 0)*zb(indorbp, indt+i)/r(0)
+        rmub(i, 0) = rmub(i, 0) + temp519*zb(indorbp, indt+i)
+        funb0 = funb0 + temp519b
+        rb(0) = rb(0) - temp519*temp519b
         zb(indorbp, indt+i) = 0.0_8
       END DO
       dd1b = dd1b - distp(0, 1)*funb0
@@ -22977,30 +23032,30 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     CALL POPINTEGER4(adi4ibuf,adi4buf,ad_to)
     DO i=ad_to,ad_from3,-1
       DO k=indtm,indtmin,-1
-        temp517 = -(dd(i)*r(k))
-        temp517b = c*DEXP(temp517)*distpb(k, i-indpar)
-        cb = cb + DEXP(temp517)*distpb(k, i-indpar)
-        ddb(i) = ddb(i) - r(k)*temp517b
-        rb(k) = rb(k) - dd(i)*temp517b
+        temp518 = -(dd(i)*r(k))
+        temp518b = c*DEXP(temp518)*distpb(k, i-indpar)
+        cb = cb + DEXP(temp518)*distpb(k, i-indpar)
+        ddb(i) = ddb(i) - r(k)*temp518b
+        rb(k) = rb(k) - dd(i)*temp518b
         distpb(k, i-indpar) = 0.0_8
       END DO
     END DO
-    temp516 = 2.d0**3*dd2**3
-    temp515 = peff**2/temp516
-    temp514 = (dd1+dd2)**3
-    temp513 = 2.d0**3*dd1**3
-    temp512 = 2.d0*pi*(1.0/temp513+2.d0*peff/temp514+temp515)
-    temp511 = DSQRT(temp512)
-    IF (temp512 .EQ. 0.0) THEN
-      temp511b = 0.0
+    temp517 = 2.d0**3*dd2**3
+    temp516 = peff**2/temp517
+    temp515 = (dd1+dd2)**3
+    temp514 = 2.d0**3*dd1**3
+    temp513 = 2.d0*pi*(1.0/temp514+2.d0*peff/temp515+temp516)
+    temp512 = DSQRT(temp513)
+    IF (temp513 .EQ. 0.0) THEN
+      temp512b = 0.0
     ELSE
-      temp511b = -(pi*cb/(temp511**2*2.D0*DSQRT(temp512)))
+      temp512b = -(pi*cb/(temp512**2*2.D0*DSQRT(temp513)))
     END IF
-    temp511b0 = 2.d0*temp511b/temp514
-    temp511b1 = -(peff*3*(dd1+dd2)**2*temp511b0/temp514)
-    dd1b = dd1b + temp511b1 - 2.d0**3*3*dd1**2*temp511b/temp513**2
-    peffb = peffb + 2*peff*temp511b/temp516 + temp511b0
-    dd2b = dd2b + temp511b1 - temp515*2.d0**3*3*dd2**2*temp511b/temp516
+    temp512b0 = 2.d0*temp512b/temp515
+    temp512b1 = -(peff*3*(dd1+dd2)**2*temp512b0/temp515)
+    dd1b = dd1b + temp512b1 - 2.d0**3*3*dd1**2*temp512b/temp514**2
+    peffb = peffb + 2*peff*temp512b/temp517 + temp512b0
+    dd2b = dd2b + temp512b1 - temp516*2.d0**3*3*dd2**2*temp512b/temp517
     ddb(indpar+3) = ddb(indpar+3) + peffb
     ddb(indpar+2) = ddb(indpar+2) + dd2b
     ddb(indpar+1) = ddb(indpar+1) + dd1b
@@ -23033,22 +23088,22 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
         zb(indorbp, indt+i) = 0.0_8
       END DO
       distpb = 0.0_8
-      temp521b3 = -((1.d0-dd2*r(0))*fun2b)
-      temp521b4 = -(dd2**2*distp(0, 3)*fun2b)
-      temp521b5 = -((1.d0-dd5*r(0))*fun2b)
-      temp521b6 = dd5**2*temp521b5
-      temp521b7 = -(dd5**2*dd4*distp(0, 4)*fun2b)
-      dd2b = distp(0, 3)*2*dd2*temp521b3 - r(0)*temp521b4 - distp(0, 3)*&
+      temp522b3 = -((1.d0-dd2*r(0))*fun2b)
+      temp522b4 = -(dd2**2*distp(0, 3)*fun2b)
+      temp522b5 = -((1.d0-dd5*r(0))*fun2b)
+      temp522b6 = dd5**2*temp522b5
+      temp522b7 = -(dd5**2*dd4*distp(0, 4)*fun2b)
+      dd2b = distp(0, 3)*2*dd2*temp522b3 - r(0)*temp522b4 - distp(0, 3)*&
 &        2*dd2*funb0
-      distpb(0, 3) = dd2**2*temp521b3
-      rb(0) = rb(0) - dd5*temp521b7 - dd2*temp521b4
-      dd5b = dd4*distp(0, 4)*2*dd5*temp521b5 - r(0)*temp521b7 - dd4*&
+      distpb(0, 3) = dd2**2*temp522b3
+      rb(0) = rb(0) - dd5*temp522b7 - dd2*temp522b4
+      dd5b = dd4*distp(0, 4)*2*dd5*temp522b5 - r(0)*temp522b7 - dd4*&
 &        distp(0, 4)*2*dd5*funb0
-      temp521b8 = -(dd5**2*funb0)
-      dd4b = distp(0, 4)*temp521b8 + distp(0, 4)*temp521b6
-      distpb(0, 4) = dd4*temp521b6
+      temp522b8 = -(dd5**2*funb0)
+      dd4b = distp(0, 4)*temp522b8 + distp(0, 4)*temp522b6
+      distpb(0, 4) = dd4*temp522b6
       distpb(0, 3) = distpb(0, 3) - dd2**2*funb0
-      distpb(0, 4) = distpb(0, 4) + dd4*temp521b8
+      distpb(0, 4) = distpb(0, 4) + dd4*temp522b8
     ELSE
       distpb = 0.0_8
       dd2b = 0.0_8
@@ -23065,20 +23120,20 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
     END DO
     DO k=indtm,indtmin,-1
       CALL POPREAL8(adr8ibuf,adr8buf,distp(k, 2))
-      temp521b = distp(k, 4)*distpb(k, 2)
+      temp522b = distp(k, 4)*distpb(k, 2)
       distpb(k, 4) = distpb(k, 4) + (dd5*r(k)+1.d0)*distpb(k, 2)
       distpb(k, 2) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,distp(k, 1))
-      temp521b0 = distp(k, 3)*distpb(k, 1)
+      temp522b0 = distp(k, 3)*distpb(k, 1)
       distpb(k, 3) = distpb(k, 3) + (dd2*r(k)+1.d0)*distpb(k, 1)
       distpb(k, 1) = 0.0_8
-      temp521b1 = DEXP(-(dd5*r(k)))*distpb(k, 4)
-      dd5b = dd5b + r(k)*temp521b - r(k)*temp521b1
+      temp522b1 = DEXP(-(dd5*r(k)))*distpb(k, 4)
+      dd5b = dd5b + r(k)*temp522b - r(k)*temp522b1
       distpb(k, 4) = 0.0_8
-      temp521b2 = DEXP(-(dd2*r(k)))*distpb(k, 3)
-      rb(k) = rb(k) + dd2*temp521b0 - dd2*temp521b2 - dd5*temp521b1 + &
-&        dd5*temp521b
-      dd2b = dd2b + r(k)*temp521b0 - r(k)*temp521b2
+      temp522b2 = DEXP(-(dd2*r(k)))*distpb(k, 3)
+      rb(k) = rb(k) + dd2*temp522b0 - dd2*temp522b2 - dd5*temp522b1 + &
+&        dd5*temp522b
+      dd2b = dd2b + r(k)*temp522b0 - r(k)*temp522b2
       distpb(k, 3) = 0.0_8
     END DO
     ddb(indpar+4) = ddb(indpar+4) + dd5b
@@ -23125,27 +23180,27 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
         zb(indorbp, indt+i) = 0.0_8
       END DO
       distpb = 0.0_8
-      temp525 = (rp4+1.d0)**3
-      temp524 = distp(0, 1)*rp6/temp525
-      temp525b = temp524*fun2b
-      temp525b0 = 2*rp4*rp5*temp525b
-      temp524b = (rp5**2-8*rp5-20*rp4+2*(rp4*rp5**2)-8*(rp4*rp5)+(rp4*&
-&        rp5)**2+12.d0)*fun2b/temp525
-      temp523 = (rp4+1.d0)**2
-      temp522 = distp(0, 1)*rp6/temp523
-      temp522b = -(temp522*funb0)
-      rp5b = (rp4+1.0_8)*temp522b + rp4*temp525b0 + (2**2*rp4*rp5-8*rp4+&
-&        2*rp5-8)*temp525b
-      temp522b0 = -((rp5+rp4*rp5-4.d0)*funb0/temp523)
-      rp4b = rp5*temp522b - temp522*2*(rp4+1.d0)*temp522b0 - temp524*3*(&
-&        rp4+1.d0)**2*temp524b + rp5*temp525b0 + (2*rp5**2-8*rp5-20)*&
-&        temp525b
-      distpb(0, 1) = rp6*temp522b0 + rp6*temp524b
-      rp6b = distp(0, 1)*temp522b0 + distp(0, 1)*temp524b
-      temp522b1 = b1s**2*rp6b
-      rp2b = 2*rp2*rp4b + dd1**2*temp522b1
+      temp526 = (rp4+1.d0)**3
+      temp525 = distp(0, 1)*rp6/temp526
+      temp526b = temp525*fun2b
+      temp526b0 = 2*rp4*rp5*temp526b
+      temp525b = (rp5**2-8*rp5-20*rp4+2*(rp4*rp5**2)-8*(rp4*rp5)+(rp4*&
+&        rp5)**2+12.d0)*fun2b/temp526
+      temp524 = (rp4+1.d0)**2
+      temp523 = distp(0, 1)*rp6/temp524
+      temp523b = -(temp523*funb0)
+      rp5b = (rp4+1.0_8)*temp523b + rp4*temp526b0 + (2**2*rp4*rp5-8*rp4+&
+&        2*rp5-8)*temp526b
+      temp523b0 = -((rp5+rp4*rp5-4.d0)*funb0/temp524)
+      rp4b = rp5*temp523b - temp523*2*(rp4+1.d0)*temp523b0 - temp525*3*(&
+&        rp4+1.d0)**2*temp525b + rp5*temp526b0 + (2*rp5**2-8*rp5-20)*&
+&        temp526b
+      distpb(0, 1) = rp6*temp523b0 + rp6*temp525b
+      rp6b = distp(0, 1)*temp523b0 + distp(0, 1)*temp525b
+      temp523b1 = b1s**2*rp6b
+      rp2b = 2*rp2*rp4b + dd1**2*temp523b1
       rp1b = 2*rp1*rp2b
-      dd1b = r(0)*rp5b + b1s*r(0)*rp1b + rp2*2*dd1*temp522b1
+      dd1b = r(0)*rp5b + b1s*r(0)*rp1b + rp2*2*dd1*temp523b1
       rb(0) = rb(0) + b1s*dd1*rp1b + dd1*rp5b
       CALL POPREAL8(adr8ibuf,adr8buf,rp4)
     ELSE
@@ -23153,22 +23208,22 @@ SUBROUTINE MAKEFUN_B(iopt, indt, i0, indtmin, indtm, typec, indpar, &
       dd1b = 0.0_8
     END IF
     DO i=indtm,i0,-1
-      temp521 = rp4/(rp4+1.d0)
-      temp521b10 = distp(i, 1)*zb(indorbp, i)/(rp4+1.d0)
-      distpb(i, 1) = distpb(i, 1) + temp521*zb(indorbp, i)
-      rp4b = (1.0_8-temp521)*temp521b10
+      temp522 = rp4/(rp4+1.d0)
+      temp522b10 = distp(i, 1)*zb(indorbp, i)/(rp4+1.d0)
+      distpb(i, 1) = distpb(i, 1) + temp522*zb(indorbp, i)
+      rp4b = (1.0_8-temp522)*temp522b10
       zb(indorbp, i) = 0.0_8
       CALL POPREAL8(adr8ibuf,adr8buf,rp4)
-      temp521b11 = 4*b1s**4*dd1**3*r(i)**3*rp4b
-      dd1b = dd1b + r(i)*temp521b11
-      rb(i) = rb(i) + dd1*temp521b11
+      temp522b11 = 4*b1s**4*dd1**3*r(i)**3*rp4b
+      dd1b = dd1b + r(i)*temp522b11
+      rb(i) = rb(i) + dd1*temp522b11
     END DO
     cb = 0.0_8
     DO i=indtm,indtmin,-1
-      temp521b9 = c*DEXP(-(dd1*r(i)))*distpb(i, 1)
+      temp522b9 = c*DEXP(-(dd1*r(i)))*distpb(i, 1)
       cb = cb + DEXP(-(dd1*r(i)))*distpb(i, 1)
-      dd1b = dd1b - r(i)*temp521b9
-      rb(i) = rb(i) - dd1*temp521b9
+      dd1b = dd1b - r(i)*temp522b9
+      rb(i) = rb(i) - dd1*temp522b9
       distpb(i, 1) = 0.0_8
     END DO
     dd1b = dd1b + cost1s*1.5d0*dd1**0.5D0*cb
