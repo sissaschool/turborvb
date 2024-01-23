@@ -15,6 +15,7 @@ subroutine setup_qmckl_ctx(&
                 &, atomic_numbers&
                 &, atomic_coordinates&
                 &, shell_to_ion&
+                &, shell_types&
                 &, context)
 
     use qmckl
@@ -24,7 +25,7 @@ subroutine setup_qmckl_ctx(&
     integer*4, intent(in)          :: number_of_shells
     integer(kind=qmckl_context), intent(out) :: context
     integer*4, intent(in)          :: shell_to_ion(number_of_shells)
-    !integer*4, intent(in)          :: shell_indeces(shell_number)
+    integer*4, intent(in)          :: shell_types(number_of_shells)
 
     real*8, intent(in)             :: atomic_numbers(number_of_atoms)
     real*8, intent(in)             :: atomic_coordinates(3,number_of_atoms)
@@ -33,7 +34,8 @@ subroutine setup_qmckl_ctx(&
 
     integer*4                      :: ii
 
-    !integer*8                      :: nucleus_indeces_(number_of_atoms)
+    integer*4                      :: shell_types_(number_of_atoms)
+    integer*8                      :: primitive_numbers_(number_of_shells)
 
     ! Number of shell for each atom
     integer*8                      :: nucleus_shell_num(number_of_atoms)
@@ -158,20 +160,68 @@ subroutine setup_qmckl_ctx(&
     end do
 #endif
 
-    rc =  qmckl_get_ao_basis_nucleus_index(context, nucleus_shell_index, 1_8 * number_of_atoms)
+    rc =  qmckl_set_ao_basis_nucleus_index(context, nucleus_shell_index, 1_8 * number_of_atoms)
 
-!    do ii = 1, shell_number
-!        if (shell_indeces(ii).gt.99) then
-!            write(0,*) "Error: shell_indeces(ii) > 99"
-!            stop 1
-!        end if
-!        if (shell_indeces(ii).lt.90) then
-!            write(0,*) "Error: shell_indeces(ii) < 90"
-!            stop 1
-!        end if
-!        nucleus_indeces_(ii) = shell_indeces(ii) - 90
-!    end do
+    if (rc.ne.QMCKL_SUCCESS) then
+        write(0,*) "Error: qmckl_get_ao_basis_nucleus_index"
+        stop 1
+    end if
+
+#ifdef _DEBUG
+    print *, "QMCKL: Setting up basis set shell type (reading): "
+    do ii = 1, number_of_shells
+        write(*,'(I4)') shell_types(ii)
+    end do
+#endif
+
+    do ii = 1, number_of_shells
+        if (shell_types(ii).gt.99) then
+            write(0,*) "Error: shell_indeces(ii) > 99"
+            stop 1
+        end if
+        if (shell_types(ii).lt.90) then
+            write(0,*) "Error: shell_indeces(ii) < 90"
+            stop 1
+        end if
+        shell_types_(ii) = shell_types(ii) - 90
+    end do
+
+#ifdef _DEBUG
+    print *, "QMCKL: Setting up basis set shell type: "
+    do ii = 1, number_of_shells
+        write(*,'(I4)') shell_types_(ii)
+    end do
+#endif
+
+    rc = qmckl_set_ao_basis_shell_ang_mom(context, shell_types_, 1_8 * number_of_shells)
+
+    if (rc.ne.QMCKL_SUCCESS) then
+        write(0,*) "Error: qmckl_set_ao_basis_shell_ang_mom"
+        stop 1
+    end if
+
+    do ii = 1, number_of_shells
+        primitive_numbers_(ii) = 1_8
+    end do
+
+#ifdef _DEBUG
+    write(*,'("QMCKL: Setting up primitive numbers for shells:")')
+    do ii = 1, number_of_shells
+        write(*,'(I4)') primitive_numbers_(ii)
+    end do
+#endif
+
+    rc = qmckl_set_ao_basis_shell_prim_num(context&
+                &, primitive_numbers_&
+                &, 1_8 * number_of_shells)
+
+    if (rc.ne.QMCKL_SUCCESS) then
+        write(0,*) "Error: qmckl_set_ao_basis_shell_prim_num"
+        stop 1
+    end if
+
 !
+stop
 !#ifdef _DEBUG
 !    write(0,'("QMCKL: Setting up basis set shell to nucleus: ")')
 !    do ii = 1, shell_number
