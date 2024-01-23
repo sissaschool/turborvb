@@ -24,12 +24,12 @@ cp ../../src/c_adjoint_forward/makefun_bump.f90 .
 cp ../../src/c_adjoint_backward/makefun_bump_b.f90 .
 
 # process the mkefuns
-python preprocess.py -c makefun0:[i0=0,indtmin=0,indtm=0]        -o makefun0.f90        makefun.f90
-python preprocess.py -c makefun0_b:[i0=0,indtmin=0,indtm=0]      -o makefun0_b.f90      makefun_b.f90
-python preprocess.py -c makefun0_pbc:[i0=0,indtmin=0,indtm=0]    -o makefun0_pbc.f90    makefun_pbc.f90
-python preprocess.py -c makefun0_pbc_b:[i0=0,indtmin=0,indtm=0]  -o makefun0_pbc_b.f90  makefun_pbc_b.f90
-python preprocess.py -c makefun0_bump:[i0=0,indtmin=0,indtm=0]   -o makefun0_bump.f90   makefun_bump.f90
-python preprocess.py -c makefun0_bump_b:[i0=0,indtmin=0,indtm=0] -o makefun0_bump_b.f90 makefun_bump_b.f90
+python3 preprocess.py -c makefun0:[i0=0,indtmin=0,indtm=0]        -o makefun0.f90        makefun.f90
+python3 preprocess.py -c makefun0_b:[i0=0,indtmin=0,indtm=0]      -o makefun0_b.f90      makefun_b.f90
+python3 preprocess.py -c makefun0_pbc:[i0=0,indtmin=0,indtm=0]    -o makefun0_pbc.f90    makefun_pbc.f90
+python3 preprocess.py -c makefun0_pbc_b:[i0=0,indtmin=0,indtm=0]  -o makefun0_pbc_b.f90  makefun_pbc_b.f90
+python3 preprocess.py -c makefun0_bump:[i0=0,indtmin=0,indtm=0]   -o makefun0_bump.f90   makefun_bump.f90
+python3 preprocess.py -c makefun0_bump_b:[i0=0,indtmin=0,indtm=0] -o makefun0_bump_b.f90 makefun_bump_b.f90
 
 # copy makefuns0
 cp makefun0.f90        ../../src/c_adjoint_forward/makefun0.f90
