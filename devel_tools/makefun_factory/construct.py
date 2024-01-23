@@ -14,7 +14,7 @@ orb_files = glob.glob('orb_*.f90')
 # read files
 orbitals = {f.replace("orb_", "").replace(".f90",""): open(f, 'r').read() for f in orb_files}
 
-# Ensamlble makefun.f90
+# Assemble output
 with open('makefun_out.f90', 'w') as f:
     f.write(header)
     f.write('select case (iopt)\n')
