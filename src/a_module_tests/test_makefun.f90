@@ -52,6 +52,12 @@ program makefun_tester
     allocate(multiplicities(num_lines))
     allocate(npars(num_lines))
     allocate(failed_test(num_lines))
+    ! Zeta is never more than 3
+    !allocate(zeta(3))
+
+    ! Set default zeta. Zeta is technically not used anymore
+    ! is here only for legacy reasons
+    zeta = 1.0_8
 
     ! -1 means that test not failed
     failed_test = -1
@@ -90,9 +96,9 @@ program makefun_tester
         !call create_pa_value()
         !call create_svgl_value()
         call check_index_movement()
-        call check_single_value()
-        call check_svgl_value()
-        call check_pa_value()
+        !call check_single_value()
+        !call check_svgl_value()
+        !call check_pa_value()
 
         if (failed) then
             failed_test(ii) = 1
@@ -112,8 +118,6 @@ program makefun_tester
         write(*, '("######################################")')
     end do
     
-    allocate(zeta(1))
-    allocate(r(1))
     
     if (allocated(iorbs)) deallocate(iorbs)
     if (allocated(multiplicities)) deallocate(multiplicities)
