@@ -29,7 +29,7 @@ subroutine setup_qmckl_ctx(&
 
     integer*4                      :: ii, jj, kk, ll, mm, count
 
-    integer*4                      :: shell_types_(number_of_atoms)
+    integer*4                      :: shell_types_(number_of_shells)
     integer*8                      :: primitive_numbers_(number_of_shells)
     integer*8                      :: primitive_to_shell_(number_of_shells)
     integer*8                      :: ao_factor_number_
