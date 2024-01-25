@@ -203,7 +203,7 @@ if(EXT_TOOLS AND EXT_QMC)
   add_subdirectory(test_MD_classical_vmc)
   add_subdirectory(test_MD_quantum_vmc)
 
-  #add_subdirectory(test_setup_qmckl)
+  add_subdirectory(test_setup_qmckl)
   
   ######################################################################
 

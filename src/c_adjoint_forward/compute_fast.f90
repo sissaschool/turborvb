@@ -1307,22 +1307,22 @@ contains
     end subroutine task2
 
     subroutine task4(kel, rion, dd, vju, winv, winvj)
-
+    
             use qmckl
-
+    
             implicit none
-
+    
             real*8, intent(in)             :: kel(3, nel, 0:indt), rion(3, nion)
-            real*8, intent(inout)          :: winv(ipc * nelorbh, 0:indt4, nel)       &
+            real*8, intent(inout)          :: winv(ipc * nelorbh, 0:indt4, nel)&
                    &, winvj(nelorbjmax, 0:indt4j, nel), dd(*), vju(*)
     
-#ifdef _QMCKL   
+#ifdef _QMCKL
             integer*4                      :: ii, l
             integer(qmckl_exit_code)       :: rc
             integer*8, save                :: ao_num=0, npoints_qmckl=0
-            real*8, allocatable            :: ao_vgl_qmckl(:,:,:)&
-                                           &, ao_value_qmckl(:,:)&
-                                           &, kel_tmp(:,:)
+            real*8, allocatable            :: ao_vgl_qmckl(:,:,:)            &
+                   &, ao_value_qmckl(:,:)                                    &
+                   &, kel_tmp(:,:)
 #endif
     
             if(.not.yesupwf.and..not.yesupwfj) return
@@ -1429,7 +1429,23 @@ contains
 #endif
                     end if
                 end if
-    
+
+                if(nelorbj.ne.0.and.yesupwfj) then
+                    ! TODO: These loops can be merged
+                    do j = 1, nelup
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
+                    end do
+                    do j = nelup + 1, nel
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    end do
+                end if
+
                 do j = nelup + 1, nel
                     if(yesupwf) then
                         call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
