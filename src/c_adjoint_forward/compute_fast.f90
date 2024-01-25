@@ -19,22 +19,20 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
     !  variables contraction and contractionj in the main, respectively
     !  (>0 if contracted orbitals are used).
 
-
-    !      nelorbjmax=max(nelorbj,1)
-    !      neldomax=max(neldo,1)
-    !      indtmax=max(indt,1)
-    !      nshelljmax=max(nshellj,1)
 #ifdef _NVTX
     use nvtx
 #endif
     use Ewald
     use Cell
     use Constants, only : yes_ontarget,ip4, zzero, zone, nbdgetri, ipc, ipj, ipf, pi, two_pi
-    use allio, only : yes_complex, jastrowall_ei, jastrowall_ee, &
-            &winvfn, nel2wtfn, winvbarfn, nel2barfn, itestrfn, psiln, contraction, &
-            &test_aad, iespbc, pseudologic, iesrandoml, rank, versoralat, singdet, &
-            &epscuttype, iflagnorm, agp, agpn, itest, pointvj, nelup_mat, nel_mat, ndiff&
-            &, n_body_on, gamma, lrdmc_der, lrdmc_nonodes, molecular, npar_eagp, eagp_pfaff,timings,cutweight,true_wagner,npow,membig,membigcpu,count_zerowf,count_allwf,yes_crystalj,nelsquare,vpotsav_ee,yes_sparse,nnozeroj,nelorbjh2,nozeroj, norm_metric
+    use allio, only : yes_complex, jastrowall_ei, jastrowall_ee         &
+           &, winvfn, nel2wtfn, winvbarfn, nel2barfn, itestrfn, psiln, contraction&
+           &, test_aad, iespbc, pseudologic, iesrandoml, rank, versoralat, singdet&
+           &, epscuttype, iflagnorm, agp, agpn, itest, pointvj, nelup_mat, nel_mat, ndiff&
+           &, n_body_on, gamma, lrdmc_der, lrdmc_nonodes, molecular, npar_eagp&
+           &, eagp_pfaff,timings,cutweight,true_wagner,npow,membig,membigcpu&
+           &, count_zerowf,count_allwf,yes_crystalj,nelsquare,vpotsav_ee,yes_sparse&
+           &, nnozeroj,nelorbjh2,nozeroj, norm_metric, use_qmckl, qmckl_ctx
     implicit none
 
     integer nelup, nelused, neldo, nel, i, j, k, ierr, j1, j2, info, ispin, indt4, indt4j&
@@ -53,33 +51,33 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
             &, kion(*), kionj(*)&
             &, ioccj(*), nparpshell(lmax, ncore), kindion(ncore + 1)&
             &, indtm(nelup + neldo), pshell(ncore), jpseudo(lmax, ncore), ipsip(*)
-    real*8 tabpip(nelup + neldo, indt + 4), tmu(nelup + neldo, max(indt, 1))        &
-            &, psip(*), winv(ipc * nelorb, 0:indt4, nelup + neldo)          &
-            &, winvj(nelorbjmax, 0:indt4j, nelup + neldo)                       &
-            &, winvup(ipc * nelup, indt + 4), winvdo(max(ipc * neldo, 1), indt + 4)&
-            &, ainv(ipc * nelup_mat, nelup_mat) &
-            &, ainvup(ipc * nelup, nelorbh), ainvdo(max(ipc * neldo, 1), nelorbh), ukwald            &
-            &, wconfn, vj(*), vju(*), dist_kel(3)                            &
-            &, jastrow1, dd(*), zeta(nion), grad1(3), grad2, rion(3, nion)         &
-            &, iond(nion, nion)                                                  &
-            &, dist(nion, nelup + neldo), r(0:indt,nion), rmu(3,0:indt, nion)       &
-            &, ivic(3, indtmax, nelup + neldo), alat, plat(3), vold         &
-            &, vpot, vpotreg(2, *)                                         &
-            &, rc(3), winvbar(ipf * ipc * nelorbh, nel_mat), detmat(ipc * ipf * nelorbh, *)&
-            &, winvjbar(max(int(ipj * nelorbjh,8)*(nelup+neldo),1)), jasmat(*), cnorm(*)   &
-            &, prefactor(indt - istart + 1, nelup + neldo), pseudolocal(nelup + neldo)&
-            &, rcutoff(ncore)   &
-            &, parshell(3, *), wpseudo(2 * lmax), legendre(lmax - 1, nintpseudo)&
-            &, versor(3, nintpseudo)&
-            &, wintpseudo(nintpseudo), vpseudolocal, costz(*), costz3(*), costz0 &
-            &, angle(18, *), logpsi(ipc), eloc(ipc), psidetln, psidetlnt(ipc), jasmatsz(*)                  &
-            &, winvjbarsz(*)                           &
-            &, iond_cart(3, nion, nion), cutreg&
-            &, mu_c(*), cellscalen(12), celldmo(6), detmat_c(*), projm(*)&
-            &, muj_c(*), jasmat_c(*), jasmatsz_c(*), psisn, cost, psidetln_old&
-            &, jastrowee_old, jastrowei_old, winvjbar_old, winvjbarsz_old, ainv_old&
-            &, winvfn_old, winvbar_old, winvbarfn_old, winvup_old, winvdo_old&
-            &, winvuplap_old, winvdolap_old, logpsi_old, agp_old, vpotreg_old, tmu_old, kel_old, tabpip_old(2),timep
+    real*8 tabpip(nelup + neldo, indt + 4), tmu(nelup + neldo, max(indt, 1))&
+           &, psip(*), winv(ipc * nelorb, 0:indt4, nelup + neldo)        &
+           &, winvj(nelorbjmax, 0:indt4j, nelup + neldo)                 &
+           &, winvup(ipc * nelup, indt + 4), winvdo(max(ipc * neldo, 1), indt + 4)&
+           &, ainv(ipc * nelup_mat, nelup_mat)                           &
+           &, ainvup(ipc * nelup, nelorbh), ainvdo(max(ipc * neldo, 1), nelorbh), ukwald&
+           &, wconfn, vj(*), vju(*), dist_kel(3)                         &
+           &, jastrow1, dd(*), zeta(nion), grad1(3), grad2, rion(3, nion)&
+           &, iond(nion, nion)                                           &
+           &, dist(nion, nelup + neldo), r(0:indt,nion), rmu(3,0:indt, nion)&
+           &, ivic(3, indtmax, nelup + neldo), alat, plat(3), vold       &
+           &, vpot, vpotreg(2, *)                                        &
+           &, rc(3), winvbar(ipf * ipc * nelorbh, nel_mat), detmat(ipc * ipf * nelorbh, *)&
+           &, winvjbar(max(int(ipj * nelorbjh,8)*(nelup+neldo),1)), jasmat(*), cnorm(*)&
+           &, prefactor(indt - istart + 1, nelup + neldo), pseudolocal(nelup + neldo)&
+           &, rcutoff(ncore)                                             &
+           &, parshell(3, *), wpseudo(2 * lmax), legendre(lmax - 1, nintpseudo)&
+           &, versor(3, nintpseudo)                                      &
+           &, wintpseudo(nintpseudo), vpseudolocal, costz(*), costz3(*), costz0&
+           &, angle(18, *), logpsi(ipc), eloc(ipc), psidetln, psidetlnt(ipc), jasmatsz(*)&
+           &, winvjbarsz(*)                                              &
+           &, iond_cart(3, nion, nion), cutreg                           &
+           &, mu_c(*), cellscalen(12), celldmo(6), detmat_c(*), projm(*) &
+           &, muj_c(*), jasmat_c(*), jasmatsz_c(*), psisn, cost, psidetln_old&
+           &, jastrowee_old, jastrowei_old, winvjbar_old, winvjbarsz_old, ainv_old&
+           &, winvfn_old, winvbar_old, winvbarfn_old, winvup_old, winvdo_old&
+           &, winvuplap_old, winvdolap_old, logpsi_old, agp_old, vpotreg_old, tmu_old, kel_old, tabpip_old(2),timep
 
     real*8 kel(3, nelup + neldo, 0:indt), kelind(3, nelup + neldo)
     logical iessz, iesiesd, yesprojm, lrdmc_deru
@@ -182,17 +180,13 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
   kel_old=sum(kel(:,:,:))
   tabpip_old(1)=sum(abs(tabpip(:,1:indt)))
   tabpip_old(2)=sum(abs(tabpip(:,indt+1:indt+4)))
-!allocate(ainv_sav(ipc*nel_mat,nel_mat))
-!ainv_sav=ainv
 
   if(indt.gt.0) tmu_old=sum(abs(tmu(:,:)))
 
   ainv_old=sum(abs(ainv(:,:)))
   winvup_old=sum(abs(winvup(:,:)))
-!  winvup_sav=winvup
   winvuplap_old=sum(abs(winvup(:,indt+1:indt+4)))
   winvdo_old=sum(abs(winvdo(:,:)))
-!  winvdo_sav=winvdo
   winvdolap_old=sum(abs(winvdo(:,indt+1:indt+4)))
   jastrowee_old=sum(abs(jastrowall_ee(:,:,0,walker)))
   jastrowei_old=sum(abs(jastrowall_ei(1,:,walker)))
@@ -1313,227 +1307,271 @@ contains
     end subroutine task2
 
     subroutine task4(kel, rion, dd, vju, winv, winvj)
-        implicit none
-        real*8, intent(in) :: kel(3, nel, 0:indt), rion(3, nion)
-        real*8, intent(inout) :: winv(ipc * nelorbh, 0:indt4, nel)&
-                &, winvj(nelorbjmax, 0:indt4j, nel), dd(*), vju(*)
 
-        !     input  kel(3,nel,1:indt)
-        !     output winv(nelorb,nel,indt+4),winvj(nelorbj,nel,indtj+4)
-        !     all the rest is not used later.
-        if(.not.yesupwf.and..not.yesupwfj) return
+            use qmckl
 
-        if(yesupwf) winv=0.d0
-        if(yesupwfj.and.nelorbj.ne.0) winvj=0.d0
-        
+            implicit none
 
-        if(membigcpu.and.indt4.ne.0.and.indt4j.ne.0) then
-        do j = 1, nelup
-            if(yesupwf) then
-                call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)   &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .true.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
+            real*8, intent(in)             :: kel(3, nel, 0:indt), rion(3, nion)
+            real*8, intent(inout)          :: winv(ipc * nelorbh, 0:indt4, nel)       &
+                   &, winvj(nelorbjmax, 0:indt4j, nel), dd(*), vju(*)
+    
+#ifdef _QMCKL   
+            integer*4                      :: ii, l
+            integer(qmckl_exit_code)       :: rc
+            integer*8, save                :: ao_num=0, npoints_qmckl=0
+            real*8, allocatable            :: ao_vgl_qmckl(:,:,:)&
+                                           &, ao_value_qmckl(:,:)&
+                                           &, kel_tmp(:,:)
+#endif
+    
+            if(.not.yesupwf.and..not.yesupwfj) return
+    
+            if(yesupwf) winv=0.d0
+            if(yesupwfj.and.nelorbj.ne.0) winvj=0.d0
+    
+            if(membigcpu.and.indt4.ne.0.and.indt4j.ne.0) then
+                if(yesupwf) then
+                    if (.not.use_qmckl) then
+                        do j = 1, nelup
+                            call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)&
+                                   &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                                   &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                                   &, indpar_tab, indorb_tab, indshell_tab, .true.)
+                        end do
+                        do j = nelup + 1, nel
+                            call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                                   &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                                   &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                                   &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                        end do
+#ifdef _QMCKL
+                    else
+    
+                        if (npoints_qmckl == 0) then
+                            rc = qmckl_get_ao_basis_ao_num(qmckl_ctx, ao_num)
+                            if (rc /= QMCKL_SUCCESS) then
+                                print *, 'Error getting ao_num'
+                                call abort()
+                            end if
+                        end if
+    
+                        npoints_qmckl = sum(indtm(1:nel) + 1)
+    
+                        allocate(ao_value_qmckl(ao_num, npoints_qmckl), kel_tmp(3,npoints_qmckl))
+    
+                        l=0
+                        do j=1,nel
+                            do k=1,indtm(j)
+                                l = l+1
+                                kel_tmp(1:3,l) = kel(1:3,j,k)
+                            end do
+                        end do
+    
+                        rc = qmckl_set_point(qmckl_ctx, 'N', npoints_qmckl, kel_tmp, 3_8*npoints_qmckl)
+    
+                        if (rc /= QMCKL_SUCCESS) then
+                            print *, 'Error setting electron coords'
+                            call abort()
+                        end if
+    
+                        rc = qmckl_get_ao_basis_ao_value_inplace(            &
+                               &qmckl_ctx,                                   &
+                               &ao_value_qmckl,                              &
+                               &ao_num*npoints_qmckl)
+    
+                        if (rc /= QMCKL_SUCCESS) then
+                            print *, 'Error getting AOs from QMCkl'
+                            call abort()
+                        end if
+    
+                        rc = qmckl_set_point(qmckl_ctx, 'N', int(nel,8), kel, 3_8*nel)
+    
+                        if (rc /= QMCKL_SUCCESS) then
+                            print *, 'Error setting electron coords'
+                            call abort()
+                        end if
+    
+                        allocate (ao_vgl_qmckl(ao_num, 5, nel))
+    
+                        rc = qmckl_get_ao_basis_ao_vgl_inplace(              &
+                               &qmckl_ctx,                                   &
+                               &ao_vgl_qmckl,                                &
+                               &ao_num*5_8*nel)
+    
+                        if (rc /= QMCKL_SUCCESS) then
+                            print *, 'Error getting AOs from QMCkl 2'
+                            call abort()
+                        end if
+    
+                        k=0
+                        do j=1,nel
+                            do ii=1,ao_num
+                                winv(ii,0,j) = ao_vgl_qmckl(ii,1,j)
+                            end do
+                            do i=1,indtm(j)
+                                k = k+1
+                                do ii=1,ao_num
+                                    winv(ii,i,j) = ao_value_qmckl(ii,k)
+                                end do
+                            end do
+                            do ii=1,ao_num
+                                winv(ii,indt+1,j) = ao_vgl_qmckl(ii,2,j)
+                                winv(ii,indt+2,j) = ao_vgl_qmckl(ii,3,j)
+                                winv(ii,indt+3,j) = ao_vgl_qmckl(ii,4,j)
+                                winv(ii,indt+4,j) = ao_vgl_qmckl(ii,5,j)
+                            end do
+                        end do
+    
+                        deallocate(ao_value_qmckl)
+                        deallocate(ao_vgl_qmckl)
+    
+#endif
+                    end if
+                end if
+    
+                do j = nelup + 1, nel
+                    if(yesupwf) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                               &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                               &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                               &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                    endif
+                    if(nelorbj.ne.0.and.yesupwfj) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    endif
+                enddo
+            elseif(membigcpu.and.indt4.eq.0.and.indt4j.eq.0) then
+    
+                do j = 1, nelup
+                    call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)&
+                           &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion&
+                           &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9   &
+                           &, indpar_tab, indorb_tab, indshell_tab, .true.)
+                    if(nelorbj.ne.0) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
+                    endif
+                enddo
+    
+                do j = nelup + 1, nel
+                    call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                           &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion&
+                           &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9   &
+                           &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                    if(nelorbj.ne.0) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    endif
+                enddo
+                winv(:,0,1:nel)=winv_big(:,0,1:nel)
+                if(nelorbj.ne.0) winvj(:,0,1:nel)=winvj_big(:,0,1:nel)
+    
+    
+            elseif(membigcpu.and.indt4.eq.0) then
+    
+                ! allocated winv_big only winvj is already big
+                do j = 1, nelup
+                    call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)&
+                           &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion&
+                           &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9   &
+                           &, indpar_tab, indorb_tab, indshell_tab, .true.)
+                    if(nelorbj.ne.0.and.yesupwfj) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
+                    endif
+                enddo
+    
+                do j = nelup + 1, nel
+                    call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                           &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion&
+                           &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9   &
+                           &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                    if(nelorbj.ne.0.and.yesupwfj) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    endif
+                enddo
+                winv(:,0,1:nel)=winv_big(:,0,1:nel)
+    
+            elseif(membigcpu.and.indt4j.eq.0) then
+    
+                ! allocated winvj_big
+                do j = 1, nelup
+                    if(yesupwf) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)&
+                               &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                               &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                               &, indpar_tab, indorb_tab, indshell_tab, .true.)
+                    endif
+                    if(nelorbj.ne.0) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
+                    endif
+                enddo
+    
+                do j = nelup + 1, nel
+                    if(yesupwf) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                               &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                               &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                               &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                    endif
+                    if(nelorbj.ne.0) then
+                        call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    endif
+                enddo
+                if(nelorbj.ne.0) winvj(:,0,1:nel)=winvj_big(:,0,1:nel)
+    
+            else
+                do j = 1, nelup
+                    if(yesupwf) then
+                        call upnewwf(0, 0, 0, 1, nshellh, ioptorb, ioccup, kel(1, j, 0)&
+                               &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                               &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                               &, indpar_tab, indorb_tab, indshell_tab, .true.)
+                    endif
+                    if(nelorbj.ne.0.and.yesupwfj) then
+                        call upnewwf(0, 0, 0, 1, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
+                    endif
+                enddo
+    
+                do j = nelup + 1, nel
+                    if(yesupwf) then
+                        call upnewwf(0, 0, 0, 1, nshelldoh, ioptorb, ioccdo, kel(1, j, 0)&
+                               &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion&
+                               &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
+                               &, indpar_tab, indorb_tab, indshell_tab, .false.)
+                    endif
+                    if(nelorbj.ne.0.and.yesupwfj) then
+                        call upnewwf(0, 0, 0, 1, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
+                               &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj&
+                               &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
+                               &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
+                    endif
+                enddo
             endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)          &
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-
-        do j = nelup + 1, nel
-            if(yesupwf) then
-            call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0) &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .false.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-            endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-        elseif(membigcpu.and.indt4.eq.0.and.indt4j.eq.0) then
-
-! Allocated winv_big && winvj_big
-        do j = 1, nelup
-!           if(yesupwf) then
-                call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)   &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .true.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-!           endif
-            if(nelorbj.ne.0) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)          &
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-
-        do j = nelup + 1, nel
-!           if(yesupwf) then
-            call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0) &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .false.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-!           endif
-            if(nelorbj.ne.0) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-        winv(:,0,1:nel)=winv_big(:,0,1:nel)
-        if(nelorbj.ne.0) winvj(:,0,1:nel)=winvj_big(:,0,1:nel)
-   
-
-        elseif(membigcpu.and.indt4.eq.0) then
-
-! allocated winv_big only winvj is already big
-        do j = 1, nelup
-!           if(yesupwf) then
-                call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)   &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .true.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-!           endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)          &
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-
-        do j = nelup + 1, nel
-!           if(yesupwf) then
-            call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0) &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv_big(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .false.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-!           endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-        winv(:,0,1:nel)=winv_big(:,0,1:nel)
-
-        elseif(membigcpu.and.indt4j.eq.0) then
-
-!       allocated winvj_big
-        do j = 1, nelup
-            if(yesupwf) then
-                call upnewwf(indt, 0, indtm(j), 0, nshellh, ioptorb, ioccup, kel(1, j, 0)   &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .true.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-            endif
-            if(nelorbj.ne.0) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)          &
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-
-        do j = nelup + 1, nel
-            if(yesupwf) then
-            call upnewwf(indt, 0, indtm(j), 0, nshelldoh, ioptorb, ioccdo, kel(1, j, 0) &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .false.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-            endif
-            if(nelorbj.ne.0) then
-                call upnewwf(indt, 0, indtm(j), 0, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj_big(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-        if(nelorbj.ne.0) winvj(:,0,1:nel)=winvj_big(:,0,1:nel)
-
-        else
-        do j = 1, nelup
-            if(yesupwf) then
-                call upnewwf(0, 0, 0, 1, nshellh, ioptorb, ioccup, kel(1, j, 0)   &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .true.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-            endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(0, 0, 0, 1, nshelljh, ioptorbj, ioccj, kel(1, j, 0)          &
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .true.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-
-        do j = nelup + 1, nel
-            if(yesupwf) then
-                call upnewwf(0, 0, 0, 1, nshelldoh, ioptorb, ioccdo, kel(1, j, 0) &
-                        &, nel, r, rmu, dd, zeta, rion, psip, winv(1, 0, j), nelorb, nion, kion         &
-                        &, iflagnorm, cnorm, LBox, rmucos, rmusin, 1d-9&
-                        &, indpar_tab, indorb_tab, indshell_tab, .false.)
-                !       if(yesupwfj) iflagnorm=-iflagnorm
-            endif
-            if(nelorbj.ne.0.and.yesupwfj) then
-                call upnewwf(0, 0, 0, 1, nshelljh, ioptorbj, ioccj, kel(1, j, 0)&
-                        &, nel, r, rmu, vju, zeta, rion, psip, winvj(1, 0, j), nelorbj   &
-                        &, nion, kionj, iflagnorm, cnorm(nshell + 1), LBox, rmucos, rmusin, 1d-9&
-                        &, indparj_tab, indorbj_tab, indshellj_tab, .false.)
-                !      elseif(yesupwf) then
-                !         iflagnorm=-iflagnorm
-                !         if(iflagnorm.ne.1) iflagnorm=2
-            endif
-        enddo
-        endif
-        return
-
+            return
+    
     end subroutine task4
 
     subroutine  task5(winv, winvj, jasmat, jasmatsz, muj_c, jasmat_c, jasmatsz_c, detmat, mu_c&
