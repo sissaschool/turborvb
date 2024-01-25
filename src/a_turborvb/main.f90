@@ -8706,32 +8706,43 @@ contains
             write (6, *) ' Warning using SPARSE matrix algorithm for Jastrow '
         end if
         enerdiff = 0.d0 ! just to be sure it is initialized.
+
+        ! Set QMCkl context to zero
+        qmckl_ctx = 0_8
+        use_qmckl = .false.
+
+        if (trexiofile.ne.'') then
 #ifdef _QMCKL
-        !qmckl_ctx = qmckl_context_create()
-        !if (qmckl_ctx.eq.0_8) then
-        !    write (0,*) "QMCKL context is a null pointer, but it should never happen"
-        !    stop 1
-        !else
-        !    write (6,*) "QMCKL context created"
-        !end if
-!!#ifdef _QMCKL
-!!            !call setup_qmckl_ctx(&
-!!            !              &  atom_number&
-!!            !              &, rion&
-!!            !              &, nion&
-!!            !              &, kion&
-!!            !              &, qmckl_ctx)
-!!            print *, "Atom number = ", nion
-!!            stop
-!!            call setup_qmckl_ctx(nion, qmckl_ctx)
-!!#endif
-        print *, "number of atoms = ", nion
-        print *, "atomix numbers = ", atom_number
-        print *, "atomic positions = ", rion
-        print *, "number of shells = ", nshell
-        print *, "shell types to ions = ", kion
-        call setup_qmckl_ctx(nion, nshell, atom_number, rion, kion, qmckl_ctx)
+            ! If trexio file is fort.10 the is not a trexio file
+            ! in this case load qmckl context from fort.10
+            if (trexiofile.eq.'fort.10') then
+                call setup_qmckl_ctx(nion&
+                                  &, nshell&
+                                  &, atom_number&
+                                  &, rion&
+                                  &, kion&
+                                  &, ioptorb&
+                                  &, dup_c&
+                                  &, qmckl_ctx)
+                if (qmckl_ctx.eq.0_8) then
+                    write (6, *) "Loading QMCKL data from fort.10"
+                    use_qmckl = .true.
+                else
+                    write (6, *) "Failed to load QMCKL data from fort.10"
+                end if
+            else
+                ! Load data from trexio file
+                use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx, trim(trexiofile), 1_8*len(trim(trexiofile))))
+                if (use_qmckl) then
+                    write (6, *) "Loading TREXIO file:", trexiofile
+                else
+                    write (6, *) "Failed to load TREXIO file:", trexiofile
+                end if
+            end if
+#else
+            write (6, *) "Ignoring TREXIO file, TurboRVB was not compiled with QMCkl support"
 #endif
+        end if
     end subroutine Initializeall
 
     subroutine Finalizeall
