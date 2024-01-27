@@ -8732,14 +8732,16 @@ contains
                 end if
             else
                 ! Load data from trexio file
-                
+
                 qmckl_ctx = qmckl_context_create()
                 if (qmckl_ctx.eq.0_8) then
                     write (6, *) "Failed to create QMCKL context"
                     stop
                 end if
 
-                use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx, trim(trexiofile), 1_8*len(trim(trexiofile))))
+                use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx&
+                                                            & , trim(trexiofile)&
+                                                            , 1_8*len(trim(trexiofile))))
                 if (use_qmckl) then
                     write (6, *) "Loading TREXIO file:", trexiofile
                 else

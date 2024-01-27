@@ -19,7 +19,7 @@ program makefun_tester
 
     integer*4 :: iorb, indt, indpar, indorb, indshell, i0, iflagnorm_unused&
               &, indtm, indtmin, typec, nelskip, num_lines, ii, iostat
-    real*8 :: cr 
+    real*8 :: cr
     real*8, dimension(:), allocatable :: dd, zeta, r
     real*8, dimension(:,:), allocatable :: z, rmu, distp
 
