@@ -5,7 +5,8 @@ program makefun_tester
     implicit none
 
     interface
-        subroutine list_directory(path, path_length, files, num_files, prefix, prefix_length) bind(C, name="list_directory")
+        subroutine list_directory(path, path_length, files, num_files, prefix&
+                &, prefix_length) bind(C, name="list_directory")
             use, intrinsic :: iso_c_binding
             character(c_char), intent(in) :: path(*)
             character(c_char), intent(in) :: prefix(*)
@@ -22,7 +23,8 @@ program makefun_tester
     real*8, dimension(:), allocatable :: dd, zeta, r
     real*8, dimension(:,:), allocatable :: z, rmu, distp
 
-    integer*4, dimension(:), allocatable :: iorbs, multiplicities, npars, failed_test
+    integer*4, dimension(:), allocatable :: iorbs, multiplicities, npars&
+        &, failed_test
     character*80 :: dummy_1, dummy_2, dummy_3, dummy_4
 
     character*12000 :: error_message = "", tmp
@@ -72,7 +74,13 @@ program makefun_tester
     read(10,*)
     ! Read data
     do ii = 1, num_lines
-        read(10,*) iorbs(ii), dummy_1, dummy_2, dummy_3, dummy_4, multiplicities(ii), npars(ii)
+        read(10,*) iorbs(ii)&
+                &, dummy_1&
+                &, dummy_2&
+                &, dummy_3&
+                &, dummy_4&
+                &, multiplicities(ii)&
+                &, npars(ii)
     end do
     close(10)
 
@@ -80,54 +88,53 @@ program makefun_tester
         failed = .false.
         write(*,'("Checking orbital index ", I3)') iorbs(ii)
         write(*, *)
-    
+
         if (allocated(dd)) deallocate(dd)
         allocate(dd(npars(ii)))
-    
+
         if (allocated(rmu)) deallocate(rmu)
         allocate(rmu(3,0:indtm))
-    
+
         if (allocated(r)) deallocate(r)
         allocate(r(0:indtm))
-    
+
         if (allocated(z)) deallocate(z)
         allocate(z(multiplicities(ii),0:indt+4))
 
         if (allocated(distp)) deallocate(distp)
         allocate(distp(0:indtm,20))
-    
+
         !call create_single_value()
         !call create_pa_value()
         !call create_svgl_value()
         call check_index_movement()
-        !call check_single_value()
-        !call check_svgl_value()
-        !call check_pa_value()
+        call check_single_value()
+        call check_svgl_value()
+        call check_pa_value()
 
         if (failed) then
             failed_test(ii) = 1
             tmp = trim(error_message)
             write(error_message, '(A,A,I3.3)') trim(tmp), ",", iorbs(ii)
         end if
-    
-        !deallocate(distp)
-        !deallocate(z)
-        !deallocate(r)
-        !deallocate(dd)
-        !deallocate(rmu)
+
+        deallocate(distp)
+        deallocate(z)
+        deallocate(r)
+        deallocate(dd)
+        deallocate(rmu)
 
         write(*, *)
         write(*, '("Result = ", L1)') .not. failed
         write(*, *)
         write(*, '("######################################")')
     end do
-    
-    
+
     if (allocated(iorbs)) deallocate(iorbs)
     if (allocated(multiplicities)) deallocate(multiplicities)
     if (allocated(npars)) deallocate(npars)
     if (allocated(failed_test)) deallocate(failed_test)
-    
+
     if (allocated(zeta)) deallocate(zeta)
     if (allocated(r)) deallocate(r)
         stop
@@ -185,9 +192,9 @@ subroutine run_random
     ! Generate random points
     call random_number(rmu)
     rmu = rmu * 2.0d0 - 1.0d0
-    
+
     r = sqrt(sum(rmu**2, dim=1))
-    
+
     ! Randomize parameters
     call random_number(dd)
 
@@ -198,7 +205,7 @@ subroutine run_random
     indorb = 0
     indshell = 0
     z = 0.0d0
-    
+
     call makefun(iorbs(ii),indt,i0,indtmin,indtm,typec,indpar      &
                &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
                &,iflagnorm_unused,cr)
@@ -220,9 +227,9 @@ subroutine check_index_movement
     ! Generate random points
     call random_number(rmu)
     rmu = rmu * 2.0d0 - 1.0d0
-    
+
     r = sqrt(sum(rmu**2, dim=1))
-    
+
     ! Randomize parameters
     call random_number(dd)
 
@@ -233,25 +240,7 @@ subroutine check_index_movement
     indorb = 0
     indshell = 0
     z = 0.0d0
-    
-    !print *, "indorbs(ii) = ", iorbs(ii)
-    !print *, "indt = ", indt
-    !print *, "i0 = ", i0
-    !print *, "indtmin = ", indtmin
-    !print *, "indtm = ", indtm
-    !print *, "typec = ", typec
-    !print *, "indpar = ", indpar
-    !print *, "indorb = ", indorb
-    !print *, "indshell = ", indshell
-    !print *, "multiplicities(ii) = ", multiplicities(ii)
-    !print *, "z = ", z
-    !print *, "dd = ", dd
-    !print *, "zeta = ", zeta
-    !print *, "r = ", r
-    !print *, "rmu = ", rmu
-    !print *, "distp = ", distp
-    !print *, "iflagnorm_unused = ", iflagnorm_unused
-    !print *, "cr = ", cr
+
     call makefun(iorbs(ii),indt,i0,indtmin,indtm,typec,indpar      &
                &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
                &,iflagnorm_unused,cr)
@@ -292,9 +281,9 @@ subroutine create_pa_value
     ! Generate random points
     call random_number(rmu)
     rmu = rmu * 4.0d0 - 2.0d0
-    
+
     r = sqrt(sum(rmu**2, dim=1))
-    
+
     ! Randomize parameters
     call random_number(dd)
 
@@ -332,9 +321,9 @@ subroutine create_svgl_value
     ! Generate random points
     call random_number(rmu)
     rmu = rmu * 4.0d0 - 2.0d0
-    
+
     r = sqrt(sum(rmu**2, dim=1))
-    
+
     ! Randomize parameters
     call random_number(dd)
 
@@ -372,9 +361,9 @@ subroutine create_single_value
     ! Generate random points
     call random_number(rmu)
     rmu = rmu * 2.0d0 - 1.0d0
-    
+
     r = sqrt(sum(rmu**2, dim=1))
-    
+
     ! Randomize parameters
     call random_number(dd)
 
@@ -416,14 +405,14 @@ subroutine check_single_value
     write(*, '(A)') 'Test: single value'
 
     call list_directory('data', 4, files, num_files, 'sv_', 3)
-    
+
     count_tests = 0
     count_failed = 0
     do i = 1, num_files
         do j = 1, MAX_FILE_LENGTH
             filename(j:j) = files(j,i)
         end do
-        
+
         read(filename(4:6), '(I3)', iostat=ios ) iorb_test
         if (ios /= 0) then
             cycle
@@ -433,7 +422,8 @@ subroutine check_single_value
         else
         end if
 
-        open(unit=20, file='data/'//trim(filename), form='unformatted', status='old', action='read')
+        open(unit=20, file='data/'//trim(filename), form='unformatted'&
+          &, status='old', action='read')
         read(20) dd
         read(20) rmu(:,0)
         read(20) z_test(:, 0)
@@ -448,9 +438,9 @@ subroutine check_single_value
         r = sqrt(sum(rmu**2, dim=1))
         z = 0.0d0
 
-        call makefun(iorbs(ii),indt,i0,indtmin,0,typec,indpar      &
-                   &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
-                   &,iflagnorm_unused,cr)
+        call makefun(iorbs(ii),indt,i0,indtmin,0,typec,indpar            &
+               &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp&
+               &,iflagnorm_unused,cr)
 
         if (any(abs(z_test - z) > 1.0d-10)) then
             failed = .true.
@@ -478,14 +468,14 @@ subroutine check_pa_value
     write(*, '(A)') 'Test: calculate values for pseudo average'
 
     call list_directory('data', 4, files, num_files, prefix, len_trim(prefix))
-    
+
     count_tests = 0
     count_failed = 0
     do i = 1, num_files
         do j = 1, MAX_FILE_LENGTH
             filename(j:j) = files(j,i)
         end do
-        
+
         read(filename(len_trim(prefix)+1:len_trim(prefix)+3), '(I3)', iostat=ios ) iorb_test
         if (ios /= 0) then
             cycle
@@ -510,9 +500,9 @@ subroutine check_pa_value
         r = sqrt(sum(rmu**2, dim=1))
         z = 0.0d0
 
-        call makefun(iorbs(ii),indt,i0,indtmin,indtm,typec,indpar      &
-                   &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
-                   &,iflagnorm_unused,cr)
+        call makefun(iorbs(ii),indt,i0,indtmin,indtm,typec,indpar        &
+               &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp&
+               &,iflagnorm_unused,cr)
 
         ! Check if values are the same
         ! Check if other values remained untouched
@@ -543,14 +533,14 @@ subroutine check_svgl_value
     write(*, '(A)') 'Test: single value gradient and laplacian'
 
     call list_directory('data', 4, files, num_files, prefix, len_trim(prefix))
-    
+
     count_tests = 0
     count_failed = 0
     do i = 1, num_files
         do j = 1, MAX_FILE_LENGTH
             filename(j:j) = files(j,i)
         end do
-        
+
         read(filename(len_trim(prefix)+1:len_trim(prefix)+3), '(I3)', iostat=ios ) iorb_test
         if (ios /= 0) then
             cycle
@@ -575,9 +565,9 @@ subroutine check_svgl_value
         r = sqrt(sum(rmu**2, dim=1))
         z = 0.0d0
 
-        call makefun(iorbs(ii),0,i0,indtmin,0,typec,indpar      &
-                   &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp    &
-                   &,iflagnorm_unused,cr)
+        call makefun(iorbs(ii),0,i0,indtmin,0,typec,indpar               &
+               &,indorb,indshell,multiplicities(ii),z,dd,zeta,r,rmu,distp&
+               &,iflagnorm_unused,cr)
 
         if (any(abs(z_test(:,0:3) - z(:,0:3)) > 1.0d-10)) then
             failed = .true.

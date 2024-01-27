@@ -103,7 +103,7 @@ subroutine setup_qmckl_ctx(&
 #ifdef _DEBUG
     write(*,'("QMCKL: Setting up basis set type: G")')
 #endif
-    
+
     rc = qmckl_set_ao_basis_type(context, "G")
     if (rc.ne.QMCKL_SUCCESS) then
         write(0,*) "Error: qmckl_set_ao_basis_type"
@@ -144,7 +144,7 @@ subroutine setup_qmckl_ctx(&
         write(*,'(I4)') nucleus_shell_num(ii)
     end do
 #endif
-    
+
     rc = qmckl_set_ao_basis_nucleus_shell_num(context, nucleus_shell_num, 1_8 * number_of_atoms)
 
     if (rc.ne.QMCKL_SUCCESS) then
@@ -395,6 +395,6 @@ module qmckl
     integer*8, parameter           :: QMCKL_NULL_CONTEXT = 0
     integer  , parameter           :: qmckl_exit_code = c_int32_t
     integer(qmckl_exit_code), parameter :: QMCKL_SUCCESS = 0
-    
+
 end module
 #endif
