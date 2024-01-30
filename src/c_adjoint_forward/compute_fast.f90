@@ -1,20 +1,26 @@
 !TL off
-subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
-        &, tabpip, kelind, kel, winv, winvup, winvdo, ainv, ainvup, ainvdo, psip &
-        &, ipsip, wconfn, psisn, iesdr, vj, dd                       &
-        &, zeta, rion, dist, ioccup, ioccdo, ioptorb                             &
-        &, nshell, nshelldo, ivic, alat, plat, vpot, tmu&
-        &, nion, r, rmu, kion, iond, winvj, ioccj, kionj, vju, nelorbj   &
-        &, ioptorbj, nshellj, winvbar, detmat, winvjbar, winvjbarsz, jasmat       &
-        &, jasmatsz, muj_c, jasmat_c, jasmatsz_c, contractionj, nelorbj_c, iessz, cnorm, iflag, ncore, lmax        &
-        &, nintpseudo, prefactor, rcutoff, parshell                            &
-        &, nparpshell, kindion, pshell, wpseudo, legendre, versor, wintpseudo     &
-        &, jpseudo, pseudolocal, istart, costz, costz3&
-        &, angle, indtm, LBox, rmucos, rmusin, oldkappa, vpotreg, cutreg           &
-        &, psidetln, walker, nelorbh, nelorbjh, niesd&
-        &, iond_cart, mu_c, detmat_c, projm, yesprojm, nelorb_c, firstmol, nmol, yesfast, eloc, logpsi&
-        &, nelorbjmax, neldomax, indtmax, nshelljmax, cellscalen&
-        &, indpar_tab, indorb_tab, indshell_tab, indparj_tab, indorbj_tab, indshellj_tab)
+subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo &
+           &, tabpip, kelind, kel, winv, winvup, winvdo, ainv            &
+           &, ainvup, ainvdo, psip, ipsip, wconfn, psisn, iesdr, vj, dd  &
+           &, zeta, rion, dist, ioccup, ioccdo, ioptorb                  &
+           &, nshell, nshelldo, ivic, alat, plat, vpot, tmu              &
+           &, nion, r, rmu, kion, iond, winvj, ioccj, kionj, vju, nelorbj&
+           &, ioptorbj, nshellj, winvbar                                 &
+           &, detmat, winvjbar, winvjbarsz, jasmat                       &
+           &, jasmatsz, muj_c, jasmat_c, jasmatsz_c, contractionj        &
+           &, nelorbj_c, iessz, cnorm, iflag, ncore, lmax                &
+           &, nintpseudo, prefactor, rcutoff, parshell                   &
+           &, nparpshell, kindion, pshell, wpseudo                       &
+           &, legendre, versor, wintpseudo                               &
+           &, jpseudo, pseudolocal, istart, costz, costz3                &
+           &, angle, indtm, LBox, rmucos, rmusin, oldkappa               &
+           &, vpotreg, cutreg                                            &
+           &, psidetln, walker, nelorbh, nelorbjh, niesd                 &
+           &, iond_cart, mu_c, detmat_c, projm                           &
+           &, yesprojm, nelorb_c, firstmol, nmol, yesfast, eloc, logpsi  &
+           &, nelorbjmax, neldomax, indtmax, nshelljmax, cellscalen      &
+           &, indpar_tab, indorb_tab, indshell_tab, indparj_tab          &
+           &, indorbj_tab, indshellj_tab)
     !  NB here yesfast and yesfastj DO NOT necessarily coincide with global
     !  variables contraction and contractionj in the main, respectively
     !  (>0 if contracted orbitals are used).
@@ -29,25 +35,33 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
 #endif
     use Ewald
     use Cell
-    use Constants, only : yes_ontarget,ip4, zzero, zone, nbdgetri, ipc, ipj, ipf, pi, two_pi
-    use allio, only : yes_complex, jastrowall_ei, jastrowall_ee, &
-            &winvfn, nel2wtfn, winvbarfn, nel2barfn, itestrfn, psiln, contraction, &
-            &test_aad, iespbc, pseudologic, iesrandoml, rank, versoralat, singdet, &
-            &epscuttype, iflagnorm, agp, agpn, itest, pointvj, nelup_mat, nel_mat, ndiff&
-            &, n_body_on, gamma, lrdmc_der, lrdmc_nonodes, molecular, npar_eagp, eagp_pfaff,timings,cutweight,true_wagner,npow,membig,membigcpu,count_zerowf,count_allwf,yes_crystalj,nelsquare,vpotsav_ee,yes_sparse,nnozeroj,nelorbjh2,nozeroj, norm_metric
+    use Constants, only : yes_ontarget,ip4, zzero, zone, nbdgetri&
+           &, ipc, ipj, ipf, pi, two_pi
+    use allio, only : yes_complex, jastrowall_ei, jastrowall_ee,         &
+           &winvfn, nel2wtfn, winvbarfn, nel2barfn, itestrfn             &
+           &, psiln, contraction, test_aad, iespbc, pseudologic          &
+           &, iesrandoml, rank, versoralat, singdet, epscuttype          &
+           &, iflagnorm, agp, agpn, itest, pointvj, nelup_mat, nel_mat   &
+           &, ndiff, n_body_on, gamma, lrdmc_der, lrdmc_nonodes          &
+           &, molecular, npar_eagp, eagp_pfaff, timings, cutweight       &
+           &, true_wagner, npow, membig, membigcpu                       &
+           &,count_zerowf,count_allwf,yes_crystalj,nelsquare,vpotsav_ee  &
+           &,yes_sparse,nnozeroj,nelorbjh2,nozeroj, norm_metric
     implicit none
 
-    integer nelup, nelused, neldo, nel, i, j, k, ierr, j1, j2, info, ispin, indt4, indt4j&
-            &, iesd, iesdr, iesdr2iesd, nelorb, nelorbj, nion         &
-            &, kk, jj, nshell, nshelldo, indt, nelorb5, nelorbj5    &
-            &, iflag, ncore, lmax, istart, nintpseudo&
-            &, psidetsn, walker, firstmmu, firstmdet&
-            &, nelorbh, nelorbjh, niesd, signold, signnew, nelorb_c, firstmol, nmol, yesfast&
-            &, ind1, ind2, ind3, ind4, ind5, ind6, isdistp, ip5, sizework1&
-            &, sizewsz, nelorbjmax, neldomax, indtmax, nshellj, nshelljmax, nelorbj_c&
-            &, nshellh, nshelljh, nshelldoh, nmolipf, nmolshift, nelup1, zerop1&
-            &, contractionj, nelorbjc, nelorbjcp, wf_sign, nelorbju, indexi, indexj, istartu&
-            &, indpfaff,ix,iy
+    integer nelup, nelused, neldo, nel, i, j, k, ierr, j1, j2, info      &
+           &, ispin, indt4, indt4j, iesd, iesdr, iesdr2iesd, nelorb      &
+           &, nelorbj, nion, kk, jj, nshell, nshelldo, indt, nelorb5     &
+           &, nelorbj5, iflag, ncore, lmax, istart, nintpseudo           &
+           &, psidetsn, walker, firstmmu, firstmdet                      &
+           &, nelorbh, nelorbjh, niesd, signold, signnew, nelorb_c       &
+           &, firstmol, nmol, yesfast , ind1, ind2, ind3, ind4           &
+           &, ind5, ind6, isdistp, ip5, sizework1                        &
+           &, sizewsz, nelorbjmax, neldomax, indtmax, nshellj            &
+           &, nshelljmax, nelorbj_c , nshellh, nshelljh, nshelldoh       &
+           &, nmolipf, nmolshift, nelup1, zerop1, contractionj           &
+           &, nelorbjc, nelorbjcp, wf_sign, nelorbju, indexi, indexj     &
+           &, istartu, indpfaff, ix, iy
 
     integer ioccup(*), ioccdo(*), ioptorb(*), ioptorbj(*)&
             &, kion(*), kionj(*)&
