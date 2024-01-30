@@ -38,10 +38,10 @@ contains
 
     function Thomas_Fermi_core_electron_number(atomic_number, r_c) result(num_core_electron)
 
-        real(8), intent(in) :: atomic_number, r_c
-        real(8) num_core_electron, num_val_electron
-        real(8) r_TF, x_TF, b, pi, rho_r, p_r
-        real(8) :: r = 0.0d0, r_min = 1.0d-3, r_max = 25.0d0, dr = 1.0d-3
+        real*8, intent(in) :: atomic_number, r_c
+        real*8 num_core_electron, num_val_electron
+        real*8 r_TF, x_TF, b, pi, rho_r, p_r
+        real*8 :: r = 0.0d0, r_min = 1.0d-3, r_max = 25.0d0, dr = 1.0d-3
 
         ! define constant
         pi = 3.1415926535d0
@@ -78,8 +78,8 @@ contains
 
     function Gross_Dreizler(x) result(f)
 
-        real(8), intent(in) :: x
-        real(8) f
+        real*8, intent(in) :: x
+        real*8 f
 
         f = 1.0d0/(1.0d0 + 1.4712d0*x - 0.4973d0*x**(3.0d0/2.0d0) + 0.3875d0*x**(2.0d0) + 0.002102d0*x**(3.0d0))
 

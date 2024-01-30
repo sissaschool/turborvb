@@ -15,9 +15,17 @@
 
 subroutine upvpot_ei(rkel, zeta, rion, vpot, nion, LBox, epsvpot)
     implicit none
-    integer nel, k, nion
-    real(8) rkel(3)
-    real(8) zeta(nion), vpot, ngivej, LBox, rion(3, *), cost, epsvpot
+
+    ! argument parameters
+    integer nion
+    real*8, intent(in) :: rkel(3)
+    real*8, intent(in) :: zeta(nion), LBox, rion(3, *), epsvpot
+    real*8, intent(out) :: vpot
+
+    ! local variables
+    integer nel, k
+    real*8 cost, ngivej
+
     if (epsvpot .eq. 0) then
         vpot = 1.d0
     else

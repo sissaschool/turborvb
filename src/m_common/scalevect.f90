@@ -16,8 +16,11 @@
 subroutine scalevect(n, cellfat, vect)
     use cell, only: map
     implicit none
-    integer n, i
-    real*8 cellfat(3), vect(3*n)
+    integer, intent(in) :: n
+    real*8, intent(in) :: cellfat(3)
+    real*8, intent(inout) :: vect(3*n)
+
+    integer i
 !$omp parallel do default(shared) private(i)
     do i = 1, 3*n, 3
         vect(i) = map(vect(i), cellfat(1))

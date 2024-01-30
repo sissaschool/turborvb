@@ -20,14 +20,18 @@ module sub_comm
         integer comm, parent
         logical yesin
     end type
+
 contains
+
     subroutine mpi_sub_comm_create(parent_comm, new_size, child, ierror)
         implicit none
 #ifdef PARALLEL
         include 'mpif.h'
 #endif
-        integer parent_comm, new_size, ierror
-        type(mpi_sub_comm) :: child
+        integer, intent(in) :: parent_comm
+        integer, intent(inout) :: new_size
+        integer, intent(inout) :: ierror ! intent(out)?
+        type(mpi_sub_comm), intent(inout) :: child
 
         integer orig_group, sub_group, i
         integer, dimension(:), allocatable :: ranks
@@ -74,8 +78,8 @@ contains
 
     subroutine mpi_sub_comm_free(child, ierror)
         implicit none
-        integer ierror
-        type(mpi_sub_comm) :: child
+        integer, intent(inout) :: ierror ! intent(out)?
+        type(mpi_sub_comm), intent(inout) :: child
 #ifdef PARALLEL
         include 'mpif.h'
 

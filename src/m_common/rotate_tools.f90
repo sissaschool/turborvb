@@ -13,15 +13,13 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-subroutine ruota_xyz(alpha, xrot, yrot, zrot, &
-        &    nion_1, rion_1, rion_2)
+subroutine ruota_xyz(alpha, xrot, yrot, zrot, nion_1, rion_1, rion_2)
     implicit none
-    real(8) u(3, 3)
-    real(8), dimension(:, :), allocatable :: emme
+    real*8 u(3, 3)
+    real*8, dimension(:, :), allocatable :: emme
     integer nion_1, i, j, ii
 
-    real(8) alpha, xrot, yrot, zrot, &
-            &            rion_1(3, nion_1), rion_2(3, nion_1)
+    real*8 alpha, xrot, yrot, zrot, rion_1(3, nion_1), rion_2(3, nion_1)
 
     call dscal(9, 0.d0, u(1, 1), 1)
     call make_u(alpha, xrot, yrot, zrot, u)
@@ -43,19 +41,20 @@ subroutine ruota_xyz(alpha, xrot, yrot, zrot, &
 
 end subroutine ruota_xyz
 
-subroutine ruota_molec(ipc, alpha, xrot, yrot, zrot, iesupr_1&
-        &, dupr_1, ioptorb_1, nparam_1, nshell_1, ioptorb, nshell, nelorb, dupr_2)
+subroutine ruota_molec(ipc, alpha, xrot, yrot, zrot, iesupr_1, &
+                    &  dupr_1, ioptorb_1, nparam_1, nshell_1, &
+                    &  ioptorb, nshell, nelorb, dupr_2)
     use constants, only: zzero, zone
     implicit none
     integer nshell_1, indpar, nelorb, nshell, shift, i, j, ii, iesupr_1, ipc
     integer ioptorb(nshell), ioptorb_1(nshell_1), nparam_1(nshell_1)
 
-    real(8) alpha, xrot, yrot, zrot
-    real(8) dupr_1(ipc*iesupr_1)
-    real(8) dupr_2(ipc*iesupr_1)
+    real*8 alpha, xrot, yrot, zrot
+    real*8 dupr_1(ipc*iesupr_1)
+    real*8 dupr_2(ipc*iesupr_1)
 
-    real(8) u(3, 3), emmed(5, 5), emmef(7, 7), emmeg(9, 9)
-    real(8), dimension(:, :), allocatable :: emme
+    real*8 u(3, 3), emmed(5, 5), emmef(7, 7), emmeg(9, 9)
+    real*8, dimension(:, :), allocatable :: emme
 
     allocate (emme(nelorb, nelorb))
 
@@ -93,8 +92,9 @@ subroutine ruota_molec(ipc, alpha, xrot, yrot, zrot, iesupr_1&
 end subroutine ruota_molec
 
 subroutine ruota_lambda(ipc, ipf, alpha, xrot, yrot, zrot, &
-        &           ix_1, iy_1, detmat_1, nnozero_1, occ_1, nelcol, &
-        &           ioptorb_1, nshell_1, nnozero_2, ix_2, iy_2, detmat_2, symmagp)
+                    &   ix_1, iy_1, detmat_1, nnozero_1, occ_1, nelcol, &
+                    &   ioptorb_1, nshell_1, nnozero_2, ix_2, iy_2, detmat_2, &
+                    &   symmagp)
     use allio, only: yes_hermite
     use constants, only: zone, zzero
     !         INPUT
@@ -112,15 +112,15 @@ subroutine ruota_lambda(ipc, ipf, alpha, xrot, yrot, zrot, &
     integer nshell_1, nelcol, neldiff, &
             &            ioptorb_1(nshell_1)
 
-    real(8) alpha, xrot, yrot, zrot
+    real*8 alpha, xrot, yrot, zrot
     integer ix_1(nnozero_1), iy_1(nnozero_1)
-    real(8) detmat_1(*)
+    real*8 detmat_1(*)
     integer ix_2(*), iy_2(*)
-    real(8) detmat_2(*)
+    real*8 detmat_2(*)
 
     integer i, j, ii
-    real(8) u(3, 3), emmed(5, 5), emmef(7, 7), emmeg(9, 9)
-    real(8), dimension(:, :), allocatable :: emme, lwork, lambda
+    real*8 u(3, 3), emmed(5, 5), emmef(7, 7), emmeg(9, 9)
+    real*8, dimension(:, :), allocatable :: emme, lwork, lambda
     logical symmagp
 
     allocate (lambda(ipc*occ_1, nelcol), &
