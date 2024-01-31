@@ -331,7 +331,7 @@ set( NATIVE_OMP_B OFF )
 #
 ######################################################################
 
-find_package(OpenMP)
+#find_package(OpenMP)
 find_package(Threads)
 
 if(EXT_GPU)
