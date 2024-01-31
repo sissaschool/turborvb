@@ -22,8 +22,10 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   add_fortran_flag_if_avail( "-g" )
 
   # If OpenMP is yes nad NATIVE_OMP_B is false, the compile with OpenMP
-  if( ${OPENMP} AND (NOT ${NATIVE_OMP_B}) )
-    add_fortran_flag_if_avail( "-qopenmp" )
+  if( ${OPENMP} )
+    if( NOT ${NATIVE_OMP_B} )
+      add_fortran_flag_if_avail( "-openmp" )
+    endif()
   endif()
   
   if ( ${APPLE} )
