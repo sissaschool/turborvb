@@ -16,13 +16,14 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   endif()
 
   add_fortran_flag_if_avail( "-fpp"   "Intel (Legacy) Fortran compiler does not supports c preprocessor" )
-  add_fortran_flag_if_avail( "-qopenmp" )
+  add_fortran_flag_if_avail( "-xHost" )
+  add_fortran_flag_if_avail( "-qopt-report" )
+
   add_fortran_flag_if_avail( "-g" )
-  
-  #message(${CMAKE_APPLE_SILICON_PROCESSOR})
-  #if( ${CMAKE_APPLE_SILICON_PROCESSOR} MATCHES x86_64 )
-  #  add_fortran_flag_if_avail( "-arch=x86_64" )
-  #endif()
+
+  if(${OpenMP_FOUND} AND NOT ${NATIVE_OMP_B})
+    add_fortran_flag_if_avail( "-qopenmp" )
+  endif()
   
   if ( ${APPLE} )
     add_fortran_flag_if_avail( "-fno-common" )

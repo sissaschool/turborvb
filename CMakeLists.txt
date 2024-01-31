@@ -302,6 +302,9 @@ if (TREXIO_FOUND)
     list( APPEND PPDIRECTIVES _TREXIO )
     link_libraries(${TREXIO_LIBRARIES})
     include_directories( ${TREXIO_INCLUDE_DIRS} )
+    message( STATUS "TREXIO Library found: ${TREXIO_LIBRARIES}" )
+    message( FATAL_ERROR "TREXIO Include found: ${TREXIO_INCLUDE_DIRS}" )
+
 endif()
 
 find_package(QMCKL)
