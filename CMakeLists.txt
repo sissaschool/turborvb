@@ -137,6 +137,7 @@ option(EXT_SPEEDTEST  "Enable speed tests targets"           OFF)
 option(EXT_STATICPACK "Produce static packaging if possible" OFF)
 option(EXT_DETAIL     "Produce more detailed config output"  OFF)
 option(EXT_NVTX       "Turn on Nvidia NVTX ranges"           OFF)
+option(EXT_OMP        "Use OpenMP"                            ON)
 
 set(EXT_BLAS_LIB   ""    CACHE STRING    "Blas libraries")
 set(EXT_LAPACK_LIB ""    CACHE STRING    "Lapack libraries")
@@ -331,7 +332,9 @@ set( NATIVE_OMP_B OFF )
 #
 ######################################################################
 
-#find_package(OpenMP)
+if(${EXT_OMP})
+  find_package(OpenMP)
+endif()
 find_package(Threads)
 
 if(EXT_GPU)
