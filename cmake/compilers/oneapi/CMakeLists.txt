@@ -9,6 +9,9 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
   message( STATUS "Using Intel oneAPI Compiler" )
 
   add_fortran_flag_if_avail( "-fpp"   "Intel LLVM Fortran compiler does not supports C preprocessor" )
+  add_fortran_flag_if_avail( "-xHost" )
+  add_fortran_flag_if_avail( "-finline-functions" )
+  add_fortran_flag_if_avail( "-qopt-report" )
 
   set(AGRESSIVE_F "-Ofast")
   if( ${EXT_OPT} )
