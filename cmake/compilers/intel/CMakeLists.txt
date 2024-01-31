@@ -16,7 +16,7 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   endif()
 
   add_fortran_flag_if_avail( "-fpp"   "Intel (Legacy) Fortran compiler does not supports c preprocessor" )
-  add_fortran_flag_if_avail( "-xHost" )
+  add_fortran_flag_if_avail( "-march=core-avx2" )
   add_fortran_flag_if_avail( "-qopt-report" )
 
   add_fortran_flag_if_avail( "-g" )
