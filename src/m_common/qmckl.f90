@@ -183,9 +183,22 @@ subroutine setup_qmckl_ctx(&
             stop 1
         end if
         if (shell_types(ii).lt.90) then
-            write(0,*) "Error: shell_indeces(ii) < 90"
-            stop 1
+            if (shell_types(ii).eq.16.or. &
+                & shell_types(ii).eq.36) then
+                shell_types_(ii) = shell_types(ii) - 90
+                write(0,*) "Warning: shell_indeces(ii) < 90, setting to s-type or p-type shell."
+            else
+                write(0,*) "Error: shell_indeces(ii) < 90"
+                stop 1
+            end if
         end if
+        if (shell_types(ii).eq.16) then
+            shell_types_(ii) = 0
+        end if
+        if (shell_types(ii).eq.36) then
+            shell_types_(ii) = 1
+        end if
+        cycle
         shell_types_(ii) = shell_types(ii) - 90
     end do
 
