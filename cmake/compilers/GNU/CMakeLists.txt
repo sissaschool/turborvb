@@ -30,6 +30,10 @@ macro(SET_GNU_FORTRAN_COMPILER)
 
   check_Fortran_compiler_flag("-ffree-line-length-none" _free_line_length_none_works)
 
+  if (${EXT_PROFILED})
+    add_fortran_flag_if_avail( "-pg" )
+  endif()
+
   if(EXT_GPU)
 	  add_fortran_flag_if_avail( "-fno-whole-file" "GNU Fortran compiler does not supports no-whole-flag, turn off GPU support" )
 	  add_fortran_flag_if_avail( "-fopenmp" )
