@@ -682,7 +682,9 @@ end subroutine makefun_grid
 subroutine upnewwf0(indt, typecomp, nshell, ioptorb, iocc, kel, nel, r, rmu, dd, zeta, rion, distp, z, nelskip, &
                     nion, kion, iflagnorm, cnorm, LBox, rmucos, rmusin, mindist, indpar_tab, indorb_tab, indshell_tab, yesupel)
 
-    use allio, only: ikshift, iespbc, rank, gamma_point, yes_crystalj, yes_scemama, lepsbas, slaterorb_read, nshell_det, use_qmckl, qmckl_ctx
+    use allio, only: ikshift, iespbc, rank, gamma_point, yes_crystalj&
+                  &, yes_scemama, lepsbas, slaterorb_read, nshell_det&
+                  &, use_qmckl, qmckl_ctx
     use Cell, only: cellscale, cellpi, rphase, phase2pi, phase2pi_down, sinphase, cosphase, s2r, car2cry
     use Constants, only: ipc
     use qmckl

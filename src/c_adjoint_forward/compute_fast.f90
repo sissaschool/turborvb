@@ -1351,7 +1351,7 @@ contains
                         if (npoints_qmckl == 0) then
                             rc = qmckl_get_ao_basis_ao_num(qmckl_ctx, ao_num)
                             if (rc /= QMCKL_SUCCESS) then
-                                print *, 'Error getting ao_num'
+                                print *, 'Error getting ao_num', qmckl_ctx
                                 call abort()
                             end if
                         end if
