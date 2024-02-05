@@ -26,9 +26,11 @@ macro(SET_INTEL_FORTRAN_COMPILER)
   endif()
 
   # If OpenMP is yes nad NATIVE_OMP_B is false, the compile with OpenMP
-  if( ${OPENMP} AND ${EXT_OMP} )
-    if( NOT ${NATIVE_OMP_B} )
-      add_fortran_flag_if_avail( "-qopenmp" )
+  if( ${EXT_OMP} )
+    if( ${OPENMP} )
+      if( NOT ${NATIVE_OMP_B} )
+        add_fortran_flag_if_avail( "-qopenmp" )
+      endif()
     endif()
   endif()
   
