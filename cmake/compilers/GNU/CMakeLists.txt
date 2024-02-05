@@ -32,7 +32,6 @@ macro(SET_GNU_FORTRAN_COMPILER)
 
   if (${EXT_PROFILED})
     add_fortran_flag_if_avail( "-pg" )
-    add_link_options( "-pg" )
   endif()
 
   if(EXT_GPU)
@@ -63,6 +62,15 @@ macro(SET_GNU_FORTRAN_COMPILER)
         endif()
       endforeach()
   endif()
+  
+  foreach( TARGET IN LISTS EXECUTABLES_S_L
+                           EXECUTABLES_P_L
+                           LIBRARIES_S_L
+                           LIBRARIES_P_L)
+    if (${EXT_PROFILED})
+      target_link_options( ${TARGET} PRIVATE "-pg" )
+    endif()
+  endforeach()
 
   add_fortran_flag_if_avail( "-march=native" )
   add_fortran_flag_if_avail( "-mtune=native" )
