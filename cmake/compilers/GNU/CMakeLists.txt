@@ -32,7 +32,9 @@ macro(SET_GNU_FORTRAN_COMPILER)
 
   if (${EXT_PROFILED})
     add_fortran_flag_if_avail( "-pg" )
+    add_fortran_flag_if_avail( "-a" )
     add_link_options( "-pg" )
+    add_link_options( "-a" )
   endif()
 
   if(EXT_GPU)
@@ -130,6 +132,7 @@ macro(SET_GNU_C_COMPILER)
 
   if (${EXT_PROFILED})
     add_c_flag_if_avail( "-pg" )
+    add_c_flag_if_avail( "-a" )
   endif()
 
   if( ${EXT_OPT} )
