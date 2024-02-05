@@ -23,6 +23,23 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
     set(PASIVE_F "-O0")
   endif()
 
+  if( ${EXT_PROFILED} )
+    add_fortran_flag_if_avail( "-pg" )
+  endif()
+
+  foreach( LIBRARY IN LISTS LIBRARIES_S_L
+                            LIBRARIES_P_L
+                            EXECUTABLES_S_L
+                            EXECUTABLES_P_L
+                            )
+    if( ${EXT_PROFILED} )
+      target_link_options( ${LIBRARY} PRIVATE "-pg" )
+    endif()
+    if( ${EXT_OMP} )
+      target_link_options( ${LIBRARY} PRIVATE "-fopenmp" )
+    endif()
+  endforeach()
+
   # Set optimization flags:
   foreach( LIBRARY IN LISTS LIBRARIES_S_L
                             LIBRARIES_P_L
