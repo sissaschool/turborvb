@@ -194,12 +194,11 @@ subroutine setup_qmckl_ctx(&
         end if
         if (shell_types(ii).eq.16) then
             shell_types_(ii) = 0
-        end if
-        if (shell_types(ii).eq.36) then
+        else if (shell_types(ii).eq.36) then
             shell_types_(ii) = 1
+        else
+            shell_types_(ii) = shell_types(ii) - 90
         end if
-        cycle
-        shell_types_(ii) = shell_types(ii) - 90
     end do
 
 #ifdef _DEBUG
