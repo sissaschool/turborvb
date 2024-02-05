@@ -88,6 +88,10 @@ macro(SET_ONEAPI_C_COMPILER)
 
   add_c_flag_if_avail( "-g" )
 
+  if( ${EXT_PROFILED} )
+    add_c_flag_if_avail( "-pg" )
+  endif()
+
   if( ${EXT_OPT} )
     add_c_flag_if_avail( "-O3" )
   else()

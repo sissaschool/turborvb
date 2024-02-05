@@ -21,16 +21,34 @@ macro(SET_INTEL_FORTRAN_COMPILER)
 
   add_fortran_flag_if_avail( "-g" )
 
+  if( ${EXT_PROFILED} )
+    add_fortran_flag_if_avail( "-pg" )
+  endif()
+
   # If OpenMP is yes nad NATIVE_OMP_B is false, the compile with OpenMP
-  if( ${OPENMP} )
+  if( ${OPENMP} AND ${EXT_OMP} )
     if( NOT ${NATIVE_OMP_B} )
-      add_fortran_flag_if_avail( "-openmp" )
+      add_fortran_flag_if_avail( "-qopenmp" )
     endif()
   endif()
   
   if ( ${APPLE} )
     add_fortran_flag_if_avail( "-fno-common" )
   endif()
+
+  foreach( LIBRARY IN LISTS LIBRARIES_S_L
+                            LIBRARIES_P_L 
+                            EXECUTABLES_S_L
+                            EXECUTABLES_P_L
+                            )
+    if( ${EXT_OMP} )
+      target_link_options(${LIBRARY} PRIVATE -qopenmp)
+    endif()
+    if( ${EXT_PROFILED} )
+      target_link_options(${LIBRARY} PRIVATE -pg)
+    endif()
+
+  endforeach()
 
   # Set optimization flags for all executables:
   foreach( LIBRARY IN LISTS LIBRARIES_S_L
