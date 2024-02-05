@@ -138,7 +138,7 @@ option(EXT_STATICPACK "Produce static packaging if possible" OFF)
 option(EXT_DETAIL     "Produce more detailed config output"  OFF)
 option(EXT_NVTX       "Turn on Nvidia NVTX ranges"           OFF)
 option(EXT_OMP        "Use OpenMP"                            ON)
-option(EXT_PROFILED   "Use profiled compile option"           ON)
+option(EXT_PROFILED   "Use profiled compile option"          OFF)
 
 set(EXT_BLAS_LIB   ""    CACHE STRING    "Blas libraries")
 set(EXT_LAPACK_LIB ""    CACHE STRING    "Lapack libraries")
