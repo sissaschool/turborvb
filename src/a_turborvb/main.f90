@@ -8724,7 +8724,7 @@ contains
                                   &, ioptorb&
                                   &, dup_c&
                                   &, qmckl_ctx)
-                if (qmckl_ctx.eq.0_8) then
+                if (qmckl_ctx.ne.0_8) then
                     write (6, *) "Loading QMCKL data from fort.10"
                     use_qmckl = .true.
                 else
