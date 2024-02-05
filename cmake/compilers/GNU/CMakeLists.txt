@@ -31,10 +31,8 @@ macro(SET_GNU_FORTRAN_COMPILER)
   check_Fortran_compiler_flag("-ffree-line-length-none" _free_line_length_none_works)
 
   if (${EXT_PROFILED})
-    add_fortran_flag_if_avail( "-pg" )
-    add_fortran_flag_if_avail( "-a" )
-    add_link_options( "-pg" )
-    add_link_options( "-a" )
+    add_fortran_flag_if_avail( "-pg -a" )
+    add_link_options( "-pg -a" )
   endif()
 
   if(EXT_GPU)
@@ -131,8 +129,7 @@ macro(SET_GNU_C_COMPILER)
   add_c_flag_if_avail( "-g" )
 
   if (${EXT_PROFILED})
-    add_c_flag_if_avail( "-pg" )
-    add_c_flag_if_avail( "-a" )
+    add_c_flag_if_avail( "-pg -a" )
   endif()
 
   if( ${EXT_OPT} )
