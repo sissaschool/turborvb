@@ -36,7 +36,7 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
       target_link_options( ${LIBRARY} PRIVATE "-pg" )
     endif()
     if( ${EXT_OMP} )
-      target_link_options( ${LIBRARY} PRIVATE "-fopenmp" )
+      target_link_options( ${LIBRARY} PRIVATE "-qopenmp" )
     endif()
   endforeach()
 
