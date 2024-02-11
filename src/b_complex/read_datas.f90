@@ -1934,6 +1934,7 @@ subroutine read_datasmin
     call mpi_bcast(link_atom, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(calpha, maxcap, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(wherescratch, 60 + lchlen, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+    call mpi_bcast(trexiofile, 60 + lchlen, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(writescratch, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(freqcheck, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(ifreqdump, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
