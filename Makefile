@@ -30,7 +30,7 @@ ifeq ($(make_inc_c) ,c)
     $(info 2 GNU Fortran Compiler with MPI) 
     $(info 3 Intel Fortran Compiler with MPI) 
     $(info )
-    $(shell read -p "Select an example [1-2]: " ans; \
+    $(shell read -p "Select an example [1-3]: " ans; \
         if [ "$$ans" = "1" ]; then \
             cp devel_tools/make.inc.examples/make.inc.example.gcc make.inc; \
         elif [ "$$ans" = "2" ]; then \
