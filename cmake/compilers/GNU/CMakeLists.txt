@@ -30,6 +30,10 @@ macro(SET_GNU_FORTRAN_COMPILER)
 
   check_Fortran_compiler_flag("-ffree-line-length-none" _free_line_length_none_works)
 
+  if (${EXT_PROFILED})
+    add_fortran_flag_if_avail( "-pg" )
+  endif()
+
   if(EXT_GPU)
 	  add_fortran_flag_if_avail( "-fno-whole-file" "GNU Fortran compiler does not supports no-whole-flag, turn off GPU support" )
 	  add_fortran_flag_if_avail( "-fopenmp" )
@@ -58,6 +62,15 @@ macro(SET_GNU_FORTRAN_COMPILER)
         endif()
       endforeach()
   endif()
+  
+  foreach( TARGET IN LISTS EXECUTABLES_S_L
+                           EXECUTABLES_P_L
+                           LIBRARIES_S_L
+                           LIBRARIES_P_L)
+    if (${EXT_PROFILED})
+      target_link_options( ${TARGET} PRIVATE "-pg" )
+    endif()
+  endforeach()
 
   add_fortran_flag_if_avail( "-march=native" )
   add_fortran_flag_if_avail( "-mtune=native" )
@@ -122,6 +135,10 @@ macro(SET_GNU_C_COMPILER)
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
 
   add_c_flag_if_avail( "-g" )
+
+  if (${EXT_PROFILED})
+    add_c_flag_if_avail( "-pg" )
+  endif()
 
   if( ${EXT_OPT} )
     add_c_flag_if_avail( "-O3" )

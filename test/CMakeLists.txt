@@ -140,6 +140,8 @@ if(EXT_MODTEST)
   add_subdirectory(test_upwinvp_complex)
   #add_subdirectory(test_upwinvp_pfaff)
   #add_subdirectory(test_upwinvp_pfaff_complex)
+
+  add_subdirectory(test_makefun)
   
   #
   ######################################################################
@@ -154,6 +156,7 @@ if(EXT_DFT)
   #
   
   add_subdirectory(test_dft_open)
+  add_subdirectory(test_dft_open_cartesian)
   add_subdirectory(test_dft_pbc_gamma)
   add_subdirectory(test_dft_pbc_twist_real)
   add_subdirectory(test_dft_pbc_twist_complex)
@@ -199,6 +202,8 @@ if(EXT_TOOLS AND EXT_QMC)
   # MD
   add_subdirectory(test_MD_classical_vmc)
   add_subdirectory(test_MD_quantum_vmc)
+
+  add_subdirectory(test_setup_qmckl)
   
   ######################################################################
 

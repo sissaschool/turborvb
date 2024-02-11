@@ -61,82 +61,84 @@ if( ${LIBRARY} MATCHES common-.* )
         mod_extpot.f90
         mod_IO.f90
         mpiio.f90
+        nvtx.f90
+        qmckl.f90
         sub_comm.f90
         symmetries.f90
+        trexio.f90
         types.f90
         # subroutines
-        kind.f90
+        atom_weight.f90
+        bconstraint.f90
+        bconstrbra.f90
+        bconstrbr_complex.f90
+        bconstrbr.f90
+        bspline90_22.f90
+        constrbra_complex.f90
+        constrbra.f90
+        constrbr_complex.f90
+        constrbr.f90
+        convertdec.f90
+        copy_eagp.f90
+        definition.f90
+        descriptors.f90
+        dgemm_my.f90
+        dscalzero.f90
+        dsktri.f90
+        dsktrs.f90
+        dsortx.f90
+        error.f90
+        extv.f90
         fft_scalar.f90
         fft_stick.c
         fftw.c
-        atom_weight.f90
-        plot_3d_data.f90
-        plot_3d_data_tilted.f90
-        dgemm_my.f90
-        error.f90
-        ioptorbcontr.f90
-        memOP.f90
-        pareff.f90
-        rotate_tools.f90
-        slaterorb.f90
-        zgemm_my.f90
-        bconstraint.f90
-        bconstrbr_complex.f90
-        bconstrbr.f90
-        bconstrbra.f90
-        checkmatrix.f90
-        dscalzero.f90
-        dsortx.f90
-        iesdr1iesd.f90
-        iesdr2iesd.f90
-        upsim.f90
-        upsimp.f90
-        copy_eagp.f90
-        extv.f90
-        bspline90_22.f90
-        dsktrs.f90
+        fileOP.f90
         fillmatrix.f90
+        findmaxmat.f90
         findrionref.f90
         forces_ext.f90
+        fortran.c
+        fort11_io.f90
         graham.f90
         grahamo.f90
+        checkmatrix.f90
+        iesdr1iesd.f90
+        iesdr2iesd.f90
+        initconf_pbc.f90
         invsymeps.f90
+        io.c
+        ioptorbcontr.f90
+        kind.f90
+        max_ovlp.f90
+        memOP.f90
         molec_pfaff.f90
+        pareff.f90
+        plot_3d_data.f90
+        plot_3d_data_tilted.f90
+        print_eigenvalues.f90
+        random.f90
+        randomnumber.c
+        ran.f90
+        read_pseudo.f90
+        rotate_tools.f90
+        save_jall_fn.f90
+        scalevect.f90
+        slaterorb.f90
         symmetrize_agp.f90
+        Thomas_Fermi_model.f90
+        updatedwarp.f90
+        update_jastrowall.f90
+        upsim.f90
+        upsimp.f90
+        upvpotaa.f90
+        upvpot_ei.f90
         upwinv.f90
         upwinvp.f90
         write_type_orb.f90
+        zgemm_my.f90
         zsktri.f90
-        dsktri.f90
-        save_jall_fn.f90
-        scalevect.f90
-        zsktrs_qp.f90
         zsktrs.f90
-        update_jastrowall.f90
-        random.f90
-        convertdec.f90
-        io.c
-        fortran.c
-        randomnumber.c
-        fort11_io.f90
-        read_pseudo.f90
-        Thomas_Fermi_model.f90
-        definition.f90
-        descriptors.f90
-        fileOP.f90
-        upvpotaa.f90
-        constrbr.f90
-        constrbr_complex.f90
-        findmaxmat.f90
-        initconf_pbc.f90
-        print_eigenvalues.f90
-        updatedwarp.f90
-        constrbra.f90
-        constrbra_complex.f90
-        max_ovlp.f90
-        upvpot_ei.f90
-        nvtx.f90
-        ran.f90
+        zsktrs_qp.f90
         ${HELP_FILE}
         ${VER_FILE}
     )

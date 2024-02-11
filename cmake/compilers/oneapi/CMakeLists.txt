@@ -9,6 +9,9 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
   message( STATUS "Using Intel oneAPI Compiler" )
 
   add_fortran_flag_if_avail( "-fpp"   "Intel LLVM Fortran compiler does not supports C preprocessor" )
+  add_fortran_flag_if_avail( "-xHost" )
+  add_fortran_flag_if_avail( "-finline-functions" )
+  add_fortran_flag_if_avail( "-qopt-report" )
 
   set(AGRESSIVE_F "-Ofast")
   if( ${EXT_OPT} )
@@ -19,6 +22,23 @@ macro(SET_ONEAPI_FORTRAN_COMPILER)
   else()
     set(PASIVE_F "-O0")
   endif()
+
+  if( ${EXT_PROFILED} )
+    add_fortran_flag_if_avail( "-pg" )
+  endif()
+
+  foreach( LIBRARY IN LISTS LIBRARIES_S_L
+                            LIBRARIES_P_L
+                            EXECUTABLES_S_L
+                            EXECUTABLES_P_L
+                            )
+    if( ${EXT_PROFILED} )
+      target_link_options( ${LIBRARY} PRIVATE "-pg" )
+    endif()
+    if( ${EXT_OMP} )
+      target_link_options( ${LIBRARY} PRIVATE "-qopenmp" )
+    endif()
+  endforeach()
 
   # Set optimization flags:
   foreach( LIBRARY IN LISTS LIBRARIES_S_L
@@ -67,6 +87,10 @@ macro(SET_ONEAPI_C_COMPILER)
   list( APPEND PPDIRECTIVES "__USE_INTERNAL_FFTW" )
 
   add_c_flag_if_avail( "-g" )
+
+  if( ${EXT_PROFILED} )
+    add_c_flag_if_avail( "-pg" )
+  endif()
 
   if( ${EXT_OPT} )
     add_c_flag_if_avail( "-O3" )

@@ -103,7 +103,7 @@ program test_dgemm
         close (10)
     else if (gen .eq. 0) then
         C = C - C_orig
-        if (maxval(C) > 1.0d-10) then
+        if (maxval(abs(C)) > 1.0d-10) then
             print *, "ERROR"
         else
             print *, "OK"

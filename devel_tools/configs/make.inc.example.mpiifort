@@ -1,0 +1,79 @@
+# Makefile inc for TurboRVB
+
+# This make.inc is also a tutorial how to setup Makefile for TurboRVB.
+# This one is set up for Intel Fortran compiler with MKL library.
+# You might have to check your compiler and LAPACK installation and change
+
+# First we specifies suffix for our executable. This is not necessary but it is good practice.
+
+SUFFIX=-mpi.x
+
+# This Makefile uses out-of-source build. This means that all object files and modules
+# will be stored in separate directory. This directory is specified here.
+# Keep in mind this have to be ABSOLUTE PATH. This file is loaded by sub-makefiles
+# therefore $(pwd) or $(CURDIR) will not work.
+
+BUILD_DIR=/home/addman/Software/turborvb-rm/build-mpi
+
+# Setup compilers Fortran and C. For this FC and CC variables are used respectively.
+
+FC=mpiifort
+CC=mpiicx
+
+# Setup compiler flags. Note that for MPI version Fortran compiler wrapper should be used.
+# For this FCFLAGS and CFLAGS variables are used respectively.
+
+# It is important NOT to specify optimization flags here!
+
+# First we have to specify that Fortran should use C preprocessor.
+# This is done by "-fpp" flag. This works for Intel Fortran compiler.
+
+FCFLAGS=-fpp
+
+# One might like to use OpenMP parallelism
+
+FCFLAGS+=-qopenmp
+
+# Setting up optimization flags:
+
+FCFLAGS+=-march=core-avx2
+
+# Debug -g flag is not slowing down modern code so we can use it all the time.
+
+FCFLAGS+=-g
+
+# Here we specify optimization flags.
+# C optimization flags CAN be specified here.
+# This is one difference between C and Fortran flags.
+
+CFLAGS=-O3 -g -qopenmp
+
+# Here we specify flags for aggressive optimization.
+# Not all source files can be compiled with aggressive optimization. These files has to
+# carefully selected and precified in the file make.txt
+
+FCFLAGS_AGGRESSIVE=-O3 -funroll-loops
+FCFLAGS_PASSIVE=-O0
+
+# Here we specify flags that control storing and including of modules.
+# For intel fortran it is "-module" and "-I" flags respectively.
+# This is true for most compilers. Normally, it is not necessary to specify these flags.
+
+MODULE_STORE=-module
+MODULE_INCLUDE=-I
+
+# Here we can add preprocessort directives. Keep in mind it is good add them to FCFLAGS
+# as well as to CFLAGS. For this a helper variable PP_DIRECTIVES is used.
+
+PP_DIRECTIVES=-D_TIME -D_SCALAPACK 
+
+FCFLAGS+=$(PP_DIRECTIVES)
+CFLAGS+=$(PP_DIRECTIVES)
+
+# Link options. Here we specify libraries that are needed for linking.
+
+FLINK=-qopenmp
+
+# Here we specify libraries that are needed for linking.
+
+LINK_LIBS=-L${MKLROOT}/lib -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl

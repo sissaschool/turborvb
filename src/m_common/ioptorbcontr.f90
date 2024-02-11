@@ -452,6 +452,10 @@ function multioptorb(ioptorb)
         multioptorb = 11 ! h
     case (73, 900)
         multioptorb = 13 ! i
+    case (90:99) ! cartesian orbitals
+        multioptorb = (ioptorb - 90 + 2) * (ioptorb - 90 + 1) / 2
+    case (10000:11000)
+        multioptorb = ioptorb - 10000
     case default
         multioptorb = 0
     end select

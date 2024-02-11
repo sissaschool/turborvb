@@ -137,6 +137,8 @@ option(EXT_SPEEDTEST  "Enable speed tests targets"           OFF)
 option(EXT_STATICPACK "Produce static packaging if possible" OFF)
 option(EXT_DETAIL     "Produce more detailed config output"  OFF)
 option(EXT_NVTX       "Turn on Nvidia NVTX ranges"           OFF)
+option(EXT_OMP        "Use OpenMP"                            ON)
+option(EXT_PROFILED   "Use profiled compile option"          OFF)
 
 set(EXT_BLAS_LIB   ""    CACHE STRING    "Blas libraries")
 set(EXT_LAPACK_LIB ""    CACHE STRING    "Lapack libraries")
@@ -297,6 +299,27 @@ foreach(OTHER_LIB ${EXT_OTHER_LIB})
   link_libraries(${OTHER_LIB})
 endforeach()
 
+find_package(TREXIO)
+if (TREXIO_FOUND)
+    list( APPEND PPDIRECTIVES _TREXIO )
+    link_libraries(${TREXIO_LIBRARIES})
+    include_directories( ${TREXIO_INCLUDE_DIRS} )
+endif()
+
+find_package(QMCKL)
+if (QMCKL_FOUND)
+    list( APPEND PPDIRECTIVES _QMCKL )
+    link_libraries(${QMCKL_LIBRARIES})
+    include_directories( ${QMCKL_INCLUDE_DIRS} )
+endif()
+
+find_package(QMCKL_GPU)
+if (QMCKL_GPU_FOUND)
+    list( APPEND PPDIRECTIVES _QMCKL_GPU )
+    link_libraries(${QMCKL_GPU_LIBRARIES})
+    include_directories( ${QMCKL_GPU_INCLUDE_DIRS} )
+endif()
+
 ######################################################################
 #
 # Setting native OMP to off
@@ -307,7 +330,9 @@ set( NATIVE_OMP_B OFF )
 #
 ######################################################################
 
-find_package(OpenMP)
+if(${EXT_OMP})
+  find_package(OpenMP)
+endif()
 find_package(Threads)
 
 if(EXT_GPU)
@@ -588,6 +613,7 @@ if(EXT_MODTEST)
   add_target_exe_serial_wrapper(test_openmp_reduction_complex test_tools)
   add_target_exe_serial_wrapper(test_upwinvp test_tools)
   add_target_exe_serial_wrapper(test_upwinvp_complex test_tools)
+  add_target_exe_serial_wrapper(test_makefun test_tools)
   #add_target_exe_serial_wrapper(test_upwinvp_pfaff test_tools)
   #add_target_exe_serial_wrapper(test_upwinvp_pfaff_complex test_tools)
 

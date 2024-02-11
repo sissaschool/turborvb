@@ -17,6 +17,7 @@ TARGET_MODULES := $(BUILD_DIR)/common_module.a
 # First set modules:
 
 MODULE_SRCS := $(SRC_DIR)/constants.f90    \
+	       $(SRC_DIR)/qmckl.f90        \
 	       $(SRC_DIR)/symmetries.f90   \
 	       $(SRC_DIR)/cell.f90         \
 	       $(SRC_DIR)/dielectric.f90   \

@@ -72,7 +72,7 @@ $(TARGET): $(TARGET_MODULES) $(OBJS)
 	$(BUILD_DIR)/common.a \
 	$(BUILD_DIR)/common_module.a \
 	$(BUILD_DIR)/pfapack.a \
-	-J $(MODULE_DIR) \
+	$(MODULE_STORE) $(MODULE_DIR) \
 	$(LINK_LIBS) \
        	-o $(TARGET)
 

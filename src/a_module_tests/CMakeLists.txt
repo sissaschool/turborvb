@@ -295,4 +295,27 @@ foreach( EXECUTABLE IN LISTS EXECUTABLES_S_L
       )
   endif()
 
+  if(${EXECUTABLE} STREQUAL test_makefun)
+    set_target_properties( ${EXECUTABLE} PROPERTIES SUFFIX ".x")
+    
+    target_sources( ${EXECUTABLE}
+      PRIVATE
+        ${EXECUTABLE}.f90
+        c_lister.h
+        c_lister.c
+      )
+
+    if(EXT_GPU)
+      target_link_libraries( ${EXECUTABLE}
+        PRIVATE
+            complex-nogpu-serial
+        )
+    else()
+      target_link_libraries( ${EXECUTABLE}
+        PRIVATE
+            complex-serial
+        )
+    endif()
+  endif()
+
 endforeach()

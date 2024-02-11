@@ -17,12 +17,18 @@ subroutine read_datasmin
     use allio
     use Thomas_Fermi_model !!!! new !!!! added by K.Nakano 11/09/2019
     use dielectric
+    use qmckl
     implicit none
-    integer :: i, j, ind
+    integer :: i, ii, j, ind
     real(8) :: num_ele_core_r_c, r_c, beta_for_r_c, kappa_for_r_c !!!! new !!!! added by K.Nakano 11/09/2019
     real(8), external :: dlamch
     logical noreadnpbra, def_nscra
     real*8 derfc, err_derfc
+    integer(kind=qmckl_exit_code) :: rc
+    integer(kind=8) :: qmckl_shell_num, qmckl_prim_num, qmckl_index(10000), npoints_qmckl, ao_num
+    integer(kind=4) :: qmckl_index4(10000)
+    real*8 :: electrons(3, 2)
+    real*8, allocatable :: ao_value_qmckl(:)
 #ifdef _OFFLOAD
     integer*8, parameter :: max_sparse = 40
 #else
@@ -653,6 +659,19 @@ subroutine read_datasmin
             write (6, *) 'dumping configurations each', ifreqdump, 'generations'
         end if
 
+        if (trexiofile.ne.'') then
+#ifdef _QMCKL
+            use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx, trim(trexiofile), 1_8*len(trim(trexiofile))))
+            if (use_qmckl) then
+                write (6, *) "Loading TREXIO file:", trexiofile
+            else
+                write (6, *) "Failed to load TREXIO file:", trexiofile
+            end if
+#else
+            write (6, *) "Ignoring TREXIO file, TurboRVB was not compiled with QMCkl support"
+            use_qmckl = .false.
+#endif
+        end if
         !          default values parameters vmc with calculation of variance
 
         ieser = -1
@@ -1915,6 +1934,7 @@ subroutine read_datasmin
     call mpi_bcast(link_atom, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(calpha, maxcap, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(wherescratch, 60 + lchlen, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+    call mpi_bcast(trexiofile, 60 + lchlen, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(writescratch, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(freqcheck, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(ifreqdump, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)

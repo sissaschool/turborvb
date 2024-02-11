@@ -1,0 +1,4 @@
+add_test(NAME "Test Makefun"
+  COMMAND $<TARGET_FILE:test_makefun>
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )

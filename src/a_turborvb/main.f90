@@ -18,6 +18,7 @@ program main
     use allio
     use convertmod
     use IO_m
+    use trexio
     ! by E. Coccia (8/11/10)
     use extpot
     ! by E. Coccia (28/12/10)
@@ -5444,6 +5445,7 @@ contains
 
     subroutine Initializeall
         use allio
+        use qmckl
         ! by E. Coccia (9/11/10)
         use extpot, only: mm_restr, n_x, n_y, n_z, delta, x0, ext_pot, link_atom, write_rwalk
         use splines, only: bscoef
@@ -5465,6 +5467,7 @@ contains
         integer, external :: omp_get_max_threads
         call omp_set_num_threads(1) ! scalar code
 #endif
+
 
 !  Definition once for all machine precision and safemin as in lapack (more strict)
         epsmach = dlamch('e')
@@ -8703,6 +8706,52 @@ contains
             write (6, *) ' Warning using SPARSE matrix algorithm for Jastrow '
         end if
         enerdiff = 0.d0 ! just to be sure it is initialized.
+
+        ! Set QMCkl context to zero
+        qmckl_ctx = 0_8
+        use_qmckl = .false.
+
+        if (trexiofile.ne.'') then
+#ifdef _QMCKL
+            ! If trexio file is fort.10 the is not a trexio file
+            ! in this case load qmckl context from fort.10
+            if (trexiofile.eq.'fort.10') then
+                call setup_qmckl_ctx(nion&
+                                  &, nshell&
+                                  &, atom_number&
+                                  &, rion&
+                                  &, kion&
+                                  &, ioptorb&
+                                  &, dup_c&
+                                  &, qmckl_ctx)
+                if (qmckl_ctx.ne.0_8) then
+                    write (6, *) "Loading QMCKL data from fort.10"
+                    use_qmckl = .true.
+                else
+                    write (6, *) "Failed to load QMCKL data from fort.10"
+                end if
+            else
+                ! Load data from trexio file
+
+                qmckl_ctx = qmckl_context_create()
+                if (qmckl_ctx.eq.0_8) then
+                    write (6, *) "Failed to create QMCKL context"
+                    stop
+                end if
+
+                use_qmckl = (QMCKL_SUCCESS.eq.qmckl_trexio_read(qmckl_ctx&
+                                                            & , trim(trexiofile)&
+                                                            , 1_8*len(trim(trexiofile))))
+                if (use_qmckl) then
+                    write (6, *) "Loading TREXIO file:", trexiofile
+                else
+                    write (6, *) "Failed to load TREXIO file:", trexiofile
+                end if
+            end if
+#else
+            write (6, *) "Ignoring TREXIO file, TurboRVB was not compiled with QMCkl support"
+#endif
+        end if
     end subroutine Initializeall
 
     subroutine Finalizeall
@@ -8711,14 +8760,23 @@ contains
         use extpot, only: ext_pot, mm_restr, write_rwalk
 ! by E. Coccia (4/2/11): deallocate arrays for van_der_waals
         use van_der_waals, only: vdw
+        use qmckl
 
         implicit none
         real*8, external :: dnrm2
         real*8 drand1, enercont, jacobian, mapping
         integer iend_sav
+        integer(kind=qmckl_exit_code) :: rc
 #if defined (_OPENMP) && defined (__NOOMP)
         integer, external :: omp_get_max_threads
         call omp_set_num_threads(1) ! scalar code
+#endif
+
+#ifdef _QMCKL
+        rc = qmckl_context_destroy(qmckl_ctx)
+        if (rc.ne.QMCKL_SUCCESS) then
+            write (0, *) "Unable to destroy QMCkl context"
+        end if
 #endif
 
 ! by E. Coccia (20/12/11): writing electronic random walk
