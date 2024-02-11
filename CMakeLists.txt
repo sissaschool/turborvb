@@ -336,6 +336,11 @@ endif()
 find_package(Threads)
 
 if(EXT_GPU)
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang")
+    message( WARNING "Due to a bug in gfortran compiler, it is not possible to compile GPU version.\n"
+                     "Turning off GPU support")
+    set( EXT_GPU OFF )
+  endif()
   if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message( WARNING "Due to a bug in gfortran compiler, it is not possible to compile GPU version.\n"
                      "Turning off GPU support")
@@ -743,6 +748,11 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     prepare_agressive_gnu()
     set_gnu_fortran_compiler()
   
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Flang")
+
+    prepare_agressive_amd()
+    set_amd_fortran_compiler()
+
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 
     prepare_agressive_intel()
@@ -793,6 +803,20 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
   
   #
   # Here Intel (legacy) part ends
+  #
+  ######################################################################
+
+elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+
+  ######################################################################
+  #
+  # Here amd part starts
+  #
+
+  set_amd_c_compiler()
+  
+  #
+  # Here amd part ends
   #
   ######################################################################
 
@@ -854,7 +878,7 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
 
 else()
 
-    message( FATAL_ERROR "This C compiler is not supportted")
+	message( WARNING "This C compiler is not supportted")
 
 endif()
 
