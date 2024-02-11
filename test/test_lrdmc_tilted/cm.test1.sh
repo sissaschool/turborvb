@@ -5,12 +5,13 @@ if [[ $# -gt 0 ]]; then
 	TURBORVB=$1
 	READF=$2
 	FORCEFN=$3
-	OUT=$4
-	TRUEOUT=$5
-	REF_FORT21=$6
-	ROUND_OFF=$7
-        if [[ $# -gt 7 ]]; then
-		PREFIX=$8
+	IN=$4
+	OUT=$5
+	TRUEOUT=$6
+	REF_FORT21=$7
+	ROUND_OFF=$8
+        if [[ $# -gt 8 ]]; then
+		PREFIX=$9
 	else
 		PREFIX=""
 	fi
@@ -25,7 +26,7 @@ fi
 
 echo " LRDMC PBC TILTED TEST " 
 echo " dir=test_lrdmc_tilted" 
-$PREFIX $TURBORVB < datasfn.d > $OUT
+$PREFIX $TURBORVB < $IN > $OUT
 [ $? -eq 0 ] && echo " Run with non-zero exit code" || exit 1
 
 echo "  Calculate local energies:'0 1 1 1' | readf.x" 
