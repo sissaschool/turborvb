@@ -28,12 +28,15 @@ ifeq ($(make_inc_c) ,c)
     $(info )
     $(info 1 GNU Fortran Compiler )
     $(info 2 GNU Fortran Compiler with MPI) 
+    $(info 3 Intel Fortran Compiler with MPI) 
     $(info )
     $(shell read -p "Select an example [1-2]: " ans; \
         if [ "$$ans" = "1" ]; then \
             cp devel_tools/make.inc.examples/make.inc.example.gcc make.inc; \
         elif [ "$$ans" = "2" ]; then \
             cp devel_tools/configs/make.inc.example.gccmpi make.inc; \
+        elif [ "$$ans" = "3" ]; then \
+            cp devel_tools/configs/make.inc.example.mpiifort make.inc; \
         fi)
 
 endif
