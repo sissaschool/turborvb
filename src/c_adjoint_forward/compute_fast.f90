@@ -171,12 +171,12 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
         nelused = nel
     endif
 
-#if defined (_OFFLOAD) && defined (__DEBUG)
+#if defined (_OFFLOAD) && defined (_DEBUG)
 !$omp target update from (winvbar,ainv,winvjbar,agp(:,:,walker:walker)&
 !$omp &,agpn,winv,winvj,winvfn,winvbarfn) if(yes_ontarget)
 #endif
 
-#ifdef __DEBUG
+#ifdef _DEBUG
   if(epscuttype.eq.2) agp_old=sum(abs(agp(:,:,walker)))
   vpotreg_old=sum(abs(vpotreg(:,1:nel)))
   kel_old=sum(kel(:,:,:))
@@ -247,7 +247,7 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
     else
         yesfn = .true.
     endif
-#ifdef __DEBUG 
+#ifdef _DEBUG 
 ! Otherwise I cannot check averything
   movedions=1
   yesupwf=.true.
@@ -560,7 +560,7 @@ subroutine compute_eloc_logpsi(indt, indt4, indt4j, nelorb, nelup, neldo&
        write(6,*)
      endif
 #endif
-#ifdef __DEBUG
+#ifdef _DEBUG
 #ifdef _OFFLOAD
 !$omp target  update from (winvbar)
 !$omp target update from (winvbarfn(ind_winvbarfn:ind_winvbarfn+nel2barfn-1)) if(yesfn)

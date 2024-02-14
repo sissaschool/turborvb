@@ -904,7 +904,7 @@ contains
             if (rank .eq. 0) then
                 write (6, *) 'Warning: updated kgrid considering Det/Jastrow:', count1, count1j
                 write (6, *) 'Warning: lowest wf discarded=', exp(-max_rejected)
-#ifdef __DEBUG
+#ifdef _DEBUG
                 write (6, *) ' Grid considered /ion'
                 do i = 1, nion
                     write (6, *) ' ion # ', i, 'dimension =', kgrid_atom(i)%dimshell

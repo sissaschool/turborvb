@@ -710,7 +710,7 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
     real(8) axt, ayt, azt
     integer(8) mesh_try
     real*8, allocatable :: rion_sav(:, :)
-#ifdef __DEBUG
+#ifdef _DEBUG
     real(8) x(3)
 #endif
 
@@ -912,7 +912,7 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
 
     if (rank .eq. 0) write (6, *) ' Total number of buffers (lower bound) ', totnbuf
 
-#ifdef __DEBUG
+#ifdef _DEBUG
     if (rank .eq. 0) then
         write (6, *) ' Writing grid positions on a file '
         open (unit=91, file='turbogrid.dat', form='formatted', position='rewind', status='unknown')
