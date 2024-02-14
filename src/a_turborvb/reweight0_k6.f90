@@ -392,7 +392,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
             call mpi_allreduce(cost, devmaxp, 1, MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD, ierr)
 #endif
 
-#ifdef __DEBUG
+#ifdef _DEBUG
             if (rank .eq. 0) write (6, *) ' i_max / force / error / deviation: ', &
                 jmax, forza(jmax), err(jmax), forza(jmax)/cost
 #endif
@@ -964,7 +964,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                 end do
                             end if
 
-#ifdef __DEBUG
+#ifdef _DEBUG
                             if (rank .eq. 0) then
 !       check symmetry
                                 cost = 0.d0
