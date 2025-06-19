@@ -1940,14 +1940,23 @@ namelist /link/ calpha
 
 contains
 
-    ! reduce allio to speed up compilation
-    ! read and write fort.10 subroutines are in fort10_io.f90
-    ! read and write fort.11 subroutines are in fort11_io.f90
-    ! read datas* control files by read_datas.f90
-    ! read pseudo potential in read_pseudo.f90
-    ! default allocation and deallocation in memOP.f90
-    ! write output by writeoutput.f90
+    ! This module contains subroutines for handling I/O operations and data structures
+    ! The original large allio module has been split into smaller files for faster compilation:
+    ! - fort10_io.f90: Handles reading/writing of fort.10 files
+    ! - fort11_io.f90: Handles reading/writing of fort.11 files 
+    ! - read_datas.f90: Reads datas* control files
+    ! - read_pseudo.f90: Reads pseudopotential files
+    ! - memOP.f90: Default memory allocation/deallocation operations
+    ! - writeoutput.f90: Output writing operations
 
+    ! Contracts generalized Jastrow matrices
+    ! Parameters:
+    ! - nelorbh: Number of orbitals per spin channel
+    ! - nelorb_c: Number of contracted orbitals
+    ! - detmat: Output determinant matrix (2*nelorbh x 2*nelorbh)
+    ! - detmat_c: Input contracted determinant matrix (2*nelorb_c x 2*nelorb_c)
+    ! - mu_c: Contraction coefficients (nelorbh x nelorb_c)
+    ! - psip: Temporary workspace (nelorbh x nelorb_c)
     subroutine scontract_genj(nelorbh, nelorb_c         &
          &, detmat, detmat_c, mu_c, psip)
         implicit none
@@ -1960,28 +1969,43 @@ contains
 !    nprocu=1
 !#endif
         detmat = 0.d0
+        ! Contract up-up block: detmat(1:nelorbh, 1:nelorbh) = mu_c * detmat_c(1:nelorb_c, 1:nelorb_c) * mu_c^T
         call dgemm_my('N', 'N', nelorbh, nelorb_c, nelorb_c, 1.d0, mu_c, nelorbh  &
              &, detmat_c, 2*nelorb_c, 0.d0, psip, nelorbh, nprocu, rankopt, commopt_mpi)
         call dgemm_my('N', 'T', nelorbh, nelorbh, nelorb_c, 1.d0, psip, nelorbh   &
              &, mu_c, nelorbh, 0.d0, detmat, 2*nelorbh, nprocu, rankopt, commopt_mpi)
 !   down-down
+        ! Contract down-down block: detmat(nelorbh+1:2*nelorbh, nelorbh+1:2*nelorbh) = mu_c * detmat_c(nelorb_c+1:2*nelorb_c, nelorb_c+1:2*nelorb_c) * mu_c^T
         call dgemm_my('N', 'N', nelorbh, nelorb_c, nelorb_c, 1.d0, mu_c, nelorbh  &
        &, detmat_c(nelorb_c + 1, nelorb_c + 1), 2*nelorb_c, 0.d0, psip, nelorbh, nprocu, rankopt, commopt_mpi)
         call dgemm_my('N', 'T', nelorbh, nelorbh, nelorb_c, 1.d0, psip, nelorbh   &
        &, mu_c, nelorbh, 0.d0, detmat(nelorbh + 1, nelorbh + 1), 2*nelorbh, nprocu, rankopt, commopt_mpi)
 
 !   down-up
+        ! Contract down-up block: detmat(nelorbh+1:2*nelorbh, 1:nelorbh) = mu_c * detmat_c(nelorb_c+1:2*nelorb_c, 1:nelorb_c) * mu_c^T
         call dgemm_my('N', 'N', nelorbh, nelorb_c, nelorb_c, 1.d0, mu_c, nelorbh  &
        &, detmat_c(nelorb_c + 1, 1), 2*nelorb_c, 0.d0, psip, nelorbh, nprocu, rankopt, commopt_mpi)
         call dgemm_my('N', 'T', nelorbh, nelorbh, nelorb_c, 1.d0, psip, nelorbh   &
        &, mu_c, nelorbh, 0.d0, detmat(nelorbh + 1, 1), 2*nelorbh, nprocu, rankopt, commopt_mpi)
 !   up-down
+        ! Contract up-down block: detmat(1:nelorbh, nelorbh+1:2*nelorbh) = mu_c * detmat_c(1:nelorb_c, nelorb_c+1:2*nelorb_c) * mu_c^T
         call dgemm_my('N', 'N', nelorbh, nelorb_c, nelorb_c, 1.d0, mu_c, nelorbh  &
        &, detmat_c(1, nelorb_c + 1), 2*nelorb_c, 0.d0, psip, nelorbh, nprocu, rankopt, commopt_mpi)
         call dgemm_my('N', 'T', nelorbh, nelorbh, nelorb_c, 1.d0, psip, nelorbh   &
        &, mu_c, nelorbh, 0.d0, detmat(1, nelorbh + 1), 2*nelorbh, nprocu, rankopt, commopt_mpi)
     end subroutine scontract_genj
 
+    ! Contracts Jastrow matrices
+    ! Parameters:
+    ! - nelorbh: Number of orbitals per spin channel
+    ! - nelorb: Total number of orbitals
+    ! - nelcol: Number of columns
+    ! - nelorb_c: Number of contracted orbitals
+    ! - nelcol_c: Number of contracted columns
+    ! - detmat: Output determinant matrix (nelorb x nelcol)
+    ! - detmat_c: Input contracted determinant matrix (nelorb_c x nelcol_c)
+    ! - mu_c: Contraction coefficients (nelorbh x nelorb_c)
+    ! - psip: Temporary workspace (nelorbh x nelcol_c)
     subroutine scontract_mat_jas(nelorbh, nelorb, nelcol, nelorb_c         &
          &, nelcol_c, detmat, detmat_c, mu_c, psip)
         implicit none
@@ -1995,12 +2019,24 @@ contains
 !    nprocu=1
 !#endif
         detmat = 0.d0
+        ! Perform matrix contractions for Jastrow part: detmat = mu_c * detmat_c * mu_c^T
         call dgemm_my('N', 'N', nelorbh, nelcol_c, nelorb_c, 1.d0, mu_c, nelorbh  &
              &, detmat_c, nelorb_c, 0.d0, psip, nelorbh, nprocu, rankopt, commopt_mpi)
         call dgemm_my('N', 'T', nelorbh, nelorbh, nelorb_c, 1.d0, psip, nelorbh   &
              &, mu_c, nelorbh, 0.d0, detmat, nelorb, nprocu, rankopt, commopt_mpi)
     end subroutine scontract_mat_jas
 
+    ! Contracts determinant matrices
+    ! Parameters:
+    ! - nelorbh: Number of orbitals per spin channel
+    ! - nelorb: Total number of orbitals
+    ! - nelcol: Number of columns
+    ! - nelorb_c: Number of contracted orbitals
+    ! - nelcol_c: Number of contracted columns
+    ! - detmat: Output determinant matrix (ipc*ipf*nelorb x nelcol)
+    ! - detmat_c: Input contracted determinant matrix (ipc*nelorb_c x nelcol_c)
+    ! - mu_c: Contraction coefficients (ipc*ipf*nelorbh x nelorb_c)
+    ! - psip: Temporary workspace (ipf*ipc*nelorbh x nelcol_c)
     subroutine scontract_mat_det(nelorbh, nelorb, nelcol, nelorb_c         &
          &, nelcol_c, detmat, detmat_c, mu_c, psip)
         implicit none
@@ -2013,23 +2049,27 @@ contains
 !    nprocu=1
 !#endif
         if (ipc .eq. 2) then
+            ! Complex case: Use complex BLAS operations (zgemm_my)
             detmat = 0.d0
             call zgemm_my('N', 'N', ipf*nelorbh, nelcol_c, nelorb_c, (1.d0, 0.d0), mu_c, ipf*nelorbh  &
                  &, detmat_c, nelorb_c, (0.d0, 0.d0), psip, ipf*nelorbh, nprocu, rankopt, commopt_mpi)
             call zgemm_my('N', 'T', ipf*nelorbh, ipf*nelorbh, nelorb_c, (1.d0, 0.d0), psip, ipf*nelorbh   &
                  &, mu_c, ipf*nelorbh, (0.d0, 0.d0), detmat, ipf*nelorb, nprocu, rankopt, commopt_mpi)
             if (nelcol_c .gt. nelorb_c) then
+                ! Copy remaining columns for complex case
                 do i = nelorb_c + 1, nelcol_c
                     call zcopy(ipf*nelorbh, psip(1, i), 1, detmat(1, ipf*nelorb + i - nelorb_c), 1)
                 end do
             end if
         else
+            ! Real case: Use real BLAS operations (dgemm_my)
             detmat = 0.d0
             call dgemm_my('N', 'N', ipf*nelorbh, nelcol_c, nelorb_c, 1.d0, mu_c, ipf*nelorbh&
                  &, detmat_c, nelorb_c, 0.d0, psip, ipf*nelorbh, nprocu, rankopt, commopt_mpi)
             call dgemm_my('N', 'T', ipf*nelorbh, ipf*nelorbh, nelorb_c, 1.d0, psip, ipf*nelorbh&
                     &, mu_c, ipf*nelorbh, 0.d0, detmat, ipf*nelorb, nprocu, rankopt, commopt_mpi)
             if (nelcol_c .gt. nelorb_c) then
+                ! Copy remaining columns for real case
                 do i = nelorb_c + 1, nelcol_c
                     call dcopy(ipf*nelorbh, psip(1, i), 1, detmat(1, nelorb*ipf + i - nelorb_c), 1)
                 end do
@@ -2037,6 +2077,13 @@ contains
         end if
     end subroutine scontract_mat_det
 
+    ! Updates the k-point grid for periodic calculations
+    ! This subroutine:
+    ! 1. Initializes direct lattice vectors for periodic basis set
+    ! 2. Builds lattice vector map for basis set computation
+    ! 3. Optimizes number of vectors in summation
+    ! 4. Handles both real and complex wave functions
+    ! 5. Supports both open and periodic boundary conditions
     subroutine update_kgrid
         implicit none
         integer i, j, ii, jj, kk, ll, count1, count2, count1j, count2j, indpar, indparp, kboundi&
@@ -2046,19 +2093,18 @@ contains
         logical, external :: slaterorb
         logical not_found
         integer, dimension(:, :), allocatable :: kpip_sav
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Initialization of direct lattice vectors for building the
-! periodic basis set. The definition is the same employed in the
-! Crystal DFT code. This basis can be used for both real and complex
-! wave functions. In the case of complex wave function it can be used
-! for an open system too.
-! Use the keyword "PBC_C" in the first line of the wave function to enforce this option.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        ! Initialize direct lattice vectors for periodic basis set
+        ! Uses same definition as Crystal DFT code
+        ! Can be used for both real and complex wave functions
+        ! For complex wave functions, can also handle open systems
+        ! Use "PBC_C" keyword in wave function first line to enable
         if (allocated(kgrid)) deallocate (kgrid)
         if (allocated(kgrid_atom)) deallocate (kgrid_atom)
         ikshift = nshell
         if (abs(LBox) .eq. 3.d0) then
-            ! determine the maximum number of direct lattice vectors
+            ! Determine the maximum number of direct lattice vectors for each shell
+            ! This is based on the basis set parameters and cutoff criteria
             if (yes_crystalj) then
                 allocate (kshell_map(3, nshell + nshellj))
             else
@@ -2071,9 +2117,9 @@ contains
                 if (lepsbas .gt. 0.d0) then
                     do j = 1, 3
                         if (cellscale(j) .ne. 0.d0) then
-                            if (slaterorb(ioptorb(i))) then ! STO
+                            if (slaterorb(ioptorb(i))) then ! STO: Slater-type orbital
                                 kbound = 0.5d0 + (lepsbas/dupr(indparp)/metric_min)/cellscale(j)
-                            else ! GTO
+                            else ! GTO: Gaussian-type orbital
                                 kbound = 0.5d0 + (dsqrt(lepsbas/dupr(indparp))/metric_min)/cellscale(j)
                             end if
                             kshell_map(j, i) = kbound + 1
@@ -2087,15 +2133,16 @@ contains
                 indpar = indpar + nparam(i)
             end do
             if (yes_crystalj) then
+                ! Handle Jastrow functions with periodic boundary conditions
                 indpar = 0
                 do i = 1, nshellj
                     indparp = indpar + 1
                     if (lepsbas .gt. 0.d0 .and. ioptorbj(i) .ne. 200) then
                         do j = 1, 3
                             if (cellscale(j) .ne. 0.d0) then
-                                if (slaterorb(ioptorbj(i))) then ! STO
+                                if (slaterorb(ioptorbj(i))) then ! STO for Jastrow
                                     kbound = 0.5d0 + (lepsbas/vjur(indparp)/metric_min)/cellscale(j)
-                                else ! GTO
+                                else ! GTO for Jastrow
                                     kbound = 0.5d0 + (dsqrt(lepsbas/vjur(indparp))/metric_min)/cellscale(j)
                                 end if
                                 kshell_map(j, i + ikshift) = kbound + 1
@@ -2110,7 +2157,8 @@ contains
                 end do
             end if
 
-            ! build the lattice vector map needed to compute the basis set
+            ! Build the lattice vector map needed to compute the basis set
+            ! Allocate kgrid structures for shells and atoms
             if (yes_crystalj) then
                 allocate (kgrid(nshell + nshellj))
                 allocate (kgrid_atom(2*nion))
@@ -2119,10 +2167,12 @@ contains
                 allocate (kgrid_atom(nion))
             end if
 
+            ! Handle 1D and 2D systems by setting z and y components to zero
             if (yes2d .or. yes1d) kshell_map(3, :) = 0
             if (yes1d) kshell_map(2, :) = 0
 
             if (iespbc) then
+            ! Periodic boundary conditions: Build comprehensive grid for each ion
             do ii = 1, nion
                 kboundi_max = 0
                 do jj = adr_nion(ii), adr_nion(ii + 1) - 1
@@ -2137,6 +2187,7 @@ contains
                 kgrid(ii)%kpip(:, :) = 0
             end do
             if (yes_crystalj) then
+            ! Handle Jastrow functions for periodic boundary conditions
             do ii = 1, nion
                 kboundi_max = 0
                 do jj = adrj_nion(ii), adrj_nion(ii + 1) - 1
@@ -2151,6 +2202,7 @@ contains
             end do
             end if
             else
+            ! Open boundary conditions: Simple grid with only origin
             do i = 1, nshell
                 allocate (kgrid(i)%kpip(3, 1))
                 kgrid(i)%kpip(:, :) = 0
@@ -2162,6 +2214,8 @@ contains
             count2 = 0
 
             if (iespbc) then
+                ! Optimize the number of vectors in the summation to be inside a sphere
+                ! This reduces computational cost while maintaining accuracy
                 indpar = 0
                 do iii = 1, nion
                     kgrid_atom(iii)%dimshell = 0
@@ -2173,8 +2227,8 @@ contains
                         do kk = -kshell_map(3, i), kshell_map(3, i)
                             do jj = -kshell_map(2, i), kshell_map(2, i)
                                 do ii = -kshell_map(1, i), kshell_map(1, i)
-                                    ! optimize the number of vectors in the summation
-                                    ! to be inside a sphere.
+                                    ! Optimize the number of vectors in the summation
+                                    ! to be inside a sphere based on metric cutoff
                                     count2 = count2 + 1
 !In order to estimate a lower bound of exp(- Z_basis  |z|)
 !for each ii,jj,kk it is computed  the minimum distance of a point z from origin
@@ -2231,7 +2285,7 @@ contains
                         indpar = indpar + nparam(i)
                     end do ! end ii
                 end do ! end ion
-!       Shrink the memory allocated
+!       Shrink the memory allocated to optimize memory usage
                 maxdim = 0
                 do i = 1, nion
                     maxdim = max(maxdim, kgrid_atom(i)%dimshell)
@@ -2261,6 +2315,7 @@ contains
                 count1j = 0
                 count2j = 0
                 if (yes_crystalj) then
+                    ! Handle Jastrow functions with periodic boundary conditions
                     indpar = 0
                     do iii = 1, nion
                         kgrid_atom(iii + nion)%dimshell = 0
@@ -2272,8 +2327,8 @@ contains
                             do kk = -kshell_map(3, i + ikshift), kshell_map(3, i + ikshift)
                                 do jj = -kshell_map(2, i + ikshift), kshell_map(2, i + ikshift)
                                     do ii = -kshell_map(1, i + ikshift), kshell_map(1, i + ikshift)
-                                        ! optimize the number of vectors in the summation
-                                        ! to be inside a sphere.
+                                        ! Optimize the number of vectors in the summation
+                                        ! to be inside a sphere for Jastrow functions
                                         count2j = count2j + 1
 !  for each ii,jj,kk compute  the minimum distance of a point z from origin
 !    dist  = [ (x+ii Lx,y+jj Ly, z+kk Lz, metric (x+ii Lx, y+jj Ly, z+kk Lz)]
@@ -2332,7 +2387,7 @@ contains
                             indpar = indpar + nparamj(i)
                         end do ! ii
                     end do ! nion
-!       Shrink the memory allocated
+!       Shrink the memory allocated for Jastrow functions
                     maxdim = 0
                     do i = 1, nion
                         maxdim = max(maxdim, kgrid_atom(i + nion)%dimshell)
@@ -2361,6 +2416,7 @@ contains
                     deallocate (kpip_sav)
                 end if
             else
+                ! Open boundary conditions: Simple grid with only origin point
                 count1 = 0
                 do i = 1, nshell
                     kgrid(i)%dimshell = 1
@@ -2372,6 +2428,7 @@ contains
             end if
             deallocate (kshell_map)
             if (iespbc) then
+            ! Set up tobedone flags for efficient computation
             do ii = 1, nion
                 do jj = adr_nion(ii), adr_nion(ii + 1) - 1
                     i = ind_nion(jj)
@@ -2458,7 +2515,7 @@ contains
                 end if
 #endif
             end if
-!    kgrid%kpip is no longer needed
+!    kgrid%kpip is no longer needed after optimization
             do i = 1, nshell
                 if (allocated(kgrid(i)%kpip)) deallocate (kgrid(i)%kpip)
             end do
@@ -2470,30 +2527,79 @@ contains
         end if
     end subroutine update_kgrid
 
+    ! =============================================
+    ! norm_metric - Calculate Norm Using Metric Tensor
+    ! =============================================
+    ! Purpose: Calculates the norm of a 3D vector using a given metric tensor
+    ! 
+    ! Mathematical Definition:
+    ! ||r||_metric = sqrt(r^T * metric * r)
+    ! where r is a 3D vector and metric is a 3x3 symmetric matrix
+    !
+    ! Parameters:
+    ! - r: 3D position vector (input)
+    ! - metric: 3x3 metric tensor (input)
+    ! Returns: Norm of the vector in the given metric (real*8)
+    !
+    ! Algorithm:
+    ! 1. Compute quadratic form: r^T * metric * r
+    ! 2. Take square root with protection from roundoff errors
+    ! 3. Return the norm
+    !
+    ! Usage:
+    ! This function is used in periodic boundary condition calculations
+    ! to determine the distance between lattice points in a general metric
     function norm_metric(r, metric)
         implicit none
         real*8 norm_metric, r(3), metric(3, 3)
+        ! Calculate norm using metric tensor: ||r|| = sqrt(r^T * metric * r)
         norm_metric = metric(1, 1)*r(1)*r(1) + metric(2, 2)*r(2)*r(2) + metric(3, 3)*r(3)*r(3)&
                 & + 2.d0*(metric(1, 2)*r(1)*r(2) + metric(1, 3)*r(1)*r(3) + metric(2, 3)*r(2)*r(3))
-        norm_metric = dsqrt(max(norm_metric, 0.d0)) ! protection from roundoff
+        norm_metric = dsqrt(max(norm_metric, 0.d0)) ! Protection from roundoff errors
         return
     end
 
 end module allio
 
+! =============================================
+! prep_map - Prepare Mapping of Lattice Vectors
+! =============================================
+! Purpose: Prepares mapping of lattice vectors for periodic boundary condition calculations
+! 
+! Algorithm:
+! 1. For each coordinate (x, y, z), there are three possible minimum positions:
+!    - Current position (when coordinate is zero)
+!    - Lower boundary (-L/2)
+!    - Upper boundary (+L/2)
+! 2. This results in 27 possible combinations (3^3)
+! 3. The function generates all these combinations to find the minimum distance
+!
+! Mathematical Background:
+! When computing distances in periodic systems, the minimum distance
+! between two points can occur at different positions within the unit cell.
+! This subroutine explores all possible combinations to find the true minimum.
+!
+! Parameters:
+! - map_tmp: Array to store mapped vectors (3 x 3 x 3 x 3)
+! - cellscale: Cell scaling factors (3)
+!
+! Output:
+! - map_tmp: Contains all 27 possible vector positions for distance calculation
 subroutine prep_map(map_tmp, cellscale)
     implicit none
     real*8 map_tmp(3, 3, 3, 3), cellscale(3), cellhalf(3, 3)
     integer i, j, k
-! Here we should  find  the possible argmin of the metric.
-! For each coordinate there are two possibilities either the minimum is at  the
-! boundary +/- L/2 or the minimum is at the current position (when is zero).
-! Thus we end up with  27 possibilities 3 for each coordinate including
-! the input  map(:,1,1,1).
+    ! Find possible minimum of the metric
+    ! For each coordinate there are two possibilities:
+    ! 1. Minimum at boundary +/- L/2
+    ! 2. Minimum at current position (when zero)
+    ! Results in 27 possibilities (3 for each coordinate)
+    ! including the input map(:,1,1,1)
     cellhalf(:, 1) = 0.d0
     cellhalf(:, 2) = -cellscale(:)/2.d0
     cellhalf(:, 3) = cellscale(:)/2.d0
 
+    ! Generate all possible combinations of boundary conditions
     do i = 1, 3
         do j = 1, 3
             do k = 1, 3
