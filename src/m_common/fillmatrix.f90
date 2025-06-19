@@ -13,6 +13,44 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Matrix generation utilities for rotation matrices
+!>
+!> This module provides subroutines for generating rotation matrices used in
+!> quantum Monte Carlo calculations. It includes functions for creating
+!> random rotation matrices and rotation matrices around specific axes.
+!>
+!> The module implements algorithms for:
+!> - Generating random 3D rotation matrices with uniform distribution
+!> - Creating rotation matrices that preserve a given axis direction
+!> - Ensuring orthogonality and proper normalization of rotation matrices
+!>
+!> @author TurboRVB group (Sorella, Mazzola, Y. Luo)
+!> @version 1.0
+!> @date 2022
+
+!> @brief Generate rotation matrix preserving a given axis direction
+!>
+!> This subroutine creates a unitary rotation matrix that leaves unchanged
+!> the axis defined by the input vector vecr. The rotation is performed
+!> around this axis with a random angle.
+!>
+!> @param[in,out] rotmatrix 3x3 rotation matrix to be filled
+!> @param[in] vecr 3D vector defining the rotation axis
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Normalizes the input vector vecr to unit length
+!> 2. Constructs a complex anti-Hermitian matrix A from the normalized vector
+!> 3. Diagonalizes A to find eigenvalues and eigenvectors
+!> 4. Applies a random phase factor to the eigenvalues
+!> 5. Reconstructs the rotation matrix using the formula R = exp(i*A)
+!> 6. Multiplies the result with the existing rotation matrix
+!>
+!> @note The algorithm uses complex matrix diagonalization to ensure
+!>       proper rotation matrix properties
+!> @note The rotation angle is randomly chosen from [0, 2π]
+!> @note The input vector is automatically normalized if non-zero
+!> @note If the input vector is zero, the result is undefined
 subroutine fillmatrix_vec(rotmatrix, vecr)
 
     !      Written by Sorella, define a unitary matrix of a rotation (rotmatrix)
@@ -70,6 +108,32 @@ subroutine fillmatrix_vec(rotmatrix, vecr)
 
     return
 end
+
+!> @brief Generate random 3D rotation matrix with uniform distribution
+!>
+!> This subroutine creates a random 3x3 rotation matrix with uniform
+!> distribution over the SO(3) group. The algorithm generates three
+!> orthonormal vectors to form the rotation matrix columns.
+!>
+!> @param[out] rotmatrix 3x3 rotation matrix to be filled
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Generates a random unit vector x using spherical coordinates:
+!>    - Random cos(theta) from [-1, 1]
+!>    - Random phi from [0, 2π]
+!> 2. Finds a stable orthogonal vector y to x by choosing the component
+!>    with maximum magnitude and setting others appropriately
+!> 3. Applies a random rotation around the x-axis to y
+!> 4. Computes the third vector z as the cross product x × y
+!> 5. Normalizes all vectors and assembles the rotation matrix
+!>
+!> @note The algorithm ensures numerical stability by choosing the
+!>       largest component for orthogonalization
+!> @note The resulting matrix is guaranteed to be orthogonal with
+!>       determinant +1 (proper rotation)
+!> @note The distribution is uniform over the SO(3) group
+!> @note The subroutine includes error checking for orthogonality
 subroutine fillmatrix(rotmatrix)
 
     !      Written by Sorella, Mazzola and Y. Luo on 25/7/2013. Mitas

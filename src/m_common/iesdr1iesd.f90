@@ -13,6 +13,35 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Jastrow factor type mapping function for one-body terms
+!>
+!> This function maps Jastrow factor type codes (iesdr) to specific one-body
+!> Jastrow factor implementations used in quantum Monte Carlo calculations.
+!> It provides a standardized way to determine the appropriate one-body
+!> Jastrow factor type based on the input parameter.
+!>
+!> @param[in] iesdr Jastrow factor type code
+!> @return Integer code representing the specific one-body Jastrow factor type
+!>
+!> @details
+!> The function performs the following mapping:
+!> - iesdr = 0: No one-body Jastrow factor (return 0)
+!> - iesdr = -1: Type 1 one-body Jastrow factor
+!> - iesdr = -5: Type 1 one-body Jastrow factor
+!> - iesdr = -15: Type 4 one-body Jastrow factor (default short range)
+!> - iesdr = -6: Type 4 one-body Jastrow factor
+!> - iesdr = -7: Type 4 one-body Jastrow factor
+!> - iesdr = -17: Type 1 one-body Jastrow factor
+!> - iesdr = -20: Type 4 one-body Jastrow factor
+!> - iesdr = -21: Type 4 one-body Jastrow factor
+!> - Default: Type 4 one-body Jastrow factor (short range exponential)
+!>
+!> @note The function provides backward compatibility for different
+!>       Jastrow factor implementations in TurboRVB
+!> @note Type 4 corresponds to the default short range one-body exponential
+!>       Jastrow factor
+!> @note Type 1 corresponds to alternative one-body Jastrow factor forms
+!> @note The function is used in wave function setup and optimization
 function iesdr1iesd(iesdr)
     implicit none
     integer iesdr, iesdr1iesd

@@ -14,6 +14,32 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file fft_scalar.f90
+!> @brief FFT scalar drivers module for TurboRVB
+!> @details This module provides machine-dependent FFT routines for various
+!>          libraries including FFTW, FFTW3, ESSL, LINUX_ESSL, SCSL, SUNPERF,
+!>          NEC ASL and ACML. Supports both 3D serial execution and 1D+2D
+!>          FFTs for parallel execution (except NEC ASL which is 3D only).
+!> @author TurboRVB group (based on Quantum-ESPRESSO code)
+!> @author Original authors: Carlo Cavazzoni, P. Giannozzi
+!> @author Contributors: Martin Hilgemans, Guido Roma, Pascal Thibaudeau,
+!>                       Stephane Lefranc, Nicolas Lacorne, Filippo Spiga
+!> @date 2022 (based on 2001-2008 Quantum-ESPRESSO code)
+!> @section Features
+!> - Multiple FFT library support (FFTW, ESSL, etc.)
+!> - 1D, 2D, and 3D FFT operations
+!> - Parallel execution support
+!> - Plan caching for performance optimization
+!> - Machine-dependent optimizations
+!> @section Libraries
+!> Supported FFT libraries:
+!> - FFTW and FFTW3
+!> - ESSL and LINUX_ESSL
+!> - SCSL and SUNPERF
+!> - NEC ASL and ACML
+!=======================================================================
+
 !--------------------------------------------------------------------------!
 ! FFT scalar drivers Module - contains machine-dependent routines for: !
 ! FFTW, FFTW3, ESSL, LINUX_ESSL, SCSL, SUNPERF, NEC ASL and ACML libraries !
@@ -61,6 +87,20 @@ contains
     !
     !=----------------------------------------------------------------------=!
     !
+    !-----------------------------------------------------------------------
+    !> @brief Perform 1D complex FFT along z-direction
+    !> @details Driver routine for nsl 1D complex FFTs of length nz.
+    !>          Uses machine-specific FFT libraries with plan caching for
+    !>          optimal performance. Supports both forward and backward transforms.
+    !> @param[in,out] c Complex array to be transformed (in-place)
+    !> @param[in] nsl Number of 1D FFTs to perform
+    !> @param[in] nz Length of each 1D FFT
+    !> @param[in] ldz Leading dimension >= nz (used to reduce memory conflicts)
+    !> @param[in] isign Transform direction: >0 forward (G->R), <0 backward (R->G)
+    !> @note Up to ndims different FFT plans are cached and reused
+    !> @note Forward transform includes normalization factor 1/nz
+    !> @note Uses machine-specific FFT drivers (FFTW, ESSL, etc.)
+    !> @note Plan caching avoids repeated initialization overhead
     subroutine cft_1z(c, nsl, nz, ldz, isign)
         ! driver routine for nsl 1d complex fft's of length nz
         ! ldz >= nz is the distance between sequences to be transformed
@@ -135,6 +175,24 @@ contains
     !=----------------------------------------------------------------------=!
     !
     !
+    !-----------------------------------------------------------------------
+    !> @brief Perform 2D complex FFT along x and y directions
+    !> @details Driver routine for nzl 2D complex FFTs of lengths nx and ny.
+    !>          Performs FFT first along y-direction, then along x-direction.
+    !>          Uses machine-specific FFT libraries with plan caching for
+    !>          optimal performance.
+    !> @param[in,out] r Complex array to be transformed (in-place)
+    !> @param[in] nzl Number of 2D FFTs to perform
+    !> @param[in] nx Length of FFT along x-direction
+    !> @param[in] ny Length of FFT along y-direction
+    !> @param[in] ldx Leading dimension >= nx (physical x dimension)
+    !> @param[in] ldy Leading dimension >= ny (physical y dimension)
+    !> @param[in] isign Transform direction: >0 forward (G->R), <0 backward (R->G)
+    !> @note Up to ndims different FFT plans are cached and reused
+    !> @note Forward transform includes normalization factor 1/(nx*ny)
+    !> @note FFT performed as: y-direction first, then x-direction
+    !> @note Uses machine-specific FFT drivers (FFTW, ESSL, etc.)
+    !> @note Plan caching avoids repeated initialization overhead
     subroutine cft_2xy(r, nzl, nx, ny, ldx, ldy, isign)
         ! driver routine for nzl 2d complex fft's of lengths nx and ny
         ! input : r(ldx*ldy) complex, transform is in-place
@@ -216,6 +274,24 @@ contains
     !
     !=----------------------------------------------------------------------=!
     !
+    !-----------------------------------------------------------------------
+    !> @brief Perform 3D complex FFT
+    !> @details Driver routine for 3D complex FFT of lengths nx, ny, nz.
+    !>          Uses machine-specific FFT libraries with plan caching for
+    !>          optimal performance. Supports both forward and backward transforms.
+    !> @param[in,out] f Complex array to be transformed (in-place)
+    !> @param[in] nx Length of FFT along x-direction
+    !> @param[in] ny Length of FFT along y-direction
+    !> @param[in] nz Length of FFT along z-direction
+    !> @param[in] ldx Leading dimension >= nx (physical x dimension)
+    !> @param[in] ldy Leading dimension >= ny (physical y dimension)
+    !> @param[in] ldz Leading dimension >= nz (physical z dimension)
+    !> @param[in] isign Transform direction: >0 forward (G->R), <0 backward (R->G)
+    !> @note Up to ndims different FFT plans are cached and reused
+    !> @note Forward transform includes normalization factor 1/(nx*ny*nz)
+    !> @note Currently requires ldx=nx, ldy=ny, ldz=nz (not implemented for FFTW)
+    !> @note Uses machine-specific FFT drivers (FFTW, ESSL, etc.)
+    !> @note Plan caching avoids repeated initialization overhead
     subroutine cfft3d(f, nx, ny, nz, ldx, ldy, ldz, isign)
         ! driver routine for 3d complex fft of lengths nx, ny, nz
         ! input : f(ldx*ldy*ldz) complex, transform is in-place
@@ -292,6 +368,27 @@ contains
     !
     !=----------------------------------------------------------------------=!
     !
+    !-----------------------------------------------------------------------
+    !> @brief Perform 3D complex FFT with selective transformation
+    !> @details Driver routine for 3D complex "reduced" FFT that computes
+    !>          transforms only on lines and planes with non-zero elements.
+    !>          Uses do_fft_x and do_fft_y arrays to specify which transforms
+    !>          to perform (1=perform, 0=skip).
+    !> @param[in,out] f Complex array to be transformed (in-place)
+    !> @param[in] nx Length of FFT along x-direction
+    !> @param[in] ny Length of FFT along y-direction
+    !> @param[in] nz Length of FFT along z-direction
+    !> @param[in] ldx Leading dimension >= nx (physical x dimension)
+    !> @param[in] ldy Leading dimension >= ny (physical y dimension)
+    !> @param[in] ldz Leading dimension >= nz (physical z dimension)
+    !> @param[in] isign Transform direction: >0 forward (G->R), <0 backward (R->G)
+    !> @param[in] do_fft_x Array(ldy*nz) specifying which x-lines to transform
+    !> @param[in] do_fft_y Array(nz) specifying which y-planes to transform
+    !> @note Currently implemented for ESSL and FFTW libraries only
+    !> @note Forward transform includes normalization factor 1/(nx*ny*nz)
+    !> @note Requires ny=ldy for current implementation
+    !> @note Uses plan caching for optimal performance
+    !> @note Selective transformation can significantly reduce computation time
     subroutine cfft3ds(f, nx, ny, nz, ldx, ldy, ldz, isign, &
                        do_fft_x, do_fft_y)
         !
@@ -431,6 +528,25 @@ contains
     !
     !=----------------------------------------------------------------------=!
     !
+    !-----------------------------------------------------------------------
+    !> @brief Perform 3D complex FFT on box grid for parallel execution
+    !> @details Driver routine for 3D complex FFTs on box grid in parallel case.
+    !>          FFT along xy is done only on planes corresponding to dense grid
+    !>          planes on the current processor (imin3 <= nz <= imax3).
+    !> @param[in,out] f Complex array to be transformed (in-place)
+    !> @param[in] nx Length of FFT along x-direction
+    !> @param[in] ny Length of FFT along y-direction
+    !> @param[in] nz Length of FFT along z-direction
+    !> @param[in] ldx Leading dimension >= nx (physical x dimension)
+    !> @param[in] ldy Leading dimension >= ny (physical y dimension)
+    !> @param[in] ldz Leading dimension >= nz (physical z dimension)
+    !> @param[in] imin3 Minimum z-plane index for current processor
+    !> @param[in] imax3 Maximum z-plane index for current processor
+    !> @param[in] sgn Transform direction: 1 for f(R) => f(G) only
+    !> @note Currently implemented for ESSL, FFTW, SCSL, COMPLIB libraries
+    !> @note Only supports sgn=1 (forward transform) - backward not implemented
+    !> @note Uses ESSL sign convention (opposite of "usual" convention)
+    !> @note Only transforms planes imin3 <= nz <= imax3 for parallel efficiency
     subroutine cft_b(f, nx, ny, nz, ldx, ldy, ldz, imin3, imax3, sgn)
         ! driver routine for 3d complex fft's on box grid, parallel case
         ! fft along xy is done only on planes that correspond to dense grid
@@ -503,6 +619,14 @@ contains
     !=----------------------------------------------------------------------=!
     !
     !
+    !-----------------------------------------------------------------------
+    !> @brief Determine optimal FFT array dimensions
+    !> @details Determines the optimal maximum dimensions of FFT arrays.
+    !>          Useful on some machines to avoid memory conflicts.
+    !> @param[in] n Requested FFT dimension
+    !> @return Optimal FFT dimension (currently returns input value)
+    !> @note Default implementation returns the input dimension
+    !> @note Can be overridden for machine-specific optimizations
     integer function good_fft_dimension(n)
         !
         ! Determines the optimal maximum dimensions of fft arrays
@@ -521,6 +645,16 @@ contains
         return
     end function good_fft_dimension
     !=----------------------------------------------------------------------=!
+    !-----------------------------------------------------------------------
+    !> @brief Check if FFT dimension is suitable for optimal performance
+    !> @details Determines if the FFT dimension is a "good" one for optimal
+    !>          performance. Bad dimensions are either not implemented or
+    !>          implemented with poor performance.
+    !> @param[in] nr FFT dimension to check
+    !> @return .true. if dimension is good, .false. otherwise
+    !> @note Checks for factors 2, 3, 5, 7, 11
+    !> @note Considers factors > 11 as bad (not implemented or poor performance)
+    !> @note FFTW and most libraries: no factors 7 and 11 allowed
     function allowed(nr)
         ! find if the fft dimension is a good one
         ! a "bad one" is either not implemented (as on IBM with ESSL)
@@ -558,6 +692,18 @@ contains
         return
     end function allowed
     !=----------------------------------------------------------------------=!
+    !-----------------------------------------------------------------------
+    !> @brief Find optimal FFT order greater than or equal to input
+    !> @details Finds a "good" FFT order value greater than or equal to nr.
+    !>          Searches for the closest higher number that is suitable for
+    !>          optimal FFT performance.
+    !> @param[in] nr Tentative FFT order
+    !> @param[in] np Optional: restrict search to multiples of np
+    !> @return Optimal FFT order >= nr
+    !> @note FFT order is "bad" if not implemented or has poor performance
+    !> @note Maximum allowed order is nfftx (65537)
+    !> @note Uses allowed() function to check if dimension is suitable
+    !> @note If np is present, result must be multiple of np
     integer function good_fft_order(nr, np)
         !
         ! This function find a "good" fft order value grather or equal to "nr"

@@ -13,6 +13,42 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file fort11_io.f90
+!> @brief Fort.11 file I/O operations for TurboRVB
+!> @details This module handles reading and writing of fort.11 files,
+!>          which contain simulation state information for restart
+!>          and continuation of quantum Monte Carlo calculations.
+!> @author TurboRVB group
+!> @date 2022
+!> @section Features
+!> - Write simulation state to fort.11 for restart capability
+!> - Read simulation state from fort.11 for continuation
+!> - Handle various simulation parameters and arrays
+!> - Support for different simulation modes (VMC, LRDMC, etc.)
+!> - Compatibility checking between read and current parameters
+!> @section Files
+!> fort.11 contains:
+!> - Simulation parameters (nw, np, nmatb, etc.)
+!> - Walker configurations (wconfn)
+!> - Correlation weights (wcorw)
+!> - Kinetic energy derivatives (dek, dekg)
+!> - Ion velocities (velion)
+!> - CG optimization data (reduce)
+!> - Contraction matrices (detmat_proj, projmat_c)
+!=======================================================================
+
+!-----------------------------------------------------------------------
+!> @brief Write simulation header information to fort.11
+!> @details Writes the beginning section of fort.11 file containing
+!>          simulation parameters, dimensions, and control variables.
+!>          This includes walker counts, matrix dimensions, optimization
+!>          parameters, and convergence criteria.
+!> @note Rewinds unit 11 before writing
+!> @note Updates nmatb to nnozero_c for current simulation
+!> @note Writes rmax and rmaxj for scaling parameters
+!> @note Conditionally writes parr and tpar arrays if change_parr/change_tpar are enabled
+!> @note Handles adaptive parameter adjustment for optimization
 subroutine write_fort11_begin
     use allio
     implicit none
@@ -33,6 +69,17 @@ subroutine write_fort11_begin
 
 end subroutine write_fort11_begin
 
+!-----------------------------------------------------------------------
+!> @brief Write simulation data arrays to fort.11
+!> @details Writes the main simulation data arrays to fort.11 file,
+!>          including walker configurations, correlation weights,
+!>          kinetic energy derivatives, and optimization data.
+!> @note Writes different data sets based on itestr value
+!> @note Handles contraction matrices if contraction > 0
+!> @note Includes ion velocities for dynamics simulations (itestr = -5)
+!> @note Writes CG optimization data (reduce array) for parameter optimization
+!> @note Conditionally writes detmat_proj and projmat_c if allocated
+!> @note Writes covariance matrix (cov_old) if allocated
 subroutine write_fort11_end
     use allio
     implicit none
@@ -62,6 +109,18 @@ subroutine write_fort11_end
     if (allocated(cov_old)) write (11) cov_old
 end subroutine write_fort11_end
 
+!-----------------------------------------------------------------------
+!> @brief Read simulation header information from fort.11
+!> @details Reads the beginning section of fort.11 file containing
+!>          simulation parameters, dimensions, and control variables.
+!>          Performs compatibility checks and handles parameter updates.
+!> @note Rewinds unit 11 before reading
+!> @note Reads rmax and rmaxj if scalermax is enabled
+!> @note Handles adaptive parameter reading (parr, tpar) based on flags
+!> @note Updates parameters only if iopt = 0 (restart mode)
+!> @note Initializes tpar buffer if restarting with new tpar
+!> @note Sets error flag (iflagerr) if read fails
+!> @note Handles backward compatibility for parameter changes
 subroutine read_fort11_begin
     use allio
     implicit none
@@ -142,6 +201,15 @@ subroutine read_fort11_begin
     iflagerr = 1
 end subroutine read_fort11_begin
 
+!-----------------------------------------------------------------------
+!> @brief Read the end section of fort.11 file
+!> @details Reads the final section of the fort.11 file containing walker 
+!>          configurations, correlation weights, energy derivatives, velocities,
+!>          and optimization data. Performs validation of walker and processor 
+!>          counts between restart and current run.
+!> @note Handles different simulation modes (VMC, optimization, etc.)
+!> @note Reads contraction matrices if allocated and not averaging
+!> @note Sets error flag (iflagerr) if reading fails
 subroutine read_fort11_end
     use allio
     implicit none

@@ -13,6 +13,51 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Ion reference position optimization for periodic boundary conditions
+!>
+!> This module provides functionality for finding optimal reference positions
+!> for ions in periodic systems, particularly useful for quantum Monte Carlo
+!> calculations with periodic boundary conditions.
+!>
+!> The module includes:
+!> - Subroutine for finding optimal reference positions that maximize
+!>   minimum distances between ions
+!> - Function for computing periodic modulo operations
+!> - Algorithms for gap analysis in periodic coordinate systems
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Find optimal reference position for ions in periodic system
+!>
+!> This subroutine determines an optimal reference position that maximizes
+!> the minimum distance between ions in a periodic system. It analyzes the
+!> gaps between ion positions along a given direction and shifts the reference
+!> to the center of the largest gap.
+!>
+!> @param[in] nion Number of ions in the system
+!> @param[in] a Periodicity length along the direction of interest
+!> @param[in] rion Array of ion positions (3, nion)
+!> @param[in,out] ref Reference position (updated to optimal position)
+!> @param[out] mindist Minimum distance between ions after optimization
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Computes periodic coordinates for all ions using setint function
+!> 2. Sorts ions by their periodic coordinates
+!> 3. Calculates gaps between consecutive ions in periodic space
+!> 4. Handles the wrap-around gap between the last and first ion
+!> 5. Finds the largest gap and its center position
+!> 6. Shifts the reference position to the center of the largest gap
+!> 7. Updates mindist to half the largest gap size
+!>
+!> @note The subroutine works in 1D along the x-direction of ion positions
+!> @note For single ion systems, the gap is set to the full periodicity length
+!> @note The optimal reference maximizes the minimum distance between any two ions
+!> @note The subroutine modifies the input ref parameter to the optimal position
+!> @note mindist represents the radius of the largest possible sphere around
+!>       any ion that doesn't contain other ions
 subroutine findrionfref(nion, a, rion, ref, mindist)
     implicit none
     integer i, nion
@@ -74,6 +119,27 @@ subroutine findrionfref(nion, a, rion, ref, mindist)
     return
 end
 
+!> @brief Compute periodic modulo operation
+!>
+!> This function computes the periodic modulo operation, mapping any real
+!> number to the interval [0, a) where a is the periodicity length.
+!> It handles both positive and negative input values correctly.
+!>
+!> @param[in] x Input value to be mapped to periodic interval
+!> @param[in] a Periodicity length
+!> @return Real value in the interval [0, a)
+!>
+!> @details
+!> The function performs the following operations:
+!> 1. For positive x: computes x mod a using integer division
+!> 2. For negative x: computes (x + n*a + a) mod a where n = floor(-x/a)
+!> 3. Ensures the result is always in the interval [0, a)
+!>
+!> @note The function is equivalent to fmod(x, a) but handles negative
+!>       values correctly for periodic boundary conditions
+!> @note For x ≥ 0: result = x - floor(x/a) * a
+!> @note For x < 0: result = x + floor(-x/a) * a + a
+!> @note The result is always non-negative and less than a
 function setint(x, a)
     real*8 setint, x, a
     integer n

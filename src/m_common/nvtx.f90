@@ -13,15 +13,70 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * @brief NVTX profiling module for performance analysis
+ *
+ * This module provides an interface to NVIDIA Tools Extension (NVTX) for
+ * performance profiling and analysis. It allows marking code regions and
+ * events for visualization in NVIDIA profiling tools like Nsight Systems
+ * and Nsight Compute.
+ *
+ * @details
+ * The module provides the following functionality:
+ * - Range markers for profiling code sections
+ * - Custom colors for visual distinction
+ * - Event attributes for detailed profiling
+ * - C-compatible string handling for NVTX interface
+ * - Conditional compilation for NVTX support
+ *
+ * Key features:
+ * - Automatic color cycling for different regions
+ * - Support for custom event attributes
+ * - Integration with NVIDIA profiling tools
+ * - No performance impact when NVTX is disabled
+ * - Thread-safe profiling markers
+ *
+ * @note
+ * - Only available when _NVTX is defined
+ * - Requires NVIDIA GPU and compatible drivers
+ * - Used for performance analysis and optimization
+ * - No functionality when compiled without NVTX support
+ *
+ * @see nvtxStartRange(), nvtxEndRange()
+ *
+ * @author TurboRVB group
+ * @date 2022
+ */
 module nvtx
 
     use iso_c_binding
     implicit none
 
 #ifdef _NVTX
+    /**
+     * @brief Color array for NVTX range markers
+     *
+     * Array of predefined colors for NVTX range markers, providing
+     * visual distinction between different code regions in profiling tools.
+     * Colors are specified in ARGB format.
+     */
     integer, private :: col(7) = [Z'0000ff00', Z'000000ff', Z'00ffff00', Z'00ff00ff', Z'0000ffff', Z'00ff0000', Z'00ffffff']
+    
+    /**
+     * @brief Temporary character array for NVTX string handling
+     *
+     * Character array used for converting Fortran strings to C-style
+     * null-terminated strings for NVTX interface calls.
+     */
     character, private, target :: tempName(256)
 
+    /**
+     * @brief NVTX event attributes structure
+     *
+     * C-compatible structure for NVTX event attributes, used to specify
+     * custom properties for range markers including color, message, and
+     * payload information.
+     */
     type, bind(C) :: nvtxEventAttributes
         integer(c_int16_t) :: version = 1
         integer(c_int16_t) :: size = 48 !
@@ -35,6 +90,13 @@ module nvtx
         type(c_ptr) :: message ! ascii char
     end type
 
+    /**
+     * @brief Interface for NVTX range push operations
+     *
+     * Interface providing two methods for pushing NVTX range markers:
+     * - nvtxRangePushA: Simple range with custom label and standard color
+     * - nvtxRangePushEx: Range with custom label and custom color/attributes
+     */
     interface nvtxRangePush
         ! push range with custom label and standard color
         subroutine nvtxRangePushA(name) bind(C, name='nvtxRangePushA')
@@ -50,6 +112,12 @@ module nvtx
         end subroutine
     end interface
 
+    /**
+     * @brief Interface for NVTX range pop operations
+     *
+     * Interface for popping NVTX range markers, ending the current
+     * profiling range.
+     */
     interface nvtxRangePop
         subroutine nvtxRangePop() bind(C, name='nvtxRangePop')
         end subroutine
@@ -57,6 +125,30 @@ module nvtx
 
 contains
 
+    /**
+     * @brief Start an NVTX profiling range
+     *
+     * This subroutine starts an NVTX profiling range with the specified name.
+     * It can optionally use a custom color based on an ID parameter.
+     *
+     * @param[in] name Name of the profiling range (will be displayed in profiling tools)
+     * @param[in] id Optional ID for color selection (if not provided, uses standard color)
+     *
+     * @details
+     * The subroutine:
+     * 1. Converts the Fortran string to C-style null-terminated string
+     * 2. If ID is provided, creates custom event attributes with color
+     * 3. Calls appropriate NVTX function to start the range
+     * 4. Colors are cycled through a predefined array based on ID
+     *
+     * @note
+     * - Only available when _NVTX is defined
+     * - Colors cycle through 7 predefined colors
+     * - String is automatically null-terminated
+     * - No effect when NVTX is not available
+     *
+     * @see nvtxEndRange()
+     */
     subroutine nvtxStartRange(name, id)
         character(kind=c_char, len=*) :: name
         integer, optional :: id
@@ -80,6 +172,24 @@ contains
         end if
     end subroutine
 
+    /**
+     * @brief End the current NVTX profiling range
+     *
+     * This subroutine ends the current NVTX profiling range, marking
+     * the end of a code section for profiling analysis.
+     *
+     * @details
+     * The subroutine calls nvtxRangePop to end the current range
+     * and return to the previous profiling context.
+     *
+     * @note
+     * - Only available when _NVTX is defined
+     * - Must be called to match each nvtxStartRange call
+     * - No effect when NVTX is not available
+     * - No parameters required
+     *
+     * @see nvtxStartRange()
+     */
     subroutine nvtxEndRange
         call nvtxRangePop
     end subroutine

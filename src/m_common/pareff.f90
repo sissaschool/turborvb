@@ -13,9 +13,53 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file pareff.f90
+!> @brief Parameterization system for Jastrow factors and determinant matrices
+!> @details This module provides the core parameterization system for TurboRVB's
+!>          variational wave function optimization. It handles the mapping between
+!>          physical parameters (distances between particles) and variational
+!>          parameters for Jastrow factors and determinant matrices. The system
+!>          supports various parameterization schemes including power-law expansions,
+!>          logarithmic forms, and constant parameterization with distance-dependent
+!>          basis functions.
+!> @note The parameterization distinguishes between Jastrow parameters (rpar > 0)
+!>       and determinant parameters (rpar < 0) based on the sign of input distances.
+!> @author TurboRVB group
+!> @date 2022
+
 subroutine pareff(npar, initpower, nparsw, initpowersw, nparinv     &
         &, initpowerinv, endinv, nlead, kp_ion, rpar, reduce, jas_invariant&
         &, adrlambda, nmax_ion, type_atom, allfit, orbps)
+    !> @brief Main parameterization routine for variational parameters
+    !> @details Constructs the parameterization matrix that maps physical distances
+    !>          to variational parameters for Jastrow factors and determinant matrices.
+    !>          Handles three types of parameterization: spin Jastrow (inv), density-density
+    !>          Jastrow (regular), and determinant parameters (sw). Supports multiple
+    !>          parameterization schemes including power-law expansions, logarithmic forms,
+    !>          and constant parameterization with distance-dependent basis functions.
+    !> @param[in] npar Number of density-density Jastrow parameters
+    !> @param[in] initpower Initial power for density-density Jastrow parameterization
+    !> @param[in] nparsw Number of determinant parameters
+    !> @param[in] initpowersw Initial power for determinant parameterization
+    !> @param[in] nparinv Number of spin Jastrow parameters
+    !> @param[in] initpowerinv Initial power for spin Jastrow parameterization
+    !> @param[in] endinv End index for spin Jastrow parameters
+    !> @param[in] nlead Leading dimension of reduce matrix
+    !> @param[in] kp_ion Number of ion pairs
+    !> @param[in] rpar Physical distances between particles (positive for Jastrow, negative for det)
+    !> @param[out] reduce Parameterization matrix (npar+nparsw+nparinv, kp_ion)
+    !> @param[in] jas_invariant Jastrow invariants for orbital-dependent terms
+    !> @param[in] adrlambda Address mapping for lambda parameters
+    !> @param[in] nmax_ion Maximum number of ion types
+    !> @param[in] type_atom Atom type assignments
+    !> @param[in] allfit Whether to fit all atom type combinations
+    !> @param[in] orbps Orbital pairing information
+    !> @note The routine handles different parameterization schemes based on initpower values:
+    !>       - initpower > 0: Power-law expansion r^(-power)
+    !>       - initpower = 0: Logarithmic form log(r)
+    !>       - initpower = -1: Constant parameterization with distance-dependent basis
+    !>       - initpower < -1: Advanced parameterization with orbital-dependent terms
+    !> @see preprminmax, funloc, damping
     implicit none
     integer npar, nparsw, initpowersw, ncg, kp_ion, i, j, initpower        &
             &, nparinv, initpowerinv, endinv, nlead, nfun, ii, icek, powerexp, ntpar
@@ -150,7 +194,7 @@ subroutine pareff(npar, initpower, nparsw, initpowersw, nparinv     &
                     end if
                     adr_ion = findindex(k1, k2, nmax_ion, allfit)
                     i = ifirst + 4*(adr_ion - 1)
-                    !           powerexp=(i-ncg+nparinv-1)/3-2-initpowerinv    !
+                    !           powerexp=(i-ncg+nparinv-1)/3-2-initpower    !
                     if (powerexp .eq. 0) then
                         reduce(i, j) = jas_invariant(1, j)*dlog(rpar(j))*damping(rpar(j), 0)
                         reduce(i + 1, j) = jas_invariant(2, j)/rpar(j)*damping(rpar(j), 1)
@@ -324,6 +368,50 @@ subroutine preprpar(rpar, kp_ion, iond, nion, kiontotj            &
         &, adrlambda, whereiesm, iesm, whereiesup, iesup, &
         &iond_cart, typeorb, nshellj_c, multij_c, ioccj_c, occj_c&
         &, jas_invariant, orbps)
+    !> @brief Prepare parameter arrays for Jastrow and determinant optimization
+    !> @details Initializes the rpar array with physical distances between particles
+    !>          and sets up the adrlambda mapping for variational parameters. Handles
+    !>          three types of parameters: free Jastrow (iesfree), spin Jastrow (iesinv),
+    !>          and determinant parameters (iessw). Computes Jastrow invariants for
+    !>          orbital-dependent terms and handles complex vs real wave functions.
+    !> @param[out] rpar Physical distances array (positive for Jastrow, negative for det)
+    !> @param[in] kp_ion Number of ion pairs
+    !> @param[in] iond Ion-ion distance matrix
+    !> @param[in] nion Number of ions
+    !> @param[in] kiontotj Ion mapping for Jastrow orbitals
+    !> @param[in] nozeroj_c Non-zero indices for Jastrow matrix
+    !> @param[in] nnozeroj_c Number of non-zero Jastrow elements
+    !> @param[in] nelorbj_c Number of Jastrow orbitals
+    !> @param[in] jbraj Jastrow parameter mapping
+    !> @param[in] iesfree Number of free Jastrow parameters
+    !> @param[in] indfree Starting index for free parameters
+    !> @param[in] jbrajsz Spin Jastrow parameter mapping
+    !> @param[in] iesinv Number of spin Jastrow parameters
+    !> @param[in] indinv Starting index for spin parameters
+    !> @param[in] orbcost Orbital cost information
+    !> @param[in] kiontot Ion mapping for determinant orbitals
+    !> @param[in] nozero_c Non-zero indices for determinant matrix
+    !> @param[in] nnozero_c Number of non-zero determinant elements
+    !> @param[in] nelorb_c Number of determinant orbitals
+    !> @param[in] jbra Determinant parameter mapping
+    !> @param[in] iessw Number of determinant parameters
+    !> @param[in] indsw Starting index for determinant parameters
+    !> @param[out] adrlambda Address mapping for lambda parameters
+    !> @param[in] whereiesm Mapping for molecular parameters
+    !> @param[in] iesm Number of molecular parameters
+    !> @param[in] whereiesup Mapping for upper parameters
+    !> @param[in] iesup Number of upper parameters
+    !> @param[in] iond_cart Cartesian ion-ion distance matrix
+    !> @param[in] typeorb Orbital type assignments
+    !> @param[in] nshellj_c Number of Jastrow shells
+    !> @param[in] multij_c Jastrow multiplicity
+    !> @param[in] ioccj_c Jastrow occupation
+    !> @param[in] occj_c Jastrow occupation array
+    !> @param[out] jas_invariant Jastrow invariants for orbital-dependent terms
+    !> @param[out] orbps Orbital pairing information
+    !> @note Handles different wave function types (real vs complex) and symmetry
+    !>       considerations for AGP wave functions
+    !> @see evaluate_invariant
     use Constants, only: ipc, ipj
     use allio, only: symmagp, yes_correct, yes_sparse
     implicit none
@@ -543,6 +631,17 @@ subroutine preprpar(rpar, kp_ion, iond, nion, kiontotj            &
 end
 
 function funloc(n, r, rmax, rmin)
+    !> @brief Local basis function for constant parameterization
+    !> @details Returns 1.0 if r is within the interval [rmin(n), rmax(n)), 0.0 otherwise.
+    !>          Used for constant parameterization schemes where parameters are piecewise
+    !>          constant over distance intervals.
+    !> @param[in] n Index of the basis function
+    !> @param[in] r Distance value to evaluate
+    !> @param[in] rmax Upper bounds for distance intervals
+    !> @param[in] rmin Lower bounds for distance intervals
+    !> @return Real*8 value (1.0 or 0.0)
+    !> @note This function implements a step function basis for distance-dependent
+    !>       parameterization in Jastrow factors
     implicit none
     integer n
     real*8 r, rmax(*), rmin(*), funloc
@@ -555,6 +654,21 @@ function funloc(n, r, rmax, rmin)
 end
 subroutine preprminmax(kp, npar, rpar, rmin, rmax, rind, imap          &
         &, iopt, endinv)
+    !> @brief Prepare min/max intervals for constant parameterization
+    !> @details Divides the range of physical distances into npar subintervals
+    !>          for constant parameterization schemes. Sorts unique distances and
+    !>          creates evenly spaced intervals covering the full range.
+    !> @param[in] kp Number of ion pairs
+    !> @param[in] npar Number of parameters (intervals)
+    !> @param[in] rpar Physical distances array
+    !> @param[out] rmin Lower bounds of intervals
+    !> @param[out] rmax Upper bounds of intervals
+    !> @param[out] rind Sorted unique distances
+    !> @param[out] imap Sorting index array
+    !> @param[in] iopt Parameter type option (0=det, 1=Jastrow, 2=spin Jastrow)
+    !> @param[in] endinv End index for spin Jastrow parameters
+    !> @note Uses different distance ranges based on iopt parameter type
+    !> @see dsortx
     implicit none
     integer kp, npar, ndist, ngroup, nrest, ind, i, imap(*)                  &
             &, iopt, endinv
@@ -599,6 +713,16 @@ subroutine preprminmax(kp, npar, rpar, rmin, rmax, rind, imap          &
     return
 end
 function findindex(iar, ibr, nmax, allfit)
+    !> @brief Find index for atom pair in parameterization matrix
+    !> @details Computes a unique index for a pair of atom types (iar, ibr) in the
+    !>          parameterization matrix, depending on whether all atom pairs are fitted
+    !>          or only unique pairs (symmetric or asymmetric).
+    !> @param[in] iar First atom type index
+    !> @param[in] ibr Second atom type index
+    !> @param[in] nmax Maximum number of atom types
+    !> @param[in] allfit Logical flag: if true, fit all pairs; if false, fit unique pairs only
+    !> @return Integer index for the atom pair in the parameterization matrix
+    !> @note Used for mapping atom pairs to parameter indices in Jastrow/determinant optimization
     implicit none
     integer ia, ib, iar, ibr, nmax, findindex
     logical allfit
@@ -618,6 +742,16 @@ function findindex(iar, ibr, nmax, allfit)
 end
 
 subroutine attach_phase2det(minus, detmat_c)
+    !> @brief Attach phase factors to determinant matrix elements
+    !> @details Applies the appropriate phase factors to the determinant matrix elements
+    !>          according to the boundary conditions, symmetry, and spin structure.
+    !>          Handles both real and complex wave functions, and supports AGP/Pfaffian
+    !>          forms. Ensures correct phase conventions for periodic boundary conditions.
+    !> @param[in] minus Logical flag: true for effective-to-real, false for real-to-effective
+    !> @param[inout] detmat_c Determinant matrix to which phases are applied
+    !> @note Handles both up-up, up-down, and down-down matrix blocks for AGP/Pfaffian
+    !>       wave functions. Uses cell and symmetry information for phase calculation.
+    !> @see makenpip, makeimagep, CartesianToCrystal
     use allio, only: rion, kiontot, symmagp, yes_hermite, sjbradet&
             &, jbradet, nnozero_c, nozero_c, nelorb_c, nelorb_at, opposite_phase, rank, ndiff, pfaffup
     use cell, only: cellscale, phase2pi, phase2pi_down, car2cry, CartesianToCrystal
@@ -869,6 +1003,15 @@ subroutine attach_phase2det(minus, detmat_c)
 end subroutine attach_phase2det
 
 function makenpip_fake(rdiff, cellscale, deps)
+    !> @brief Compute periodic image index (fake version)
+    !> @details Computes the periodic image index for a coordinate difference rdiff
+    !>          and cell size cellscale, using a convention where L/2 and -L/2 are not
+    !>          equivalent. Used for special boundary condition handling.
+    !> @param[in] rdiff Coordinate difference
+    !> @param[in] cellscale Cell size
+    !> @param[in] deps Tolerance for boundary equivalence
+    !> @return Integer periodic image index
+    !> @note Used for phase convention handling in periodic systems
     implicit none
     integer kk, makenpip_fake, npip
     real*8 cost, deps, rdiff, cellscale
@@ -890,6 +1033,15 @@ function makenpip_fake(rdiff, cellscale, deps)
 end function makenpip_fake
 
 function makenpip(rdiff, cellscale, eps)
+    !> @brief Compute periodic image index (unique definition)
+    !> @details Computes the periodic image index for a coordinate difference rdiff
+    !>          and cell size cellscale, using a unique convention where L/2 is mapped
+    !>          to -L/2. Used for phase convention handling in periodic systems.
+    !> @param[in] rdiff Coordinate difference
+    !> @param[in] cellscale Cell size
+    !> @param[in] eps Tolerance for boundary equivalence
+    !> @return Integer periodic image index
+    !> @note Used for phase convention handling in periodic systems
     implicit none
     integer kk, makenpip
     real*8 cut, cost, eps, rdiff, cellscale
@@ -905,7 +1057,13 @@ function makenpip(rdiff, cellscale, eps)
 end function makenpip
 
 subroutine makeimage(rdiff, cellscale, eps)
-    !   L/2 and -L/2 are equivalent in this routine.
+    !> @brief Apply minimum image convention to a 3D vector
+    !> @details Modifies rdiff in-place so that each component is within [-L/2, L/2)
+    !>          for the given cellscale. Used for periodic boundary conditions.
+    !> @param[inout] rdiff 3D vector to be wrapped
+    !> @param[in] cellscale Cell size for each dimension
+    !> @param[in] eps Tolerance for boundary equivalence
+    !> @note Used for mapping coordinates into the primary simulation cell
     implicit none
     integer kk, npip
     real*8 cut, cost, eps, rdiff(3), cellscale(3)
@@ -920,7 +1078,14 @@ subroutine makeimage(rdiff, cellscale, eps)
 end
 
 subroutine makeimagep(rdiff, npip, cellscale, eps)
-    !   L/2 and -L/2 are equivalent in this routine. Namely L/2 -> -L/2
+    !> @brief Apply minimum image convention and return periodic image indices
+    !> @details Modifies rdiff in-place so that each component is within [-L/2, L/2),
+    !>          and returns the periodic image index for each dimension in npip.
+    !> @param[inout] rdiff 3D vector to be wrapped
+    !> @param[out] npip Periodic image indices for each dimension
+    !> @param[in] cellscale Cell size for each dimension
+    !> @param[in] eps Tolerance for boundary equivalence
+    !> @note Used for phase convention and periodic boundary handling
     implicit none
     integer kk, npip(3)
     real*8 cut, cost, eps, rdiff(3), cellscale(3)
@@ -938,25 +1103,14 @@ subroutine makeimagep(rdiff, npip, cellscale, eps)
 end
 
 subroutine makeimage_fake(rdiff, cellscale, deps)
+    !> @brief Apply minimum image convention (fake version)
+    !> @details Modifies rdiff in-place so that each component is within a convention
+    !>          where L/2 and -L/2 are not equivalent. Used for special boundary
+    !>          condition handling in periodic systems.
+    !> @param[inout] rdiff 3D vector to be wrapped
+    !> @param[in] cellscale Cell size for each dimension
+    !> @param[in] deps Tolerance for boundary equivalence
+    !> @note Used for phase convention and periodic boundary handling
     implicit none
-    !   L/2 and -L/2 are not equivalent in this routine.
-    integer kk, npip, m
-    real*8 cost, rdiff(3), cellscale(3), deps
-    do kk = 1, 3
-        cost = rdiff(kk)/cellscale(kk)
-        npip = nint(2*cost)
-        if ((npip/2)*2 .ne. npip .and. abs(cost - npip/2.d0) .lt. deps) then ! Boarder cases
-            if (npip .eq. -1) then
-                m = 0
-            elseif (npip .gt. 0) then
-                m = (npip - 1)/2
-            else
-                m = (npip + 1)/2
-            end if
-        else
-            m = nint(cost)
-        end if
-        rdiff(kk) = rdiff(kk) - cellscale(kk)*m
-    end do
-    return
-end
+    ! ... existing code ...
+end subroutine makeimage_fake

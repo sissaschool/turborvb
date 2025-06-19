@@ -13,25 +13,37 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-! This module contains the definition of some physical constants
-
-! Note about measure units: the program works internally with atomic units:
-!   lenght -> bohr radius   (= 0.52917 angstrom)
-!   energy -> hartree       (= 27.211383 eV)
-!   mass   -> electron mass   9.10938291*10^-31 Kg
-!   unit mass = 1/12 C_12     1.660538921*10^-27 Kg
-!   time   -> 2.4188843e-17 s
-!
-! Instead the units used for reading and writing the result are:
-!   length -> angstrom
-!   energy -> eV
-!   mass   -> amu (= 1/12 Carbon mass)
-!   time   -> fs  (1e-15 s)
-!   press  -> kbar
+!> @brief Physical and mathematical constants for quantum Monte Carlo calculations
+!>
+!> This module defines all physical constants, mathematical constants, and unit
+!> conversion factors used throughout the TurboRVB codebase for quantum Monte Carlo
+!> calculations in atomic and molecular systems.
+!>
+!> @note About measurement units: The program works internally with atomic units:
+!> - Length → Bohr radius (= 0.52917 Å)
+!> - Energy → Hartree (= 27.211383 eV)
+!> - Mass → Electron mass (9.10938291×10⁻³¹ kg)
+!> - Unit mass = 1/12 C₁₂ (1.660538921×10⁻²⁷ kg)
+!> - Time → 2.4188843×10⁻¹⁷ s
+!>
+!> Input/output units are:
+!> - Length → Ångström
+!> - Energy → eV
+!> - Mass → amu (= 1/12 Carbon mass)
+!> - Time → fs (10⁻¹⁵ s)
+!> - Pressure → kbar
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
 
 module Constants
     implicit none
 
+    !> @brief Fundamental mathematical constants
+    !> @details
+    !> These constants provide high-precision values for common mathematical
+    !> constants used in quantum mechanical calculations and numerical algorithms.
     double precision, parameter :: PI = 3.14159265358979323846d0
     double precision, parameter :: TWO_PI = 6.28318530717958647692d0
     double precision, parameter :: PI2 = 9.86960440108935861881d0 !pi^2
@@ -46,6 +58,10 @@ module Constants
     double precision, parameter :: INV_SQRT2 = 0.70710678118654752440d0 !1/sqrt(2)
     double precision, parameter :: M_2_SQRTPI = 1.1283791670955125738961589031215452d0 ! 2/sqrt(pi)
 
+    !> @brief Unit conversion factors
+    !> @details
+    !> These constants provide conversion factors between atomic units and
+    !> commonly used units for input/output and analysis.
     double precision, parameter :: length_unit = 0.5291772109d0
     double precision, parameter :: energy_unit = 27.211386245988d0
     double precision, parameter :: mass_unit = 5.4857990901d-4  !  m_e/unit mass (Dalton)
@@ -64,6 +80,10 @@ module Constants
     double precision, PARAMETER :: one_54 = 0.018518518518518518516d0
     double precision, PARAMETER :: four_9 = 0.44444444444444444444d0
 
+    !> @brief 1s orbital normalization constants
+    !> @details
+    !> Constants for Slater Type Orbital (STO) 1s orbitals with proper cusp conditions.
+    !> These ensure correct normalization and behavior at the nucleus.
     !     1s orbital, STO with cusp condition
     !       double precision, parameter :: b1s=3.d0
     !       double precision, parameter :: cost1s = 0.587719
@@ -84,12 +104,20 @@ module Constants
     double precision, parameter :: costSTO1s_a = 1.2263393530877080588d0
     double precision, parameter :: costSTO1s_c = 0.58542132302621750732d0
 
+    !> @brief 3d orbital normalization constants
+    !> @details
+    !> Constants for 3d orbitals without cusp conditions.
+    !> These ensure proper normalization of d-orbital components.
     !     3d without cusp condition
     !     cost1d=0.5 cost2d=dsqrt(3.d0)*cost1d cost3d=2.d0*cost2d
     double precision, parameter :: cost1d = 0.5d0
     double precision, parameter :: cost2d = 0.866025403784439d0
     double precision, parameter :: cost3d = 1.73205080756888d0
 
+    !> @brief 4f orbital normalization constants
+    !> @details
+    !> Constants for 4f orbitals ensuring proper normalization of f-orbital components.
+    !> These are derived from spherical harmonic normalization factors.
     !     4f norm coeff
     !     cost1f=0.5 cost2f=dsqrt(6.d0)/2.d0*cost1f
     !     cost3f=dsqrt(15.d0)*cost1f
@@ -99,6 +127,10 @@ module Constants
     double precision, parameter :: cost3f = 1.93649167310371d0
     double precision, parameter :: cost4f = 0.790569415042095d0
 
+    !> @brief 5g orbital normalization constants
+    !> @details
+    !> Constants for 5g orbitals ensuring proper normalization of g-orbital components.
+    !> These are derived from spherical harmonic normalization factors.
     !     5g norm coeff
     !     cost1g=1.d0/8.d0
     !     cost2g=sqrt(5.d0/2.d0)/2.d0
@@ -112,6 +144,10 @@ module Constants
     double precision, parameter :: cost4g = 2.09165006633518d0
     double precision, parameter :: cost5g = 0.73950997288745d0
 
+    !> @brief 6h orbital normalization constants
+    !> @details
+    !> Constants for 6h orbitals ensuring proper normalization of h-orbital components.
+    !> These are derived from spherical harmonic normalization factors.
     !     6h norm coeff
     !     cost1h=sqrt(11/pi)/16
     !     cost2h=sqrt(165/4pi)/16 x 2
@@ -127,6 +163,10 @@ module Constants
     double precision, parameter :: cost5h = 2.07566231488104d0
     double precision, parameter :: cost6h = 0.656382056840170d0
 
+    !> @brief 7i orbital normalization constants
+    !> @details
+    !> Constants for 7i orbitals ensuring proper normalization of i-orbital components.
+    !> These are derived from spherical harmonic normalization factors.
 !    cost1i= 1/32 sqrt[13/pi]
 !    cost2i= 1/16 sqrt[273/pi]
 !    cost3i= 1/64 sqrt[2x1365/pi]
@@ -142,7 +182,11 @@ module Constants
     double precision, parameter :: cost6i = 2.3666191622317520320d0
     double precision, parameter :: cost7i = .68318410519191432197d0
 
-
+    !> @brief Orbital contraction ratios for different angular momenta
+    !> @details
+    !> These constants define the contraction ratios used in basis set optimization
+    !> for different orbital types (s, p, d, f, g, h, i). They control the
+    !> spatial extent and shape of contracted Gaussian orbitals.
     !       double precision, parameter :: ratios=1.01376055947381d0
     double precision, parameter :: ratios = 0.722512696367119d0
     !      double precision, parameter :: ratiop=1.03390156130503d0
@@ -156,6 +200,11 @@ module Constants
     double precision, parameter :: ratioh = 1.24430440600566d0
     double precision, parameter :: ratioi = 1.34472087186923d0
 
+    !> @brief Core orbital contraction ratios
+    !> @details
+    !> These constants define the contraction ratios specifically for core orbitals
+    !> of different angular momenta. They are optimized for representing tightly
+    !> bound core electrons in atomic and molecular calculations.
     double precision, parameter :: ratiocs = 0.31777059276736856d0
     double precision, parameter :: ratiocp = 0.28173307010611937d0
     double precision, parameter :: ratiocd = 0.12400006759498713d0
@@ -164,6 +213,11 @@ module Constants
     double precision, parameter :: ratioch = 0.00220715840582833d0
     double precision, parameter :: ratioci = 0.000579955493883660d0
 
+    !> @brief Precision and data type parameters
+    !> @details
+    !> These parameters define the precision levels and data types used throughout
+    !> the codebase, ensuring consistent numerical precision across different
+    !> platforms and compilers.
 #ifdef __PORT
     integer, parameter :: qp = 8
 #else
@@ -176,11 +230,20 @@ module Constants
             &, nelorbh_ip, nmol_ip
 
     logical yes_ontarget
+    !> @brief Fermi function steepness parameter
+    !> @details
+    !> Controls the steepness of the Fermi function used for computing bump orbitals
+    !> in the 8xx orbital series. This parameter affects the smoothness of orbital
+    !> transitions and numerical stability.
     ! steepness of the Fermi function for computing bump orbitals 8xx
     double precision, parameter :: steep_fd = 0.005d0
     !      To be defined in Initializeall
     double precision safemin, epsmach
 
+    !> @brief Complex number constants
+    !> @details
+    !> Predefined complex constants commonly used in quantum mechanical calculations,
+    !> including zero, unity, imaginary unit, and their combinations.
     ! complex numbers
     complex(8), parameter :: zzero = dcmplx(0.d0, 0.d0)
     complex(8), parameter :: zone = dcmplx(1.d0, 0.d0)

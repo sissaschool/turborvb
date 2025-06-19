@@ -13,6 +13,57 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file evaluate_invariant.f90
+!> @brief Evaluate orbital invariants for Jastrow or symmetry-adapted wave functions.
+!>
+!> This file provides a subroutine to compute invariants (such as s-s, s-p, p-p)
+!> between two orbitals, which are used in the construction of Jastrow factors or
+!> symmetry-adapted wave functions in quantum Monte Carlo calculations. The invariants
+!> are determined based on the types of the two orbitals and their relative position vector.
+!>
+!> @author TurboRVB group
+!> @date 2022
+!>
+!> @section Usage
+!> Typically used in the evaluation of Jastrow factors or when constructing
+!> symmetry-adapted basis functions for correlated wave functions.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call evaluate_invariant(vec_r, ix, iy, typeorb, jas_invariant, orbps)
+!> @endcode
+
+!-------------------------------------------------------------------------------
+!> @brief Evaluate invariants between two orbitals for Jastrow or symmetry purposes.
+!>
+!> This subroutine computes a set of invariants (e.g., s-s, s-p, p-p) between two orbitals
+!> based on their types and the relative position vector. These invariants are used in the
+!> construction of Jastrow factors or symmetry-adapted wave functions.
+!>
+!> @param[in] vec_r Relative position vector between the two orbitals (length >= 3)
+!> @param[in] ix Index of the first orbital
+!> @param[in] iy Index of the second orbital
+!> @param[in] typeorb Array specifying the type of each orbital (0=s, 1-3=p_x/p_y/p_z)
+!> @param[out] jas_invariant Array of computed invariants (length 4)
+!> @param[out] orbps Logical flag, true if the order of orbitals is s-p (for symmetry)
+!>
+!> The invariants are:
+!>   - jas_invariant(1): s-s overlap (always 1 if both are s)
+!>   - jas_invariant(2): s-p or p-s overlap (component of vec_r)
+!>   - jas_invariant(3): p-p overlap (product of components)
+!>   - jas_invariant(4): 1 if both p orbitals are the same, 0 otherwise
+!>
+!> @note The routine is designed for use in QMC codes where orbital symmetry and
+!>       Jastrow factor construction require such invariants.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: vec_r(3), jas_invariant(4)
+!>   integer :: typeorb(2)
+!>   logical :: orbps
+!>   typeorb = [0, 1]  ! s and p_x
+!>   call evaluate_invariant(vec_r, 1, 2, typeorb, jas_invariant, orbps)
+!> @endcode
 subroutine evaluate_invariant(vec_r, ix, iy, typeorb, jas_invariant, orbps)
     implicit none
 

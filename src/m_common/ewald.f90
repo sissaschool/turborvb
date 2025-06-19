@@ -14,9 +14,25 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !=======================================================================
-! This module contains all the data structures and subrotuines
-! needed for performing the Ewald summation of the long-range Coulomb
-! potential. Its need information about the supercell, and particles.
+!> @file ewald.f90
+!> @brief Ewald summation module for long-range Coulomb interactions in periodic systems
+!> @details This module implements the Ewald summation method for efficiently computing
+!>          long-range Coulomb interactions in periodic boundary conditions. It provides
+!>          both real-space and reciprocal-space contributions to the electrostatic energy,
+!>          along with self-energy corrections and efficient parallelization support.
+!>          The implementation is optimized for quantum Monte Carlo calculations and
+!>          supports both ionic and electronic charge distributions.
+!> @author TurboRVB group
+!> @date 2022
+!> @section Algorithm
+!> The Ewald summation splits the Coulomb interaction into three parts:
+!> - Real-space sum: Short-range interactions with Gaussian screening
+!> - Reciprocal-space sum: Long-range interactions in Fourier space
+!> - Self-energy correction: Removal of self-interaction terms
+!> @section References
+!> - S. Sorella et al., J. Chem. Phys. 143, 244112 (2015)
+!> - M. Born, K. Huang, Dynamical Theory of Crystal Lattices (1954)
+!> - P. P. Ewald, Ann. Phys. 64, 253 (1921)
 !=======================================================================
 
 module Ewald
@@ -58,6 +74,21 @@ module Ewald
     ! flag to not recalculate the ionic part of ewald
 contains
 
+    !-----------------------------------------------------------------------
+    !> @brief Initialize Ewald summation parameters and allocate arrays
+    !> @details This subroutine initializes the Ewald summation module by setting up
+    !>          cutoff parameters, allocating charge and coordinate arrays, and generating
+    !>          reciprocal lattice vectors (G-vectors) for the reciprocal space sum.
+    !>          It also computes the Ewald self-energy correction.
+    !> @param[in] nion Number of ions in the system
+    !> @param[in] zetar Array of ionic charges (length nion)
+    !> @param[in] nel Number of electrons
+    !> @param[in] nw Number of walkers (for QMC)
+    !> @param[in] nthreads (optional) Number of threads for parallelization
+    !> @note Must be called before any Ewald energy or potential evaluation
+    !> @note Deallocates existing arrays if already allocated
+    !> @note Sets up charge array with ionic charges and electron charges (-1)
+    !> @note Calls Ggen to generate G-vectors and EwaldSelf for self-energy
     subroutine InitEwald(nion, zetar, nel, nw, nthreads)
         implicit none
         integer, intent(in) :: nion, nel, nw
@@ -113,6 +144,14 @@ contains
 
     end subroutine InitEwald
 
+    !-----------------------------------------------------------------------
+    !> @brief Generate G-vectors using existing grid indices
+    !> @details This subroutine computes reciprocal lattice vectors (G) and their
+    !>          squared magnitudes using pre-existing grid indices stored in ind_g.
+    !>          It also calculates the exponential factors exp(-G^2/4κ^2)/G^2 used
+    !>          in the reciprocal space part of the Ewald sum.
+    !> @note Uses existing ind_g array for grid indices
+    !> @note Sets factor(ig) = ε₀ * exp(-G²/4κ²) / G² for each G-vector
     subroutine Ggen_samegrid
         double precision :: b, gv(3), g2
         integer :: i, j, k, ig
@@ -130,6 +169,16 @@ contains
         end do
     end subroutine Ggen_samegrid
 
+    !-----------------------------------------------------------------------
+    !> @brief Generate G-vectors and phase factors for Ewald sum
+    !> @details This subroutine generates the complete set of reciprocal lattice
+    !>          vectors (G) within the cutoff ecut, along with their indices and
+    !>          exponential factors. It also allocates phase factor arrays for
+    !>          efficient computation of exp(iG·r) terms.
+    !> @note Determines grid size nr based on gcut and reciprocal lattice vectors
+    !> @note Allocates phase factor arrays phsfac1, phsfac2, phsfac3 for recursion
+    !> @note Excludes G=0 vector from factor calculation (sets factor=0)
+    !> @note Uses condition number cond for non-orthogonal cells
     subroutine Ggen
         double precision :: b, gv(3), g2
         integer :: i, j, k, j0, i0
@@ -210,20 +259,33 @@ contains
         if (n_gvec .eq. 0) n_gvec = 1
     end subroutine Ggen
 
-    !=====================================================================
-    ! Calculate Ewald self-energy
-    !=====================================================================
+    !-----------------------------------------------------------------------
+    !> @brief Compute the Ewald self-energy correction
+    !> @details This subroutine calculates the self-interaction correction for the Ewald
+    !>          sum, which must be subtracted to obtain the correct total energy.
+    !>          The correction follows the form: -2ε₀κ/√π * Σq²ᵢ
+    !> @note eself: Total self-energy for all physical charges
+    !> @note eself1b: Per-electron self-energy correction for ions only
+    !> @note Uses Ewald screening parameter κ and dielectric constant ε₀
     subroutine EwaldSelf
         implicit none
         eself = -2.d0*epsilon0*kappa/dsqrt(PI)*sum(q(1:n_physical_charges)**2.d0)
         eself1b = -2.d0*epsilon0*kappa/dsqrt(PI)*sum(q(1:natoms)**2)/nelectrons
     end subroutine EwaldSelf
 
-    !=====================================================================
-    ! Calculate by recursion, the sin and cos of G.r, where G is a
-    ! reciprocal lattice vector, and r is an atomic position
-    !=====================================================================
-
+    !-----------------------------------------------------------------------
+    !> @brief Compute sin and cos phase factors for G·r by recursion
+    !> @details This subroutine efficiently computes the phase factors exp(iG·r) for all
+    !>          G-vectors and particle positions using recursive relations. It generates
+    !>          phsfac1, phsfac2, phsfac3 arrays containing exp(ihG₁·r), exp(ikG₂·r),
+    !>          and exp(ilG₃·r) respectively, where h,k,l are the G-vector indices.
+    !> @param[in] particle_start Index of first particle to process
+    !> @param[in] particle_end Index of last particle to process
+    !> @param[in] s Array of particle coordinates (3, particle_end)
+    !> @note Supports OpenMP parallelization for large systems
+    !> @note Uses recursive relations: exp(ijθ) = [exp(iθ)]^j for efficiency
+    !> @note Handles single-particle case separately for thread safety
+    !> @note Only stores l≥0 for phsfac3 to save memory in long cells
     subroutine TrigRecur(particle_start, particle_end, s)
         implicit none
         integer, intent(in) :: particle_start, particle_end
@@ -300,11 +362,22 @@ contains
         end if
     end subroutine TrigRecur
 
-    !=====================================================================
-    ! This compute the reciprocal part of the Ewald summation without
-    ! computation of stress
-    !=====================================================================
-
+    !-----------------------------------------------------------------------
+    !> @brief Compute the reciprocal space part of the Ewald sum (energy and potential)
+    !> @details This subroutine evaluates the reciprocal space contribution to the Ewald
+    !>          sum for a given configuration of ions and electrons. It computes the
+    !>          Fourier space energy contribution and updates the regularized potential
+    !>          for each electron. The energy follows the form: (8π/Ω) * Σ factor(G) * |ρ(G)|²
+    !> @param[in] kel Electronic coordinates (3, nelectrons)
+    !> @param[in] rion Ionic coordinates (3, natoms)
+    !> @param[out] energy Total Ewald energy (including self-energy)
+    !> @param[out] vpotreg Regularized potential array (2, nelectrons)
+    !> @param[in] iw Walker index (for QMC)
+    !> @note Calls TrigRecur to compute phase factors exp(iG·r)
+    !> @note Uses OpenMP parallelization for G-vector loop
+    !> @note Excludes G=0 vector from the sum
+    !> @note Adds self-energy correction to total energy
+    !> @note Distributes long-range contribution equally among electrons
     subroutine EwaldSum(kel, rion, energy, vpotreg, iw)
         implicit none
         double precision, intent(in) :: rion(3, natoms)
@@ -387,10 +460,27 @@ contains
         end do
     end subroutine EwaldSum
 
-    !=====================================================================
-    ! This compute the reciprocal part of the Ewald summation without
-    ! computation of stress
-    !=====================================================================
+    !-----------------------------------------------------------------------
+    !> @brief Compute the reciprocal space part of the Ewald sum with derivatives (adjoint method)
+    !> @details This subroutine evaluates the reciprocal space contribution to the Ewald
+    !>          sum and computes derivatives with respect to ionic and electronic coordinates,
+    !>          as well as cell parameters. It implements the adjoint method for efficient
+    !>          gradient computation in optimization and force calculations.
+    !> @param[in] kel Electronic coordinates (3, nelectrons)
+    !> @param[in] kelb Electronic coordinate derivatives (3, nelectrons) - output
+    !> @param[in] rion Ionic coordinates (3, natoms)
+    !> @param[in] rionb Ionic coordinate derivatives (3, natoms) - output
+    !> @param[out] energy Total Ewald energy (including self-energy)
+    !> @param[in] energyb Energy derivative (input for adjoint method)
+    !> @param[in] cellscale Cell scale array (3)
+    !> @param[in] cellscaleb Cell scale derivatives (3) - output
+    !> @param[in] recipb Reciprocal lattice vector derivatives (3, 3) - output
+    !> @param[in] omegab Cell volume derivative - output
+    !> @param[in] iw Walker index (for QMC)
+    !> @note Implements reverse algorithm of EwaldSum (see Claudio's thesis Eq.4.17)
+    !> @note Uses OpenMP parallelization with reduction for derivatives
+    !> @note Neglects implicit dependence of κ on cellscale for efficiency
+    !> @note Supports offload to accelerators when _OFFLOAD is defined
     subroutine EwaldSum_b(kel, kelb, rion, rionb, energy, energyb&
             &, cellscale, cellscaleb, recipb, omegab, iw)
         implicit none
@@ -511,10 +601,22 @@ contains
 
     end subroutine EwaldSum_b
 
-    !=====================================================================
-    ! This compute the reciprocal part of the Ewald summation without
-    ! computation of stress
-    !=====================================================================
+    !-----------------------------------------------------------------------
+    !> @brief Update Ewald energy for single electron position change
+    !> @details This subroutine efficiently updates the Ewald energy when only
+    !>          one electron position changes, avoiding full recalculation.
+    !>          It computes the energy difference by subtracting the old electron
+    !>          contribution and adding the new one to the existing sum.
+    !> @param[in] kel Old electronic coordinates (3) for the moving electron
+    !> @param[in] keln New electronic coordinates (3) for the moving electron
+    !> @param[in] jel Index of the moving electron
+    !> @param[out] energy New total Ewald energy (including self-energy)
+    !> @param[out] denergy Energy change (new_energy - old_energy)
+    !> @param[in] iw Walker index (for QMC)
+    !> @note Uses TrigRecur to compute phase factors for old and new positions
+    !> @note Updates sum_q_cos_gr and sum_q_sin_gr arrays incrementally
+    !> @note Uses OpenMP parallelization for G-vector loops
+    !> @note Stores new energy in sum_q_cos_gr(n_gvec+1, iw) for future updates
     subroutine EwaldUpdate(kel, keln, jel, energy, denergy, iw)
         implicit none
         double precision, intent(in) :: kel(3), keln(3)
@@ -570,6 +672,18 @@ contains
         sum_q_cos_gr(n_gvec + 1, iw) = new_energy !  Replace the old with new energy
     end subroutine EwaldUpdate
 
+    !-----------------------------------------------------------------------
+    !> @brief Compute Ewald energy contribution for single electron (1-body term)
+    !> @details This subroutine computes the Ewald energy contribution for a single
+    !>          electron interacting with the pre-computed ionic charge distribution.
+    !>          It assumes that sum_q_cos and sum_q_sin arrays contain only ionic
+    !>          contributions (computed by EwaldSum1b).
+    !> @param[in] keln Electronic coordinates (3) for the single electron
+    !> @param[in] jel Index of the electron
+    !> @param[out] energy Ewald energy contribution for the electron
+    !> @note Requires sum_q_cos and sum_q_sin to be initialized with EwaldSum1b
+    !> @note Uses TrigRecur to compute phase factors for the electron position
+    !> @note Energy follows form: (16π/Ω) * Σ factor(G) * (ρ_ion(G) * ρ_el(G))
     subroutine Ewaldup1b(keln, jel, energy)
         implicit none
         double precision :: keln(3)
@@ -612,6 +726,15 @@ contains
         energy = energy*16.d0*Pi/omega ! a factor two was missing
     end subroutine Ewaldup1b
 
+    !-----------------------------------------------------------------------
+    !> @brief Initialize Ewald sum arrays with ionic contributions only (1-body setup)
+    !> @details This subroutine computes the Ewald sum contributions from ions only
+    !>          and stores them in sum_q_cos and sum_q_sin arrays. It also computes
+    !>          the per-electron ionic and electronic self-energy corrections.
+    !> @param[in] rion Ionic coordinates (3, natoms)
+    !> @note Sets up sum_q_cos and sum_q_sin for use with Ewaldup1b
+    !> @note Computes ewaldion1b and ewaldel1b per-electron corrections
+    !> @note Uses TrigRecur to compute phase factors for all ions
     subroutine EwaldSum1b(rion)
         implicit none
         double precision, intent(in) :: rion(3, natoms)
@@ -645,6 +768,20 @@ contains
 
     end subroutine EwaldSum1b
 end module Ewald
+
+!-----------------------------------------------------------------------
+!> @brief Find optimal condition number for non-orthogonal cell
+!> @details This function computes the optimal condition number for determining
+!>          the G-vector cutoff in non-orthogonal cells. It tries all possible
+!>          permutations of the reciprocal lattice vectors to find the minimum
+!>          condition number, which ensures the cutoff sphere fits within the cell.
+!> @param[in] sab Cosine of angle between first and second reciprocal vectors
+!> @param[in] sac Cosine of angle between first and third reciprocal vectors
+!> @param[in] sbc Cosine of angle between second and third reciprocal vectors
+!> @return Optimal condition number for G-vector cutoff
+!> @note Tests all 6 permutations of the three reciprocal lattice vectors
+!> @note Uses Gram determinant to check validity of 3D cell
+!> @note Doubles condition number if Gram determinant is negative (2D case)
 function cond_find(sab, sac, sbc)
     implicit none
     real*8 cond_find, sab, sac, sbc, cond_try, checkcond

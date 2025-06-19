@@ -13,6 +13,32 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file forces_ext.f90
+!> @brief External forces calculation module for TurboRVB
+!> @details This module provides comprehensive force calculations for
+!>          QMC/MM (Quantum Monte Carlo/Molecular Mechanics) simulations,
+!>          including external potential forces, van der Waals forces,
+!>          and molecular mechanics restraints.
+!> @author E. Coccia (4/1/11)
+!> @date 2022
+!> @section Features
+!> - 3D spline interpolation of external potentials
+!> - Force evaluation from interpolated potentials
+!> - Van der Waals force calculations
+!> - Molecular mechanics restraints (bonds, angles, dihedrals)
+!> - Force capping and validation
+!> - QM/MM link atom forces
+!> @section Subroutines
+!> Main subroutines:
+!> - forces_interpolate: 3D spline interpolation setup
+!> - forces_evaluate: Force evaluation from splines
+!> - ext_force: External potential forces
+!> - vdw_force: Van der Waals forces
+!> - force_capping: Force magnitude limiting
+!> - Molecular mechanics: force_angle, force_dihed, force_improper
+!=======================================================================
+
 !******************************
 ! by E.Coccia (4/1/11)        !
 !******************************
@@ -34,11 +60,16 @@
 !   - rf_dihe
 !   - rf_dimp
 
-! SUBROUTINE FORCES_INTERPOLATE:
-! 3-dimensional (x, y e z) interpolation
-! of the external potential for the calculation
-! of the forces
-
+!-----------------------------------------------------------------------
+!> @brief Setup 3D spline interpolation for external potential forces
+!> @details Performs 3-dimensional (x, y, z) spline interpolation of
+!>          the external potential for force calculations. Sets up B-spline
+!>          coefficients and knots for efficient force evaluation.
+!> @note Uses 5th order B-splines for smooth force interpolation
+!> @note Allocates force arrays for ions and electrons
+!> @note Handles QM/MM link atom forces if enabled
+!> @note Calls dbsnak for knot generation and dbs3in for interpolation
+!> @note Sets up van der Waals forces if vdw is enabled
 subroutine forces_interpolate()
 
     use ext_forces
@@ -109,10 +140,23 @@ subroutine forces_interpolate()
 
 end subroutine forces_interpolate
 
-! SUBROUTINE FORCES_EVALUATE:
-! evaluation of the x-(y-, z-) derivative
-! of the external potential
-
+!-----------------------------------------------------------------------
+!> @brief Evaluate derivatives of external potential for force calculation
+!> @details Calculates x-, y-, and z-derivatives of the interpolated
+!>          external potential at specified grid points. Uses B-spline
+!>          derivatives for smooth and accurate force evaluation.
+!> @param[in] nxvec Number of x-coordinates
+!> @param[in] nyvec Number of y-coordinates
+!> @param[in] nzvec Number of z-coordinates
+!> @param[in] xvec Array of x-coordinates for evaluation
+!> @param[in] yvec Array of y-coordinates for evaluation
+!> @param[in] zvec Array of z-coordinates for evaluation
+!> @param[out] dedx x-derivative of potential at evaluation points
+!> @param[out] dedy y-derivative of potential at evaluation points
+!> @param[out] dedz z-derivative of potential at evaluation points
+!> @note Uses dbs3gd for B-spline derivative evaluation
+!> @note Derivatives are computed using pre-computed spline coefficients
+!> @note Supports vectorized evaluation at multiple points
 subroutine forces_evaluate(nxvec, nyvec, nzvec, xvec, yvec, zvec, dedx, dedy, dedz)
 
     use ext_forces
@@ -142,10 +186,21 @@ subroutine forces_evaluate(nxvec, nyvec, nzvec, xvec, yvec, zvec, dedx, dedy, de
 
 end subroutine forces_evaluate
 
-!SUBROUTINE EXT_FORCE
-! evaluation of the forces
-! due to the external potential
-
+!-----------------------------------------------------------------------
+!> @brief Calculate forces due to external potential
+!> @details Evaluates forces on ions and electrons from the external
+!>          potential using interpolated spline derivatives. Handles
+!>          both nuclear and electronic forces with proper scaling.
+!> @param[in] nion Number of ions
+!> @param[in] rion Ion positions (3, nion)
+!> @param[in] zetar Ion charges
+!> @param[in] nel Number of electrons
+!> @param[in] rel Electron positions (3, nel)
+!> @note Nuclear forces are scaled by ion charges (zetar)
+!> @note Electronic forces have opposite sign (negative gradient)
+!> @note Forces are zero outside the potential box boundaries
+!> @note Uses forces_evaluate for derivative calculation
+!> @note Handles boundary conditions for potential box
 subroutine ext_force(nion, rion, zetar, nel, rel)
 
     use ext_forces, only: forcext, forcext_el
@@ -198,10 +253,15 @@ subroutine ext_force(nion, rion, zetar, nel, rel)
 
 end subroutine ext_force
 
-!SUBROUTINE DEALLOCATE_FORCES
-! deallocate the arrays involved
-! in the evaulation of the forces
-
+!-----------------------------------------------------------------------
+!> @brief Deallocate arrays used in force calculations
+!> @details Cleans up memory allocated for force calculations including
+!>          spline coefficients, knots, force arrays, and QM/MM arrays.
+!> @note Deallocates f_coef, f_xknot, f_yknot, f_zknot
+!> @note Deallocates forcext, forcext_el arrays
+!> @note Conditionally deallocates force_vdw if vdw is enabled
+!> @note Conditionally deallocates QM/MM arrays if link_atom is enabled
+!> @note Prints completion message on rank 0
 subroutine deallocate_forces()
 
     use ext_forces
@@ -233,7 +293,18 @@ subroutine deallocate_forces()
 
 end subroutine deallocate_forces
 
-! Calculation of the vdw forces
+!-----------------------------------------------------------------------
+!> @brief Calculate van der Waals forces between QM and MM atoms
+!> @details Computes Lennard-Jones forces between quantum mechanical
+!>          atoms and classical molecular mechanics atoms. Handles
+!>          exclusion lists and 1-4 interactions for link atoms.
+!> @param[in] nion Number of ions (QM atoms)
+!> @param[in] rion Ion positions (3, nion)
+!> @note Uses 12-6 Lennard-Jones potential: V(r) = C12/r^12 - C6/r^6
+!> @note Handles QM/MM link atom exclusions
+!> @note Supports 1-4 interactions with different parameters
+!> @note Forces are accumulated in force_vdw array
+!> @note Handles both QM->MM and MM->QM force calculations
 subroutine vdw_force(nion, rion)
 
     use van_der_waals
@@ -335,9 +406,17 @@ subroutine vdw_force(nion, rion)
 
 end subroutine vdw_force
 
-!**************************************************************************
+!-----------------------------------------------------------------------
+!> @brief Apply force capping for link atoms in QM/MM simulations
+!> @details Modifies forces on capping atoms based on the relationship
+!>          between QM and capping atom positions. Uses the capping
+!>          factor to scale forces appropriately.
+!> @param[in,out] rionb Force array (3, nion) - contains energy gradients
+!> @note Force on capping atom: dE/dX_capping = 1/(1-alpha) * dE/dX_QM
+!> @note Uses calpha parameter from link atom definition
+!> @note Modifies forces in-place for all link atoms
+!> @note Handles multiple link atoms (latoms)
 subroutine force_capping(rionb)
-    !**************************************************************************
 
     use extpot, only: latoms
     use link_atoms, only: capping, calpha, qm, prt, cap
@@ -374,9 +453,16 @@ subroutine force_capping(rionb)
 
 end subroutine force_capping
 
-!**************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate angle forces for QM/MM link atoms
+!> @details Computes forces due to bond angle restraints in QM/MM
+!>          simulations. Handles mixed QM/MM angle interactions.
+!> @note Uses harmonic potential: V(theta) = k_theta * (theta - theta_eq)^2
+!> @note Forces are computed for QM atoms only
+!> @note Handles I-J-K angle geometry (I and K atoms, J central atom)
+!> @note Accumulates forces in mm_f_theta array
+!> @note Follows GROMOS force field conventions
 subroutine force_angle()
-    !**************************************************
 
     use allio, only: rion, nion
     use extpot, only: latoms
@@ -498,9 +584,16 @@ subroutine force_angle()
 
 end subroutine force_angle
 
-!***************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate dihedral angle forces for QM/MM link atoms
+!> @details Computes forces due to dihedral angle restraints in QM/MM
+!>          simulations. Handles mixed QM/MM dihedral interactions.
+!> @note Uses harmonic potential for dihedral angles
+!> @note Forces are computed for QM atoms only
+!> @note Handles I-J-K-L dihedral geometry
+!> @note Accumulates forces in mm_f_dihed array
+!> @note Follows GROMOS force field conventions
 subroutine force_dihed()
-    !***************************************************************
 
     use allio, only: rion, nion
     use extpot, only: latoms
@@ -514,7 +607,6 @@ subroutine force_dihed()
     real*8 :: phi, cosphi, dvdphi, dvdx, dvdy, dvdz, der
     real*8 :: dum, dot, dot1, app, rkj2, rim(3), rln(3), app1(3), app4
     real*8 :: ix, iy, iz, lx, ly, lz
-    real*8, dimension(3) :: ai, aj, ak, al
     real*8 :: rij(3), rkj(3), rkl(3), rmj2, rnk2, rnk(3), rmj(3), rlnsq, rimsq, app2, app3
     logical :: qm_atom(4)
 
@@ -657,9 +749,16 @@ subroutine force_dihed()
 
 end subroutine force_dihed
 
-!***************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate improper dihedral forces for QM/MM link atoms
+!> @details Computes forces due to improper dihedral restraints in QM/MM
+!>          simulations. Handles mixed QM/MM improper dihedral interactions.
+!> @note Uses harmonic potential for improper dihedrals
+!> @note Forces are computed for QM atoms only
+!> @note Handles I-J-K-L improper dihedral geometry
+!> @note Accumulates forces in mm_f_impr array
+!> @note Follows GROMOS force field conventions (II-22)
 subroutine force_improper()
-    !***************************************************************
 
     use allio, only: rion, nion
     use extpot, only: latoms
@@ -673,12 +772,10 @@ subroutine force_improper()
     real*8 :: phi, cosphi, dvdphi, dvdx, dvdy, dvdz, rkj2sq
     real*8 :: rkj2, rmj2, tmp, dot, rnk2, tmp1, dot1
     real*8 :: ix, iy, iz, lx, ly, lz
-    real*8, dimension(3) :: ai, aj, ak, al
     real*8 :: rij(3), rkj(3), rkl(3), dp1, rnk(3), rmj(3)
     logical :: qm_atom(4)
 
-    ! Derivative of V(phi)[IMPROPER] with respect to
-    ! the QM atoms
+    ! Derivative of V with respect to PHI
     ! See the GROMOS manual (II-22)
 
     mm_f_impr = 0.d0
@@ -801,7 +898,16 @@ subroutine force_improper()
 
 end subroutine force_improper
 
-!*****************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate derivative of cos(mult*phi) with respect to cos(phi)
+!> @details Computes the analytical derivative dcos(mult*phi)/dcos(phi)
+!>          for use in dihedral force calculations.
+!> @param[in] phi Dihedral angle in radians
+!> @param[in] mult Multiplicity factor (0-6)
+!> @param[out] der Derivative value
+!> @note Supports multiplicities 0-6
+!> @note Returns 0 for mult=0, 1 for mult=1
+!> @note Higher multiplicities use Chebyshev polynomial forms
 subroutine cos_mult_der(phi, mult, der)
     !*****************************************************************
 
@@ -832,7 +938,14 @@ subroutine cos_mult_der(phi, mult, der)
 
 end subroutine cos_mult_der
 
-!******************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate forces for harmonic distance restraints
+!> @details Computes forces due to harmonic bond length restraints
+!>          between pairs of atoms. Uses harmonic potential.
+!> @note Uses potential: V(r) = k_bond * (r - r_eq)^2
+!> @note Forces are scaled by mm_fact factor
+!> @note Forces on atom pairs are equal and opposite
+!> @note Accumulates forces in restr_f_bond array
 subroutine rf_bond()
     !******************************************************************
 
@@ -877,11 +990,16 @@ subroutine rf_bond()
 
 end subroutine rf_bond
 
-!****************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate forces for harmonic bond angle restraints
+!> @details Computes forces due to harmonic bond angle restraints between
+!>          triplets of atoms (I-J-K). Uses harmonic potential:
+!>          V(theta) = k_theta * (cos(theta) - cos(theta_eq))^2
+!> @note Forces are scaled by mm_fact factor
+!> @note Forces are distributed among the three atoms in the angle
+!> @note Accumulates forces in restr_f_angle array
+!> @note Follows GROMOS force field conventions
 subroutine rf_angle()
-    !****************************************************************
-
-    ! Forces for the harmonic bond angle restraint
 
     use allio, only: rion
     use cl_restr, only: mm_fact, nth, restr_f_angle
@@ -944,7 +1062,14 @@ subroutine rf_angle()
 
 end subroutine rf_angle
 
-!******************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate forces for harmonic dihedral angle restraints
+!> @details Computes forces due to harmonic dihedral angle restraints
+!>          between quadruplets of atoms. Uses harmonic potential for dihedrals.
+!> @note Uses potential: V(phi) = k_qhi * (cos(phi) - cos(phi_eq))^2
+!> @note Forces are scaled by mm_fact factor
+!> @note Forces are distributed among the four atoms in the dihedral
+!> @note Accumulates forces in restr_f_dihe array
 subroutine rf_dihe()
     !******************************************************************
 
@@ -1041,7 +1166,14 @@ subroutine rf_dihe()
 
 end subroutine rf_dihe
 
-!***********************************************************************
+!-----------------------------------------------------------------------
+!> @brief Calculate forces for harmonic improper dihedral restraints
+!> @details Computes forces due to harmonic improper dihedral angle
+!>          restraints between quadruplets of atoms. Uses harmonic potential for impropers.
+!> @note Uses potential: V(phi) = k_qhi * (phi - phi_eq)^2
+!> @note Forces are scaled by mm_fact factor
+!> @note Forces are distributed among the four atoms in the improper dihedral
+!> @note Accumulates forces in restr_f_dimp array
 subroutine rf_dimp()
     !***********************************************************************
 

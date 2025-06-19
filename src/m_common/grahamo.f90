@@ -13,6 +13,56 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Gram-Schmidt orthogonalization with standard Euclidean metric
+!>
+!> This module provides Gram-Schmidt orthogonalization subroutines for
+!> quantum Monte Carlo calculations using the standard Euclidean metric
+!> (identity overlap matrix). It includes both real and complex versions
+!> with optimized memory usage and numerical stability considerations.
+!>
+!> The module implements:
+!> - Real Gram-Schmidt orthogonalization with Euclidean metric
+!> - Complex Gram-Schmidt orthogonalization with Euclidean metric
+!> - Numerical stability checks using machine precision
+!> - Efficient memory usage with workspace arrays
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Real Gram-Schmidt orthogonalization with Euclidean metric
+!>
+!> This subroutine performs Gram-Schmidt orthogonalization of real vectors
+!> using the standard Euclidean metric (identity overlap matrix). The
+!> algorithm includes numerical stability checks and proper handling of
+!> linearly dependent vectors.
+!>
+!> @param[in,out] psi Matrix of vectors to be orthogonalized (ndime, *)
+!> @param[in,out] sc Workspace array for projections (mh + ndime)
+!> @param[out] rn Array of normalization factors for each vector
+!> @param[in] ndime Number of components in each vector
+!> @param[in] mh Number of vectors to orthogonalize
+!> @param[out] info Information about orthogonalization success:
+!>                   - info = 0: Successful orthogonalization
+!>                   - info > 0: Number of linearly dependent vectors found
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Initializes workspace array sc with -1 values
+!> 2. Normalizes all input vectors to unit length
+!> 3. Checks if the first vector is linearly independent
+!> 4. For each subsequent vector i = 2, ..., mh:
+!>    - Projects vector i onto all previous orthogonalized vectors
+!>    - Subtracts the projections to make it orthogonal
+!>    - Normalizes the resulting orthogonal vector
+!>    - Checks for linear dependence using machine precision
+!> 5. Returns normalization factors and information about linear dependencies
+!>
+!> @note Uses standard Euclidean scalar product: a · b = sum_i a_i * b_i
+!> @note Numerical stability is ensured using machine precision thresholds
+!> @note Linearly dependent vectors are set to zero
+!> @note The workspace array sc is used efficiently to avoid memory allocation
+!> @note Uses BLAS operations (DNRM2, DGEMV, DSCAL, DCOPY) for efficiency
 subroutine GRAHAMO(PSI, SC, RN, NDIME, MH, INFO)
     implicit none
     integer mh, ndime, mx, i, mhh, info
@@ -58,6 +108,40 @@ subroutine GRAHAMO(PSI, SC, RN, NDIME, MH, INFO)
     return
 end subroutine GRAHAMO
 
+!> @brief Complex Gram-Schmidt orthogonalization with Euclidean metric
+!>
+!> This subroutine performs Gram-Schmidt orthogonalization of complex vectors
+!> using the standard Euclidean metric (identity overlap matrix). The
+!> algorithm includes numerical stability checks and proper handling of
+!> linearly dependent vectors using complex conjugate scalar products.
+!>
+!> @param[in,out] psi Matrix of complex vectors to be orthogonalized (ndime, *)
+!> @param[in,out] sc Complex workspace array for projections (mh + ndime)
+!> @param[out] rn Array of normalization factors for each vector
+!> @param[in] ndime Number of components in each vector
+!> @param[in] mh Number of vectors to orthogonalize
+!> @param[out] info Information about orthogonalization success:
+!>                   - info = 0: Successful orthogonalization
+!>                   - info > 0: Number of linearly dependent vectors found
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Initializes workspace array sc with -1 values
+!> 2. Normalizes all input vectors to unit length using complex norm
+!> 3. Checks if the first vector is linearly independent
+!> 4. For each subsequent vector i = 2, ..., mh:
+!>    - Projects vector i onto all previous orthogonalized vectors using
+!>      complex conjugate scalar product
+!>    - Subtracts the projections to make it orthogonal
+!>    - Normalizes the resulting orthogonal vector
+!>    - Checks for linear dependence using machine precision
+!> 5. Returns normalization factors and information about linear dependencies
+!>
+!> @note Uses complex conjugate scalar product: a · b = sum_i a_i * conjg(b_i)
+!> @note Numerical stability is ensured using machine precision thresholds
+!> @note Linearly dependent vectors are set to zero
+!> @note The workspace array sc is used efficiently to avoid memory allocation
+!> @note Uses BLAS operations (DZNRM2, ZGEMV, ZSCAL, ZCOPY) for efficiency
 subroutine GRAHAMO_COMPLEX(PSI, SC, RN, NDIME, MH, INFO)
     use constants, only: zone, zmone, zzero
     implicit none

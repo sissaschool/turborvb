@@ -13,6 +13,44 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * @brief Set default values for memory allocation and program parameters
+ *
+ * This subroutine initializes all global variables and parameters to their
+ * default values before memory allocation in TurboRVB. It sets up the basic
+ * configuration for quantum Monte Carlo calculations including optimization
+ * parameters, parallel execution settings, and array dimensions.
+ *
+ * @details
+ * The subroutine sets default values for:
+ * - Sparse matrix and optimization flags
+ * - DFT and QMC calculation parameters
+ * - Parallel execution communicators and ranks
+ * - Array dimensions and indices
+ * - Optimization parameters and constraints
+ * - Pseudopotential and wave function parameters
+ * - File I/O and output control parameters
+ *
+ * Key parameters initialized:
+ * - yes_sparse_choose, yes_sparse: Sparse matrix optimization flags
+ * - yesdft: DFT calculation mode flag
+ * - epscut, epscuttype: Energy cutoff parameters
+ * - rank, nproc: MPI parallel execution parameters
+ * - np, npm, npmn: Optimization parameter counts
+ * - ieser, iese, isfix: Parameter optimization flags
+ * - npsa, nintpsa: Pseudopotential parameters
+ *
+ * @note
+ * - This subroutine should be called before any memory allocation
+ * - Parallel execution parameters are set differently for serial/parallel builds
+ * - Default values are conservative and suitable for most calculations
+ * - Some parameters may be overridden by input file settings
+ *
+ * @see deallocate_all()
+ *
+ * @author TurboRVB group
+ * @date 2022
+ */
 subroutine default_allocate
     use allio
     implicit none
@@ -135,6 +173,39 @@ subroutine default_allocate
 
 end subroutine default_allocate
 
+/**
+ * @brief Deallocate all dynamically allocated arrays and free memory
+ *
+ * This subroutine systematically deallocates all dynamically allocated arrays
+ * used in TurboRVB calculations. It handles arrays for wave functions,
+ * pseudopotentials, optimization parameters, and various computational arrays.
+ *
+ * @details
+ * The subroutine deallocates arrays in the following categories:
+ * - Wave function and orbital arrays (winv, psiln, detmat, etc.)
+ * - Jastrow factor arrays (vj, jasmat, etc.)
+ * - Pseudopotential arrays (wpseudo, legendre, parshell, etc.)
+ * - Optimization parameter arrays (reduce, velion, force, etc.)
+ * - Periodic boundary condition arrays (q, g, cosphase, etc.)
+ * - Temporary and auxiliary arrays (ipsip, dupr, etc.)
+ *
+ * Memory management features:
+ * - Safe deallocation with allocated() checks
+ * - Conditional deallocation based on calculation type
+ * - Proper cleanup of parallel execution arrays
+ * - Deallocation of both real and complex arrays
+ *
+ * @note
+ * - This subroutine should be called at the end of calculations
+ * - It prevents memory leaks and frees system resources
+ * - Safe to call multiple times due to allocated() checks
+ * - Deallocation order is optimized to avoid dependency issues
+ *
+ * @see default_allocate()
+ *
+ * @author TurboRVB group
+ * @date 2022
+ */
 subroutine deallocate_all
     use allio
     implicit none

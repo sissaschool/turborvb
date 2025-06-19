@@ -17,13 +17,29 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-!
-! Copyright (C) 2002 FPMD group
-! This file is distributed under the terms of the
-! GNU General Public License. See the file `License'
-! in the root directory of the present distribution,
-! or http://www.gnu.org/copyleft/gpl.txt .
-!
+!> @file dsortx.f90
+!> @brief Sorting and parallel grid utilities for scientific computing.
+!>
+!> This file provides a robust, double-precision sorting routine (DSORTX) and
+!> several grid/parallelization utilities for use in quantum Monte Carlo and
+!> electronic structure codes. The DSORTX subroutine implements a hybrid quicksort-
+!> bubble sort algorithm for sorting arrays and returning the permutation indices.
+!> Additional routines support processor grid decomposition and distributed array
+!> indexing, as used in parallel linear algebra and FFTs.
+!>
+!> @author TurboRVB group, FPMD group, Quantum ESPRESSO group
+!> @date 2022
+!>
+!> @section Usage
+!> Typical usage involves sorting arrays of real*8 values (e.g., reciprocal space vectors)
+!> and managing processor grids for distributed-memory parallelization.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: arr(100)
+!>   integer :: idx(100)
+!>   call DSORTX(arr, 0, 100, idx)
+!> @endcode
 
 !     ==================================================================
 subroutine DSORTX(COUNT, INUTILE, N, INDEX)

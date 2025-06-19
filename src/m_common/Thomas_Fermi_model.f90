@@ -13,6 +13,34 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Thomas-Fermi model implementation for electron density calculations
+!>
+!> This module provides functions for calculating electron density distributions
+!> using the Thomas-Fermi model, which is a semi-classical approximation for
+!> atomic electron density. It is particularly useful for determining core and
+!> valence electron distributions in quantum Monte Carlo calculations.
+!>
+!> The module implements the Thomas-Fermi model according to standard textbooks
+!> and provides numerical integration capabilities for calculating electron
+!> numbers within specified cutoff radii.
+!>
+!> @author Kosuke Nakano 2019
+!> @affiliation SISSA
+!> @email kousuke_1123@icloud.com
+!> @created 13 Dec. 2019
+!> @modified 13 Feb. 2020 - Improved integration accuracy
+!>
+!> @details
+!> The Thomas-Fermi model provides an approximate description of electron density
+!> in atoms based on the following equations:
+!> - b = (9 * π² / 128)^(1/3)
+!> - r_TF = b * Z^(-1/3)
+!> - x_TF = r / r_TF
+!> - ρ(r) = (32 * Z²) / (9 * π³) * (χ(x_TF) / x_TF)^(3/2)
+!> where χ(x) is the Gross-Dreizler function.
+!>
+!> @note Used in quantum Monte Carlo calculations for pseudopotential generation
+!> @note Provides core/valence electron separation for double-grid schemes
 module Thomas_Fermi_model
     ! Author Kosuke Nakano 2019
     ! Affiliation SISSA
@@ -24,6 +52,29 @@ module Thomas_Fermi_model
 
 contains
 
+    !> @brief Calculate core electron number using Thomas-Fermi model
+    !>
+    !> This function calculates the number of electrons inside a cutoff radius r_c
+    !> according to the Thomas-Fermi model. It performs numerical integration of
+    !> the electron density multiplied by a Gaussian function p(r) that separates
+    !> core and valence electrons.
+    !>
+    !> @param[in] atomic_number Atomic number Z of the element
+    !> @param[in] r_c Cutoff radius for core electron definition (atomic units)
+    !> @return Number of core electrons within r_c
+    !>
+    !> @details
+    !> The function implements the following algorithm:
+    !> 1. Calculates Thomas-Fermi radius: r_TF = b * Z^(-1/3)
+    !> 2. Defines Gaussian function: p(r) = exp(-r²/(2*r_c²))
+    !> 3. Performs numerical integration:
+    !>    - Core electrons: ∫ 4πr² ρ(r) p(r) dr
+    !>    - Valence electrons: ∫ 4πr² ρ(r) (1-p(r)) dr
+    !> 4. Uses Gross-Dreizler approximation for χ(x) function
+    !>
+    !> @note Integration range: r_min = 1.0d-3 to r_max = 25.0d0
+    !> @note Integration step: dr = 1.0d-3
+    !> @note Used in pseudopotential generation and core-valence separation
     ! function Thomas_Fermi_core_electron_number(atomic_number, r_c)
     ! to calculate the number of electrons inside r_c according to the Thomas-Fermi model.
     ! According to the textbook written in Takada (it can be also obtained from the Landau textbook),
@@ -74,6 +125,22 @@ contains
 
     end function Thomas_Fermi_core_electron_number
 
+    !> @brief Gross-Dreizler approximation for Thomas-Fermi function
+    !>
+    !> This function implements the Gross-Dreizler approximation for the
+    !> Thomas-Fermi function χ(x), which is a key component in the Thomas-Fermi
+    !> model for electron density calculations.
+    !>
+    !> @param[in] x Dimensionless radial coordinate x = r/r_TF
+    !> @return Approximate value of χ(x) function
+    !>
+    !> @details
+    !> The Gross-Dreizler approximation provides a good analytical approximation
+    !> for the Thomas-Fermi function χ(x) using a rational function:
+    !> χ(x) = 1 / (1 + 1.4712*x - 0.4973*x^(3/2) + 0.3875*x² + 0.002102*x³)
+    !>
+    !> @note This approximation is accurate for a wide range of x values
+    !> @note Used in electron density calculations in Thomas-Fermi model
     ! Gross Dreizler developed a good approximation of chi(x)
 
     function Gross_Dreizler(x) result(f)

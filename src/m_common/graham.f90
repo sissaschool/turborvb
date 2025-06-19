@@ -13,6 +13,54 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Gram-Schmidt orthogonalization with general metric
+!>
+!> This module provides Gram-Schmidt orthogonalization subroutines for
+!> quantum Monte Carlo calculations, supporting both real and complex
+!> vectors with arbitrary overlap matrices as metrics.
+!>
+!> The module implements:
+!> - Real Gram-Schmidt orthogonalization with general metric
+!> - Complex Gram-Schmidt orthogonalization with general metric
+!> - Proper handling of linear dependencies and numerical stability
+!> - Normalization of orthogonalized vectors
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Real Gram-Schmidt orthogonalization with general metric
+!>
+!> This subroutine performs Gram-Schmidt orthogonalization of real vectors
+!> using a general overlap matrix as the metric. The output vectors are
+!> orthogonal in the sense that they satisfy the orthogonality condition
+!> with respect to the given metric.
+!>
+!> @param[in,out] psi Matrix of vectors to be orthogonalized (lda, *)
+!> @param[in] over Overlap matrix defining the metric (ldo, *)
+!> @param[in] ldo Leading dimension of overlap matrix
+!> @param[out] rn Array of normalization factors for each vector
+!> @param[in] lda Leading dimension of psi matrix
+!> @param[in] ndime Number of components to consider in orthogonalization
+!> @param[in] mh Number of vectors to orthogonalize
+!> @param[out] info Information about orthogonalization success:
+!>                   - info = 0: Successful orthogonalization
+!>                   - info > 0: Number of linearly dependent vectors found
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Computes the metric-weighted vectors: mat = over * psi
+!> 2. Normalizes the first vector: psi(:,1) = psi(:,1) / ||psi(:,1)||_over
+!> 3. For each subsequent vector i = 2, ..., mh:
+!>    - Projects vector i onto all previous orthogonalized vectors
+!>    - Subtracts the projections to make it orthogonal
+!>    - Normalizes the resulting orthogonal vector
+!> 4. Returns normalization factors and information about linear dependencies
+!>
+!> @note The orthogonality condition is: sum_kl [over(k,l) * psi(k,i) * psi(l,j)] = δ_ij
+!> @note Components of psi with k > ndime are not modified
+!> @note If a vector becomes linearly dependent (norm ≈ 0), it is set to zero
+!> @note The subroutine uses BLAS operations for efficiency
 subroutine GRAHAM(PSI, over, ldo, rn, lda, NDIME, MH, info)
 
     implicit none
@@ -68,6 +116,40 @@ subroutine GRAHAM(PSI, over, ldo, rn, lda, NDIME, MH, info)
     return
 end subroutine GRAHAM
 
+!> @brief Complex Gram-Schmidt orthogonalization with general metric
+!>
+!> This subroutine performs Gram-Schmidt orthogonalization of complex vectors
+!> using a general overlap matrix as the metric. The output vectors are
+!> orthogonal in the sense that they satisfy the orthogonality condition
+!> with respect to the given metric, using the complex conjugate scalar product.
+!>
+!> @param[in,out] psi Matrix of complex vectors to be orthogonalized (lda, *)
+!> @param[in] over Complex overlap matrix defining the metric (ldo, *)
+!> @param[in] ldo Leading dimension of overlap matrix
+!> @param[out] rn Array of normalization factors for each vector
+!> @param[in] lda Leading dimension of psi matrix
+!> @param[in] ndime Number of components to consider in orthogonalization
+!> @param[in] mh Number of vectors to orthogonalize
+!> @param[out] info Information about orthogonalization success:
+!>                   - info = 0: Successful orthogonalization
+!>                   - info > 0: Number of linearly dependent vectors found
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Computes the metric-weighted vectors: mat = over * psi
+!> 2. Normalizes the first vector: psi(:,1) = psi(:,1) / ||psi(:,1)||_over
+!> 3. For each subsequent vector i = 2, ..., mh:
+!>    - Projects vector i onto all previous orthogonalized vectors using
+!>      complex conjugate scalar product
+!>    - Subtracts the projections to make it orthogonal
+!>    - Normalizes the resulting orthogonal vector
+!> 4. Returns normalization factors and information about linear dependencies
+!>
+!> @note The orthogonality condition is: sum_kl [over(k,l) * psi(k,i) * conjg(psi(l,j))] = δ_ij
+!> @note The complex scalar product is defined as: a · b = sum_i a_i * conjg(b_i)
+!> @note Components of psi with k > ndime are not modified
+!> @note If a vector becomes linearly dependent (norm ≈ 0), it is set to zero
+!> @note The subroutine uses BLAS operations for efficiency
 subroutine GRAHAM_complex(PSI, over, ldo, rn, lda, NDIME, MH, info)
 
     use constants, only: zzero, zone

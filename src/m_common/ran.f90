@@ -13,6 +13,33 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Portable random number generator for quantum Monte Carlo
+!>
+!> This function implements a portable random number generator based on
+!> the Park-Miller minimal standard multiplicative linear congruential
+!> generator combined with a Marsaglia shift sequence. It provides
+!> uniform random numbers in the interval (0,1) for use in quantum
+!> Monte Carlo calculations.
+!>
+!> @param[in,out] idum Seed for random number generation:
+!>                      - idum ≤ 0: Initialize generator with |idum|
+!>                      - idum > 0: Generate next random number
+!> @return Real random number in the interval (0,1)
+!>
+!> @details
+!> The function implements a combined generator with the following features:
+!> 1. Park-Miller multiplicative linear congruential generator:
+!>    - Parameters: IA = 16807, IM = 2147483647, IQ = 127773, IR = 2836
+!>    - Recurrence: iy = IA * (iy - k*IQ) - IR*k (mod IM)
+!> 2. Marsaglia shift sequence for ix:
+!>    - Uses XOR and bit shifts for additional randomness
+!> 3. Combined output: ran = am * (ix XOR iy OR 1)
+!>
+!> @note The generator has a period of approximately 2^31 - 1
+!> @note The function uses saved variables to maintain state between calls
+!> @note Initialization occurs when idum ≤ 0 or iy < 0
+!> @note The function is portable across different platforms and compilers
+!> @note Used extensively in Monte Carlo sampling and random walk algorithms
 function ran(idum)
     implicit none
     integer, parameter :: K4B = selected_int_kind(9)

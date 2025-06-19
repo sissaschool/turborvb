@@ -15,58 +15,92 @@
 
 !#include "mathvec.h"
 
+!> @file kpoints.f90
+!> @brief K-points generation and management module for periodic boundary conditions
+!> @details This module provides comprehensive functionality for generating and managing
+!>          k-points in the Brillouin zone for quantum Monte Carlo calculations with
+!>          periodic boundary conditions. It supports various k-point generation methods
+!>          including Monkhorst-Pack grids, custom k-points, band structure paths,
+!>          random sampling, and flavor twisted boundary conditions. The module handles
+!>          symmetry operations, time reversal symmetry, and k-point averaging for
+!>          accurate sampling of the Brillouin zone.
+!> @author TurboRVB group
+!> @date 2022
+!> @see cell, constants, symmetry operations
+
 module kpoints_mod
 
     use cell
 
     public
-    logical yes_kpoints, same_phase, opposite_phase ! flag to switch on multiple read of fort.10's
-    integer nk, nk1, nk2, nk3, k1, k2, k3, nks ! number of k-points and corresponding offsets for MP grid
-    ! nk = total number of k-points
-    ! nks = number of inequivalent kpoints in MP algorithm
+    !> @brief Flag to enable multiple fort.10 file reading for k-points
+    logical yes_kpoints, same_phase, opposite_phase
+    !> @brief Number of k-points and grid dimensions for Monkhorst-Pack algorithm
+    !> @details nk = total number of k-points, nks = number of inequivalent k-points
+    integer nk, nk1, nk2, nk3, k1, k2, k3, nks
 
-    ! xkp,wkp = final k-points/weights for up/down electrons
+    !> @brief K-points coordinates and weights for up/down electrons
+    !> @details xkp, wkp = final k-points/weights for up/down electrons
     real(8), dimension(:, :), allocatable :: xkp, xkp_down
     real(8), dimension(:), allocatable :: wkp, wkp_down
     real(8) tot_wt, tot_wt_down
 
-    integer kp_type ! methods used to generate k-points:
-    ! 0 = gamma point or single phase calculation --> the phase is read from fort.10
-    ! 1 = Monkhorst-Pack algorithm.
-    ! 2 = read k-points in crystal coordinates from datasmin.input
-    ! 3 = read k-points path in 1BZ in crystal coordinates as in QuantumESPRESSO.
-    !     For band structure calculations. Useful also when searching special k-points
-    !     along a diagonal direction in the 1BZ.
-    ! 4 = generate random k-points.
-    ! 5 = generate a nk*nk matrix of k-points for up/down spin electrons. Application of
-    !     flavor twisted boundary conditions ( PRB 80, 180402(R) ). The matrix is generated
-    !     by combining a normal and an offsetted MP grids. Alternatively, use kp_type=2 to give
-    !     the matrix in input.
+    !> @brief K-points generation method identifier
+    !> @details Methods used to generate k-points:
+    !>          - 0 = gamma point or single phase calculation (phase read from fort.10)
+    !>          - 1 = Monkhorst-Pack algorithm
+    !>          - 2 = read k-points in crystal coordinates from datasmin.input
+    !>          - 3 = read k-points path in 1BZ for band structure calculations
+    !>          - 4 = generate random k-points
+    !>          - 5 = generate nk*nk matrix for flavor twisted boundary conditions
+    integer kp_type
 
-    integer :: ikpoint ! index which identify the k-point in the current pool ( = rankcolrep + 1)
+    !> @brief Index identifying the k-point in the current pool (rankcolrep + 1)
+    integer :: ikpoint
 
-    logical :: kaverage ! if .true. the twist average algorithm is turned ON.
+    !> @brief Flag to enable twist average algorithm
+    logical :: kaverage
 
-    logical :: skip_equivalence ! if .false. the number of k-points is reduced using Bravais lattice symmetries
+    !> @brief Flag to skip k-point equivalence check using Bravais lattice symmetries
+    logical :: skip_equivalence
 
-    logical :: time_reversal ! if .true. use the time reversal symmetry to reduce the number of k-points.
+    !> @brief Flag to use time reversal symmetry to reduce number of k-points
+    logical :: time_reversal
 
-    logical :: double_kpgrid ! if .true. impose opposite boundary condition for UP/DOWN spin electrons.
+    !> @brief Flag to impose opposite boundary conditions for UP/DOWN spin electrons
+    logical :: double_kpgrid
 
-    logical :: decoupled_run ! if .true. the code performs decoupled (i.e. indipendent k-points) VMC/DMC k-points calculations
+    !> @brief Flag for decoupled (independent k-points) VMC/DMC calculations
+    logical :: decoupled_run
 
-    logical :: compute_bands ! flag determining whether the calculation is a band structure
-    ! calculation or not (working for DFT only so far)
+    !> @brief Flag for band structure calculations (DFT only)
+    logical :: compute_bands
 
     private :: init_random_seed, found_sec, kpoint_grid, generate_kp_path
 
-    ! namelist for k-points grid definition
+    !> @brief Namelist for k-points grid definition
     namelist /kpoints/ kp_type, nk1, nk2, nk3, k1, k2, k3, time_reversal, &
         skip_equivalence, double_kpgrid, compute_bands
 
 contains
 
     !---------------------------------------------------------
+    !> @brief Initialize k-points for all kp_type methods
+    !> @details Initializes the k-point grid and related arrays for periodic boundary
+    !>          condition calculations. Handles various k-point generation schemes:
+    !>          Monkhorst-Pack, custom input, band structure paths, random, and flavor twist.
+    !>          Also sets up symmetry operations and transforms coordinates as needed.
+    !> @param[inout] iflag Integer flag for error handling (0=success, 1=error)
+    !> @param[in] nel Number of electrons
+    !> @param[in] nion Number of ions
+    !> @param[in] rion Ion positions (3, nion)
+    !> @param[in] atom_number Atomic numbers (nion)
+    !> @param[in] rs Wigner-Seitz radius parameter
+    !> @note K-points are left in crystal coordinates and must be transformed to cartesian
+    !>       coordinates (multiply by 2*pi/cell_scale) for use in other routines.
+    !> @note Handles symmetry reduction, time reversal, and double grid for up/down spins.
+    !> @note Writes symmetry information to stdout for user reference.
+    !> @see kpoint_grid, generate_kp_path, set_sym_bl, purge_isymm
     subroutine get_kpoints(iflag, nel, nion, rion, atom_number, rs)
         !---------------------------------------------------------
         !
@@ -267,6 +301,25 @@ contains
     end subroutine get_kpoints
 
     !----------------------------------------------------------------------------
+    !> @brief Generate uniform grid of k-points using Monkhorst-Pack algorithm
+    !> @details Implements the Monkhorst-Pack algorithm for generating uniform k-point grids.
+    !>          Applies symmetry operations and time reversal to reduce the number of inequivalent
+    !>          k-points. Handles equivalence checking and normalization of weights. Ported from
+    !>          QuantumESPRESSO.
+    !> @param[in] nrot Number of rotation operations (symmetries)
+    !> @param[in] time_reversal Logical flag to use time reversal symmetry
+    !> @param[in] skip_equivalence Logical flag to skip k-point equivalence check
+    !> @param[in] s Symmetry operations (3,3,nrot)
+    !> @param[in] t_rev Time reversal flags for each symmetry operation (nrot)
+    !> @param[inout] nkp Total number of k-points (input: max, output: actual)
+    !> @param[in] k1,k2,k3 Offset parameters for Monkhorst-Pack grid
+    !> @param[in] nk1,nk2,nk3 Grid dimensions
+    !> @param[out] nks Number of inequivalent k-points
+    !> @param[out] xk K-point coordinates (3,nkp)
+    !> @param[out] wk K-point weights (nkp)
+    !> @note Uses symmetry operations to reduce the number of inequivalent k-points.
+    !> @note Normalizes weights to sum to one. Writes summary to stdout.
+    !> @see get_kpoints, set_sym_bl
     subroutine kpoint_grid(nrot, time_reversal, skip_equivalence, s, t_rev, &
                            nkp, k1, k2, k3, nk1, nk2, nk3, nks, xk, wk)
         !----------------------------------------------------------------------------
@@ -403,6 +456,18 @@ contains
     end subroutine kpoint_grid
 
     ! ----------------------------------------
+    !> @brief Generate k-points path for band structure calculations
+    !> @details Generates a continuous k-point path in the first Brillouin zone for band
+    !>          structure calculations. Interpolates between user-specified endpoints to
+    !>          create a path with specified resolution. Computes distances along the path.
+    !> @param[inout] xkp K-point coordinates (3,nk): input = path endpoints, output = full path
+    !> @param[inout] wkp K-point weights (nk): output = path distances
+    !> @param[in] nk1 Number of path segments (number of endpoints)
+    !> @param[in] nk2 Number of points per segment
+    !> @param[inout] iflag Error flag (0=success, 1=error)
+    !> @note Uses linear interpolation between endpoints. Adds last point explicitly.
+    !> @note Writes error to stdout if path generation fails.
+    !> @see get_kpoints
     subroutine generate_kp_path(xkp, wkp, nk1, nk2, iflag)
         ! ----------------------------------------
         !
@@ -463,6 +528,17 @@ contains
 
     end subroutine generate_kp_path
 
+    !> @brief Check consistency between wavefunction phases and k-points
+    !> @details Verifies that the wavefunction phases in fort.10 files correspond to the
+    !>          input k-points for all MPI processes. Ensures that the k-point grid and
+    !>          the wavefunction phases are consistent across the pool. Calls error routine
+    !>          if any mismatch is detected.
+    !> @param[in] id Process ID in the k-point pool
+    !> @param[in] comm MPI communicator
+    !> @param[in] rank MPI rank
+    !> @note Uses reduce_base_real for collective communication. Writes error and aborts
+    !>       if phases do not match k-points.
+    !> @see error, reduce_base_real
     subroutine check_kpoints(id, comm, rank)
 
         implicit none
@@ -505,6 +581,16 @@ contains
     ! weighted sums of over pools for different variables types
     ! To call those functions use the interface above!
     !
+    !> @brief Sum k-point weighted array of integers across MPI processes
+    !> @details Performs a weighted sum of an integer array using the k-point weights for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses MPI_ALLREDUCE for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Integer array to be summed (modified in place)
+    !> @param[in] dim_ps Dimension of the array
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses MPI for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_scalar_int, sum_kpoints_array_real8
     subroutine sum_kpoints_array_int(ps, dim_ps, comm, root)
         implicit none
         integer, intent(in) :: dim_ps, comm, root
@@ -526,6 +612,15 @@ contains
         return
     end subroutine sum_kpoints_array_int
 
+    !> @brief Sum k-point weighted scalar integer across MPI processes
+    !> @details Performs a weighted sum of an integer scalar using the k-point weight for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses MPI_ALLREDUCE for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Integer scalar to be summed (modified in place)
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses MPI for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_array_int, sum_kpoints_scalar_real8
     subroutine sum_kpoints_scalar_int(ps, comm, root)
         implicit none
         integer, intent(in) :: comm, root
@@ -544,6 +639,15 @@ contains
         return
     end subroutine sum_kpoints_scalar_int
 
+    !> @brief Sum k-point weighted scalar real*8 across MPI processes
+    !> @details Performs a weighted sum of a real*8 scalar using the k-point weight for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses reduce_base_real for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Real*8 scalar to be summed (modified in place)
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses reduce_base_real for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_array_real8, sum_kpoints_scalar_int
     subroutine sum_kpoints_scalar_real8(ps, comm, root)
         implicit none
         integer, intent(in) :: root, comm
@@ -561,6 +665,16 @@ contains
         return
     end subroutine sum_kpoints_scalar_real8
 
+    !> @brief Sum k-point weighted array of real*8 across MPI processes
+    !> @details Performs a weighted sum of a real*8 array using the k-point weights for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses reduce_base_real for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Real*8 array to be summed (modified in place)
+    !> @param[in] dim_ps Dimension of the array
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses reduce_base_real for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_scalar_real8, sum_kpoints_array_int
     subroutine sum_kpoints_array_real8(ps, dim_ps, comm, root)
         implicit none
         integer, intent(in) :: dim_ps, root, comm
@@ -577,6 +691,16 @@ contains
         return
     end subroutine sum_kpoints_array_real8
 
+    !> @brief Sum k-point weighted array of real*16 across MPI processes
+    !> @details Performs a weighted sum of a real*16 array using the k-point weights for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses MPI_ALLREDUCE with conversion to real*8 for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Real*16 array to be summed (modified in place)
+    !> @param[in] dim_ps Dimension of the array
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses MPI for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_scalar_real16, sum_kpoints_array_real8
     subroutine sum_kpoints_array_real16(ps, dim_ps, comm, root)
         implicit none
         integer, intent(in) :: dim_ps, comm, root
@@ -599,6 +723,15 @@ contains
         return
     end subroutine sum_kpoints_array_real16
 
+    !> @brief Sum k-point weighted scalar real*16 across MPI processes
+    !> @details Performs a weighted sum of a real*16 scalar using the k-point weight for
+    !>          the current process. Only active when kaverage is true and not in decoupled_run mode.
+    !>          Uses MPI_ALLREDUCE with conversion to real*8 for parallel reduction if compiled with PARALLEL.
+    !> @param[inout] ps Real*16 scalar to be summed (modified in place)
+    !> @param[in] comm MPI communicator
+    !> @param[in] root Root process for reduction
+    !> @note Uses MPI for parallel reduction. No operation if kaverage is false or decoupled_run is true.
+    !> @see sum_kpoints_array_real16, sum_kpoints_scalar_real8
     subroutine sum_kpoints_scalar_real16(ps, comm, root)
         implicit none
         integer, intent(in) :: comm, root
@@ -620,6 +753,16 @@ contains
     end subroutine sum_kpoints_scalar_real16
 
     ! -----------------------------------------------
+    !> @brief Search for a section in input file
+    !> @details Searches the input file for a specified section name. Reads line by line
+    !>          until the section is found or end of file is reached. Sets iflag to 1 if
+    !>          the section is not found.
+    !> @param[in] funit File unit number
+    !> @param[in] section_name Name of the section to search for
+    !> @param[inout] iflag Error flag (0=found, 1=not found)
+    !> @return Logical true if section found, false otherwise
+    !> @note Writes warning to stdout if section is not found.
+    !> @see get_kpoints
     logical function found_sec(funit, section_name, iflag)
         ! -----------------------------------------------
         !
@@ -651,6 +794,13 @@ contains
     ! initialize seed for random k-points generation
     ! based on system time.
     !
+    !> @brief Initialize random seed for k-points generation
+    !> @details Initializes the random number generator seed based on the current system time.
+    !>          Used for generating random k-points when kp_type = 4. Ensures different runs
+    !>          produce different random k-point grids.
+    !> @note Uses system_clock to get current time for seed generation. Allocates and deallocates
+    !>       the seed array as needed.
+    !> @see get_kpoints
     subroutine init_random_seed
         implicit none
         integer :: i, n, clock

@@ -13,6 +13,58 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Invert a skew-symmetric matrix using LU decomposition
+!>
+!> This subroutine computes the inverse of a skew-symmetric matrix A
+!> using the LU decomposition A = L*U*P, where P is a permutation matrix.
+!> The inverse is computed as A^(-1) = P^T * U^(-1) * L^(-1).
+!>
+!> Parameters
+!> ----------
+!> UPLO : character, in
+!>     Specifies which part of the matrix A is stored:
+!>     'U' or 'u': Upper triangular part is stored.
+!>     'L' or 'l': Lower triangular part is stored.
+!> N : integer, in
+!>     Order of the matrix A.
+!> A : real*8 array, in
+!>     The skew-symmetric matrix A, stored in packed format.
+!>     On entry, contains the LU factors from DSKTRF.
+!> LDA : integer, in
+!>     Leading dimension of array A.
+!> AINV : real*8 array, out
+!>     The inverse of matrix A.
+!> LDINV : integer, in
+!>     Leading dimension of array AINV.
+!> IPIV : integer array, in
+!>     Pivot indices from DSKTRF; dimension at least N.
+!> WORK : real*8 array, work
+!>     Workspace array; dimension at least N^2 + 12*N - 2.
+!> INFO : integer, out
+!>     = 0: successful exit.
+!>     < 0: if INFO = -i, the i-th argument had an illegal value.
+!>     > 0: if INFO = i, U(i,i) is exactly zero; the matrix is singular.
+!>
+!> Notes
+!> -----
+!> - Assumes that DSKTRF has been called previously to factorize A.
+!> - Uses a three-step process: permutation, triangular solve, permutation.
+!> - Supports both upper and lower triangular storage formats.
+!> - The algorithm handles the special structure of skew-symmetric matrices.
+!>
+!> Algorithm
+!> ---------
+!> 1. Initialize AINV as identity matrix
+!> 2. Apply first permutation (reverse order)
+!> 3. Extract skew-symmetric elements and prepare for triangular solve
+!> 4. Solve triangular system using DTRTRS
+!> 5. Solve tridiagonal system using DSKTRS or DGTSVX
+!> 6. Solve triangular system with transpose
+!> 7. Apply final permutation
+!>
+!> Example
+!> -------
+!> Used in quantum Monte Carlo calculations for matrix operations.
 subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
     implicit none
     character uplo
@@ -20,12 +72,9 @@ subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
     real*8 a(lda, *), ainv(ldinv, *), work(*)
     real*8 rcond
     logical yeslap
-    !     First factorization assumed
-    !     CALL DSKTRF( UPLO, 'N', N, A, LDA, IPIV, WORK, LWORK, INFO)
-    !     Identity matrix
-    !     ipiv dimension required 3n
-    !     work dimension required n^2+12*n-2
+!> @brief Flag to choose between LAPACK and homemade algorithm
     yeslap = .false. ! if .false. the homemade algorithm is done.
+!> @brief Initialize AINV as identity matrix
     do i = 1, n
         do j = 1, i - 1
             ainv(j, i) = 0.d0
@@ -35,14 +84,15 @@ subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
             ainv(j, i) = 0.d0
         end do
     end do
-    !     fisrt permutation of ainv
+!> @brief Apply first permutation in reverse order
     do i = n, 1, -1
         work(1:n) = ainv(i, 1:n)
         ainv(i, 1:n) = ainv(ipiv(i), 1:n)
         ainv(ipiv(i), 1:n) = work(1:n)
     end do
-    !      SECOND
+!> @brief Extract skew-symmetric elements and prepare triangular solve
     if (UPLO .eq. 'u' .or. UPLO .eq. 'U') then
+!> @brief Upper triangular case: extract superdiagonal elements
         do i = 1, N - 1
             work(i) = a(i, i + 1)
             work(n + i - 1) = -a(i, i + 1)
@@ -52,6 +102,7 @@ subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
         end do
         a(1:n - 1, n) = 0.d0
     else
+!> @brief Lower triangular case: extract subdiagonal elements
         do i = 1, N - 1
             work(i) = -a(i + 1, i)
             work(n + i - 1) = a(i + 1, i)
@@ -61,10 +112,13 @@ subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
         end do
         a(2:n, 1) = 0.d0
     end if
+!> @brief Set diagonal elements to zero (skew-symmetric property)
     work(2*N - 1:3*N - 2) = 0.d0 ! diagonal elements of skew matrix , obviously set to zero.
+!> @brief First triangular solve: U * X = B
     call DTRTRS(UPLO, 'N', 'U', N, N, A, LDA, ainv, LDINV, INFO)
-    ! USE STANDARD LAPACK DGTSVX or the simpler DGTSV?
+!> @brief Solve tridiagonal system using LAPACK or homemade algorithm
     if (yeslap) then
+!> @brief Use LAPACK DGTSVX for tridiagonal solve
         call DGTSVX('N', 'N', N, N, work(N), work(2*N - 1), work, work(3*N)&
                 &, work(4*N), work(5*N), work(6*N), IPIV(N + 1), AINV, LDA, work(7*N), N&
                 &, RCOND, work(7*N + N*N - 1), work(8*N + N*N - 1)&
@@ -73,10 +127,12 @@ subroutine dsktri(uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
             ainv(1:N, i) = work(7*N + (i - 1)*N:7*N + i*N - 1)
         end do
     else
+!> @brief Use homemade DSKTRS for skew-symmetric tridiagonal solve
         call DSKTRS(UPLO, N, N, WORK, AINV, LDINV, WORK(N), INFO)
     end if
+!> @brief Second triangular solve: L^T * X = B
     call DTRTRS(UPLO, 'T', 'U', N, N, A, LDA, ainv, LDINV, INFO)
-    !     last permutation of ainv
+!> @brief Apply final permutation to complete A^(-1) = P^T * U^(-1) * L^(-1)
     do i = 1, n
         work(1:n) = ainv(i, 1:n)
         ainv(i, 1:n) = ainv(ipiv(i), 1:n)

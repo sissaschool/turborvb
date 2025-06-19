@@ -13,6 +13,55 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Matrix update utilities for quantum Monte Carlo calculations
+!>
+!> This module provides subroutines for updating matrix elements in quantum
+!> Monte Carlo calculations, supporting both real and complex matrices.
+!> It handles different matrix types including standard matrices and
+!> Pfaffian matrices for paired and unpaired electrons.
+!>
+!> The module includes:
+!> - Real matrix update with symmetry handling
+!> - Complex matrix update with Hermitian/transpose symmetry
+!> - Support for Pfaffian matrices with up/down electron blocks
+!> - Proper handling of paired and unpaired electron configurations
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Update real matrix elements with symmetry handling
+!>
+!> This subroutine updates matrix elements in a real matrix, handling
+!> different matrix types and symmetry conditions. It supports both
+!> standard matrices and Pfaffian matrices for quantum Monte Carlo
+!> calculations.
+!>
+!> @param[in,out] amat Matrix to be updated (ndim, *)
+!> @param[in] ndim Leading dimension of the matrix
+!> @param[in] ind Linear index of the matrix element to update
+!> @param[in] value New value for the matrix element
+!> @param[in] symmagp Flag for symmetric matrix updates
+!> @param[in] ipf Flag indicating matrix type:
+!>                - ipf = 1: Standard matrix
+!>                - ipf ≠ 1: Pfaffian matrix
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Converts linear index to (i,j) matrix coordinates
+!> 2. For standard matrices (ipf = 1):
+!>    - Sets amat(i,j) = value
+!>    - If symmagp is true, sets amat(j,i) = value
+!> 3. For Pfaffian matrices (ipf ≠ 1):
+!>    - Sets amat(i,j) = value and amat(j,i) = -value
+!>    - Handles up/down electron blocks with proper symmetry
+!>    - Manages paired and unpaired electron configurations
+!>    - Applies symmetry conditions based on ion types
+!>
+!> @note The subroutine handles antisymmetry of Pfaffian matrices
+!> @note Up/down electron blocks are handled separately for paired electrons
+!> @note The subroutine respects ion type constraints (kiontot)
+!> @note Used in wave function optimization and matrix updates
 subroutine upsim(amat, ndim, ind, value, symmagp, ipf)
     use allio, only: nelorb_at, pfaffup, kiontot
     implicit none
@@ -55,7 +104,39 @@ subroutine upsim(amat, ndim, ind, value, symmagp, ipf)
     return
 end subroutine upsim
 
-!Beccato, è corretto usare nelorb_at
+!> @brief Update complex matrix elements with symmetry handling
+!>
+!> This subroutine updates matrix elements in a complex matrix, handling
+!> different matrix types and symmetry conditions. It supports both
+!> standard matrices and Pfaffian matrices with proper handling of
+!> Hermitian and transpose symmetries.
+!>
+!> @param[in,out] amat Complex matrix to be updated (ndim, *)
+!> @param[in] ndim Leading dimension of the matrix
+!> @param[in] ind Linear index of the matrix element to update
+!> @param[in] value Array containing new complex value for the matrix element
+!> @param[in] symmagp Flag for symmetric matrix updates
+!> @param[in] ipf Flag indicating matrix type:
+!>                - ipf = 1: Standard matrix
+!>                - ipf ≠ 1: Pfaffian matrix
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Converts linear index to (i,j) matrix coordinates
+!> 2. For standard matrices (ipf = 1):
+!>    - Sets amat(i,j) = value(1)
+!>    - If symmagp is true, applies Hermitian or transpose symmetry
+!> 3. For Pfaffian matrices (ipf ≠ 1):
+!>    - Sets amat(i,j) = value(1) and amat(j,i) = -value(1)
+!>    - Handles up/down electron blocks with proper symmetry
+!>    - Applies Hermitian or transpose symmetry based on yes_hermite flag
+!>    - Manages paired and unpaired electron configurations
+!>
+!> @note For Hermitian matrices (yes_hermite = .true.), uses conjugate symmetry
+!> @note For non-Hermitian matrices, uses transpose symmetry
+!> @note The subroutine handles antisymmetry of Pfaffian matrices
+!> @note Up/down electron blocks are handled separately for paired electrons
+!> @note Used in complex wave function optimization and matrix updates
 subroutine upsim_complex(amat, ndim, ind, value, symmagp, ipf)
     use allio, only: yes_hermite, nelorb_at, pfaffup, kiontot
     implicit none

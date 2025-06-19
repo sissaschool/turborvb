@@ -13,12 +13,43 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-! This subroutine updates the support vector jastrowall_ee in the case of
-! DMC or Lattice Regularized DMC. This vector is used by the fast
-! update routine ("uptabtot_new.f90") to speed up Jastrow updating.
-! The 2body part of the jastrowall_ee has been already computed in
-! the routine "compute_fast.f90".
-
+!> @brief Jastrow factor support vector update for DMC and LR-DMC
+!>
+!> This subroutine updates the support vector jastrowall_ee used in
+!> Diffusion Monte Carlo (DMC) and Lattice Regularized DMC (LR-DMC)
+!> calculations. The updated vector is used by the fast update routine
+!> "uptabtot_new.f90" to speed up Jastrow factor calculations.
+!>
+!> The subroutine handles both 3/4-body Jastrow factors and wave function
+!> components, with support for spin-dependent calculations and OpenMP
+!> offloading for GPU acceleration.
+!>
+!> @param[in] yesfn Flag indicating whether to update gradients and Laplacians
+!> @param[in,out] jastrowall_ee Support vector for Jastrow factor calculations
+!> @param[in] winvjbar Jastrow factor basis coefficients for up electrons
+!> @param[in] winvjbarsz Jastrow factor basis coefficients for spin-dependent terms
+!> @param[in] winvj Jastrow factor basis vectors
+!> @param[in,out] psip Working array for matrix operations
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Initializes working array psip to zero
+!> 2. If yesfn is true, updates gradients and Laplacians:
+!>    - Processes 3/4-body terms (k = 1 to ip4)
+!>    - Processes lattice terms (k = 1 to indt)
+!>    - Uses matrix multiplication to compute Jastrow contributions
+!>    - Handles both up and down electron components
+!>    - Updates spin-dependent terms if iessz is true
+!> 3. Updates wave function components:
+!>    - Computes Jastrow factor contributions to wave function
+!>    - Handles both up and down electron components
+!>    - Updates spin-dependent terms if iessz is true
+!>
+!> @note The 2-body part of jastrowall_ee is computed in "compute_fast.f90"
+!> @note The subroutine supports OpenMP offloading for GPU acceleration
+!> @note Handles both paired (ipj=1) and unpaired (ipj=2) electron configurations
+!> @note Spin-dependent calculations are performed when iessz is true
+!> @note Used in DMC and LR-DMC calculations for efficient Jastrow updates
 subroutine save_jall(yesfn, jastrowall_ee, winvjbar, winvjbarsz, winvj, psip)
 
     use constants, only: ip4, ipj

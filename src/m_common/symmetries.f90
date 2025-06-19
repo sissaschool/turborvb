@@ -14,17 +14,25 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file symmetries.f90
+!> @brief Symmetry operations and Bravais lattice symmetries for TurboRVB
+!> @details Provides routines for handling symmetry operations in periodic systems,
+!>          including Bravais lattice symmetries, point group operations, and
+!>          symmetry-based optimizations. Based on Quantum ESPRESSO symmetry
+!>          routines adapted for QMC calculations.
+!> @author TurboRVB group (based on Quantum ESPRESSO)
+!> @date 2022
+
 module symmetries
 
-    ! isymm contains all symmetry matrices in crystal lattice
-    ! nrot is the total number of Bravais lattice symmetries
-    ! sname contains the names of the symmetries
-    ! allowed_sym check whether the symmetries of BL are allowed by the point group of the supercell
+    !> @brief Number of symmetry operations
     integer :: nrot, nrot_full
+    !> @brief Symmetry matrices in crystal lattice coordinates
     integer :: isymm(3, 3, 48)
+    !> @brief Names of symmetry operations
     character :: sname(64)*45
 
-    ! full name of the rotational part of each symmetry operation
+    !> @brief Full names of rotational parts of symmetry operations
     character :: s0name(64)*45
 
     data s0name/ &
@@ -131,14 +139,13 @@ contains
     ! or http://www.gnu.org/copyleft/gpl.txt .
 
     subroutine set_sym_bl(at)
-
-        !
-        ! Provides symmetry operations for all bravais lattices
-        ! Tests first the 24 proper rotations for the cubic lattice;
-        ! then the 8 rotations specific for the hexagonal axis (special axis c);
-        ! then inversion is added
-        !
-
+        !> @brief Set up Bravais lattice symmetries
+        !> @details Provides symmetry operations for all Bravais lattices. Tests first
+        !>          the 24 proper rotations for the cubic lattice, then the 8 rotations
+        !>          specific for the hexagonal axis, then adds inversion. All Bravais
+        !>          lattices have inversion symmetry.
+        !> @param[in] at Direct lattice vectors (3, 3)
+        !> @note Based on Quantum ESPRESSO symmetry routines adapted for QMC
         implicit none
         ! sin3 = sin(pi/3), cos3 = cos(pi/3), msin3 = -sin(pi/3), mcos3 = -cos(pi/3)
         !
@@ -363,7 +370,21 @@ contains
     !   end subroutine set_sym_cell
 
     subroutine purge_isymm(iespbc, nsym, isymm, sname, t_rev, rion, nion, zeta, cellscale, nx, ny, nz)
-
+        !> @brief Purge symmetry operations based on atomic positions and cell geometry
+        !> @details Removes symmetry operations that are not compatible with the actual
+        !>          atomic positions, cell geometry, and periodic boundary conditions.
+        !>          Checks that each symmetry operation maps atoms to equivalent positions.
+        !> @param[in] iespbc Logical: periodic boundary conditions
+        !> @param[in] nsym Number of input symmetries
+        !> @param[inout] isymm Symmetry matrices (3, 3, nsym)
+        !> @param[inout] sname Symmetry names
+        !> @param[inout] t_rev Time reversal flags
+        !> @param[in] rion Atomic positions (3, nion)
+        !> @param[in] nion Number of ions
+        !> @param[in] zeta Atomic numbers/charges
+        !> @param[in] cellscale Cell dimensions
+        !> @param[in] nx, ny, nz Grid dimensions (optional)
+        !> @note Updates nrot to the number of allowed symmetries
         use constants, only: deps
         implicit none
 
@@ -437,13 +458,15 @@ contains
     end subroutine purge_isymm
 
     subroutine transform_point(s, i, j, k, nx, ny, nz, ri, rj, rk)
-
-        !    This routine computes the rotated of the point i,j,k throught
-        !    the symmetry (s,f). Then it computes the equivalent point
-        !    on the original real space mesh
-        !    This routine is used in the DFT code (routine updenorb_new) for
-        !    charge density symmetrisation in case of k-points sampling.
-
+        !> @brief Transform a point through a symmetry operation
+        !> @details Computes the rotated point (ri, rj, rk) from the input point (i, j, k)
+        !>          through the symmetry operation s. Then computes the equivalent point
+        !>          on the original real space mesh. Used for charge density symmetrization.
+        !> @param[in] s Symmetry matrix (3, 3)
+        !> @param[in] i, j, k Input point coordinates
+        !> @param[in] nx, ny, nz Grid dimensions
+        !> @param[out] ri, rj, rk Transformed point coordinates
+        !> @note Used in DFT code for charge density symmetrization with k-point sampling
         implicit none
         !
         !    first the dummy variables
@@ -482,6 +505,14 @@ contains
 
     ! adapted from QuantumESPRESSO
     subroutine invmat(n, a, a_inv, da)
+        !> @brief Compute the inverse of a matrix using LAPACK
+        !> @details Computes the inverse "a_inv" of matrix "a", both dimensioned (n,n).
+        !>          Matrix "a" is unchanged on output. Uses LAPACK DGETRF and DGETRI.
+        !> @param[in] n Matrix dimension
+        !> @param[in] a Input matrix (n, n)
+        !> @param[out] a_inv Inverse matrix (n, n)
+        !> @param[out] da Determinant of matrix a
+        !> @note Adapted from Quantum ESPRESSO matrix inversion routines
         !
         ! computes the inverse "a_inv" of matrix "a", both dimensioned (n,n)
         ! matrix "a" is unchanged on output - LAPACK

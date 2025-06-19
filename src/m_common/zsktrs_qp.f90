@@ -13,12 +13,61 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-!> This subroutine solves A * X = B.
-!> Our homemade algorithm to solve A * X = B (No transpose)
-!> where A is a skewsymmetric matrix, X and B are rectanglar matrices.
-!> The input vector a stores the elements of A such that
-!> A(i+1,i)=a(i) and A(i,i+1)=-a(i) for i=1,..,n-1
-!> a(n), b(ldb, n), x(n)
+!> @brief Solve complex skew-symmetric tridiagonal system A*X = B with quad precision
+!>
+!> This subroutine solves the linear system A*X = B where A is a
+!> non-singular complex skew-symmetric tridiagonal matrix of even dimension n.
+!> The matrix A is stored in packed format with A(i+1,i) = a(i) and
+!> A(i,i+1) = -a(i) for i = 1, ..., n-1. Uses quad-precision arithmetic
+!> for improved numerical stability.
+!>
+!> Parameters
+!> ----------
+!> UPLO : character, in
+!>     Specifies which part of the matrix A is stored:
+!>     'U' or 'u': Upper triangular part is stored (A(i,i+1) = a(i)).
+!>     'L' or 'l': Lower triangular part is stored (A(i+1,i) = a(i)).
+!> N : integer, in
+!>     Order of the matrix A (must be even).
+!> NHRS : integer, in
+!>     Number of right-hand sides.
+!> A : complex*16 array, in
+!>     The complex skew-symmetric tridiagonal matrix stored in packed format.
+!>     For UPLO = 'U': A(i,i+1) = a(i), i = 1, ..., n-1.
+!>     For UPLO = 'L': A(i+1,i) = a(i), i = 1, ..., n-1.
+!> B : complex*16 array, inout
+!>     Right-hand side matrix (N × NHRS). On exit, contains the solution X.
+!> LDB : integer, in
+!>     Leading dimension of array B.
+!> X : complex*16 array, work
+!>     Workspace array for storing intermediate results.
+!> INFO : integer, out
+!>     = 0: successful exit.
+!>     < 0: if INFO = -i, the i-th argument had an illegal value.
+!>     > 0: if INFO = i, A(i,i+1) is exactly zero; the matrix is singular.
+!>
+!> Notes
+!> -----
+!> - The matrix A must be of even dimension n.
+!> - The solution is computed using forward and backward substitution.
+!> - Even-indexed variables are solved forward, odd-indexed backward.
+!> - The algorithm exploits the special structure of complex skew-symmetric matrices.
+!> - For UPLO = 'L', the signs of the matrix elements are temporarily flipped.
+!> - Uses quad-precision arithmetic for improved numerical accuracy.
+!> - Processes each right-hand side separately for better cache performance.
+!>
+!> Algorithm
+!> ---------
+!> 1. For UPLO = 'L', flip signs of matrix elements
+!> 2. For each right-hand side:
+!>    a. Solve even-indexed variables forward: x(2), x(4), ..., x(n)
+!>    b. Solve odd-indexed variables backward: x(n-1), x(n-3), ..., x(1)
+!> 3. Copy solution back to B
+!> 4. Restore original matrix signs if needed
+!>
+!> Example
+!> -------
+!> Used in high-precision complex skew-symmetric matrix operations.
 subroutine zsktrs(uplo, n, nhrs, a, b, ldb, x, info)
     implicit none
 
@@ -37,44 +86,42 @@ subroutine zsktrs(uplo, n, nhrs, a, b, ldb, x, info)
     complex*32 aq, a2q, xo
 #endif
 
+!> @brief Initialize INFO and flip signs for lower triangular storage
     info = 0
     if (uplo .eq. 'l' .or. uplo .eq. 'L') then
         a(1:n - 1) = -a(1:n - 1)
     end if
-    !       Solve   A X = B , where B and X  are  rectangular matrices n x nhrs
-    !       A is a non singular skew symmetric matrix with dimension n even
-    !       stored in A(i+1,i)=a(i)  i=1,..,n-1
-    !       assumed  A(i,i+1)=-a(i)
-    !         even x
+!> @brief Solve A*X = B for complex skew-symmetric tridiagonal matrix A
+!> A is stored as A(i+1,i) = a(i), A(i,i+1) = -a(i), i = 1, ..., n-1
+!> Matrix dimension n must be even
+!> @brief Process each right-hand side separately
     do j = 1, nhrs
+!> @brief Solve even-indexed variables forward with quad precision
         aq = a(1)
-        !          x(j,2)=b(j,1)/a(1)
         xo = b(1, j)/aq
         x(2) = xo
         do i = 4, n, 2
             aq = a(i - 1)
             a2q = a(i - 2)
-            !             x(i)=(b(i-1,j)+a(i-2)*x(i-2))/a(i-1)
             xo = (a2q*xo + b(i - 1, j))/aq
             x(i) = xo
         end do
-        !         odd x
-        !         x(j,n-1)=-b(n-2,j)/a(n-1)
+!> @brief Solve odd-indexed variables backward with quad precision
         aq = a(n - 1)
         xo = -b(n, j)/aq
         x(n - 1) = xo
         do i = n - 3, 1, -2
             aq = a(i)
             a2q = a(i + 1)
-            !          x(i)=-(b(i+1,j)-a(i+1)*x(i+2))/a(i)
             xo = -(-a2q*xo + b(i + 1, j))/aq
             x(i) = xo
         end do
+!> @brief Copy solution back to B
         do i = 1, n
             b(i, j) = x(i)
         end do
     end do
-    !       restore value
+!> @brief Restore original matrix signs
     if (uplo .eq. 'l' .or. uplo .eq. 'L') then
         a(1:n - 1) = -a(1:n - 1)
     end if

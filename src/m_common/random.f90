@@ -13,6 +13,47 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Random configuration selection for quantum Monte Carlo moves
+!>
+!> This subroutine implements a random configuration selection algorithm
+!> for quantum Monte Carlo calculations, particularly useful for
+!> non-diagonal moves in variational Monte Carlo and diffusion Monte Carlo.
+!> It uses a cumulative probability table to select configurations
+!> based on their transition probabilities.
+!>
+!> @param[in] L Number of particles or components per configuration
+!> @param[in] Lz Total number of possible configurations
+!> @param[in] ztry Random number in [diag, wtot] for configuration selection
+!> @param[in] table Probability table containing transition weights (ipc, *)
+!> @param[in] diag Diagonal element weight (lower bound for ztry)
+!> @param[out] iout Selected particle index within the configuration
+!> @param[out] indvic Selected configuration index
+!> @param[out] sign Sign of the selected transition (+1 or -1)
+!> @param[in] npow Power parameter for transition weight modification
+!> @param[in] gamma Gamma parameter for transition weight modification
+!> @param[in] istart Starting index for configuration selection
+!> @param[in] indtm Array of maximum indices for each particle
+!> @param[in] ipc Leading dimension of table array
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Initializes cumulative probability with diagonal element
+!> 2. Iterates through configurations until cumulative probability ≥ ztry:
+!>    - Calculates configuration and particle indices
+!>    - Applies power and gamma modifications to transition weights
+!>    - Accumulates modified weights in cumulative probability
+!> 3. Handles edge cases and roundoff errors:
+!>    - Adjusts index if final configuration has zero weight
+!>    - Ensures valid configuration selection
+!> 4. Determines sign based on transition weight sign
+!> 5. Returns selected configuration and particle indices
+!>
+!> @note The algorithm assumes diag < ztry ≤ wtot (non-diagonal move)
+!> @note Configuration index is calculated as: index = (i-1)/L + 1
+!> @note Particle index is calculated as: ipart = i - (index-1)*L
+!> @note Negative indvic indicates unrecoverable error (zero weight)
+!> @note The subroutine handles both positive and negative transition weights
+!> @note Power and gamma parameters modify transition weights for optimization
 subroutine random(L, Lz, ztry, table, diag, iout, indvic, sign           &
         &, npow, gamma, istart, indtm, ipc)
     implicit none

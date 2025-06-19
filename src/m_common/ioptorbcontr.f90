@@ -13,7 +13,32 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file ioptorbcontr.f90
+!> @brief Orbital contraction mapping and multiplicity checking functions
+!> @details This module provides functions to map contracted orbital types to their
+!>          uncontracted counterparts and check orbital multiplicity consistency.
+!>          The functions handle various orbital types including s, p, d, f, g, h, i
+!>          orbitals with different basis set contractions (Gaussian, Slater, mixed).
+!>          Used extensively in quantum Monte Carlo calculations for wave function
+!>          optimization and evaluation.
+!> @author TurboRVB group
+!> @date 2022
+!> @see makefun, makefun_pbc, ioptorbder
+
 function ioptorbcontr(ioptorb, LBox, j)
+    !> @brief Maps contracted orbital types to uncontracted orbital types
+    !> @details This function converts contracted orbital identifiers to their
+    !>          corresponding uncontracted orbital types based on the orbital
+    !>          contraction scheme and boundary conditions. Handles various
+    !>          orbital types (s, p, d, f, g, h, i) with different basis set
+    !>          contractions including Gaussian, Slater, and mixed contractions.
+    !> @param[in] ioptorb Integer orbital type identifier for contracted orbitals
+    !> @param[in] LBox Real*8 box length parameter determining boundary conditions
+    !> @param[in] j Integer index for mixed orbital contractions
+    !> @return Integer uncontracted orbital type identifier
+    !> @note The function handles special cases for periodic boundary conditions
+    !>       and crystal basis sets (LBox = 3.0)
+    !> @see multioptorb, check_multioptorb
     implicit none
     integer ioptorb, ioptorbcontr, j, iflagerr
     real*8 LBox
@@ -432,6 +457,15 @@ function ioptorbcontr(ioptorb, LBox, j)
 end function ioptorbcontr
 
 function multioptorb(ioptorb)
+    !> @brief Returns the multiplicity (number of components) for a given orbital type
+    !> @details This function determines the number of independent components
+    !>          for different orbital types based on their angular momentum.
+    !>          The multiplicity corresponds to the number of magnetic quantum
+    !>          numbers for each orbital type (s=1, p=3, d=5, f=7, g=9, h=11, i=13).
+    !> @param[in] ioptorb Integer orbital type identifier
+    !> @return Integer multiplicity (number of components) for the orbital type
+    !> @note Returns 0 for undefined orbital types
+    !> @see ioptorbcontr, check_multioptorb
     implicit none
     integer multioptorb, ioptorb
 
@@ -459,6 +493,19 @@ function multioptorb(ioptorb)
 end function multioptorb
 
 function check_multioptorb(multi, ioptorb, switch)
+    !> @brief Checks and optionally corrects orbital multiplicity consistency
+    !> @details This function verifies that the provided multiplicity matches
+    !>          the expected multiplicity for the given orbital type. It can
+    !>          either report an error, issue a warning and correct the value,
+    !>          or simply check consistency depending on the switch parameter.
+    !> @param[in,out] multi Integer multiplicity value to be checked/corrected
+    !> @param[in] ioptorb Integer orbital type identifier
+    !> @param[in] switch Character switch controlling behavior:
+    !>                   'E' = Error mode (reports error if mismatch)
+    !>                   'W' = Warning mode (corrects value and reports warning)
+    !> @return Integer status code (0 = consistent, 1 = inconsistency detected)
+    !> @note The function uses multioptorb to determine expected multiplicity
+    !> @see multioptorb, ioptorbcontr
     implicit none
     integer :: check_multioptorb, multi, ioptorb
     character :: switch

@@ -13,6 +13,38 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * @file molec_pfaff.f90
+ * @brief Pfaffian molecular orbital calculations for quantum Monte Carlo
+ *
+ * This file contains subroutines for calculating Pfaffian molecular orbitals
+ * in TurboRVB. Pfaffians are used to represent antisymmetric wave functions
+ * for systems with odd numbers of electrons or for certain types of
+ * correlated wave functions.
+ *
+ * @details
+ * The main algorithm involves:
+ * 1. Tridiagonalization of the skew-symmetric matrix using Pfaffian decomposition
+ * 2. Transformation to real symmetric form for eigenvalue calculation
+ * 3. Diagonalization to obtain eigenvalues and eigenvectors
+ * 4. Back-transformation to obtain the final Pfaffian molecular orbitals
+ *
+ * Key subroutines:
+ * - pfaffian_mo: Main driver for Pfaffian molecular orbital calculation
+ * - pfatriag: Tridiagonalization using Pfaffian decomposition
+ * - symmtriang: Transformation to real symmetric form
+ * - finalize_mopfaff: Back-transformation to final orbitals
+ *
+ * @note
+ * - Supports both real and complex matrices (ipc=1,2)
+ * - Uses LAPACK routines for eigenvalue calculations
+ * - Includes debug options for verification
+ * - Handles both even and odd numbers of orbitals
+ *
+ * @author TurboRVB group
+ * @date 2022
+ */
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Subroutines for the calculation of the pfaffians
 !molecular orbitals            C.G.
@@ -23,6 +55,45 @@
 !        ordered as egvl
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+/**
+ * @brief Calculate Pfaffian molecular orbitals from a skew-symmetric matrix
+ *
+ * This subroutine computes the Pfaffian molecular orbitals by diagonalizing
+ * a skew-symmetric matrix. The algorithm involves tridiagonalization,
+ * transformation to real symmetric form, eigenvalue calculation, and
+ * back-transformation to obtain the final orbitals.
+ *
+ * @param[in] lda Leading dimension of the input matrix
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[in] detmat_c Input skew-symmetric matrix
+ * @param[out] outvl Eigenvalues of the Pfaffian (nelorb_c/2 values)
+ * @param[out] outvct Eigenvectors/molecular orbitals (ipc*lda x nelorb_c)
+ *
+ * @details
+ * The algorithm proceeds as follows:
+ * 1. Copy input matrix to U1 for tridiagonalization
+ * 2. Apply Pfaffian tridiagonalization (pfatriag)
+ * 3. Transform to real symmetric form (symmtriang)
+ * 4. Diagonalize using DSTEVX (LAPACK)
+ * 5. Apply gauge fixing to eigenvectors
+ * 6. Back-transform to final orbitals (finalize_mopfaff)
+ *
+ * The eigenvalues are sorted by magnitude and only the positive
+ * eigenvalues are returned (skew-symmetric matrices have paired
+ * eigenvalues ±λ).
+ *
+ * @note
+ * - Uses LAPACK DSTEVX for eigenvalue calculation
+ * - Includes gauge fixing for consistent eigenvector signs
+ * - Supports both real and complex matrices
+ * - Memory is allocated and deallocated within the subroutine
+ *
+ * @see pfatriag(), symmtriang(), finalize_mopfaff(), orb_max()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
     implicit none
     integer :: nelorb_c, ipc, lda
@@ -79,6 +150,34 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
     deallocate (U1, U3, lambdars, eigvalues, eigvect, work, iwork, ifail, detmattr)
 end subroutine pfaffian_mo
 
+/**
+ * @brief Find the maximum element in a vector for gauge fixing
+ *
+ * This function finds the first element in a vector that exceeds a threshold
+ * value, used for gauge fixing of eigenvectors in Pfaffian calculations.
+ * The threshold is set to avoid numerical issues with very small elements.
+ *
+ * @param[in] n Size of the vector
+ * @param[in] vect Input vector of real values
+ * @return Real value of the first element above threshold, or error if none found
+ *
+ * @details
+ * The function searches for the first element in vect that satisfies
+ * vect(i)^2 > safemin, where safemin = 0.5773576451/n.
+ * This threshold is chosen to avoid numerical issues with poorly
+ * normalized eigenvectors.
+ *
+ * @note
+ * - Used for gauge fixing in pfaffian_mo
+ * - Returns error message if no suitable element is found
+ * - Threshold depends on vector size n
+ * - Assumes vector should be properly normalized
+ *
+ * @see pfaffian_mo()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 function orb_max(n, vect)
     integer n, i
     real(8) orb_max, safemin
@@ -103,6 +202,45 @@ end
 ! matrix \lambda_{iH} in \lambda_R
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+/**
+ * @brief Transform skew-symmetric matrix to real symmetric form
+ *
+ * This subroutine creates the transformation operator U3 and transforms
+ * the skew-symmetric tridiagonal matrix to real symmetric form for
+ * eigenvalue calculation. The transformation maps the Hermitian matrix
+ * λ_{iH} to the real symmetric matrix λ_R.
+ *
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[in] detmattr Tridiagonal skew-symmetric matrix
+ * @param[out] lambdars Real symmetric matrix in packed storage format
+ * @param[out] U3 Transformation matrix for the conversion
+ *
+ * @details
+ * The subroutine performs the following operations:
+ * 1. Constructs the U3 transformation matrix with alternating signs
+ * 2. Extracts off-diagonal elements from detmattr to form lambdars
+ * 3. For real matrices (ipc=1): copies upper diagonal elements
+ * 4. For complex matrices (ipc=2): copies real parts of upper diagonal
+ * 5. In debug mode: verifies the transformation is correct
+ *
+ * The U3 matrix has a specific pattern:
+ * - Elements (2i-1,i) = 1 for i mod 4 = 1
+ * - Elements (2i,i) = 1 for i mod 4 = 2  
+ * - Elements (2i-1,i) = -1 for i mod 4 = 3
+ * - Elements (2i,i) = -1 for i mod 4 = 0
+ *
+ * @note
+ * - lambdars is stored in packed format for LAPACK DSTEVX
+ * - Debug mode includes verification of the transformation
+ * - Supports both real and complex input matrices
+ * - U3 matrix is used in the final back-transformation
+ *
+ * @see pfatriag(), finalize_mopfaff()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine symmtriang(nelorb_c, ipc, detmattr, lambdars, U3)
     implicit none
     integer :: nelorb_c, ipc
@@ -175,6 +313,49 @@ end subroutine symmtriang
 !Using the pfapack library to tridiagonalize the
 !matrix detmattr and to calculate U1
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/**
+ * @brief Tridiagonalize skew-symmetric matrix using Pfaffian decomposition
+ *
+ * This subroutine uses the Pfaffian decomposition algorithm to tridiagonalize
+ * a skew-symmetric matrix. It employs the Pfaffian library routines (DSKTRD/ZSKTRD)
+ * to reduce the matrix to tridiagonal form and compute the transformation matrix U1.
+ *
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[out] detmattr Tridiagonal skew-symmetric matrix
+ * @param[in,out] U1 Transformation matrix (input: original matrix, output: orthogonal matrix)
+ *
+ * @details
+ * The subroutine performs the following steps:
+ * 1. Allocates work arrays for the tridiagonalization
+ * 2. For real matrices (ipc=1):
+ *    - Calls DSKTRD to tridiagonalize the matrix
+ *    - Extracts off-diagonal elements to detmattr
+ *    - Calls DORGTR to compute the orthogonal transformation matrix
+ * 3. For complex matrices (ipc=2):
+ *    - Calls ZSKTRD to tridiagonalize the matrix
+ *    - Extracts real and imaginary parts of off-diagonal elements
+ *    - Calls ZUNGTR to compute the unitary transformation matrix
+ * 4. In debug mode: verifies the tridiagonalization is correct
+ *
+ * The tridiagonal matrix detmattr has the form:
+ * - Diagonal elements are zero (skew-symmetric property)
+ * - Off-diagonal elements contain the tridiagonal values
+ * - For complex matrices, real and imaginary parts are stored separately
+ *
+ * @note
+ * - Uses Pfaffian library routines (DSKTRD/ZSKTRD, DORGTR/ZUNGTR)
+ * - Work array size is determined by workspace query
+ * - Debug mode includes verification of the decomposition
+ * - U1 matrix is used in the final back-transformation
+ * - Supports both real and complex matrices
+ *
+ * @see symmtriang(), finalize_mopfaff()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
     implicit none
     integer :: nelorb_c, ipc
@@ -261,6 +442,53 @@ end subroutine pfatriag
 !eigenvectors and eigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+/**
+ * @brief Apply final transformations to obtain Pfaffian molecular orbitals
+ *
+ * This subroutine applies the final transformations to convert the diagonalized
+ * eigenvectors back to the original basis, producing the final Pfaffian molecular
+ * orbitals. It handles the pairing of eigenvalues and the construction of
+ * proper molecular orbitals from the transformed eigenvectors.
+ *
+ * @param[in] lda Leading dimension of the output matrix
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[in] U1 Orthogonal transformation matrix from tridiagonalization
+ * @param[in] U3 Transformation matrix for real symmetric form
+ * @param[in] eigvalues Eigenvalues from diagonalization
+ * @param[in] eigvect Eigenvectors from diagonalization
+ * @param[out] outvl Final eigenvalues (nelorb_c/2 values)
+ * @param[out] outvct Final molecular orbitals (ipc*lda x nelorb_c)
+ * @param[in] detmat_c Original skew-symmetric matrix (for debug verification)
+ *
+ * @details
+ * The subroutine performs the following transformations:
+ * 1. Applies U3^dagger to the eigenvectors to convert back from real symmetric form
+ * 2. Handles eigenvalue pairing and selection:
+ *    - Skew-symmetric matrices have paired eigenvalues ±λ
+ *    - Only positive eigenvalues are returned in outvl
+ *    - Eigenvectors are paired accordingly
+ * 3. Applies U1 transformation to convert back to original basis
+ * 4. Handles special cases for odd numbers of orbitals
+ * 5. In debug mode: verifies the final result matches the original matrix
+ *
+ * The eigenvalue pairing logic:
+ * - Normal pairs: eigenvalues with significant magnitude difference
+ * - Singular pairs: eigenvalues corresponding to zero eigenvalues
+ * - Single orbital: for odd numbers of orbitals, one unpaired orbital
+ *
+ * @note
+ * - Uses LAPACK BLAS routines (DGEMM/ZGEMM) for matrix multiplications
+ * - Handles both real and complex matrices
+ * - Includes numerical stability checks for eigenvalue pairing
+ * - Debug mode verifies the complete transformation
+ * - Supports both even and odd numbers of orbitals
+ *
+ * @see pfaffian_mo(), pfatriag(), symmtriang()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine finalize_mopfaff(lda, nelorb_c, ipc, U1, U3, eigvalues, eigvect, outvl, outvct, detmat_c)
     implicit none
     integer :: nelorb_c, ipc, lda
@@ -420,6 +648,37 @@ end subroutine finalize_mopfaff
 !Filling a skew symmetric tridiagonal matrix for tests
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+/**
+ * @brief Fill a matrix with random skew-symmetric values for testing
+ *
+ * This subroutine fills a matrix with random skew-symmetric values for
+ * testing and debugging purposes. It generates random numbers and
+ * constructs a skew-symmetric matrix with the property A(i,j) = -A(j,i).
+ *
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[out] detmat_c Skew-symmetric matrix filled with random values
+ *
+ * @details
+ * The subroutine generates random values in the range [-1, 1] and
+ * constructs a skew-symmetric matrix:
+ * - For real matrices (ipc=1): A(i,j) = random value, A(j,i) = -A(i,j)
+ * - For complex matrices (ipc=2): real and imaginary parts are generated separately
+ * - Upper triangular elements are filled with random values
+ * - Lower triangular elements are set to negative of corresponding upper elements
+ * - Diagonal elements remain zero (skew-symmetric property)
+ *
+ * @note
+ * - Uses Fortran random_number() for random value generation
+ * - Sets seed to 4 for reproducible results
+ * - Only fills elements where i+j > nelorb_c for tridiagonal-like structure
+ * - Used primarily for testing and debugging
+ *
+ * @see fill_tridiag(), print_matrix()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine fill_skw(nelorb_c, ipc, detmat_c)
     implicit none
     integer :: nelorb_c, ipc
@@ -456,6 +715,37 @@ end subroutine fill_skw
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Filling a skew symmetric tridiagonal matrix for tests
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/**
+ * @brief Fill a matrix with random tridiagonal skew-symmetric values for testing
+ *
+ * This subroutine fills a matrix with random tridiagonal skew-symmetric values
+ * for testing and debugging purposes. It generates a matrix with non-zero
+ * elements only on the first superdiagonal and subdiagonal.
+ *
+ * @param[in] nelorb_c Number of orbitals
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[out] detmattr Tridiagonal skew-symmetric matrix filled with random values
+ *
+ * @details
+ * The subroutine constructs a tridiagonal skew-symmetric matrix:
+ * - Diagonal elements are zero (skew-symmetric property)
+ * - Superdiagonal elements (i, i+1) are filled with random values
+ * - Subdiagonal elements (i+1, i) are set to negative of corresponding superdiagonal
+ * - For complex matrices (ipc=2): real and imaginary parts are generated separately
+ * - All other elements remain zero
+ *
+ * @note
+ * - Uses Fortran random_number() for random value generation
+ * - Sets seed to 4 for reproducible results
+ * - Creates a proper tridiagonal structure
+ * - Used primarily for testing tridiagonalization algorithms
+ *
+ * @see fill_skw(), print_matrix()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine fill_tridiag(nelorb_c, ipc, detmattr)
     implicit none
     integer :: nelorb_c, ipc
@@ -486,9 +776,40 @@ subroutine fill_tridiag(nelorb_c, ipc, detmattr)
 
 end subroutine fill_tridiag
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Subroutine that  matrices
-!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/**
+ * @brief Print matrix elements above a threshold for debugging
+ *
+ * This subroutine prints matrix elements that exceed a specified threshold
+ * value, useful for debugging and verification of matrix operations.
+ * Only elements with magnitude greater than the threshold are printed.
+ *
+ * @param[in] lda Leading dimension of the matrix
+ * @param[in] nelorb_c Number of orbitals (columns)
+ * @param[in] ipc Complex flag (1=real, 2=complex)
+ * @param[in] detmat_c Matrix to be printed
+ *
+ * @details
+ * The subroutine prints matrix elements in the format:
+ * - For real matrices (ipc=1): "j i value"
+ * - For complex matrices (ipc=2): "j i real_part imaginary_part"
+ * - Only elements with magnitude > prec are printed
+ * - Default precision threshold is 1e-7
+ *
+ * @note
+ * - Used primarily for debugging matrix operations
+ * - Helps verify matrix structure and values
+ * - Suppresses printing of very small elements
+ * - Output format is suitable for manual inspection
+ *
+ * @see fill_skw(), fill_tridiag()
+ *
+ * @author C.G.
+ * @date 2022
+ */
 subroutine print_matrix(lda, nelorb_c, ipc, detmat_c)
     implicit none
     integer :: nelorb_c, lda, ipc
