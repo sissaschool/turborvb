@@ -13,6 +13,90 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+! =============================================
+! FILE: allio.f90 - TurboRVB Input/Output and Control Module
+! =============================================
+!
+! PURPOSE:
+! This module serves as the central hub for all input/output operations,
+! parameter management, and control variables in TurboRVB quantum Monte Carlo
+! calculations. It defines the complete interface between user input and
+! the computational engine.
+!
+! FILE STRUCTURE:
+! ===============
+!
+! 1. MODULE DECLARATION AND IMPORTS (Lines 15-30)
+!    - Module declaration and use statements for dependencies
+!    - External module imports (constants, cell, Ewald, types, etc.)
+!
+! 2. VARIABLE DECLARATIONS (Lines 31-1446)
+!    - Basic control and configuration variables
+!    - System parameters (dimensions, electron counts, etc.)
+!    - Optimization and convergence parameters
+!    - Physical constants and thresholds
+!    - Array declarations for matrices and vectors
+!    - Workspace and memory management variables
+!    - MPI and parallel computing variables
+!    - File I/O and scratch management variables
+!
+! 3. NAMELIST DEFINITIONS (Lines 1447-1940)
+!    - /simulation/     : Main simulation control parameters
+!    - /pseudo/         : Pseudopotential settings
+!    - /readio/         : I/O and file handling options
+!    - /vmc/            : Variational Monte Carlo parameters
+!    - /dmclrdmc/       : Diffusion Monte Carlo and LR-DMC settings
+!    - /optimization/   : Wave function optimization parameters
+!    - /parameters/     : Parameter control flags
+!    - /fitpar/         : Parameter fitting settings
+!    - /dynamic/        : Molecular dynamics parameters
+!    - /unused/         : Legacy/unused parameters
+!    - /molecul/        : Molecular system settings
+!    - /link/           : Link atom parameters
+!
+! 4. SUBROUTINES AND FUNCTIONS (Lines 1959-2561)
+!    - scontract_genj()     : Matrix contraction for Jastrow factors
+!    - scontract_mat_jas()  : Jastrow matrix contraction operations
+!    - scontract_mat_det()  : Determinant matrix contraction operations
+!    - update_kgrid()       : K-point grid update for periodic systems
+!    - norm_metric()        : Vector norm calculation using metric tensor
+!
+! 5. STANDALONE SUBROUTINES (Lines 2587-2614)
+!    - prep_map()           : Lattice vector mapping for periodic systems
+!
+! KEY FEATURES:
+! =============
+! - Comprehensive parameter management for all TurboRVB calculations
+! - Support for both open and periodic boundary conditions
+! - Advanced optimization algorithms (SR, LM, ADAM)
+! - Multi-level parallel computing support (MPI + OpenMP)
+! - Flexible I/O system with scratch file management
+! - Extensive debugging and monitoring capabilities
+!
+! USAGE:
+! ======
+! This module is automatically included in all TurboRVB executables.
+! Users interact with it through namelist input files that define
+! calculation parameters. The module handles parameter validation,
+! default value assignment, and communication between different
+! parts of the code.
+!
+! DEPENDENCIES:
+! =============
+! - constants: Physical constants and mathematical parameters
+! - cell: Unit cell and periodic boundary condition handling
+! - Ewald: Ewald summation for long-range interactions
+! - types: Custom data type definitions
+! - kpoints_mod: K-point sampling and Brillouin zone integration
+! - extpot: External potential and QM/MM interface
+! - van_der_waals: Van der Waals interaction handling
+! - link_atoms: Link atom functionality for QM/MM
+! - sub_comm: Sub-communicator management for parallel computing
+! - mpiio: MPI I/O operations
+! - dielectric: Dielectric continuum models
+!
+! =============================================
+
 module allio
     use constants
     use cell
