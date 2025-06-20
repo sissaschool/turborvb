@@ -608,6 +608,7 @@ subroutine force_dihed()
     real*8 :: dum, dot, dot1, app, rkj2, rim(3), rln(3), app1(3), app4
     real*8 :: ix, iy, iz, lx, ly, lz
     real*8 :: rij(3), rkj(3), rkl(3), rmj2, rnk2, rnk(3), rmj(3), rlnsq, rimsq, app2, app3
+    real*8, dimension(3) :: ai, aj, ak, al
     logical :: qm_atom(4)
 
     ! Derivative of V(phi) with respect to
@@ -773,6 +774,7 @@ subroutine force_improper()
     real*8 :: rkj2, rmj2, tmp, dot, rnk2, tmp1, dot1
     real*8 :: ix, iy, iz, lx, ly, lz
     real*8 :: rij(3), rkj(3), rkl(3), dp1, rnk(3), rmj(3)
+    real*8 :: ai(3), aj(3), ak(3), al(3)
     logical :: qm_atom(4)
 
     ! Derivative of V with respect to PHI
@@ -1086,6 +1088,7 @@ subroutine rf_dihe()
     real*8 :: dum, dot, dot1, app, rkj2, rim(3), rln(3), app1(3), app4
     real*8 :: ix, iy, iz, lx, ly, lz
     real*8 :: rij(3), rkj(3), rkl(3), rmj2, rnk2, rnk(3), rmj(3), rlnsq, rimsq, app2, app3
+    real*8, dimension(3) :: ai, aj, ak, al
 
     restr_f_dihe = 0.d0
 
@@ -1167,9 +1170,9 @@ subroutine rf_dihe()
 end subroutine rf_dihe
 
 !-----------------------------------------------------------------------
-!> @brief Calculate forces for harmonic improper dihedral restraints
-!> @details Computes forces due to harmonic improper dihedral angle
-!>          restraints between quadruplets of atoms. Uses harmonic potential for impropers.
+!> @brief Calculate improper dihedral forces for QM/MM link atoms
+!> @details Computes forces due to improper dihedral restraints in QM/MM
+!>          simulations. Handles mixed QM/MM improper dihedral interactions.
 !> @note Uses potential: V(phi) = k_qhi * (phi - phi_eq)^2
 !> @note Forces are scaled by mm_fact factor
 !> @note Forces are distributed among the four atoms in the improper dihedral
@@ -1190,6 +1193,7 @@ subroutine rf_dimp()
     real*8 :: rkj2, rmj2, tmp, dot, rnk2, tmp1, dot1
     real*8 :: ix, iy, iz, lx, ly, lz
     real*8 :: rij(3), rkj(3), rkl(3), dp1, rnk(3), rmj(3)
+    real*8, dimension(3) :: ai, aj, ak, al
 
     restr_f_dimp = 0.d0
 

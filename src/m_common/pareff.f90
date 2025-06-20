@@ -1112,5 +1112,24 @@ subroutine makeimage_fake(rdiff, cellscale, deps)
     !> @param[in] deps Tolerance for boundary equivalence
     !> @note Used for phase convention and periodic boundary handling
     implicit none
-    ! ... existing code ...
-end subroutine makeimage_fake
+    !   L/2 and -L/2 are not equivalent in this routine.
+    integer kk, npip, m
+    real*8 cost, rdiff(3), cellscale(3), deps
+    do kk = 1, 3
+        cost = rdiff(kk)/cellscale(kk)
+        npip = nint(2*cost)
+        if ((npip/2)*2 .ne. npip .and. abs(cost - npip/2.d0) .lt. deps) then ! Boarder cases
+            if (npip .eq. -1) then
+                m = 0
+            elseif (npip .gt. 0) then
+                m = (npip - 1)/2
+            else
+                m = (npip + 1)/2
+            end if
+        else
+            m = nint(cost)
+        end if
+        rdiff(kk) = rdiff(kk) - cellscale(kk)*m
+    end do
+    return
+end

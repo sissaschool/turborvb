@@ -1160,15 +1160,43 @@ contains
 
     ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    subroutine dbs2gd(iderx, idery, nxvec, xvec, nyvec, yvec, kx, ky, xknot, yknot, &
-            & nx, ny, bcoef, val, ldf)
+    !> @brief Evaluate a two-dimensional tensor-product spline on a grid
+    !> @details Evaluates the derivative of a 2D tensor-product spline at multiple points.
+    !> This routine is optimized for evaluating splines on regular grids by
+    !> reusing knot interval searches and basis function computations.
+    !>
+    !> The grid evaluation uses the hunt algorithm to efficiently locate knot
+    !> intervals for consecutive grid points, significantly improving performance
+    !> compared to individual point evaluation.
+    !>
+    !> @param[in] iderx Order of the x-derivative
+    !> @param[in] idery Order of the y-derivative
+    !> @param[in] nxvec Length of vector xvec (strictly increasing)
+    !> @param[in] xvec Array of x-coordinates for evaluation
+    !> @param[in] nyvec Length of vector yvec (strictly increasing)
+    !> @param[in] yvec Array of y-coordinates for evaluation
+    !> @param[in] kx Order of the spline in the x-direction
+    !> @param[in] ky Order of the spline in the y-direction
+    !> @param[in] xknot x-direction knot sequence (non-decreasing)
+    !> @param[in] yknot y-direction knot sequence (non-decreasing)
+    !> @param[in] nx Number of B-spline coefficients in the x-direction
+    !> @param[in] ny Number of B-spline coefficients in the y-direction
+    !> @param[in] bcoef Tensor-product B-spline coefficients (nx by ny)
+    !> @param[out] val Array of derivative values on the grid
+    !> @param[in] ldf Leading dimension of val
+    !>
+    !> @note Both xvec and yvec must be strictly increasing
+    !> @warning All points must be within the knot ranges
+    subroutine dbs3gd(iderx, idery, iderz, nxvec, xvec, nyvec, yvec, nzvec, zvec, kx, ky, kz, xknot, yknot, zknot, &
+            & nx, ny, nz, bcoef, val, ldf, mdf)
 
         !
-        !  Evaluates the derivative of a two-dimensional tensor-product spline,
+        !  Evaluates the derivative of a three-dimensional tensor-product spline,
         !  given its tensor-product B-spline representation on a grid.
         !
         !   iderx  - order of the x-derivative.  (input)
         !   idery  - order of the y-derivative.  (input)
+        !   iderz  - order of the z-derivative.  (input)
         !   nxvec  - number of grid points in the x-direction.  (input)
         !   xvec   - array of length nx containing the x-coordinates at
         !            which the spline is to be evaluated.  (input)
@@ -1177,28 +1205,40 @@ contains
         !   yvec   - array of length ny containing the y-coordinates at
         !            which the spline is to be evaluated.  (input)
         !            the points in yvec should be strictly increasing.
+        !   nzvec  - number of grid points in the z-direction.  (input)
+        !   zvec   - array of length nz containing the z-coordinates at
+        !            which the spline is to be evaluated.  (input)
+        !            the points in zvec should be strictly increasing.
         !   kx     - order of the spline in the x-direction.  (input)
         !   ky     - order of the spline in the y-direction.  (input)
+        !   kz     - order of the spline in the z-direction.  (input)
         !   xknot  - array of length nx+kx containing the knot
         !            sequence in the x-direction.  (input)
         !            xknot must be nondecreasing.
         !   yknot  - array of length ny+ky containing the knot
         !            sequence in the y-direction.  (input)
         !            yknot must be nondecreasing.
+        !   zknot  - array of length nz+kz containing the knot
+        !            sequence in the z-direction.  (input)
+        !            zknot must be nondecreasing.
         !   nx     - number of B-spline coefficients in the x-direction.
         !            (input)
         !   ny     - number of B-spline coefficients in the y-direction.
         !            (input)
-        !   bcoef  - array of length nx*ny containing the
+        !   nz     - number of B-spline coefficients in the z-direction.
+        !            (input)
+        !   bcoef  - array of length nx*ny*nz containing the
         !            tensor-product B-spline coefficients.  (input)
         !            bscoef is treated internally as a matrix of size nx
-        !            by ny.
-        !   val    - array of size nx by ny containing the values of
-        !            the (iderx,idery) derivative of the spline on the
-        !            nx by ny grid.  (output)
-        !            value(i,j) contains the derivative of the spline at the
-        !            point (xvec(i),yvec(j)).
+        !            by ny by nz.
+        !   val    - array of size nx by ny by nz containing the values of
+        !            the (iderx,idery,iderz) derivative of the spline on the
+        !            nx by ny by nz grid.  (output)
+        !            value(i,j,k) contains the derivative of the spline at the
+        !            point (xvec(i),yvec(j),zvec(k)).
         !   ldf    - leading dimension of value exactly as specified in the
+        !            dimension statement of the calling program.  (input)
+        !   mdf    - middle dimension of value exactly as specified in the
         !            dimension statement of the calling program.  (input)
         !
 
@@ -1206,32 +1246,36 @@ contains
 
         implicit none
 
-        integer, intent(in) :: iderx, idery
-        integer, intent(in) :: nxvec, nyvec
-        integer, intent(in) :: kx, nx, ky, ny
-        integer, intent(in) :: ldf
+        integer, intent(in) :: iderx, idery, iderz
+        integer, intent(in) :: nxvec, nyvec, nzvec
+        integer, intent(in) :: kx, nx, ky, ny, kz, nz
+        integer, intent(in) :: ldf, mdf
 
         real(kind=dbl), dimension(nxvec), intent(in) :: xvec
         real(kind=dbl), dimension(nyvec), intent(in) :: yvec
+        real(kind=dbl), dimension(nzvec), intent(in) :: zvec
         real(kind=dbl), dimension(nx + kx), intent(in) :: xknot
         real(kind=dbl), dimension(ny + ky), intent(in) :: yknot
-        real(kind=dbl), dimension(nx, ny), intent(in) :: bcoef
-        real(kind=dbl), dimension(ldf, *), intent(out) :: val
+        real(kind=dbl), dimension(nz + kz), intent(in) :: zknot
+        real(kind=dbl), dimension(nx, ny, nz), intent(in) :: bcoef
+        real(kind=dbl), dimension(ldf, mdf, *), intent(out) :: val
 
-        integer :: i, ik, il, ix, iy, ikx, iky
+        integer :: i, ik, il, ix, iy, iz, ikx, iky, ikz
         integer, dimension(nxvec) :: leftx
         integer, dimension(nyvec) :: lefty
+        integer, dimension(nzvec) :: leftz
         real(kind=dbl), dimension(nxvec, kx) :: biatx
         real(kind=dbl), dimension(nyvec, ky) :: biaty
-        real(kind=dbl), dimension(max(nxvec, nyvec)) :: term, save1
+        real(kind=dbl), dimension(nzvec, kz) :: biatz
+        real(kind=dbl), dimension(max(nxvec, nyvec, nzvec)) :: term, save1
 
-        real(kind=dbl), dimension(max(nxvec, nyvec), max(kx, ky)) :: dl, dr
+        real(kind=dbl), dimension(max(nxvec, nyvec, nzvec), max(kx, ky, kz)) :: dl, dr
 
         logical :: same, next
 
         do i = 1, nx + kx - 1
             if (xknot(i) .gt. xknot(i + 1)) then
-                write (6, *) "subroutine dbs2gd:"
+                write (6, *) "subroutine dbs3gd:"
                 write (6, *) "xknot(i) <= xknot(i+1) required."
                 write (6, *) i, xknot(i), xknot(i + 1)
                 write (6, *)
@@ -1242,7 +1286,7 @@ contains
 
         do i = 1, nxvec
             if ((xvec(i) .lt. xknot(1)) .or. (xvec(i) .gt. xknot(nx + kx))) then
-                write (6, *) "subroutine dbs2gd:"
+                write (6, *) "subroutine dbs3gd:"
                 write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
                 write (6, *) "x = ", xvec(i)
                 stop
@@ -1307,7 +1351,7 @@ contains
                 write (6, *) "zknot(i) <= zknot(i+1) required."
                 write (6, *) i, zknot(i), zknot(i + 1)
                 write (6, *)
-                write (6, *) zknot
+                write (6, *) zknot(:)
                 stop
             end if
         end do
@@ -1451,7 +1495,7 @@ contains
 
         end if
 
-    end subroutine dbs2gd
+    end subroutine dbs3gd
 
     ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1799,319 +1843,6 @@ contains
 
     ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    subroutine dbs3gd(iderx, idery, iderz, nxvec, xvec, nyvec, yvec, nzvec, zvec, &
-            & kx, ky, kz, xknot, yknot, zknot, nx, ny, nz, bcoef, val, ldf, mdf)
-
-        !
-        !  Evaluates the derivative of a three-dimensional tensor-product spline,
-        !  given its tensor-product B-spline representation on a grid.
-        !
-        !   iderx  - order of the x-derivative.  (input)
-        !   idery  - order of the y-derivative.  (input)
-        !   iderz  - order of the z-derivative.  (input)
-        !   nx     - number of grid points in the x-direction.  (input)
-        !   xvec   - array of length nx containing the x-coordinates at
-        !            which the spline is to be evaluated.  (input)
-        !            the points in xvec should be strictly increasing.
-        !   ny     - number of grid points in the y-direction.  (input)
-        !   yvec   - array of length ny containing the y-coordinates at
-        !            which the spline is to be evaluated.  (input)
-        !            the points in yvec should be strictly increasing.
-        !   nz     - number of grid points in the z-direction.  (input)
-        !   zvec   - array of length nz containing the z-coordinates at
-        !            which the spline is to be evaluated.  (input)
-        !            the points in yvec should be strictly increasing.
-        !   kx     - order of the spline in the x-direction.  (input)
-        !   ky     - order of the spline in the y-direction.  (input)
-        !   kz     - order of the spline in the z-direction.  (input)
-        !   xknot  - array of length nx+kx containing the knot
-        !            sequence in the x-direction.  (input)
-        !            xknot must be nondecreasing.
-        !   yknot  - array of length ny+ky containing the knot
-        !            sequence in the y-direction.  (input)
-        !            yknot must be nondecreasing.
-        !   zknot  - array of length nz+kz containing the knot
-        !            sequence in the z-direction.  (input)
-        !            zknot must be nondecreasing.
-        !   nx     - number of B-spline coefficients in the x-direction.
-        !            (input)
-        !   ny     - number of B-spline coefficients in the y-direction.
-        !            (input)
-        !   nz     - number of B-spline coefficients in the z-direction.
-        !            (input)
-        !   bcoef  - array of length nx*ny*nz containing the
-        !            tensor-product B-spline coefficients.  (input)
-        !            bscoef is treated internally as a matrix of size nx
-        !            by ny by nz.
-        !   val    - array of size nx by ny by nz containing the values of
-        !            the (iderx,idery,iderz) derivative of the spline on the
-        !            nx by ny by nz grid.  (output)
-        !            value(i,j,k) contains the derivative of the spline at
-        !            the point (xvec(i), yvec(j), zvec(k)).
-        !   ldf    - leading dimension of value exactly as specified in the
-        !            dimension statement of the calling program.  (input)
-        !   mdf    - middle dimension of value exactly as specified in the
-        !            dimension statement of the calling program.  (input)
-        !
-
-        use numeric
-
-        implicit none
-
-        integer, intent(in) :: iderx, idery, iderz
-        integer, intent(in) :: nxvec, nyvec, nzvec
-        integer, intent(in) :: kx, nx, ky, ny, kz, nz
-        integer, intent(in) :: ldf, mdf
-
-        real(kind=dbl), dimension(nxvec), intent(in) :: xvec
-        real(kind=dbl), dimension(nyvec), intent(in) :: yvec
-        real(kind=dbl), dimension(nzvec), intent(in) :: zvec
-        real(kind=dbl), dimension(nx + kx), intent(in) :: xknot
-        real(kind=dbl), dimension(ny + ky), intent(in) :: yknot
-        real(kind=dbl), dimension(nz + kz), intent(in) :: zknot
-        real(kind=dbl), dimension(nx, ny, nz), intent(in) :: bcoef
-        real(kind=dbl), dimension(ldf, mdf, *), intent(out) :: val
-
-        integer :: i, ik, il, ix, iy, iz
-        integer :: ikx, iky, ikz
-        integer, dimension(nxvec) :: leftx
-        integer, dimension(nyvec) :: lefty
-        integer, dimension(nzvec) :: leftz
-        real(kind=dbl), dimension(nxvec, kx) :: biatx
-        real(kind=dbl), dimension(nyvec, ky) :: biaty
-        real(kind=dbl), dimension(nzvec, kz) :: biatz
-        real(kind=dbl), dimension(max(nxvec, nyvec, nzvec)) :: term, save1
-
-        real(kind=dbl), dimension(max(nxvec, nyvec, nzvec), max(kx, ky, kz)) :: dl, dr
-
-        logical :: same, next
-
-        do i = 1, nx + kx - 1
-            if (xknot(i) .gt. xknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "xknot(i) <= xknot(i+1) required."
-                write (6, *) i, xknot(i), xknot(i + 1)
-                write (6, *)
-                write (6, *) xknot
-                stop
-            end if
-        end do
-
-        do i = 1, nxvec
-            if ((xvec(i) .lt. xknot(1)) .or. (xvec(i) .gt. xknot(nx + kx))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-                write (6, *) "x = ", xvec(i)
-                stop
-            end if
-        end do
-
-        leftx(1) = 0
-
-        call huntn(xknot, nx + kx, kx, xvec(1), leftx(1))
-
-        do ix = 2, nxvec
-            leftx(ix) = leftx(ix - 1)
-            same = (xknot(leftx(ix)) .le. xvec(ix))                                &
-                    &        .and. (xvec(ix) .le. xknot(leftx(ix) + 1))
-            if (.not. same) then
-                leftx(ix) = leftx(ix) + 1
-                next = (xknot(leftx(ix)) .le. xvec(ix))                        &
-                        &           .and. (xvec(ix) .le. xknot(leftx(ix) + 1))
-                if (.not. next) call huntn(xknot, nx + kx, kx, xvec(ix), leftx(ix))
-            end if
-        end do
-
-        do i = 1, ny + ky - 1
-            if (yknot(i) .gt. yknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "yknot(i) <= yknot(i+1) required."
-                write (6, *) i, yknot(i), yknot(i + 1)
-                write (6, *)
-                write (6, *) yknot
-                stop
-            end if
-        end do
-
-        do i = 1, nyvec
-            if ((yvec(i) .lt. yknot(1)) .or. (yvec(i) .gt. yknot(ny + ky))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "iy with yknot(iy) <= y < yknot(iy+1) required."
-                write (6, *) "y = ", yvec(i)
-                stop
-            end if
-        end do
-
-        lefty(1) = 0
-
-        call huntn(yknot, ny + ky, ky, yvec(1), lefty(1))
-
-        do iy = 2, nyvec
-            lefty(iy) = lefty(iy - 1)
-            same = (yknot(lefty(iy)) .le. yvec(iy))                                &
-                    &        .and. (yvec(iy) .le. yknot(lefty(iy) + 1))
-            if (.not. same) then
-                lefty(iy) = lefty(iy) + 1
-                next = (yknot(lefty(iy)) .le. yvec(iy))                        &
-                        &           .and. (yvec(iy) .le. yknot(lefty(iy) + 1))
-                if (.not. next) call huntn(yknot, ny + ky, ky, yvec(iy), lefty(iy))
-            end if
-        end do
-
-        do i = 1, nz + kz - 1
-            if (zknot(i) .gt. zknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "zknot(i) <= zknot(i+1) required."
-                write (6, *) i, zknot(i), zknot(i + 1)
-                write (6, *)
-                write (6, *) zknot
-                stop
-            end if
-        end do
-
-        do i = 1, nzvec
-            if ((zvec(i) .lt. zknot(1)) .or. (zvec(i) .gt. zknot(nz + kz))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "iz with zknot(iz) <= z < zknot(iz+1) required."
-                write (6, *) "z = ", zvec(i)
-                stop
-            end if
-        end do
-
-        leftz(1) = 0
-
-        call huntn(zknot, nz + kz, kz, zvec(1), leftz(1))
-
-        do iz = 2, nzvec
-            leftz(iz) = leftz(iz - 1)
-            same = (zknot(leftz(iz)) .le. zvec(iz))                                &
-                    &        .and. (zvec(iz) .le. zknot(leftz(iz) + 1))
-            if (.not. same) then
-                leftz(iz) = leftz(iz) + 1
-                next = (zknot(leftz(iz)) .le. zvec(iz))                        &
-                        &           .and. (zvec(iz) .le. zknot(leftz(iz) + 1))
-                if (.not. next) call huntn(zknot, nz + kz, kz, zvec(iz), leftz(iz))
-            end if
-        end do
-        ! by E. Coccia (4/1/11): evaluate the function
-        if ((iderx .eq. 0) .and. (idery .eq. 0) .and. (iderz .eq. 0)) then
-
-            do ix = 1, nxvec
-                biatx(ix, 1) = 1.0_dbl
-            end do
-
-            do ik = 1, kx - 1
-                do ix = 1, nxvec
-                    dr(ix, ik) = xknot(leftx(ix) + ik) - xvec(ix)
-                    dl(ix, ik) = xvec(ix) - xknot(leftx(ix) + 1 - ik)
-                    save1(ix) = 0._dbl
-                end do
-
-                do il = 1, ik
-                    do ix = 1, nxvec
-                        term(ix) = biatx(ix, il)/(dr(ix, il) + dl(ix, ik + 1 - il))
-                        biatx(ix, il) = save1(ix) + dr(ix, il)*term(ix)
-                        save1(ix) = dl(ix, ik + 1 - il)*term(ix)
-                    end do
-                end do
-
-                do ix = 1, nxvec
-                    biatx(ix, ik + 1) = save1(ix)
-                end do
-            end do
-
-            do iy = 1, nyvec
-                biaty(iy, 1) = 1.0_dbl
-            end do
-
-            do ik = 1, ky - 1
-                do iy = 1, nyvec
-                    dr(iy, ik) = yknot(lefty(iy) + ik) - yvec(iy)
-                    dl(iy, ik) = yvec(iy) - yknot(lefty(iy) + 1 - ik)
-                    save1(iy) = 0._dbl
-                end do
-
-                do il = 1, ik
-                    do iy = 1, nyvec
-                        term(iy) = biaty(iy, il)/(dr(iy, il) + dl(iy, ik + 1 - il))
-                        biaty(iy, il) = save1(iy) + dr(iy, il)*term(iy)
-                        save1(iy) = dl(iy, ik + 1 - il)*term(iy)
-                    end do
-                end do
-
-                do iy = 1, nyvec
-                    biaty(iy, ik + 1) = save1(iy)
-                end do
-            end do
-
-            do iz = 1, nzvec
-                biatz(iz, 1) = 1.0_dbl
-            end do
-
-            do ik = 1, kz - 1
-                do iz = 1, nzvec
-                    dr(iz, ik) = zknot(leftz(iz) + ik) - zvec(iz)
-                    dl(iz, ik) = zvec(iz) - zknot(leftz(iz) + 1 - ik)
-                    save1(iz) = 0._dbl
-                end do
-
-                do il = 1, ik
-                    do iz = 1, nzvec
-                        term(iz) = biatz(iz, il)/(dr(iz, il) + dl(iz, ik + 1 - il))
-                        biatz(iz, il) = save1(iz) + dr(iz, il)*term(iz)
-                        save1(iz) = dl(iz, ik + 1 - il)*term(iz)
-                    end do
-                end do
-
-                do iz = 1, nzvec
-                    biatz(iz, ik + 1) = save1(iz)
-                end do
-            end do
-
-            do iz = 1, nzvec
-                do iy = 1, nyvec
-                    do ix = 1, nxvec
-                        val(ix, iy, iz) = 0.0_dbl
-                    end do
-                end do
-            end do
-
-            do ikz = 1, kz
-                do iky = 1, ky
-                    do ikx = 1, kx
-                        do iz = 1, nzvec
-                            do iy = 1, nyvec
-                                do ix = 1, nxvec
-                                    val(ix, iy, iz) = val(ix, iy, iz)                        &
-                                            & + biatx(ix, ikx)*biaty(iy, iky)              &
-                                                    & *biatz(iz, ikz)                              &
-                                                    & *bcoef(leftx(ix) - kx + ikx, &
-                                                            &          lefty(iy) - ky + iky, leftz(iz) - kz + ikz)
-                                end do
-                            end do
-                        end do
-                    end do
-                end do
-            end do
-            ! by E. Coccia (4/1/11): evaluate the derivatives
-        else
-
-            do iz = 1, nzvec
-                do iy = 1, nyvec
-                    do ix = 1, nxvec
-                        val(ix, iy, iz) = dbs3dr(iderx, idery, iderz, xvec(ix), &
-                                &  yvec(iy), zvec(iz), kx, ky, kz, xknot, yknot, &
-                                &  zknot, nx, ny, nz, bcoef)
-                    end do
-                end do
-            end do
-
-        end if
-
-    end subroutine dbs3gd
-
-    ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     !> @brief Compute B-spline basis function values
     !> @details Computes the values of B-spline basis functions at a given point.
     !> This is a core subroutine used by most B-spline evaluation routines.
@@ -2212,8 +1943,7 @@ contains
         if (nrowm1 .eq. 0) goto 900
         if (nrowm1 .gt. 0) goto 10
 
-10      ! Handle case with no subdiagonals
-        if (nbandl .gt. 0) go to 30
+10      if (nbandl .gt. 0) go to 30
 
         do i = 1, nrowm1
             if (w(middle, i) .eq. 0._dbl) go to 999
@@ -2221,8 +1951,7 @@ contains
 
         go to 900
 
-30      ! Handle case with no superdiagonals
-        if (nbandu .gt. 0) go to 60
+30      if (nbandu .gt. 0) go to 60
 
         do i = 1, nrowm1
             pivot = w(middle, i)
@@ -2235,8 +1964,7 @@ contains
 
         return
 
-60      ! General case: perform LU factorization
-        do i = 1, nrowm1
+60      do i = 1, nrowm1
             pivot = w(middle, i)
             if (pivot .eq. 0._dbl) go to 999
             jmax = min0(nbandl, nrow - i)
@@ -2294,8 +2022,6 @@ contains
         middle = nbandu + 1
         if (nrow .eq. 1) goto 99
         nrowm1 = nrow - 1
-
-        ! Forward substitution (solve Ly = b)
         if (nbandl .eq. 0) goto 30
 
         do i = 1, nrowm1
@@ -2305,8 +2031,7 @@ contains
             end do
         end do
 
-30      ! Backward substitution (solve Ux = y)
-        if (nbandu .gt. 0) goto 50
+30      if (nbandu .gt. 0) goto 50
 
         do i = 1, nrow
             b(i) = b(i)/w(1, i)
@@ -2394,8 +2119,7 @@ contains
             end if
         end if
 
-30      ! Binary search to find exact interval
-        if (jhi - jlo .eq. 1) return
+30      if (jhi - jlo .eq. 1) return
 
         jm = (jhi + jlo)/2
         if (x .gt. xx(jm)) then

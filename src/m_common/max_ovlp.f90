@@ -78,21 +78,19 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     !nsym is the total number of variables once applied the symmetries, ix and iy are auxiliary variables to indicate
     !a position of the matrix lambda, type_lambda contains the information on the symmetry of the lambda: 1=hermitian,
     !2=symmetric (also the imaginary part) and 3=non symmetric (nnozero_c=size2**2)
-    integer :: i, j, size1, size2, img, max_iter, rank, nprocu, mpi_comm_world, nnozero_c, nsym, ix, iy, type_lambda
+    integer :: i, j, nsym, ix, iy
     !optimize contains the information on which element of the matrix have to be optimize (1==yes) (0==no)
-    logical, dimension(size2*img, size2) :: optimize
     !nozero_c is the vector containing the information to obtain the whole matrix lambda starting from the compact
     !notation and containing only the upper diagonal of lambda, in a way that nozero_c(i)=ix+(iy-1)*nelorbc,
     !jbradet is the vector pointing at  the indipendent variable number associated to the symmetry (e.g. if the
     !elements i and j are simmetric jbradet(i)=jbradet(j). This is only to my further memory, so that I can understand
     !again in the future
-    integer, dimension(nnozero_c) :: jbradet, nozero_c
     !Z is the overlap between L1 and L2, delta is the number multiplying the derivatives when applied to L2,
     !prec is the precision required for the overlap, A is a variable for the fast calculation, L*mod is the
     !module of the * wf, modder is the module of the derivative, delta0 is the initial delta for the optimization,
     !lambda is the factor that multiplies the direction, lambda is  lambda= (g h)/(h A h) and is the factor of
     ! the movement along the h direction, prevZ is the Z calculated size2**2 iteration ago
-    real(8) :: Z, delta, prec, A, L1mod, L2mod, modder, delta0, ddL2, lambda, prevZ
+    real(8) :: delta, A, L2mod, modder, delta0, ddL2, lambda, prevZ
     !SL and SR are the overlap matrices of the bases the parbs spinup==left and spindown==right, SR12 and SL12
     !are the overlap matrices calculated between the two different bases, L1 and L2 are the derivatives, Os and
     !Op are matrices necessary for the fast calculation, A is a variable for the fast calculation, dL2 is the
@@ -101,10 +99,7 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     !prevH and prevG are the previous conjugate direction and gradient (NOW
     ! THE GRADIENT HAS THE DIMENSION OF THE INDIPENDENT VARIABLES)(Numerical
     !Recipes, Press, et al.)
-    real(8), dimension(size2*img, size2) :: SL2, SR2, L2
     real(8), allocatable :: dL2(:, :), Op(:, :), Ob(:, :), L2eff(:, :), prevG(:), prevH(:)
-    real(8), dimension(size1*img, size1) :: L1
-    real(8), dimension(size1*img, size2) :: SL12, SR12
     !count_sym is the vector that tells the number of recurrency of every symmetry
     integer, allocatable :: count_sym(:)
 
