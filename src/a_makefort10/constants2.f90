@@ -15,6 +15,21 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !----------------------------------------------------------------------------
+!> @brief Physical and mathematical constants module for quantum Monte Carlo calculations
+!> @details This module provides a comprehensive collection of physical and mathematical
+!>          constants used throughout the TurboRVB quantum Monte Carlo code. It includes
+!>          fundamental mathematical constants, SI physical constants, atomic units,
+!>          and various unit conversion factors.
+!>          
+!>          The constants are organized into several categories:
+!>          - Mathematical constants (pi, sqrt2, etc.)
+!>          - SI physical constants (Planck's constant, Boltzmann constant, etc.)
+!>          - Atomic units and conversion factors
+!>          - Numerical precision parameters
+!>          - Compatibility constants for legacy code
+!>          
+!>          All constants are defined as double precision parameters for maximum
+!>          accuracy in quantum mechanical calculations.
 module constants2
     !----------------------------------------------------------------------------
     !
@@ -26,6 +41,9 @@ module constants2
     !
     save
     !
+    !> @brief Mathematical constants for quantum mechanical calculations
+    !> @details Fundamental mathematical constants used throughout the code,
+    !>          including pi, 2*pi, 4*pi, and square root values.
     ! ... Mathematical constants
     !
     real(DP), parameter :: pi = 3.14159265358979323846_dp
@@ -35,6 +53,9 @@ module constants2
     real(DP), parameter :: sqrtpm1 = 1.0_dp/sqrtpi
     real(DP), parameter :: sqrt2 = 1.41421356237309504880_dp
     !
+    !> @brief SI physical constants from NIST CODATA 2006
+    !> @details Fundamental physical constants in SI units, including Planck's
+    !>          constant, Boltzmann constant, electron properties, and atomic units.
     ! ... Physical constants, SI (NIST CODATA 2006), Web Version 5.1
     !     http://physics.nist.gov/constants
     real(DP), parameter :: H_PLANCK_SI = 6.62606896e-34_dp ! J s
@@ -48,6 +69,9 @@ module constants2
     real(DP), parameter :: AMU_SI = 1.660538782e-27_dp ! Kg
     real(DP), parameter :: C_SI = 2.99792458e+8_dp ! m sec^-1
     !
+    !> @brief Atomic units conversion factors
+    !> @details Boltzmann constant in atomic units (Hartree and Rydberg units)
+    !>          for temperature calculations in quantum systems.
     ! ... Physical constants, atomic units:
     ! ... AU for "Hartree" atomic units (e = m = hbar = 1)
     ! ... RY for "Rydberg" atomic units (e^2=2, m=1/2, hbar=1)
@@ -55,6 +79,9 @@ module constants2
     real(DP), parameter :: K_BOLTZMANN_AU = K_BOLTZMANN_SI/HARTREE_SI
     real(DP), parameter :: K_BOLTZMANN_RY = K_BOLTZMANN_SI/RYDBERG_SI
     !
+    !> @brief Energy and mass unit conversion factors
+    !> @details Conversion factors between atomic units, electron volts,
+    !>          and atomic mass units for energy and mass calculations.
     ! ... Unit conversion factors: energy and masses
     !
     real(DP), parameter :: AUTOEV = HARTREE_SI/ELECTRONVOLT_SI
@@ -62,17 +89,26 @@ module constants2
     real(DP), parameter :: AMU_AU = AMU_SI/ELECTRONMASS_SI
     real(DP), parameter :: AMU_RY = AMU_AU/2.0_dp
     !
+    !> @brief Time unit conversion factors
+    !> @details Atomic unit of time in seconds and picoseconds for
+    !>          time-dependent quantum mechanical calculations.
     ! ... Unit conversion factors: atomic unit of time, in s and ps
     !
     real(DP), parameter :: AU_SEC = H_PLANCK_SI/tpi/HARTREE_SI
     real(DP), parameter :: AU_PS = AU_SEC*1.0e+12_dp
     !
+    !> @brief Pressure unit conversion factors
+    !> @details Conversion factors for pressure units including GPa and kbar
+    !>          for solid state physics and materials science applications.
     ! ... Unit conversion factors: pressure (1 Pa = 1 J/m^3, 1GPa = 10 Kbar )
     !
     real(DP), parameter :: AU_GPA = HARTREE_SI/BOHR_RADIUS_SI**3 &
                            /1.0e+9_dp
     real(DP), parameter :: RY_KBAR = 10.0_dp*AU_GPA/2.0_dp
     !
+    !> @brief Dipole moment unit conversion factors
+    !> @details Conversion factors for dipole moments between atomic units
+    !>          and Debye units for molecular physics calculations.
     ! ... Unit conversion factors: 1 debye = 10^-18 esu*cm
     ! ...                                  = 3.3356409519*10^-30 C*m
     ! ...                                  = 0.208194346 e*A
@@ -82,13 +118,22 @@ module constants2
     real(DP), parameter :: AU_DEBYE = ELECTRON_SI*BOHR_RADIUS_SI/ &
                            DEBYE_SI
     !
+    !> @brief Temperature conversion factors
+    !> @details Conversion factors from energy units to temperature units
+    !>          for statistical mechanics and thermodynamics calculations.
     real(DP), parameter :: eV_to_kelvin = ELECTRONVOLT_SI/K_BOLTZMANN_SI
     real(DP), parameter :: ry_to_kelvin = RYDBERG_SI/K_BOLTZMANN_SI
     !
+    !> @brief Speed of light in atomic units
+    !> @details Speed of light expressed in atomic units for relativistic
+    !>          quantum mechanical calculations.
     !  Speed of light in atomic units
     !
     real(DP), parameter :: C_AU = C_SI/BOHR_RADIUS_SI*AU_SEC
     !
+    !> @brief Numerical precision parameters
+    !> @details Small numbers used for numerical comparisons and convergence
+    !>          criteria in quantum Monte Carlo and electronic structure calculations.
     ! ... zero up to a given accuracy
     !
     real(DP), parameter :: eps4 = 1.0e-4_dp
@@ -102,9 +147,15 @@ module constants2
     !
     real(DP), parameter :: gsmall = 1.0e-12_dp
     !
+    !> @brief Fundamental quantum mechanical constants
+    !> @details Basic constants for electron charge and spin degrees of freedom
+    !>          used in quantum mechanical calculations.
     real(DP), parameter :: e2 = 2.0_dp ! the square of the electron charge
     real(DP), parameter :: degspin = 2.0_dp ! the number of spins per level
     !
+    !> @brief Compatibility constants for legacy code
+    !> @details Constants maintained for backward compatibility with older
+    !>          versions of the code and external interfaces.
     !!!!!! COMPATIBIILITY
     !
     real(DP), parameter :: amconv = AMU_RY
