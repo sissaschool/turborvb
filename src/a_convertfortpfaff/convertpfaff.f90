@@ -18,25 +18,58 @@
 ! It converts an AGP wf in a Pfaffian wave function
 !
 
+!> @brief Main program for converting AGP wave functions to Pfaffian wave functions
+!> @details This program converts Antisymmetrized Geminal Power (AGP) wave functions
+!>          to Pfaffian wave functions. It reads an input fort.10_in file containing
+!>          AGP parameters and generates a new fort.10_new file with Pfaffian parameters.
+!>          
+!>          The conversion process includes:
+!>          - Matrix transformation from AGP to Pfaffian format
+!>          - Spin rotation handling for magnetic systems
+!>          - Unpaired orbital processing
+!>          - Symmetry considerations for up-up and down-down correlations
+!>          
+!>          Key features:
+!>          - Support for both real and complex wave functions
+!>          - Magnetic moment rotation capabilities
+!>          - Unpaired orbital handling
+!>          - Contracted and uncontracted basis set support
 program convertpfaff
     use allio
     use constants
     use IO_m
     use sub_comm
     implicit none
+    !> @brief Loop indices and matrix dimensions
     integer i, j, k, nelorbin, nelcolin, nelorbout, nelcolout, nunp, nshell_in, indparo, indpar, nelorbh_in, ipf_in, nelorbin2
+    
+    !> @brief Input and output determinant matrices for AGP to Pfaffian conversion
     real(8), allocatable :: detmatin(:, :), detmatout(:, :), unpaired(:, :), mat_unp(:, :), dup_in(:)
+    
+    !> @brief Orbital parameter arrays for contracted basis sets
     integer, allocatable :: ioptorb_in(:), nparam_in(:)
 
+    !> @brief Control flags for spin rotation and unpaired orbital processing
     logical :: rotmagn, unp2
+    
+    !> @brief Command line argument and tool name for help system
     character(20) :: str
     character(100) :: name_tool
+    
+    !> @brief Scaling and rotation parameters for magnetic systems
     real*8 scale_unp, angle_rot, phi_rot
+    
+    !> @brief Rotation matrices for spin transformations
     real*8, dimension(:, :), allocatable :: surot, suscra, sutry
 
     ! output version information
     call print_version
 
+    !> @brief Read input AGP wave function from fort.10_in
+    !> @details This section reads the input AGP wave function file and saves
+    !>          the orbital parameters and matrix elements for conversion to
+    !>          Pfaffian format. It handles both contracted and uncontracted
+    !>          basis sets and validates molecular orbital compatibility.
     !reading and saving the quantities of the fort.10_in
 
     open (unit=10, file='fort.10_in', form='formatted', status='unknown')
@@ -53,6 +86,9 @@ program convertpfaff
         write (6, *) ' ERROR the code does not work with molecular orbitals '
         stop
     end if
+    !> @brief Determine spin rotation requirements based on AGP symmetry
+    !> @details This section checks if spin rotation is needed based on the
+    !>          AGP symmetry properties and sets the rotation flag accordingly.
     !Understand if we have to rotate the spin on the plan or not
     ipf_in = ipf
 
@@ -62,6 +98,10 @@ program convertpfaff
         rotmagn = .true.
     end if
 
+    !> @brief Process command line arguments for rotation control and help
+    !> @details This section handles command line arguments to control spin
+    !>          rotation behavior and provides help information. Valid options
+    !>          include "rotate", "norotate", and help flags.
     call get_command_argument(1, str)
 
     if (str .eq. "--help" .or. str .eq. "-help" .or. str .eq. "help") then
@@ -79,6 +119,10 @@ program convertpfaff
         write (6, *) ' Warning forcing no rotation in magnetization '
     end if
 
+    !> @brief Initialize unpaired orbital processing and matrix setup
+    !> @details This section sets up the processing of unpaired orbitals and
+    !>          initializes the matrices needed for AGP to Pfaffian conversion.
+    !>          It handles the scaling factor for mean field treatment.
     !Activate the creation of the upup or/and downdown part of the pfaffian
     !using two unpaired orbitals
     unp2 = .false.
@@ -128,6 +172,10 @@ program convertpfaff
     close (10)
     call deallocate_all
 
+    !> @brief Read output template file and transfer orbital parameters
+    !> @details This section reads the fort.10_out template file and transfers
+    !>          orbital parameters from the input AGP to the output Pfaffian
+    !>          format, handling contracted basis sets and parameter mapping.
     !reading the fort.10_out
     open (unit=10, file='fort.10_out', form='formatted', status='unknown')
     call default_allocate
@@ -181,6 +229,10 @@ program convertpfaff
         end if
     end if
 
+    !> @brief Set up output matrix dimensions and validate compatibility
+    !> @details This section determines the output matrix dimensions for the
+    !>          Pfaffian format and validates that the AGP and Pfaffian are
+    !>          compatible in terms of orbital counts and shell structure.
     if (contraction .eq. 0) then
         nelorbout = nelorbh*2
         nelcolout = nelcolh
@@ -202,6 +254,10 @@ program convertpfaff
 
     write (6, *) 'nelorbin nelorbout =', nelorbin, nelorbout
 
+    !> @brief Convert AGP matrix to Pfaffian format for ipf=1 (AGP case)
+    !> @details This section performs the matrix transformation from AGP to
+    !>          Pfaffian format when ipf=1, handling both real and complex
+    !>          matrices with appropriate sign conventions.
     if (ipf_in .eq. 1) then
 
         if (ipc .eq. 2) then
@@ -223,6 +279,10 @@ program convertpfaff
         end if
 
     else
+        !> @brief Set up rotation matrices for ipf=2 (Pfaffian case)
+        !> @details This section initializes rotation matrices for spin
+        !>          transformations when ipf=2, handling both real and complex
+        !>          rotation parameters.
         allocate (surot(ipc*2, 2), sutry(ipc*2, 2), suscra(ipc*2, 2))
 
         if (ipc .eq. 1) then
@@ -260,6 +320,10 @@ program convertpfaff
 
     end if
 
+    !> @brief Process unpaired orbitals and add to Pfaffian matrix
+    !> @details This section handles unpaired orbitals by computing their
+    !>          contributions to the Pfaffian matrix, including both real and
+    !>          complex cases, and handles single unpaired orbital scenarios.
     if (unp2) then
         if (ipc .eq. 2) then
             do k = 1, nunp - ndiff, 2
@@ -328,6 +392,10 @@ program convertpfaff
             end if
         end if
         mat_unp = mat_unp*scale_unp
+        !> @brief Handle symmetry for down-down correlations
+        !> @details This section applies symmetry considerations to define
+        !>          down-down correlations based on up-up correlations when
+        !>          pfaffup is false and symmagp is true.
         !I'm not sure I really got how this uppfaff works
         if (.not. pfaffup .and. symmagp) then
             write (6, *) ' Warning defining also down-down by symmetry '
@@ -347,8 +415,39 @@ program convertpfaff
                 end do
             end if
         end if
+        !> @brief Add unpaired orbital contributions to transformed matrix
+        !> @details This section adds the unpaired orbital contributions to
+        !>          the transformed Pfaffian matrix, handling both real and
+        !>          complex cases with appropriate scaling factors.
+        if (nunp .gt. 0) then
+            if (ipc .eq. 2) then
+                do i = 1, nelorbin
+                    do j = 1, nelorbin
+                        detmatout(2*i - 1:2*i, j) = detmatout(2*i - 1:2*i, j) + 0.5d0*mat_unp(2*i - 1:2*i, j)
+                        detmatout(2*i - 1 + nelorbin:2*i + nelorbin, j + nelorbin) &
+                            = detmatout(2*i - 1 + nelorbin:2*i + nelorbin, j + nelorbin) + 0.5d0*mat_unp(2*i - 1:2*i, j)
+                        detmatout(2*i - 1:2*i, j + nelorbin) = detmatout(2*i - 1:2*i, j + nelorbin)&
+                                & + 0.5d0*mat_unp(2*i - 1:2*i, j)
+                        detmatout(2*j - 1 + nelorbin:2*j + nelorbin, i) = -detmatout(2*i - 1:2*i, j + nelorbin)
+                    end do
+                end do
+            else
+                do i = 1, nelorbin
+                    do j = 1, nelorbin
+                        detmatout(i, j) = detmatout(i, j) + 0.5d0*mat_unp(i, j)
+                        detmatout(i + nelorbin, j + nelorbin) = detmatout(i + nelorbin, j + nelorbin) + 0.5d0*mat_unp(i, j)
+                        detmatout(i, j + nelorbin) = detmatout(i, j + nelorbin) + 0.5d0*mat_unp(i, j)
+                        detmatout(j + nelorbin, i) = -detmatout(i, j + nelorbin)
+                    end do
+                end do
+            end if
+        end if ! nunp>0
     end if
 
+    !> @brief Apply spin rotation transformations to magnetic systems
+    !> @details This section performs spin rotation transformations for magnetic
+    !>          systems, handling both ipf=1 and ipf=2 cases with appropriate
+    !>          matrix operations for real and complex wave functions.
     if (rotmagn) then
         write (6, *) ' Warning rotating magnetic moment // x '
         if (ipf_in .eq. 2) then
@@ -397,6 +496,10 @@ program convertpfaff
             end if
 
         else
+            !> @brief Apply anti-symmetric transformation for ipf=1 case
+            !> @details This section applies the anti-symmetric transformation
+            !>          for the ipf=1 case, creating the proper Pfaffian matrix
+            !>          structure with appropriate sign conventions.
             if (ipc .eq. 2) then
                 do i = 1, nelorbin
                     do j = 1, nelorbin
@@ -445,6 +548,10 @@ program convertpfaff
             end if ! nunp>0
         end if ! ipf=1
     end if ! rotmagn
+    !> @brief Write output matrices to internal storage and generate output file
+    !> @details This section transfers the converted Pfaffian matrix to the
+    !>          internal storage format and writes the final fort.10_new file
+    !>          containing the converted Pfaffian wave function parameters.
     !Writing the output matrices
 
     if (contraction .eq. 0) then
@@ -469,6 +576,14 @@ program convertpfaff
     call deallocate_all
     if (allocated(surot)) deallocate (surot, sutry, suscra)
 end program convertpfaff
+
+!> @brief Fill complex rotation matrix for spin transformations
+!> @details This subroutine constructs a complex 2x2 rotation matrix for spin
+!>          transformations using the SU(2) rotation formula: U = U_z(2*phi)*U_y(2*theta).
+!>          The matrix is used for rotating spin states in magnetic systems.
+!> @param[out] surot Complex*16 2x2 rotation matrix
+!> @param[in] angle_rot Real*8 rotation angle theta (in radians)
+!> @param[in] phi_rot Real*8 rotation angle phi (in radians)
 subroutine fill_surot(surot, angle_rot, phi_rot)
     implicit none
     complex*16 surot(2, 2)
