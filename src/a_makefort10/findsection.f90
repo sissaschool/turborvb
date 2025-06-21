@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Find a specific section in a file
+!> @details This subroutine searches for a specific section name in a file
+!>          by reading through the file line by line. It rewinds the file
+!>          to the beginning and searches for an exact match with the
+!>          provided section name. If the section is found, the file pointer
+!>          is positioned at the beginning of that section. If not found,
+!>          an error is raised.
+!> @param[in] funit File unit number to search in
+!> @param[in] section_name Name of the section to find
 subroutine findsection(funit, section_name)
     implicit none
     logical done

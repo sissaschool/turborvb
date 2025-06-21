@@ -26,6 +26,36 @@
 ! Run 2 times and for the second execution allocate recordsym
 !
 
+!> @brief Generate symmetry-equivalent matrix elements for skew-symmetric part of Pfaffian
+!> @details This subroutine generates symmetry-equivalent matrix elements
+!>          for the skew-symmetric part of the Pfaffian matrix. It applies
+!>          rotation and translation symmetries to identify equivalent orbital
+!>          pairs and groups them into records for efficient computation.
+!>          
+!>          The subroutine handles:
+!>          - Rotation symmetries (symrot)
+!>          - Translation symmetries (symtra)
+!>          - Skew-symmetric constraints (i < j)
+!>          - Hermitian treatment for boundary conditions
+!>          - Phase locking for long bonds
+!>          
+!> @param[in] norb Number of orbitals
+!> @param[in] symrot Rotation symmetry matrix (norb, nrot)
+!> @param[in] nrot Number of rotation symmetries
+!> @param[in] symtra Translation symmetry matrix (norb, ntra)
+!> @param[in] ntra Number of translation symmetries
+!> @param[out] occupied Logical matrix indicating allowed matrix elements
+!> @param[out] recordsym Symmetry records for matrix elements
+!> @param[out] lenrec Length of each symmetry record
+!> @param[in,out] nrec Number of records (input: max, output: actual)
+!> @param[in] ipsip Temporary array for symmetry operations
+!> @param[in] rion Atomic positions (3, ntotatoms)
+!> @param[in] ntotatoms Total number of atoms
+!> @param[in] orb2atom Mapping from orbitals to atoms
+!> @param[in] cellscale Cell dimensions
+!> @param[in] deps Numerical tolerance for comparisons
+!> @param[in] zeta Zeta parameters for atoms (2, ntotatoms)
+!> @param[in] yes_hermite Logical flag for Hermitian treatment
 subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
                     lenrec, nrec, ipsip, rion, ntotatoms, orb2atom, cellscale, deps, zeta, yes_hermite)
     implicit none
@@ -221,6 +251,34 @@ end subroutine makeskew
 !Assembling the pfaffian
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Assemble the complete Pfaffian matrix from AGP and skew-symmetric parts
+!> @details This subroutine combines the AGP (antisymmetrized geminal power)
+!>          and skew-symmetric parts to create the complete Pfaffian matrix.
+!>          It handles different configurations based on the presence of
+!>          up and down Pfaffian components.
+!>          
+!>          The subroutine handles:
+!>          - AGP matrix elements (recordsymagp)
+!>          - Skew-symmetric matrix elements (recordsymskw)
+!>          - Up/down Pfaffian configurations
+!>          - Orbital indexing for spin-up and spin-down components
+!>          
+!> @param[in] norb Number of orbitals
+!> @param[in] nrot Number of rotation symmetries
+!> @param[in] ntra Number of translation symmetries
+!> @param[out] occupied Logical matrix indicating allowed matrix elements
+!> @param[in] recordsymagp Symmetry records for AGP matrix elements
+!> @param[in] lenrecagp Length of each AGP symmetry record
+!> @param[in] recordsymskw Symmetry records for skew-symmetric matrix elements
+!> @param[in] lenrecskw Length of each skew-symmetric symmetry record
+!> @param[out] recordsym Combined symmetry records for Pfaffian matrix
+!> @param[out] lenrec Length of each combined symmetry record
+!> @param[in,out] nrec Number of combined records (input: max, output: actual)
+!> @param[in] nrecagp Number of AGP records
+!> @param[in] nrecskw Number of skew-symmetric records
+!> @param[in] nouppfaff Logical flag for up Pfaffian
+!> @param[in] nodownpfaff Logical flag for down Pfaffian
+!> @param[in] opposite_phase Logical flag for opposite phase treatment
 subroutine makepfaff(norb, nrot, ntra, occupied, recordsymagp, lenrecagp, recordsymskw, lenrecskw, recordsym, &
                      lenrec, nrec, nrecagp, nrecskw, nouppfaff, nodownpfaff, opposite_phase)
     implicit none

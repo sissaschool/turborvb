@@ -14,6 +14,43 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 
+!> @brief Generate symmetry-equivalent matrix elements for lambda parameters
+!> @details This subroutine generates the symmetry-equivalent matrix elements
+!>          for the lambda parameters used in the Jastrow factor. It applies
+!>          rotation and translation symmetries to identify equivalent orbital
+!>          pairs and groups them into records for efficient computation.
+!>          
+!>          The subroutine handles:
+!>          - Rotation symmetries (symrot)
+!>          - Translation symmetries (symtra)
+!>          - Hermitian constraints (symmagp)
+!>          - Phase locking for boundary conditions
+!>          - Hybrid orbital cutting (cut_hybrid)
+!>          - 4-body Jastrow restrictions (no_4body_jas)
+!>          
+!> @param[in] norb Number of orbitals
+!> @param[in] symrot Rotation symmetry matrix (norb, nrot)
+!> @param[in] nrot Number of rotation symmetries
+!> @param[in] symtra Translation symmetry matrix (norb, ntra)
+!> @param[in] ntra Number of translation symmetries
+!> @param[out] occupied Logical matrix indicating allowed matrix elements
+!> @param[out] recordsym Symmetry records for matrix elements
+!> @param[out] lenrec Length of each symmetry record
+!> @param[in,out] nrec Number of records (input: max, output: actual)
+!> @param[in] symmagp Logical flag for Hermitian constraints
+!> @param[in] ipsip Temporary array for symmetry operations
+!> @param[in] rion Atomic positions (3, ntotatoms)
+!> @param[in] ntotatoms Total number of atoms
+!> @param[in] orb2atom Mapping from orbitals to atoms
+!> @param[in] cellscale Cell dimensions
+!> @param[in] deps Numerical tolerance for comparisons
+!> @param[in] yes_hermite Logical flag for Hermitian treatment
+!> @param[in] opposite_phase Logical flag for opposite phase treatment
+!> @param[in] zeta Zeta parameters for atoms (2, ntotatoms)
+!> @param[in] J3_off Logical array disabling J3 terms for specific atoms
+!> @param[in] check_same_atom Logical flag to check same atom conditions
+!> @param[in] no_4body_jas Logical flag to disable 4-body Jastrow terms
+!> @param[in] cut_hybrid Array specifying hybrid orbital cuts per atom
 subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
                       , lenrec, nrec, symmagp, ipsip, rion, ntotatoms, orb2atom &
                       , cellscale, deps, yes_hermite, opposite_phase, zeta, J3_off &
@@ -324,6 +361,14 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
     return
 end subroutine makelambda
 
+!> @brief Check if a bond is a long bond across cell boundaries
+!> @details This function determines if a bond vector represents a long bond
+!>          that crosses cell boundaries. It checks if the bond vector is
+!>          close to half the cell size in any direction.
+!> @param[in] rdiff Bond vector (3)
+!> @param[in] cellscale Cell dimensions (3)
+!> @param[in] deps Numerical tolerance for comparisons
+!> @return Logical indicating if the bond is a long bond
 function check_longbond(rdiff, cellscale, deps)
     implicit none
     logical check_longbond
@@ -341,6 +386,14 @@ function check_longbond(rdiff, cellscale, deps)
     if (check .lt. 0) check_longbond = .true.
 end function check_longbond
 
+!> @brief Apply periodic boundary conditions to a vector (fake version)
+!> @details This subroutine applies periodic boundary conditions to a vector
+!>          by reducing it to the first Brillouin zone. It handles special
+!>          cases at zone boundaries where the vector is exactly at half
+!>          the cell size.
+!> @param[in,out] rdiff Vector to be reduced (3)
+!> @param[in] cellscale Cell dimensions (3)
+!> @param[in] deps Numerical tolerance for boundary cases
 subroutine makeimageo_fake(rdiff, cellscale, deps)
     implicit none
     integer kk, npip, m

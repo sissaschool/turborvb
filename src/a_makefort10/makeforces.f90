@@ -13,6 +13,30 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Generate symmetry-equivalent force components
+!> @details This subroutine generates symmetry-equivalent force components
+!>          for atomic forces using rotation and translation symmetries.
+!>          It identifies equivalent force components and groups them into
+!>          records for efficient computation during force calculations.
+!>          
+!>          The subroutine handles:
+!>          - Rotation symmetries for force components (symrot)
+!>          - Translation symmetries for force components (symtra)
+!>          - Grouping of equivalent force components into records
+!>          - Elimination of redundant symmetry operations
+!>          
+!> @param[in] ntotatoms Total number of atoms
+!> @param[in] symrot Rotation symmetry matrix for force components (3*ntotatoms, nrot)
+!> @param[in] nrot Number of rotation symmetries
+!> @param[in] nrotu Number of unique rotation symmetries
+!> @param[in] symtra Translation symmetry matrix for force components (3*ntotatoms, ntra)
+!> @param[in] ntra Number of translation symmetries
+!> @param[in] ntrau Number of unique translation symmetries
+!> @param[out] occupied Logical array indicating processed force components
+!> @param[out] recordsym Symmetry records for force components
+!> @param[out] lenrec Length of each symmetry record
+!> @param[in,out] nrec Number of records (input: max, output: actual)
+!> @param[in] ipsip Temporary array for symmetry operations
 subroutine makeforces(ntotatoms, symrot, nrot, nrotu, symtra, ntra, ntrau, occupied, recordsym&
         &, lenrec, nrec, ipsip)
     implicit none

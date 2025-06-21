@@ -17,6 +17,22 @@
 !
 #include "f_defs.h"
 !
+
+!> @brief Compute the inverse of a matrix using LAPACK
+!> @details This subroutine computes the inverse of a square matrix using
+!>          LAPACK routines DGETRF (LU decomposition) and DGETRI (inversion).
+!>          For 3x3 matrices, it also computes the determinant. The original
+!>          matrix is preserved and the inverse is stored in a separate array.
+!>          
+!>          The subroutine uses:
+!>          - DGETRF: LU decomposition with partial pivoting
+!>          - DGETRI: Matrix inversion using LU decomposition
+!>          - Explicit determinant calculation for 3x3 matrices
+!>          
+!> @param[in] n Matrix dimension
+!> @param[in] a Input matrix (n, n)
+!> @param[out] a_inv Inverse matrix (n, n)
+!> @param[out] da Determinant (computed only for n=3)
 subroutine invmat(n, a, a_inv, da)
     !-----------------------------------------------------------------------
     ! computes the inverse "a_inv" of matrix "a", both dimensioned (n,n)

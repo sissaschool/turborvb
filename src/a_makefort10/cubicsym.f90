@@ -16,6 +16,26 @@
 
 !
 !-----------------------------------------------------------------------
+!> @brief Generate symmetry operations for cubic and lower-symmetry Bravais lattices
+!> @details This subroutine provides symmetry operations for all cubic and lower-symmetry
+!>          Bravais lattices (Hexagonal and Trigonal excepted). It generates rotation
+!>          matrices and their names for crystallographic symmetry operations.
+!>          
+!>          The subroutine works by:
+!>          1. Computing the overlap matrix between direct lattice vectors
+!>          2. Testing each of 24 possible symmetry operations
+!>          3. Checking if the operation preserves the lattice structure
+!>          4. Adding inversion symmetry (all Bravais lattices have inversion)
+!>          
+!>          The symmetry operations include:
+!>          - Identity and inversion
+!>          - 90°, 120°, and 180° rotations around various axes
+!>          - Combinations of rotations and inversions
+!>          
+!> @param[in] at Real*8(3,3) Direct lattice vectors matrix
+!> @param[out] is Integer(3,3,48) Symmetry matrices in crystal coordinates
+!> @param[out] isname Character(48)*45 Names of symmetry operations
+!> @param[out] nrot Integer Number of symmetry operations found
 subroutine cubicsym(at, is, isname, nrot)
     !-----------------------------------------------------------------------
     !
@@ -25,6 +45,9 @@ subroutine cubicsym(at, is, isname, nrot)
     use kinds
     implicit none
     !
+    !> @brief Input/output variables for symmetry operations
+    !> @details Variables that define the lattice structure and store
+    !>          the generated symmetry operations and their descriptions.
     !     first the input/output variables
     !
     real(DP) :: at(3, 3)
@@ -36,6 +59,9 @@ subroutine cubicsym(at, is, isname, nrot)
     ! output: full name of the rotational part of
     !         each selected symmetry operation
     !
+    !> @brief Local variables for symmetry operation calculations
+    !> @details Variables used internally for computing symmetry operations,
+    !>          including rotation matrices, overlap calculations, and temporary storage.
     !    here the local variables
     !
     real(DP) :: s(3, 3, 24), overlap(3, 3), rat(3), rot(3, 3), &

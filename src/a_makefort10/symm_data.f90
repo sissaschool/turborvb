@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Symmetry data structures and coordinate transformations
+!> @details This module contains data structures and subroutines for handling
+!>          crystal symmetries, translation vectors, and coordinate transformations
+!>          between Cartesian and crystal coordinates.
+!>          
+!>          The module provides:
+!>          - Symmetry matrices and operations
+!>          - Translation vector definitions
+!>          - Cell mapping structures
+!>          - Coordinate transformation routines
+!>          - Symmetry flags and parameters
 module symm_data
     implicit none
 
@@ -74,6 +85,15 @@ module symm_data
     logical :: write_log
 contains
 
+    !> @brief Initialize cell transformation matrices
+    !> @details This subroutine initializes the Cartesian to crystal coordinate
+    !>          transformation matrix by computing the inverse of the cell
+    !>          matrix using LAPACK routines.
+    !>          
+    !>          The subroutine:
+    !>          - Uses DGETRF for LU decomposition
+    !>          - Uses DGETRI for matrix inversion
+    !>          - Stores the transformation matrix in car2cry
     subroutine init_cell
         implicit none
         integer ipiv(3), i, info
@@ -90,6 +110,17 @@ contains
             if (info .ne. 0) write (6, *) ' ERROR in initialization cell (dgetri) !!! '
         end if
     end subroutine init_cell
+
+    !> @brief Transform coordinates from Cartesian to crystal coordinates
+    !> @details This subroutine transforms a set of vectors from Cartesian
+    !>          coordinates to crystal coordinates using the transformation
+    !>          matrix computed by init_cell.
+    !>          
+    !>          The transformation is applied using BLAS DGEMM:
+    !>          r_crystal = car2cry * r_cartesian
+    !>          
+    !> @param[in,out] r Coordinate vectors to transform (3, howmany)
+    !> @param[in] howmany Number of vectors to transform
     subroutine CartesianToCrystal(r, howmany)
         integer, intent(in) :: howmany
         double precision, dimension(3, howmany), intent(inout) :: r
