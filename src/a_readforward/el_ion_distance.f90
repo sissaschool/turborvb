@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes distances between electrons and ions
+!> @details This subroutine calculates the distances between all electrons
+!>          and all ions in the system. It handles both periodic and
+!>          non-periodic boundary conditions using the ApplyPBC routine
+!>          when periodic boundary conditions are enabled.
+!> @param[out] eliond Distance matrix between ions and electrons
+!> @param[in] kel Electron positions (3, nel)
+!> @param[in] nel Number of electrons
+!> @param[in] rion Ion positions (3, nion)
+!> @param[in] nion Number of ions
+!> @param[in] iespbc Flag for periodic boundary conditions
 subroutine el_ion_distance(eliond, kel, nel, rion, nion, iespbc)
 
     use Cell

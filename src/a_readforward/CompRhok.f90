@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes density in k-space from plane wave matrix
+!> @details This subroutine computes the density in k-space (rhok) by
+!>          summing the plane wave matrix contributions from all particles.
+!>          It separates contributions from different particle types based
+!>          on the nppss array.
+!> @param[out] rhoknew Total density in k-space
+!> @param[out] rhoknew2 Density in k-space separated by particle type (2*nvects, 2)
+!> @param[in] nparts Number of particles
+!> @param[in] nvects Number of wave vectors
+!> @param[in] pwmat Plane wave matrix (2*nvects, nparts)
+!> @param[in] nppss Number of particles per species
 subroutine CompRhok(rhoknew, rhoknew2, nparts, nvects, pwmat, nppss)
     !    compute rhok
     implicit none

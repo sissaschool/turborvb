@@ -13,6 +13,51 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Reads correlation function parameters and system setup
+!> @details This subroutine reads the fort.10 file and readforward.input
+!>          file to set up correlation function calculations. It processes
+!>          namelist input for simulation parameters, system configuration,
+!>          and correlation function options including density, spin, pair
+!>          correlation, and structure factor calculations.
+!> @param[in] nel Number of electrons
+!> @param[in] nelup Number of up-spin electrons
+!> @param[in] nion Number of ions
+!> @param[in] iespbc Flag for periodic boundary conditions
+!> @param[in] celldm Cell dimensions
+!> @param[in] rs Wigner-Seitz radius
+!> @param[out] cellscale Cell scaling factors
+!> @param[out] ngen Number of generations
+!> @param[out] ell System dimensions
+!> @param[out] ncell Number of cells
+!> @param[out] nbias Number of bias steps
+!> @param[out] maxf Maximum frequency
+!> @param[out] ibinit Initial bin
+!> @param[out] lbin Bin length
+!> @param[out] iskip Skip factor
+!> @param[out] ddim Dimension of the system
+!> @param[out] cutk K-space cutoff
+!> @param[out] vdim Vector dimensions
+!> @param[out] ngrid_l Local grid dimensions
+!> @param[out] r_offset Position offset
+!> @param[out] ngrid_p Number of pair grid points
+!> @param[out] ifrho Flag for density calculation
+!> @param[out] ifspin Flag for spin calculation
+!> @param[out] ifkspin Flag for k-space spin calculation
+!> @param[out] kspin K-space spin vector
+!> @param[out] ifpair Flag for pair correlation
+!> @param[out] iffluct Flag for fluctuations
+!> @param[out] ifsofk Flag for structure factor
+!> @param[out] fermi_flag Flag for Fermi statistics
+!> @param[out] err_stop Error stop flag
+!> @param[out] ifcorrs Flag for correlations
+!> @param[out] shiftlog Logarithmic shift
+!> @param[out] ioptread Read option
+!> @param[out] longio Long I/O flag
+!> @param[out] noeloc No local energy flag
+!> @param[out] sphere_radius Sphere radius
+!> @param[out] allshells All shells flag
+!> @param[out] outofplane Out-of-plane coordinate
+!> @param[out] rdf_for_atom RDF for atom flag
 subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
                          , ngen, ell, ncell, nbias, maxf, ibinit, lbin, iskip, ddim, cutk, vdim, ngrid_l, r_offset, ngrid_p &
                          , ifrho, ifspin, ifkspin, kspin, ifpair, iffluct, ifsofk &

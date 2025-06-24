@@ -13,6 +13,62 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes correlation functions and related observables
+!> @details This subroutine computes various correlation functions including
+!>          density, spin density, pair correlation functions, structure factors,
+!>          and other observables. It handles both periodic and non-periodic
+!>          systems, supports different grid types, and processes multiple
+!>          particle types.
+!> @param[in] rnew Particle positions (nspacedim, nparts)
+!> @param[in] nspacedim Spatial dimension
+!> @param[in] nparts Number of particles
+!> @param[in] ell System dimensions
+!> @param[in] nel_read Number of electrons to read
+!> @param[in] nelup_read Number of up-spin electrons to read
+!> @param[in] ifrho Flag for density calculation
+!> @param[in] ifspin Flag for spin density calculation
+!> @param[in] ifkspin Flag for k-space spin calculation
+!> @param[in] kspin K-space spin vector
+!> @param[in] nrhoind Number of density indices
+!> @param[in] ddim Dimension of the system
+!> @param[in] dxil Grid spacing
+!> @param[in] ind_offset Index offsets
+!> @param[out] density_c Density correlation values
+!> @param[out] sdensity_c Spin density correlation values
+!> @param[in] mesh Grid mesh dimensions
+!> @param[in] vell Grid velocities
+!> @param[in] ifpair Flag for pair correlation
+!> @param[in] npairind Number of pair indices
+!> @param[in] ngrid_p Number of pair grid points
+!> @param[in] drmax Maximum distance for pair correlation
+!> @param[out] paircorr Pair correlation function
+!> @param[out] spaircorr Spin pair correlation function
+!> @param[in] r_offset Position offset
+!> @param[in] r_spin2 Spin-squared correlation
+!> @param[in] vdim Vector dimensions
+!> @param[in] ifsofk Flag for structure factor
+!> @param[in] nvects Number of wave vectors
+!> @param[out] rhok Density in k-space
+!> @param[out] rhoks Spin density in k-space
+!> @param[out] pwmat Plane wave matrix
+!> @param[in] kmult Wave vector multiplicity
+!> @param[in] rkcomp Wave vector components
+!> @param[out] sofk Structure factor
+!> @param[in] ifcorrs Flag for correlations
+!> @param[out] corrsamp Correlation sampling
+!> @param[in] seconf Second-order correlation
+!> @param[in] spsiln Logarithm of the wave function
+!> @param[in] signpsi Sign of the wave function
+!> @param[in] sangle Spin angles
+!> @param[in] shiftlog Logarithmic shift
+!> @param[in] logsamp Logarithmic sampling
+!> @param[in] noeloc No local energy flag
+!> @param[in] ipart Particle indices
+!> @param[in] sphere_radius Sphere radius
+!> @param[in] adr_spc Address spacing
+!> @param[in] multcell Multiplicity of cells
+!> @param[in] outofplane Out-of-plane coordinate
+!> @param[in] rdf_for_atom RDF for atom flag
 subroutine compute_corr_fun(rnew, nspacedim, nparts, ell, nel_read, nelup_read&
         &, ifrho, ifspin, ifkspin, kspin, nrhoind, ddim, dxil&
         &, ind_offset, density_c, sdensity_c, mesh, vell, ifpair, npairind, ngrid_p, drmax&
@@ -479,8 +535,8 @@ subroutine compute_corr_fun(rnew, nspacedim, nparts, ell, nel_read, nelup_read&
                             check_inside = .false.
                             indcheck = mesh(l) - 1
                         elseif (indcheck .gt. mesh(l) - 1) then
-                            check_inside = .false.
                             indcheck = 0
+                            check_inside = .false.
                         end if
                         ind = ind + indcheck*ind_offset(l)
                     end do

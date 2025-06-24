@@ -2215,7 +2215,6 @@ program readforward
                                                                     + ek_tot(k, nind - 2)/corr_norm
                                                 ebin2(k, nind + 2) = ebin2(k, nind + 2) &
                                                                      + (ek_tot(k, nind - 2)/corr_norm)**2/wk_tot(k)
-
                                             end if
                                         end if
                                     end if
@@ -2836,6 +2835,12 @@ program readforward
 
         contains
 
+        !> @brief Updates molecular orbital function parameters
+        !> @details This subroutine updates the molecular orbital function
+        !>          parameters including firstmol, lastmol, and nmolfn.
+        !>          It determines the relevant molecular orbitals based on
+        !>          the determinant matrix and sets the yesfast parameter
+        !>          for optimization strategies.
         subroutine update_nmolfn
             implicit none
             logical forceyes
@@ -2975,6 +2980,17 @@ program readforward
 
     end program readforward
 
+    !> @brief Initializes variables by reading from fort.10 file
+    !> @details This subroutine reads the fort.10 file to initialize
+    !>          basic system variables including number of electrons,
+    !>          ions, cell parameters, and periodic boundary conditions.
+    !>          It calls read_fort10 and deallocate_all for memory management.
+    !> @param[out] nelr Number of electrons
+    !> @param[out] nelupr Number of up-spin electrons
+    !> @param[out] nionr Number of ions
+    !> @param[out] iespbcr Flag for periodic boundary conditions
+    !> @param[out] celldmr Cell dimensions
+    !> @param[out] rsrr Wigner-Seitz radius
     subroutine init_variables(nelr, nelupr, nionr, iespbcr, celldmr, rsrr)
         use allio, only: nel, nelup, nion, iespbc, celldm, rs, rion_fast
         implicit none
@@ -2999,6 +3015,15 @@ program readforward
 
     end subroutine init_variables
 
+    !> @brief Applies periodic boundary conditions to coordinates
+    !> @details Maps coordinates from offset < x < L+offset to 0 < x < L range
+    !>          using periodic boundary conditions. Converts between Cartesian 
+    !>          and crystal coordinates to handle periodicity correctly.
+    !> @param[inout] s Array of coordinates to apply PBC to (3 x howmany)
+    !> @param[in] howmany Number of coordinate points
+    !> @param[in] cellscale Cell dimensions in each direction
+    !> @param[in] r_offset Offset vector to apply
+    !> @param[in] iespbc Flag to enable/disable periodic boundary conditions
     subroutine MyApplyPBC(s, howmany, cellscale, r_offset, iespbc)
         use cell, only: car2cry, s2r
         implicit none
@@ -3034,6 +3059,16 @@ program readforward
         end if
     end subroutine MyApplyPBC
 
+    !> @brief Applies periodic boundary conditions to coordinates using double precision
+    !> @details Maps coordinates from offset < x < L+offset to 0 < x < L range
+    !>          using periodic boundary conditions. Converts between Cartesian 
+    !>          and crystal coordinates to handle periodicity correctly.
+    !>          This version uses double precision (real*8) for coordinates.
+    !> @param[inout] s Array of coordinates to apply PBC to (3 x howmany)
+    !> @param[in] howmany Number of coordinate points
+    !> @param[in] cellscale Cell dimensions in each direction
+    !> @param[in] r_offset Offset vector to apply
+    !> @param[in] iespbc Flag to enable/disable periodic boundary conditions
     subroutine DDMyApplyPBC(s, howmany, cellscale, r_offset, iespbc)
         use cell, only: car2cry, s2r
         implicit none
@@ -3067,6 +3102,14 @@ program readforward
         end if
     end subroutine DDMyApplyPBC
 
+    !> @brief Applies periodic boundary conditions to coordinates
+    !> @details Maps coordinates from 0 < x < L to 0 < x < L range using periodic 
+    !>          boundary conditions. Converts between Cartesian and crystal coordinates
+    !>          to handle periodicity correctly. This version uses double precision
+    !>          arithmetic for coordinates.
+    !> @param[inout] s Array of coordinates to apply PBC to (3 x howmany)
+    !> @param[in] howmany Number of coordinate points
+    !> @param[in] cellscale Cell dimensions in each direction
     subroutine DMyApplyPBC(s, howmany, cellscale)
         use cell, only: car2cry, s2r
         implicit none
@@ -3092,6 +3135,12 @@ program readforward
         end do
     end subroutine DMyApplyPBC
 
+    !> @brief Copies integer array elements
+    !> @details Copies elements from source array jbra to destination array jbram
+    !>          for nw elements. Uses integer*4 arrays.
+    !> @param[in] nw Number of elements to copy
+    !> @param[in] jbra Source integer array
+    !> @param[out] jbram Destination integer array where elements will be copied
     subroutine copyi4(nw, jbra, jbram)
         implicit none
         integer i, nw
