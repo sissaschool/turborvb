@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Read and initialize simulation parameters from input file
+!> @details This subroutine reads all simulation parameters from the input file using namelist
+!> format. It sets default values for various calculation parameters including optimization
+!> settings, pseudopotential options, and parallel processing configurations. The routine
+!> handles error checking and broadcasts parameters to all MPI processes in parallel runs.
 subroutine read_datasmin
     use allio
     use Thomas_Fermi_model !!!! new !!!! added by K.Nakano 11/09/2019
@@ -2632,6 +2637,11 @@ subroutine read_datasmin
     end if
 end subroutine read_datasmin
 
+!> @brief Read molecular optimization parameters from input file
+!> @details This subroutine reads molecular orbital optimization parameters including grid
+!> settings, diagonalization tolerances, and molecular orbital constraints. It validates
+!> the molecular orbital setup and sets appropriate default values for mesh dimensions
+!> and optimization parameters based on the system configuration.
 subroutine read_datasmin_mol
     use allio
     use convertmod, only: nmolmatdo

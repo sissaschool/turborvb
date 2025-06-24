@@ -50,6 +50,12 @@ module convertmod
     integer, private :: indorb, indpar
 contains
 
+    !> @brief Shifts the reference origin for coordinate system alignment
+    !> @details This subroutine calculates and sets the reference origin for the coordinate system.
+    !> For non-periodic systems, it uses the average ion position as reference and applies grid offsets.
+    !> For periodic systems, it handles coordinate transformations between Cartesian and crystal coordinates.
+    !> The reference origin is shifted based on mesh parameters and crystal lattice vectors.
+    !> @note For parallel runs, the reference origin is broadcast to maintain consistency across processors
     subroutine shift_originref
         implicit none
         real*8 mind(3)
@@ -57,9 +63,8 @@ contains
 #ifdef PARALLEL
         include 'mpif.h'
 #endif
-        !     the reference is the average ion position
+        ! Calculate reference as average ion position
         if (.not. iespbc) then
-            !     the reference is the average ion position
             do j = 1, 3
                 rion_ref(j) = sum(rion(j, :))/nion
             end do
@@ -70,10 +75,12 @@ contains
             rion_ref = 0.d0
         end if
 
+        ! Apply shifts based on grid parameters
         if (shiftx) rion_ref(:) = rion_ref(:) + ax/2.d0*at(:, 1)
         if (shifty) rion_ref(:) = rion_ref(:) + ay/2.d0*at(:, 2)
         if (shiftz) rion_ref(:) = rion_ref(:) + az/2.d0*at(:, 3)
 
+        ! Handle origin shift for periodic systems
         if (shift_origin) then
             allocate (rion_sav(3, nion))
             rion_sav = rion
@@ -89,16 +96,29 @@ contains
         end if
 
 #ifdef PARALLEL
-        !  Just to be consistent with all processors.
+        ! Broadcast reference to all processors
         call mpi_bcast(rion_ref, 3, MPI_DOUBLE_PRECISION, 0, commopt_mpi, ierr)
 #endif
 
+        ! Apply final shifts based on grid dimensions
         rion_ref(:) = rion_ref(:) + (nx - 1)/2.d0*ax*at(:, 1)
         rion_ref(:) = rion_ref(:) + (ny - 1)/2.d0*ay*at(:, 2)
         rion_ref(:) = rion_ref(:) + (nz - 1)/2.d0*az*at(:, 3)
 
     end subroutine shift_originref
 
+    !> @brief Converts molecular orbitals in the wavefunction
+    !>
+    !> This subroutine appends or replaces molecular orbitals at the end of fort.10 
+    !> (the wavefunction in TurboRVB notation). It handles coefficients of both molecular
+    !> and atomic contracted orbitals.
+    !>
+    !> @param molopt Main control parameter:
+    !>   - molopt=+/-1: Ignore coefficients of contracted orbitals
+    !>   - molopt=+/-2: Evaluate AGP coefficients with DMRG
+    !>   - molopt=+/-3: Evaluate both AGP and J coefficients with DMRG
+    !>   - molopt >= 2: Do not optimize coefficients
+    !>   - molopt < 2:  Always optimize contracted orbital coefficients
     subroutine convertmol_fast
         use allio, only: norm_metric
         implicit none
@@ -118,20 +138,6 @@ contains
 #ifdef PARALLEL
         include 'mpif.h'
 #endif
-
-        !---------------------------------------------------------------------------------
-        !       This (complicated) subroutine appends or replaces molecular orbitals at the
-        !       end of the fort.10, the wf in TurboRVB notations.
-        !       main input parameter: molopt
-        !       In this definition we pay also attention to the coefficients of the
-        !       contracted orbitals that do not correspond to molecular orbitals
-        !       in other words to the atomic contracted orbitals.
-        !       molopt=+/-1   do not care about the coefficients of the contracted
-        !       molopt=+/-2   evaluate also the coefficients of the AGP with DMRG
-        !       molopt=+/-3   evaluate also the coefficients of the AGP and J with DMRG
-        !       molopt >= 2 do not optimize these coefficients
-        !       molopt < 2  optimize always the coefficients of the contracted orbitals
-        !--------------------------------------------------------------------------------
 
         !#ifdef __CASO
         !    nprocu=nprocopt
@@ -560,7 +566,8 @@ contains
                                     &, nelorbh, buffer, nelorbh, 1.d0, oversl(1, nelorb_diag + 1), nelorbh)
                         else
                             call zgemm('N', 'C', nelorbh, nelorb_diag, nleft, volmeshc, buffer(1, nbufp)&
-                                    &, nelorbh, buffer(1, nbufp), nelorbh, zone, oversl(1, nelorb_diag + 1), nelorbh)
+                                    &, nelorbh, buffer(1, nbufp), nelorbh, zone, oversl(1, nelorb_diag + 1)&
+                                    &, nelorbh)
                         end if
                     else
                         if (ipc .eq. 1) then
@@ -1915,6 +1922,20 @@ contains
 
     end subroutine convertmol_fast
 
+  
+    !> @brief Converts molecular orbitals between different representations
+    !>
+    !> This subroutine handles the conversion of molecular orbital coefficients,
+    !> particularly after optimization steps. It manages complex and real 
+    !> representations, handles phase factors, and computes overlap matrices.
+    !>
+    !> @param[in,out] detmat_c Complex determinant matrix to be modified
+    !> @param[in] ipc Complex parameter (1 or 2) controlling representation
+    !> @param[in] ipf Phase factor parameter
+    !> @param[in] opposite_phase Flag for opposite phase handling
+    !> @param[in] same_phase Flag for same phase handling
+    !> @param[in] real_contracted Flag for real contracted basis
+    !> @param[in] symmagp Symmetry magnetic parameter
     subroutine convertmol_c
         use allio, only: norm_metric
         implicit none
@@ -2698,6 +2719,13 @@ contains
 
     end subroutine convertmol_c
 
+    !> @brief Fast orthogonalization routine for molecular orbitals
+    !>
+    !> This subroutine performs fast orthogonalization of molecular orbitals.
+    !> It handles mesh calculations, volume calculations, and allocates buffers
+    !> for overlap matrices and molecular orbital coefficients.
+    !>
+    !> @note Uses MPI for parallel execution when compiled with PARALLEL flag
     subroutine ortho_fast
         implicit none
         real*8 ddot, dnrm2, overmax, cost, r0, psiln, rc(3)
@@ -2920,6 +2948,15 @@ contains
 
     end subroutine ortho_fast
 
+    !> @brief Evaluates overlap matrices between orbitals
+    !>
+    !> This subroutine calculates overlap matrices between different orbitals.
+    !> It handles mesh-based calculations and uses buffer arrays for efficient computation.
+    !>
+    !> @param[out] overs Overlap matrix between orbitals
+    !> @param[out] buffer Temporary buffer array for calculations
+    !> @param[in] mesh Total number of mesh points (nx * ny * nz)
+    !> @param[in] volmesh Volume element for integration
     subroutine evalovers
         use allio, only: norm_metric
         implicit none
@@ -3046,6 +3083,16 @@ contains
 
     end subroutine evalovers
 
+    !> @brief Updates mu_c matrix and transpip arrays
+    !>
+    !> This subroutine handles updating the mu_c matrix while preserving transpip and 
+    !> multranspip arrays in the case of complex wavefunctions. The mu_c matrix is 
+    !> doubled instead of modifying the transpip arrays.
+    !>
+    !> @details
+    !> - Allocates temporary mu_sav array to store matrix values
+    !> - Handles complex wavefunctions by doubling mu_c rather than modifying transpip
+    !> - Used for updating molecular orbital coefficients
     subroutine upmuctranspip
 
         real*8, dimension(:, :), allocatable :: mu_sav
@@ -3199,6 +3246,16 @@ contains
     ! real and complex wfs.
     !----------------------------------------------------------------
 
+    !> @brief Updates dup_c matrix with molecular orbital coefficients
+    !>
+    !> This subroutine fills the dup_c matrix with molecular orbital coefficients from 
+    !> the molecorb matrix for both real and complex wavefunctions. It handles unpaired 
+    !> molecular orbitals and EAGP Pfaffian calculations.
+    !>
+    !> @details
+    !> - Processes both real and complex wavefunctions
+    !> - Handles unpaired molecular orbitals via molecorb_unpaired array
+    !> - Updates eigenvalues via eigmolu array
     subroutine update_dup_c
 
         implicit none
@@ -3400,6 +3457,21 @@ contains
 
     end subroutine update_dup_c
 
+    !> @brief Projects derivatives for molecular orbital calculations
+    !>
+    !> This subroutine handles projection of derivatives in molecular orbital calculations,
+    !> with special handling for symmetric AGP cases.
+    !>
+    !> @param[in] nelorbh Number of half orbitals
+    !> @param[in] nelorb Total number of orbitals
+    !> @param[in] nmolmatdo Number of molecular matrices to process
+    !> @param[in] nmol Number of molecules
+    !> @param[in] projmat Projection matrix (dimension: ipc*nelorbh x nmolmat x *)
+    !> @param[in] nmolmat Number of molecular matrices
+    !> @param[inout] dermat Derivative matrix (dimension: ipc*nelorb x nelorb)
+    !> @param[out] psip Temporary array for calculations
+    !> @param[in] yesmin Flag for minimization
+    !> @param[in] symmagp Logical flag for symmetric AGP
     subroutine projectder(nelorbh, nelorb, nmolmatdo, nmol, projmat&
             &, nmolmat, dermat, psip, yesmin, symmagp)
         use constants, only: ipc, ipf
@@ -3526,6 +3598,21 @@ contains
         end if
     end subroutine projectder
 
+    !> @brief Projects matrices for molecular orbital calculations
+    !>
+    !> This subroutine performs matrix projections for molecular orbital calculations.
+    !> It handles both symmetric and non-symmetric cases for real and complex wavefunctions.
+    !>
+    !> @param[in] nelorbh Number of orbitals per spin channel
+    !> @param[in] nelorb Total number of orbitals
+    !> @param[in] nmolmatdo Dimension for molecular matrix operations
+    !> @param[in] nmol Number of molecular orbitals
+    !> @param[inout] projmat Projection matrix (dimension: ipc*nelorbh x nmolmat x *)
+    !> @param[in] nmolmat Dimension of molecular matrices
+    !> @param[inout] dermat Derivative matrix (dimension: ipc*nelorbh x *)
+    !> @param[out] psip Temporary work array
+    !> @param[in] symmagp Logical flag for symmetric AGP
+    !> @param[in] yesmin Flag for projection method (1 for SVD projection)
     subroutine projectmat(nelorbh, nelorb, nmolmatdo, nmol, projmat, nmolmat&
             &, dermat, psip, symmagp, yesmin)
         use constants, only: ipc, ipf, zone, zmone, zzero
@@ -3616,6 +3703,14 @@ contains
 
 end module convertmod
 
+!> @brief Calculates the trace of the product of a matrix with its transpose
+!>
+!> This function computes tr(A*A^T) for a given square matrix A.
+!>
+!> @param[in] n Dimension of the matrix
+!> @param[in] a Input matrix (dimension: lda x n)
+!> @param[in] lda Leading dimension of matrix a
+!> @return The trace value tr(A*A^T)
 function tracem(n, a, lda)
     implicit none
     integer i, j, n, lda
@@ -3629,6 +3724,17 @@ function tracem(n, a, lda)
     return
 end
 
+!> @brief Calculates inverse of a symmetric/Hermitian positive definite matrix
+!>
+!> This subroutine computes the inverse of a symmetric (real) or Hermitian (complex) 
+!> positive definite matrix using Cholesky decomposition. The input matrix is 
+!> overwritten with its inverse.
+!>
+!> @param[in] n Order of the matrix
+!> @param[inout] a Input matrix to be inverted (dimension: ipc*lda x n).
+!>                 On exit, contains the inverse matrix
+!> @param[in] lda Leading dimension of array a
+!> @param[out] info Status flag. 0 indicates successful execution
 subroutine invsym(n, a, lda, info)
     use constants, only: ipc
     implicit none
@@ -3650,6 +3756,19 @@ subroutine invsym(n, a, lda, info)
     return
 end subroutine invsym
 
+!> @brief Updates EAGP (Extended Antisymmetrized Geminal Power) matrices
+!>
+!> This subroutine updates the EAGP Pfaffian matrix and unpaired molecular orbitals
+!> by performing matrix operations with molecular orbital coefficients and eigenvalues.
+!>
+!> @param[in] ndiff Number of unpaired orbitals
+!> @param[in] nelorb_diagu Number of diagonal elements in orbital matrix
+!> @param[in] nelorbh Number of half orbitals
+!> @param[in] nelorbpf Number of orbitals for Pfaffian calculation
+!> @param[in] eigmol Array of eigenvalues
+!> @param[in] molecorb Matrix of molecular orbital coefficients (dimension: nelorbpf x *)
+!> @param[out] molecorb_unpaired Matrix for unpaired molecular orbitals (dimension: 2*nelorbh x ndiff)
+!> @param[out] eagp_pfaff EAGP Pfaffian matrix (dimension: ndiff x ndiff)
 subroutine update_eagp(ndiff, nelorb_diagu, nelorbh, nelorbpf, eigmol, molecorb&
         &, molecorb_unpaired, eagp_pfaff)
     implicit none
