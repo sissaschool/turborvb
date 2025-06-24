@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['r_5fangle_0',['r_angle',['../extv_8f90.html#af608609a0b8e7dfbc2302be5e1fe329f',1,'extv.f90']]],
+  ['r_5fbond_1',['r_bond',['../extv_8f90.html#a2785925989b2ff3be8c7aa3a92817435',1,'extv.f90']]],
+  ['r_5fcapping_2',['r_capping',['../extv_8f90.html#a44875c4507eb75301765971146a5c117',1,'extv.f90']]],
+  ['r_5fdihe_3',['r_dihe',['../extv_8f90.html#add2a2ee704fa2d1042dc4f786e7aeae3',1,'extv.f90']]],
+  ['r_5fdimp_4',['r_dimp',['../extv_8f90.html#a2f6ae7894f3103d5a3caccf5f09ff97e',1,'extv.f90']]],
+  ['read_5ffort11_5fbegin_5',['read_fort11_begin',['../fort11__io_8f90.html#a7050b50c6a8948aefafe60146f47e6cb',1,'fort11_io.f90']]],
+  ['read_5ffort11_5fend_6',['read_fort11_end',['../fort11__io_8f90.html#a16a9970ed409b9a006488f55bdd8794f',1,'fort11_io.f90']]],
+  ['rep_5ferfc_7',['rep_erfc',['../namespacedielectric.html#a680174dffcbc98fe20e252c1a319d1ce',1,'dielectric']]],
+  ['rep_5ferfc_5fb_8',['rep_erfc_b',['../namespacedielectric.html#a9e5026973f41803c45a634d4a2cdde0a',1,'dielectric']]],
+  ['reset_5favg_5farray_9',['reset_avg_array',['../interfaceestimator_1_1reset.html#a2e5041dc74cd02c2c03020ee85290f99',1,'estimator::reset::reset_avg_array()'],['../namespaceestimator.html#a50ecfd444a5a08ac7f5bd4b99274ae1e',1,'estimator::reset_avg_array()']]],
+  ['reset_5favg_5fscalar_10',['reset_avg_scalar',['../interfaceestimator_1_1reset.html#a4f3feca1b41d9c281c6ad5c162f70cbd',1,'estimator::reset::reset_avg_scalar()'],['../namespaceestimator.html#aeebf7152cde3a9da5cfc844d09f377f3',1,'estimator::reset_avg_scalar()']]],
+  ['reset_5fcorr_5fadvanced_5farray_11',['reset_corr_advanced_array',['../interfaceestimator_1_1reset.html#a71cc1ff1b7b58f764b4d755f855ba475',1,'estimator::reset::reset_corr_advanced_array()'],['../namespaceestimator.html#aee57cc7cfce384dd48a958168656784e',1,'estimator::reset_corr_advanced_array()']]],
+  ['reset_5fcorr_5fbasic_5farray_12',['reset_corr_basic_array',['../interfaceestimator_1_1reset.html#a279ac5356b7b0e9a568265a539d6eac7',1,'estimator::reset::reset_corr_basic_array()'],['../namespaceestimator.html#a807d408da652017563967a03a58c6db0',1,'estimator::reset_corr_basic_array()']]],
+  ['reset_5festi_5farray_13',['reset_esti_array',['../interfaceestimator_1_1reset.html#a058d064c37d279c5f0d3a8029137bbde',1,'estimator::reset::reset_esti_array()'],['../namespaceestimator.html#ac5858dc2c015d94bcb7cecfbe889954c',1,'estimator::reset_esti_array()']]],
+  ['reset_5festi_5fscalar_14',['reset_esti_scalar',['../interfaceestimator_1_1reset.html#af66ebc5e8aaeee14c0f6e2f76511c720',1,'estimator::reset::reset_esti_scalar()'],['../namespaceestimator.html#ad6d5e0093f0501a4e10b4b81c9416234',1,'estimator::reset_esti_scalar()']]],
+  ['restr_5fread_15',['restr_read',['../extv_8f90.html#ab51a6fe496924d2a1d39451675989caa',1,'extv.f90']]],
+  ['rf_5fangle_16',['rf_angle',['../forces__ext_8f90.html#a2ee519a340fd7c57d69e90f760ffbba1',1,'forces_ext.f90']]],
+  ['rf_5fbond_17',['rf_bond',['../forces__ext_8f90.html#a6e9db2569498583b181fd2394fb4802a',1,'forces_ext.f90']]],
+  ['rf_5fdihe_18',['rf_dihe',['../forces__ext_8f90.html#ac4f26f552c8a7d9c168d4b00f53a3026',1,'forces_ext.f90']]],
+  ['rf_5fdimp_19',['rf_dimp',['../forces__ext_8f90.html#a11945950625692fa11d149d770ea9702',1,'forces_ext.f90']]],
+  ['ruota_5flambda_20',['ruota_lambda',['../rotate__tools_8f90.html#a656823a1ddcafeb2262547915d2abda1',1,'rotate_tools.f90']]],
+  ['ruota_5fmolec_21',['ruota_molec',['../rotate__tools_8f90.html#ad0ad653b8a3a30feb09ddcc0f05d39d9',1,'rotate_tools.f90']]],
+  ['ruota_5fxyz_22',['ruota_xyz',['../rotate__tools_8f90.html#a21013412dd7cc6ccf086d86ff2dfef74',1,'rotate_tools.f90']]]
+];

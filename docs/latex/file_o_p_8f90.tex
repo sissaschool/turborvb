@@ -1,0 +1,140 @@
+\doxysection{src/m\+\_\+common/file\+OP.f90 File Reference}
+\hypertarget{file_o_p_8f90}{}\label{file_o_p_8f90}\index{src/m\_common/fileOP.f90@{src/m\_common/fileOP.f90}}
+
+
+File operations and I/O management module for Turbo\+RVB.  
+
+
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72}{check\+\_\+scratch}} (rank, path, scratchpath)
+\begin{DoxyCompactList}\small\item\em Check and setup scratch directory for file operations. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}{open\+\_\+files}} (rank, scratchpath)
+\begin{DoxyCompactList}\small\item\em Open all necessary files for Turbo\+RVB simulation. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}{close\+\_\+files}} (rank)
+\begin{DoxyCompactList}\small\item\em Close all opened files and cleanup resources. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+File operations and I/O management module for Turbo\+RVB. 
+
+This module provides comprehensive file I/O operations for Turbo\+RVB, including scratch directory management, file opening/closing, and parallel I/O support. It handles various output files for energy, forces, positions, and other simulation data. \begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2022 
+\end{DoxyDate}
+\hypertarget{invsymeps_8f90_Features}{}\doxysubsection{\texorpdfstring{Features}{Features}}\label{invsymeps_8f90_Features}
+
+\begin{DoxyItemize}
+\item Scratch directory setup and validation
+\item Parallel I/O support (POSIX and MPI-\/\+IO)
+\item Multiple output file formats
+\item Rank-\/based file naming 
+\end{DoxyItemize}\hypertarget{fort11__io_8f90_Files}{}\doxysubsection{\texorpdfstring{Files}{Files}}\label{fort11__io_8f90_Files}
+Key output files include\+:
+\begin{DoxyItemize}
+\item fort.\+11\+: Energy data
+\item fort.\+12\+: Ionic forces and positions
+\item forces.\+dat\+: Formatted force data
+\item position.\+dat\+: Formatted position data
+\item pressure.\+dat\+: Pressure data (PBC)
+\item velocity.\+dat\+: Velocity data (dynamics) 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{file_o_p_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72}\index{fileOP.f90@{fileOP.f90}!check\_scratch@{check\_scratch}}
+\index{check\_scratch@{check\_scratch}!fileOP.f90@{fileOP.f90}}
+\doxysubsubsection{\texorpdfstring{check\_scratch()}{check\_scratch()}}
+{\footnotesize\ttfamily \label{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72} 
+subroutine check\+\_\+scratch (\begin{DoxyParamCaption}\item[{integer}]{rank}{, }\item[{character(\texorpdfstring{$\ast$}{*})}]{path}{, }\item[{character(\texorpdfstring{$\ast$}{*})}]{scratchpath}{}\end{DoxyParamCaption})}
+
+
+
+Check and setup scratch directory for file operations. 
+
+This subroutine validates the scratch directory path and sets up the necessary directory structure for temporary files. It handles both local and distributed scratch directories, and creates rank-\/specific identifiers for parallel runs. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the current process \\
+\hline
+\mbox{\texttt{in}}  & {\em path} & Current working directory path \\
+\hline
+\mbox{\texttt{out}}  & {\em scratchpath} & Validated scratch directory path \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+Creates turborvb.\+scratch subdirectory if io\+\_\+level \texorpdfstring{$>$}{>} 0 
+
+Generates rank-\/specific character identifiers (chara, charaq) 
+
+Validates directory existence across all nodes 
+
+Handles KCOMP compiler-\/specific behavior 
+\end{DoxyNote}
+\Hypertarget{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}\index{fileOP.f90@{fileOP.f90}!close\_files@{close\_files}}
+\index{close\_files@{close\_files}!fileOP.f90@{fileOP.f90}}
+\doxysubsubsection{\texorpdfstring{close\_files()}{close\_files()}}
+{\footnotesize\ttfamily \label{file_o_p_8f90_afff2a752f78150d527cd71363e098e55} 
+subroutine close\+\_\+files (\begin{DoxyParamCaption}\item[{integer}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Close all opened files and cleanup resources. 
+
+This subroutine closes all files opened by open\+\_\+files and performs necessary cleanup operations. It handles both serial and parallel I/O modes, including MPI-\/\+IO file handles. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the current process \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+Closes files based on simulation parameters (itestr, iopt, etc.) 
+
+Handles different I/O levels (0=local, 1=POSIX, 2=MPI-\/\+IO) 
+
+Deletes temporary scratch files when writescratch=0 
+
+Closes MPI-\/\+IO handles for parallel runs 
+
+Only rank 0 closes main output files 
+\end{DoxyNote}
+\Hypertarget{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}\index{fileOP.f90@{fileOP.f90}!open\_files@{open\_files}}
+\index{open\_files@{open\_files}!fileOP.f90@{fileOP.f90}}
+\doxysubsubsection{\texorpdfstring{open\_files()}{open\_files()}}
+{\footnotesize\ttfamily \label{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5} 
+subroutine open\+\_\+files (\begin{DoxyParamCaption}\item[{integer}]{rank}{, }\item[{character(lchlen)}]{scratchpath}{}\end{DoxyParamCaption})}
+
+
+
+Open all necessary files for Turbo\+RVB simulation. 
+
+This subroutine opens various output files based on simulation parameters and I/O level settings. It handles both serial and parallel I/O modes, including POSIX and MPI-\/\+IO support. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the current process \\
+\hline
+\mbox{\texttt{in}}  & {\em scratchpath} & Scratch directory path for temporary files \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+Opens different files based on itestr, iopt, and other flags 
+
+Supports multiple I/O levels (0=local, 1=POSIX, 2=MPI-\/\+IO) 
+
+Creates rank-\/specific file names for parallel runs 
+
+Handles quantum/classical decoupled runs 
+\end{DoxyNote}
+\hypertarget{fort11__io_8f90_Files}{}\doxysubsection{\texorpdfstring{Files}{Files}}\label{fort11__io_8f90_Files}
+Files opened include\+:
+\begin{DoxyItemize}
+\item fort.\+11\+: Energy data (unformatted)
+\item fort.\+12\+: Forces and positions (unformatted)
+\item forces.\+dat\+: Formatted force data
+\item position.\+dat\+: Formatted position data
+\item pressure.\+dat\+: Pressure data (PBC)
+\item velocity.\+dat\+: Velocity data (dynamics)
+\item covmat.\+dat\+: Covariance matrix data
+\item parametrization.\+dat\+: Parameter optimization data 
+\end{DoxyItemize}

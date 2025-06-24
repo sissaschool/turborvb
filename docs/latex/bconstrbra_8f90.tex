@@ -1,0 +1,230 @@
+\doxysection{src/m\+\_\+common/bconstrbra.f90 File Reference}
+\hypertarget{bconstrbra_8f90}{}\label{bconstrbra_8f90}\index{src/m\_common/bconstrbra.f90@{src/m\_common/bconstrbra.f90}}
+
+
+Module containing constraint handling for Jastrow matrix operations.  
+
+
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{bconstrbra_8f90_a6b43ba62b30b18a2729949f0bd353752}{bconstrbra}} (iesfreer, n3body, jbraj, nozeroj, derjas, nelorbj, ddw)
+\begin{DoxyCompactList}\small\item\em Translates constrained Jastrow parameter changes to matrix representation. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{bconstrbra_8f90_a3603f0cb9abd1da961076a75105ab329}{bconstrbra\+\_\+sparse}} (iesfreer, n3body, jbraj, nozeroj, derjas, nelorbj, ddw)
+\begin{DoxyCompactList}\small\item\em Translates constrained Jastrow parameter changes using sparse matrix operations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Module containing constraint handling for Jastrow matrix operations. 
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2022 
+\end{DoxyDate}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+
+
+\label{doc-func-members}
+\Hypertarget{bconstrbra_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{bconstrbra_8f90_a6b43ba62b30b18a2729949f0bd353752}\index{bconstrbra.f90@{bconstrbra.f90}!bconstrbra@{bconstrbra}}
+\index{bconstrbra@{bconstrbra}!bconstrbra.f90@{bconstrbra.f90}}
+\doxysubsubsection{\texorpdfstring{bconstrbra()}{bconstrbra()}}
+{\footnotesize\ttfamily \label{bconstrbra_8f90_a6b43ba62b30b18a2729949f0bd353752} 
+subroutine bconstrbra (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{iesfreer}{, }\item[{integer, intent(in)}]{n3body}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{jbraj}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{nozeroj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(inout)}]{derjas}{, }\item[{integer, intent(in)}]{nelorbj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{ddw}{}\end{DoxyParamCaption})}
+
+
+
+Translates constrained Jastrow parameter changes to matrix representation. 
+
+This subroutine handles the transformation of constrained Jastrow parameter changes back to their original unconstrained representation in matrix form. It uses the upsim subroutine to update the Jastrow matrix elements directly.
+
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Maps constrained Jastrow parameters to their original positions using jbraj array
+\item Updates Jastrow matrix elements using upsim subroutine
+\item Supports sign-\/flipped parameter mapping for constraint handling
+\item Specifically designed for 3-\/body Jastrow correlation functions
+\item Uses matrix update operations instead of direct array assignment
+\end{DoxyEnumerate}
+
+The algorithm uses a mapping array jbraj to translate between constrained and unconstrained parameter spaces, where\+:
+\begin{DoxyItemize}
+\item Positive values\+: direct mapping from ddw to matrix elements
+\item Negative values\+: sign-\/flipped mapping from ddw to matrix elements
+\end{DoxyItemize}
+
+This version uses matrix update operations (upsim) which may include additional matrix structure maintenance compared to direct assignment.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & Number of 3-\/body Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & Mapping array from constrained to unconstrained Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & Array of non-\/zero element indices for Jastrow matrix \\
+\hline
+\mbox{\texttt{in,out}}  & {\em derjas} & Jastrow matrix to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbj} & Number of Jastrow orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em ddw} & Input array of constrained parameter changes\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+If iesfreer = 0, the subroutine returns immediately without any operations
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+The subroutine modifies the derjas matrix in-\/place using upsim operations
+\end{DoxyWarning}
+\begin{DoxyParagraph}{Algorithm Details\+:}
+The subroutine implements matrix-\/based parameter mapping\+:
+\begin{DoxyEnumerate}
+\item {\bfseries{Direct Mapping\+:}} For positive jbraj values, call upsim with ddw(j)
+\item {\bfseries{Sign-\/\+Flipped Mapping\+:}} For negative jbraj values, call upsim with -\/ddw(-\/j)
+\end{DoxyEnumerate}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Matrix Update Operations\+:}
+Uses upsim subroutine with parameters\+:
+\begin{DoxyItemize}
+\item derjas\+: Target Jastrow matrix
+\item nelorbj\+: Number of Jastrow orbitals
+\item nozeroj(i)\+: Non-\/zero element index
+\item ddw(j) or -\/ddw(-\/j)\+: Parameter value
+\item .true.\+: Symmetry flag
+\item 1\+: Matrix type flag
+\end{DoxyItemize}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{3-\/Body Jastrow Terms\+:}
+This subroutine is specifically designed for 3-\/body Jastrow correlation functions, which describe electron-\/electron-\/electron correlations in quantum Monte Carlo calculations. The n3body parameter specifies the number of such terms.
+\end{DoxyParagraph}
+\begin{DoxySeeAlso}{See also}
+\doxylink{bconstrbr_8f90_a95cff172cd9f2f089ffff4ef53a20302}{bconstrbr} subroutine for direct array assignment version 
+
+\doxylink{bconstrbra_8f90_a3603f0cb9abd1da961076a75105ab329}{bconstrbra\+\_\+sparse} subroutine for sparse matrix version 
+
+upsim subroutine for matrix update operations 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & iesfreer Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & n3body Number of 3-\/body Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & jbraj Mapping array from constrained to unconstrained Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & nozeroj Array of non-\/zero element indices for Jastrow matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbj} & nelorbj Number of Jastrow orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em ddw} & ddw Input array of constrained parameter changes \\
+\hline
+\mbox{\texttt{in,out}}  & {\em derjas} & derjas Jastrow matrix to be updated \\
+\hline
+\end{DoxyParams}
+\Hypertarget{bconstrbra_8f90_a3603f0cb9abd1da961076a75105ab329}\index{bconstrbra.f90@{bconstrbra.f90}!bconstrbra\_sparse@{bconstrbra\_sparse}}
+\index{bconstrbra\_sparse@{bconstrbra\_sparse}!bconstrbra.f90@{bconstrbra.f90}}
+\doxysubsubsection{\texorpdfstring{bconstrbra\_sparse()}{bconstrbra\_sparse()}}
+{\footnotesize\ttfamily \label{bconstrbra_8f90_a3603f0cb9abd1da961076a75105ab329} 
+subroutine bconstrbra\+\_\+sparse (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{iesfreer}{, }\item[{integer, intent(in)}]{n3body}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{jbraj}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{nozeroj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(out)}]{derjas}{, }\item[{integer, intent(in)}]{nelorbj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{ddw}{}\end{DoxyParamCaption})}
+
+
+
+Translates constrained Jastrow parameter changes using sparse matrix operations. 
+
+This subroutine handles the transformation of constrained Jastrow parameter changes back to their original unconstrained representation using sparse matrix operations. It is an optimized version that avoids matrix update operations for better performance with sparse matrices.
+
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Maps constrained Jastrow parameters using sparse indexing (nozeroj)
+\item Direct assignment to sparse matrix elements
+\item Supports sign-\/flipped parameter mapping for constraint handling
+\item Specifically designed for 3-\/body Jastrow correlation functions
+\item Optimized for sparse matrix operations
+\end{DoxyEnumerate}
+
+The algorithm uses a mapping array jbraj with sparse indexing through nozeroj to translate between constrained and unconstrained parameter spaces, where\+:
+\begin{DoxyItemize}
+\item Positive values\+: direct mapping from ddw to sparse matrix elements
+\item Negative values\+: sign-\/flipped mapping from ddw to sparse matrix elements
+\end{DoxyItemize}
+
+This version is optimized for sparse matrices by avoiding matrix update operations and using direct assignment instead.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & Number of 3-\/body Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & Mapping array from constrained to unconstrained Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & Array of non-\/zero element indices for sparse Jastrow matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em derjas} & Sparse Jastrow matrix to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbj} & Number of Jastrow orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em ddw} & Input array of constrained parameter changes\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+If iesfreer = 0, the subroutine returns immediately without any operations
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+The subroutine uses direct assignment instead of matrix update operations
+\end{DoxyWarning}
+\begin{DoxyParagraph}{Algorithm Details\+:}
+The subroutine implements sparse matrix parameter mapping\+:
+\begin{DoxyEnumerate}
+\item {\bfseries{Direct Mapping\+:}} For positive jbraj values, direct assignment derjas(i) = ddw(j)
+\item {\bfseries{Sign-\/\+Flipped Mapping\+:}} For negative jbraj values, direct assignment derjas(i) = -\/ddw(-\/j)
+\end{DoxyEnumerate}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Sparse Matrix Optimization\+:}
+Uses direct assignment operations instead of upsim calls\+:
+\begin{DoxyItemize}
+\item derjas(i) = ddw(j) for positive jbraj values
+\item derjas(i) = -\/ddw(-\/j) for negative jbraj values
+\item Avoids matrix structure maintenance overhead
+\end{DoxyItemize}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Performance Benefits\+:}
+
+\begin{DoxyItemize}
+\item Faster execution for sparse matrices
+\item Reduced memory access patterns
+\item Avoids unnecessary matrix update operations
+\end{DoxyItemize}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{3-\/Body Jastrow Terms\+:}
+This subroutine is specifically designed for 3-\/body Jastrow correlation functions, which describe electron-\/electron-\/electron correlations in quantum Monte Carlo calculations. The n3body parameter specifies the number of such terms.
+\end{DoxyParagraph}
+\begin{DoxySeeAlso}{See also}
+\doxylink{bconstrbra_8f90_a6b43ba62b30b18a2729949f0bd353752}{bconstrbra} subroutine for matrix update version 
+
+\doxylink{bconstrbr_8f90_a95cff172cd9f2f089ffff4ef53a20302}{bconstrbr} subroutine for direct array assignment version 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & iesfreer Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & n3body Number of 3-\/body Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & jbraj Mapping array from constrained to unconstrained Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & nozeroj Array of non-\/zero element indices for sparse Jastrow matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbj} & nelorbj Number of Jastrow orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em ddw} & ddw Input array of constrained parameter changes \\
+\hline
+\mbox{\texttt{out}}  & {\em derjas} & derjas Sparse Jastrow matrix to be updated \\
+\hline
+\end{DoxyParams}
