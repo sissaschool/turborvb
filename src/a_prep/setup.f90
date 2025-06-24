@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Setup module for DFT calculations in TurboRVB
+!> @details This module contains all the setup parameters, variables, and
+!>          subroutines needed for DFT calculations. It manages input parameters,
+!>          real-space integration mesh, k-points, main matrices, and various
+!>          computational flags. The module provides initialization routines
+!>          and utilities for self-consistent field calculations.
 module setup
 
     use allio
@@ -191,7 +197,12 @@ module setup
 
 contains
 
-    !-------------------------
+    !> @brief Initializes all parameters and variables for DFT calculations
+    !> @details This subroutine performs comprehensive initialization for DFT
+    !>          calculations including reading input parameters, setting up
+    !>          scratch files, reading pseudopotentials, initializing random
+    !>          number generators, reading wavefunctions, and setting up
+    !>          various computational parameters and arrays.
     subroutine Initializeall
         !-------------------------
 
@@ -891,7 +902,11 @@ contains
     end subroutine Initializeall
     !-----------------------------
 
-    !---------------------------
+    !> @brief Validates and sets default values for DFT input parameters
+    !> @details This subroutine checks the consistency of DFT input parameters,
+    !>          sets default values where appropriate, validates spin configurations,
+    !>          and handles various computational flags. It ensures that the
+    !>          calculation setup is valid before starting the self-consistent cycle.
     subroutine check_dft_input
         !---------------------------
 
@@ -1068,13 +1083,14 @@ contains
 
     end subroutine check_dft_input
 
-    !----------------------
+    !> @brief Writes calculation information and parameters to output
+    !> @details This subroutine prints comprehensive information about the
+    !>          calculation setup including basis type, computational parameters,
+    !>          DFT functional type, mixing scheme, and various flags. It provides
+    !>          a summary of the calculation configuration before starting the
+    !>          self-consistent cycle.
     subroutine write_info
         !----------------------
-        !
-        ! write information on the simulation before
-        ! starting the SC cycle.
-        !
         use allio, only: iespbc, yes_crystal
         implicit none
         character(len=5) :: bas_type
@@ -1142,6 +1158,12 @@ contains
 
     end subroutine write_info
 
+    !> @brief Sets array dimensions and addresses for matrix operations
+    !> @details This subroutine determines the leading dimensions of matrices
+    !>          based on whether contracted basis sets are used, handles
+    !>          spin-polarized calculations, and sets up k-point addressing.
+    !>          It also determines whether separate overlap matrices need to
+    !>          be computed for up and down spins.
     subroutine set_addresses
 
         implicit none

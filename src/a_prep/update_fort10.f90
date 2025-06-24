@@ -20,6 +20,13 @@
 ! Remember: ipc = 1 --> real wave function, real eigenvectors molecorb
 !           ipc = 2 --> complex wave function, complex eigenvectors molecorb
 
+!> @brief Reads molecular orbitals from input wavefunction
+!> @details This subroutine is called at the beginning of the self-consistent
+!>          cycle and reads molecular orbitals from the input real or complex
+!>          wavefunction. It handles both symmetric and non-symmetric AGP
+!>          cases, processes occupation numbers, and sets up the initial
+!>          molecular orbital coefficients for DFT calculations.
+!> @note ipc = 1 for real wavefunction, ipc = 2 for complex wavefunction
 subroutine read_molecular
 
     use allio
@@ -188,6 +195,13 @@ end subroutine read_molecular
 ! Remember: ipc = 1 --> real wave function, real eigenvectors molecorb
 !           ipc = 2 --> complex wave function, complex eigenvectors molecorb
 
+!> @brief Updates wavefunction with converged Kohn-Sham molecular orbitals
+!> @details This subroutine is called at the end of the self-consistent cycle
+!>          and updates the wavefunction (written in fort.10_new) with the new
+!>          molecular orbitals, which are eigenvectors of the converged Kohn-Sham
+!>          Hamiltonian. It recomputes all orbital symmetries and updates several
+!>          variables needed by the write_fort10() subroutine.
+!> @note ipc = 1 for real wavefunction, ipc = 2 for complex wavefunction
 subroutine update_fort10
 
     use allio

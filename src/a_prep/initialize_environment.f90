@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Initializes the DFT calculation environment
+!> @details This subroutine initializes all variables and arrays needed for
+!>          DFT calculations. It sets up the mesh for integration, allocates
+!>          matrices for overlaps, Hamiltonian, and eigenvectors, initializes
+!>          k-point sampling, and prepares the calculation environment for
+!>          both self-consistent and non-self-consistent runs.
 subroutine initialize_environment()
 
     use setup
@@ -635,6 +641,13 @@ subroutine initialize_environment()
 
 end subroutine initialize_environment
 
+!> @brief Prints header information for the type of DFT calculation
+!> @details This subroutine prints a formatted header indicating the type
+!>          of DFT calculation being performed: k-points sampling, independent
+!>          k-points, gamma point, single phase, or non-self-consistent run.
+!> @param[in] kaverage Flag for k-points sampling calculation
+!> @param[in] decoupled_run Flag for independent k-points calculation
+!> @param[in] compute_bands Flag for non-self-consistent band calculation
 subroutine print_header(kaverage, decoupled_run, compute_bands)
 
     use allio, only: ipc, rank
@@ -683,6 +696,20 @@ subroutine print_header(kaverage, decoupled_run, compute_bands)
 end subroutine print_header
 
 !-----------------------------------------------------------------
+!> @brief Initializes the integration mesh for molecular orbitals
+!> @details This subroutine initializes all variables related to the
+!>          molecular orbitals integration mesh. The mesh is optimized
+!>          to be as far as possible from ion positions to avoid
+!>          divergences in the potential. For k-points sampling,
+!>          the same mesh is used for all k-points.
+!> @param[in,out] nx,ny,nz Grid dimensions
+!> @param[in,out] ax,ay,az Grid spacing
+!> @param[in,out] fx,fy,fz Reciprocal space frequencies
+!> @param[out] mesh Total number of mesh points
+!> @param[out] i8cost Cost parameter for mesh optimization
+!> @param[out] volmesh Volume per mesh point
+!> @param[out] meshproc Number of mesh points per processor
+!> @param[out] meshproc_tot Total number of mesh points
 subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
                            mesh, i8cost, volmesh, meshproc, meshproc_tot)
     !-----------------------------------------------------------------

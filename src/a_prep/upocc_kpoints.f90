@@ -14,6 +14,14 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !----------------------------------------
+!> @brief Updates occupations for k-point calculations with Fermi level determination
+!> @details This subroutine computes the Fermi level and Kohn-Sham orbital occupations
+!>          for both fixed occupations and smearing methods. It handles both coupled
+!>          and decoupled k-point runs, supports LSDA calculations, and computes
+!>          entropic contributions for smearing methods.
+!> @param[in] optocc Occupation method (0: fixed, 1: smearing)
+!> @param[in] dt Smearing parameter for Fermi-Dirac distribution
+!> @param[in] iopt Option flag (1: print initial occupations, 0: SC iterations)
 subroutine upocc_kpoints(optocc, dt, iopt)
 !----------------------------------------
 
@@ -242,6 +250,10 @@ subroutine upocc_kpoints(optocc, dt, iopt)
 
 contains
 
+    !> @brief Checks if occupation constraint is satisfied
+    !> @details This subroutine verifies that the sum of occupation numbers
+    !>          equals the total number of electrons for both spin-up and
+    !>          spin-down components across all k-points.
     subroutine check_occupation
         ! routine to check if constraint \sum_i nocc_i = N_el is satisfied.
         implicit none
@@ -266,6 +278,16 @@ end subroutine upocc_kpoints
 !----------------------------
 
 !-----------------------------------------------------------------------------
+!> @brief Reads occupation numbers from standard input
+!> @details This subroutine reads occupation numbers for spin-up and spin-down
+!>          electrons from standard input. It handles both real and complex
+!>          wavefunctions, supports LSDA calculations, and performs validation
+!>          of the occupation numbers including symmetry constraints.
+!> @param[in,out] occupations Occupation numbers for spin-up electrons
+!> @param[in,out] occupationdo Occupation numbers for spin-down electrons
+!> @param[in,out] nelocc Number of occupied orbitals for spin-up
+!> @param[in,out] neloccdo Number of occupied orbitals for spin-down
+!> @param[in] occread Flag to read occupations from input
 subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread)
     !-----------------------------------------------------------------------------
 

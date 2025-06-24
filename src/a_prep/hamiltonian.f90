@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Updates the Kohn-Sham Hamiltonian matrix for self-consistent calculations
+!> @details This subroutine computes and updates the Kohn-Sham Hamiltonian matrix
+!>          including kinetic energy, Hartree potential, exchange-correlation potential,
+!>          and external fields. It handles both real and complex wavefunctions,
+!>          supports LSDA calculations, and includes double mesh capabilities for
+!>          improved accuracy around atomic positions.
 subroutine uphamilt_new
 
     use cell, only: cellscale, car2cry, map, metric, unit_volume
@@ -385,6 +391,19 @@ subroutine uphamilt_new
 
 contains
 
+    !> @brief Uploads Hamiltonian contributions from grid points
+    !> @details This subroutine processes grid points and computes Hamiltonian
+    !>          matrix elements by evaluating wave functions and potentials.
+    !>          It handles both real and complex wavefunctions, supports LSDA
+    !>          calculations, and includes parallel processing with memory
+    !>          optimization options.
+    !> @param[in] nxi,nxf Starting and ending x grid indices
+    !> @param[in] nyi,nyf Starting and ending y grid indices  
+    !> @param[in] nzi,nzf Starting and ending z grid indices
+    !> @param[in] ax,ay,az Grid spacing in x,y,z directions
+    !> @param[in] add Flag to add or subtract contributions
+    !> @param[in] memlarge Flag for large memory optimization
+    !> @param[in] do_field Flag to include external field contributions
     subroutine upload_hamilt(nxi, nxf, nyi, nyf, nzi, nzf, ax, ay, az, add, memlarge, do_field)
         implicit none
         integer nxi, nxf, nyi, nyf, nzi, nzf, ii, bufmax
@@ -595,6 +614,15 @@ contains
         end do ! nz
     end subroutine upload_hamilt
 
+    !> @brief Computes wave function values at a single grid point for Hamiltonian calculation
+    !> @details This subroutine computes the wave function values for up/down spin
+    !>          electrons at a given grid point. It is thread-safe and handles
+    !>          both real and complex wavefunctions, Jastrow factors, and contracted
+    !>          basis sets for Hamiltonian calculations.
+    !> @param[in] x Cartesian coordinates of the grid point
+    !> @param[in] tid Thread ID for scratch space access
+    !> @param[in] ind Index in the grid buffer
+    !> @param[in] indmesh Global index of the current grid point
     subroutine compute_wf_one_grid_point(x, tid, ind, indmesh)
         ! it is thread-safe and intended to be called from threaded region.
         ! computing the wave function for up/down spin electrons
@@ -686,6 +714,18 @@ contains
         end if
     end subroutine compute_wf_one_grid_point
 
+    !> @brief Computes exchange-correlation contributions at a single grid point
+    !> @details This subroutine computes exchange-correlation energy and potential
+    !>          contributions at a given grid point. It handles various DFT functionals
+    !>          including LDA, LSDA, and includes external field contributions.
+    !> @param[in] ind Index in the grid buffer
+    !> @param[in] indmesh Global index of the current grid point
+    !> @param[out] totvpot Total potential contribution
+    !> @param[out] exchange Exchange energy contribution
+    !> @param[out] ehartree Hartree energy contribution
+    !> @param[out] ecorr Correlation energy contribution
+    !> @param[in] volmesh Volume element for integration
+    !> @param[in] do_field Flag to include external field contributions
     subroutine compute_xc_one_grid_point(ind, indmesh, totvpot, exchange, ehartree, ecorr, volmesh, do_field)
         ! it is thread-safe and intended to be called from threaded region.
         ! local density on the real space mesh
@@ -856,24 +896,18 @@ contains
         ecorr = volmesh*ec*dens_true
 
     end subroutine compute_xc_one_grid_point
-end subroutine uphamilt_new
 
-!
-! INPUT
-! molecorb_old -> molecular orthonormal orbitals
-! dent (distributed over the grid) density corresponding to the molecular orbitals
-! hamiltl (hamilt) matrix elements Kohn-Sham hamiltonian (not distributed)
-! All these quantities are not changed in output.
-!
-! OUTPUT
-! evardft -> variational DFT energy corresponding to the
-!            density and the corresponding molecular orbitals.
-! If dent != sum(occupations(:) molecorbold^T  w.f. ), then the output
-! edftvar is not variational
-! Used molecorb, changed on output.
-!
-
-subroutine evalevar
+    !> @brief Evaluates exchange-correlation energy and potential
+    !> @details This subroutine computes the exchange-correlation energy and
+    !>          potential using various DFT functionals. It supports LDA, LSDA,
+    !>          and other exchange-correlation functionals.
+    !> @param[in] rho Charge density
+    !> @param[in] rho_up Up-spin density (for LSDA)
+    !> @param[in] rho_down Down-spin density (for LSDA)
+    !> @param[out] vxc Exchange-correlation potential
+    !> @param[out] exc Exchange-correlation energy density
+    !> @param[in] nspin Number of spin components
+    subroutine evalevar
 
     use constants, only: ipc, zone, zzero
     use allio, only: commrep_mpi, commcolrep_mpi

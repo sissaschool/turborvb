@@ -18,6 +18,22 @@
 ! the complex version.
 ! They are used in the routines: initialize_mats_complex, uphamilt_kpoints
 
+!> @brief Fills SCALAPACK block matrix with real data from grid calculations
+!> @details This subroutine updates a block matrix in SCALAPACK format using
+!>          real data from molecular orbital grid calculations. It performs
+!>          matrix multiplication using BLAS routines and handles parallel
+!>          reduction across MPI processes.
+!> @param[in] mat_in Input matrix to be updated
+!> @param[in] buffer Buffer array containing molecular orbital values
+!> @param[in] nelorb Leading dimension of the buffer array
+!> @param[in] buffer_weight Weight buffer array
+!> @param[in] nelorb_w Leading dimension of the weight buffer
+!> @param[in] bufbuf Number of buffered grid points
+!> @param[in] irc_ip Row indices for processor grid
+!> @param[in] nrc_ip Number of rows per processor
+!> @param[in] rank_ip Rank mapping for processor grid
+!> @param[in] nlax Leading dimension of the block matrix
+!> @param[in] adr_buf Address offset for buffer access
 subroutine fill_matrix_scalapack(mat_in, buffer, nelorb, buffer_weight, nelorb_w, bufbuf, &
                                  irc_ip, nrc_ip, rank_ip, nlax, adr_buf)
 
@@ -104,6 +120,22 @@ subroutine fill_matrix_scalapack(mat_in, buffer, nelorb, buffer_weight, nelorb_w
 
 end subroutine fill_matrix_scalapack
 
+!> @brief Fills SCALAPACK block matrix with complex data from grid calculations
+!> @details This subroutine updates a block matrix in SCALAPACK format using
+!>          complex data from molecular orbital grid calculations. It performs
+!>          complex matrix multiplication using BLAS routines and handles parallel
+!>          reduction across MPI processes.
+!> @param[in] mat_in Input matrix to be updated
+!> @param[in] buffer Buffer array containing molecular orbital values
+!> @param[in] nelorb Leading dimension of the buffer array
+!> @param[in] buf_conj Conjugate buffer array
+!> @param[in] nelorb_conj Leading dimension of the conjugate buffer
+!> @param[in] bufbuf Number of buffered grid points
+!> @param[in] irc_ip Row indices for processor grid
+!> @param[in] nrc_ip Number of rows per processor
+!> @param[in] rank_ip Rank mapping for processor grid
+!> @param[in] nlax Leading dimension of the block matrix
+!> @param[in] adr_buf Address offset for buffer access
 subroutine fill_matrix_scalapack_complex(mat_in, buffer, nelorb, buf_conj, nelorb_conj, &
                                          bufbuf, irc_ip, nrc_ip, rank_ip, nlax, adr_buf)
 

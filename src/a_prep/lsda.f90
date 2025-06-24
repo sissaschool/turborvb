@@ -13,6 +13,13 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes Perdew-Zunger correlation for fully polarized electron gas
+!> @details This subroutine calculates the correlation energy and potential for
+!>          a fully polarized (spin-up only) electron gas using the Perdew-Zunger
+!>          parameterization. Based on quantum Monte Carlo data.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vc Correlation potential
 subroutine pz_polarized(rs, ec, vc)
     !-----------------------------------------------------------------------
     !     J.P. Perdew and A. Zunger, PRB 23, 5048 (1981)
@@ -55,6 +62,15 @@ subroutine pz_polarized(rs, ec, vc)
 end subroutine pz_polarized
 !
 !-----------------------------------------------------------------------
+!> @brief Computes spin-polarized Perdew-Zunger correlation energy and potential
+!> @details This subroutine calculates the correlation energy and potential for
+!>          a spin-polarized electron gas using the Perdew-Wang interpolation
+!>          between unpolarized and fully polarized limits.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[in] zeta Spin polarization parameter (0=unpolarized, ±1=fully polarized)
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vcup Correlation potential for spin-up electrons
+!> @param[out] vcdw Correlation potential for spin-down electrons
 subroutine pz_spin(rs, zeta, ec, vcup, vcdw)
     !-----------------------------------------------------------------------
     !     J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
@@ -107,6 +123,16 @@ subroutine pz_spin(rs, zeta, ec, vcup, vcdw)
     return
 end subroutine pz_spin
 
+!> @brief Computes spin-polarized Perdew-Zunger correlation with KZK corrections
+!> @details This subroutine calculates the spin-polarized correlation energy and
+!>          potential with Kwee-Zhang-Krakauer kinetic energy corrections.
+!>          Includes finite-size effects and volume-dependent corrections.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[in] zeta Spin polarization parameter (0=unpolarized, ±1=fully polarized)
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vcup Correlation potential for spin-up electrons
+!> @param[out] vcdw Correlation potential for spin-down electrons
+!> @param[in] vol Volume of the system
 subroutine pz_spinKZK(rs, zeta, ec, vcup, vcdw, vol)
     !-----------------------------------------------------------------------
     !     J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
@@ -146,6 +172,15 @@ subroutine pz_spinKZK(rs, zeta, ec, vcup, vcdw, vol)
     return
 end subroutine pz_spinKZK
 
+!> @brief Computes Perdew-Zunger correlation for polarized gas with KZK corrections
+!> @details This subroutine calculates the correlation energy and potential for
+!>          a fully polarized electron gas with Kwee-Zhang-Krakauer corrections.
+!>          Assumes finite-size corrections are the same for polarized and
+!>          unpolarized electron gas at the same density.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vc Correlation potential
+!> @param[in] vol Volume of the system
 subroutine pzKZK_polarized(rs, ec, vc, vol)
     !-----------------------------------------------------------------------
     !     LDA parameterization form Monte Carlo data

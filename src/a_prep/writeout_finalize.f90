@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Writes output files and finalizes the DFT calculation
+!> @details This subroutine writes final results to output files, saves
+!>          converged eigenvectors and eigenvalues, writes scratch files
+!>          for continuation, and performs final cleanup operations.
+!>          It handles both self-consistent and non-self-consistent runs.
 subroutine write_output_and_finalize
 
     use setup
@@ -460,6 +465,10 @@ subroutine write_output_and_finalize
 
 contains
 
+    !> @brief Prints final calculation outputs and timing information
+    !> @details This subroutine prints convergence status, final energies,
+    !>          Fermi energy, Hartree energy, and timing information for
+    !>          the DFT calculation.
     subroutine print_calculation_outputs()
 
         implicit none
@@ -533,6 +542,10 @@ contains
 
 end subroutine write_output_and_finalize
 
+!> @brief Writes total density to output files
+!> @details This subroutine gathers density data from all processors
+!>          and writes the total charge and spin density to output files
+!>          for non-self-consistent calculations.
 subroutine write_total_density
 
     use allio, only: rank, commrep_mpi, nprocrep, nx, ny, nz, writescratch
@@ -631,6 +644,18 @@ end subroutine write_total_density
 !
 ! sort down spin molecular orbitals according to overlap (real version)
 !
+
+!> @brief Sorts molecular orbitals for real wavefunctions based on overlap
+!> @details This subroutine sorts down-spin molecular orbitals according
+!>          to their overlap with up-spin orbitals. It ensures proper
+!>          pairing between up and down orbitals for real wavefunctions.
+!> @param[in,out] moleculardo Down-spin molecular orbitals
+!> @param[in,out] molecularup Up-spin molecular orbitals
+!> @param[in,out] eigup Up-spin eigenvalues
+!> @param[in,out] eigdo Down-spin eigenvalues
+!> @param[in] nelorbh Number of basis functions
+!> @param[in] bands Number of bands
+!> @param[in] rank Rank of current process
 subroutine sortr_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands, rank)
 
     implicit none
@@ -685,6 +710,20 @@ end subroutine sortr_molecular
 !
 ! sort down spin molecular orbitals according to overlap (complex version)
 !
+
+!> @brief Sorts molecular orbitals for complex wavefunctions based on overlap
+!> @details This subroutine sorts down-spin molecular orbitals according
+!>          to their overlap with up-spin orbitals for complex wavefunctions.
+!>          It handles complex conjugation and ensures proper pairing between
+!>          up and down orbitals.
+!> @param[in,out] moleculardo Down-spin molecular orbitals
+!> @param[in] molecularup Up-spin molecular orbitals
+!> @param[in] eigup Up-spin eigenvalues
+!> @param[in] eigdo Down-spin eigenvalues
+!> @param[in] nelorbh Number of basis functions
+!> @param[in] bands Number of bands
+!> @param[in] conjugate Flag for complex conjugation
+!> @param[in] rank Rank of current process
 subroutine sort_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands, conjugate, rank)
 
     implicit none

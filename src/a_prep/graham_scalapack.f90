@@ -13,6 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Performs Gram-Schmidt orthogonalization for real matrices using SCALAPACK
+!> @details This subroutine performs Gram-Schmidt orthogonalization in a metric
+!>          given by the overlap matrix. It orthogonalizes vectors such that
+!>          sum_kl [over(k,l) * psi(k,i) * psi(l,j)] = 1 if i=j, 0 otherwise.
+!>          Supports both serial and parallel (SCALAPACK) execution.
+!> @param[in,out] PSI Matrix of vectors to be orthogonalized
+!> @param[in] over Overlap matrix defining the metric
+!> @param[out] rn Normalization factors for the vectors
+!> @param[in] lda Leading dimension of PSI
+!> @param[in] NDIME Dimension of the vectors
+!> @param[in] MH Number of vectors to orthogonalize
+!> @param[out] info Status flag (0=success, >0=number of linearly dependent vectors)
+!> @param[in] desc SCALAPACK descriptor for PSI
+!> @param[in] desch SCALAPACK descriptor for overlap matrix
+!> @param[in] nlax Leading dimension for SCALAPACK arrays
+!> @param[in] rank Rank of current MPI process
 subroutine GRAHAM_SCALAPACK(PSI, over, rn, lda, NDIME, MH, info, desc, desch, nlax, rank)
 
     use descriptors
@@ -199,6 +215,22 @@ subroutine GRAHAM_SCALAPACK(PSI, over, rn, lda, NDIME, MH, info, desc, desch, nl
     return
 end subroutine GRAHAM_SCALAPACK
 
+!> @brief Performs Gram-Schmidt orthogonalization for complex matrices using SCALAPACK
+!> @details This subroutine performs Gram-Schmidt orthogonalization in a metric
+!>          given by the complex overlap matrix. It orthogonalizes complex vectors
+!>          such that sum_kl [over(k,l) * psi(k,i) * psi(l,j)] = 1 if i=j, 0 otherwise.
+!>          Supports both serial and parallel (SCALAPACK) execution.
+!> @param[in,out] PSI Matrix of complex vectors to be orthogonalized
+!> @param[in] over Complex overlap matrix defining the metric
+!> @param[out] rn Normalization factors for the vectors
+!> @param[in] lda Leading dimension of PSI
+!> @param[in] NDIME Dimension of the vectors
+!> @param[in] MH Number of vectors to orthogonalize
+!> @param[out] info Status flag (0=success, >0=number of linearly dependent vectors)
+!> @param[in] desc SCALAPACK descriptor for PSI
+!> @param[in] desch SCALAPACK descriptor for overlap matrix
+!> @param[in] nlax Leading dimension for SCALAPACK arrays
+!> @param[in] rank Rank of current MPI process
 subroutine GRAHAM_SCALAPACK_complex(PSI, over, rn, lda, NDIME, MH, info, desc, desch, nlax, rank)
     use descriptors
     use allio, only: commrep_mpi, rankrep, nprocrep

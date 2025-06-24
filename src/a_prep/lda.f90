@@ -14,6 +14,13 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes Slater exchange energy and potential
+!> @details This subroutine calculates the Slater exchange energy and potential
+!>          using the standard LDA exchange functional with alpha=2/3.
+!>          The exchange energy and potential are computed in atomic units.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[out] ex Exchange energy per particle
+!> @param[out] vx Exchange potential
 subroutine slater(rs, ex, vx)
     !-----------------------------------------------------------------------
     !        Slater exchange with alpha=2/3
@@ -30,6 +37,14 @@ subroutine slater(rs, ex, vx)
     return
 end subroutine slater
 
+!> @brief Computes Perdew-Zunger correlation energy and potential
+!> @details This subroutine calculates the LDA correlation energy and potential
+!>          using parameterizations from Monte Carlo data. Supports two different
+!>          parameterizations based on the iflagr parameter.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[in] iflagr Flag for parameterization choice (1: Perdew-Zunger, 2: Ortiz-Ballone)
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vc Correlation potential
 subroutine pz(rs, iflagr, ec, vc)
     !-----------------------------------------------------------------------
     !     LDA parameterization from Monte Carlo data
@@ -81,6 +96,15 @@ end subroutine pz
 !
 
 !-----------------------------------------------------------------------
+!> @brief Computes Slater exchange with Kwee-Zhang-Krakauer kinetic energy correction
+!> @details This subroutine calculates the Slater exchange energy and potential
+!>          with additional kinetic energy corrections from Kwee, Zhang and Krakauer.
+!>          The correction depends on the volume and includes finite-size effects.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[out] ex Exchange energy per particle
+!> @param[out] vx Exchange potential
+!> @param[in] vol Volume of the system
+!> @param[in] iopt Option flag for different correction schemes
 subroutine slaterKZK(rs, ex, vx, vol, iopt)
     !-----------------------------------------------------------------------
     !        Slater exchange with alpha=2/3, Kwee, Zhang and Krakauer KE
@@ -135,6 +159,14 @@ subroutine slaterKZK(rs, ex, vx, vol, iopt)
 end subroutine slaterKZK
 
 !-----------------------------------------------------------------------
+!> @brief Computes Perdew-Zunger correlation with Kwee-Zhang-Krakauer corrections
+!> @details This subroutine calculates the LDA correlation energy and potential
+!>          with Kwee-Zhang-Krakauer kinetic energy corrections. It includes
+!>          finite-size effects and volume-dependent corrections.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vc Correlation potential
+!> @param[in] vol Volume of the system
 subroutine pzKZK(rs, ec, vc, vol)
     !-----------------------------------------------------------------------
     !     LDA parameterization form Monte Carlo data
@@ -226,6 +258,16 @@ subroutine pzKZK(rs, ec, vc, vol)
 end subroutine pzKZK
 !
 !---------------------------------------------------------------
+!> @brief Computes PBE exchange energy and potential
+!> @details This subroutine calculates the PBE (Perdew-Burke-Ernzerhof) exchange
+!>          energy and potential without the Slater exchange part. Supports both
+!>          standard PBE and revised PBE functionals.
+!> @param[in] rho Electron density
+!> @param[in] grho Squared gradient of electron density
+!> @param[in] iflagr Flag for functional choice (4: PBE, 5: revised PBE)
+!> @param[out] sx Exchange energy density
+!> @param[out] v1x Exchange potential (density derivative)
+!> @param[out] v2x Exchange potential (gradient derivative)
 subroutine pbex(rho, grho, iflagr, sx, v1x, v2x)
     !---------------------------------------------------------------
     !
@@ -290,6 +332,15 @@ subroutine pbex(rho, grho, iflagr, sx, v1x, v2x)
 end subroutine pbex
 !
 !---------------------------------------------------------------
+!> @brief Computes PBE correlation energy and potential
+!> @details This subroutine calculates the PBE (Perdew-Burke-Ernzerhof) correlation
+!>          energy and potential without the LDA part. Based on the original PBE
+!>          functional formulation.
+!> @param[in] rho Electron density
+!> @param[in] grho Squared gradient of electron density
+!> @param[out] sc Correlation energy density
+!> @param[out] v1c Correlation potential (density derivative)
+!> @param[out] v2c Correlation potential (gradient derivative)
 subroutine pbec(rho, grho, sc, v1c, v2c)
     !---------------------------------------------------------------
     !
@@ -331,6 +382,14 @@ subroutine pbec(rho, grho, sc, v1c, v2c)
 end subroutine pbec
 
 !-----------------------------------------------------------------------
+!> @brief Computes Perdew-Wang correlation energy and potential
+!> @details This subroutine calculates the Perdew-Wang correlation energy and potential
+!>          using parameterizations from quantum Monte Carlo data. Supports different
+!>          parameterizations based on the iflag parameter.
+!> @param[in] rs Wigner-Seitz radius parameter
+!> @param[in] iflag Flag for parameterization choice (1: Perdew-Wang, 2: Ortiz-Ballone)
+!> @param[out] ec Correlation energy per particle
+!> @param[out] vc Correlation potential
 subroutine pw(rs, iflag, ec, vc)
     !-----------------------------------------------------------------------
     !     iflag=1: J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)

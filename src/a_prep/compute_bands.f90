@@ -14,6 +14,12 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !-----------------------------
+!> @brief Performs non-self-consistent band structure calculations
+!> @details This subroutine performs non-self-consistent calculations to compute
+!>          band structures and electronic properties. It reads the density from
+!>          a self-consistent calculation, diagonalizes the Hamiltonian at each
+!>          k-point, and saves eigenvalues and eigenvectors for post-processing.
+!>          Supports both real and complex wavefunctions with LSDA calculations.
 subroutine non_self_consistent_run()
     !-----------------------------
 
@@ -143,6 +149,11 @@ subroutine non_self_consistent_run()
 end subroutine non_self_consistent_run
 
 !----------------------------------
+!> @brief Reads electronic density from self-consistent calculation files
+!> @details This subroutine reads the electronic density from files generated
+!>          during a self-consistent calculation. It handles both charge and
+!>          spin density, supports parallel I/O, and validates the total charge
+!>          conservation.
 subroutine read_density_from_file()
     !----------------------------------
 

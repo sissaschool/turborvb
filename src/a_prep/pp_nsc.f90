@@ -14,6 +14,15 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !-----------------------
+!> @brief Performs post-processing tasks for non-self-consistent calculations
+!> @details This subroutine handles various post-processing tasks for non-self-consistent
+!>          calculations including band structure plotting, density of states evaluation,
+!>          and Fermi surface calculations (to be implemented).
+!> @param[in] task Task identifier:
+!>                 - 1: Band structure calculation
+!>                 - 2: DOS calculation  
+!>                 - 5: Evaluate all tasks
+!>                 - 0: No tasks (error)
 subroutine pp_nsc(task)
 !-----------------------
     use allio, only: rank, qp
@@ -50,6 +59,12 @@ subroutine pp_nsc(task)
 end subroutine pp_nsc
 
 !---------------------
+!> @brief Plots band structure from non-self-consistent calculations
+!> @details This routine generates band structure plots from non-self-consistent
+!>          calculations. It identifies high symmetry points, creates k-point paths,
+!>          and writes band structure data to a file compatible with gnuplot.
+!>          Supports both spin-up and spin-down bands for LSDA calculations.
+!> @note Requires kp_type=2 or 3 for k-points path calculations
 subroutine plot_bands
 !---------------------
 
@@ -191,6 +206,11 @@ subroutine plot_bands
 end subroutine plot_bands
 
 !-----------------------
+!> @brief Calculates density of states from band energies
+!> @details This routine calculates the density of states using smearing functions
+!>          applied to the band energies. It supports different smearing types and
+!>          handles both spin-up and spin-down contributions for LSDA calculations.
+!> @note Requires optocc>0 and non-zero epsshell for smearing calculations
 subroutine evaluate_dos
 !-----------------------
 

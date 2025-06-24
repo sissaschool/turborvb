@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for complex k-point self-consistent DFT calculations
+!> @details This module implements self-consistent field (SCF) calculations
+!>          for complex wavefunctions with k-point sampling. It handles
+!>          occupation number management, Hamiltonian diagonalization,
+!>          and convergence control for both periodic and non-periodic systems.
 module freeelmod_complex
 
     use setup
@@ -50,6 +55,12 @@ module freeelmod_complex
 
 contains
 
+    !> @brief Performs self-consistent field calculation for complex k-points
+    !> @details This subroutine implements the main self-consistent field loop
+    !>          for complex wavefunctions with k-point sampling. It reads occupation
+    !>          numbers from files, performs Hamiltonian diagonalization, updates
+    !>          density and potential, and controls convergence. Supports both
+    !>          LSDA calculations and parallel execution.
     subroutine self_consistent_run
 
         implicit none
@@ -749,7 +760,7 @@ contains
                 call graham_scalapack_complex(molecorb, oversl, psip, nelorbu, nelorbu, nelocc &
                                               , info, descla, desch, size(oversl, 1)/2, rank)
                 call graham_scalapack_complex(molecorbdo, oversldo, psip, nelorbu, nelorbu, neloccdo &
-                                              , info, descla, desch, size(oversl, 1)/2, rank)
+                                              , info, descla, desch, size(oversldo, 1)/2, rank)
             end if
 #else
             if (ipc .eq. 1) then
@@ -1362,6 +1373,11 @@ contains
 
     end subroutine self_consistent_run
 
+    !> @brief Performs one iteration of the self-consistent field cycle for complex wavefunctions
+    !> @details This subroutine implements a single iteration of the SCF cycle including
+    !>          Hamiltonian update, diagonalization, occupation update, and density mixing.
+    !>          It supports both simple mixing (typeopt=2) and Anderson/Broyden acceleration
+    !>          (typeopt=4). Handles complex wavefunctions and k-point sampling.
     subroutine cycle_complex
 
         !
@@ -2000,6 +2016,12 @@ contains
 
     end subroutine cycle_complex
 
+    !> @brief Performs steepest-descent optimization for complex wavefunctions
+    !> @details This subroutine implements steepest-descent optimization for
+    !>          complex wavefunctions in k-point calculations. It computes
+    !>          energy gradients and updates molecular orbitals using the
+    !>          steepest-descent method. Supports both serial and parallel
+    !>          (SCALAPACK) execution.
     subroutine cyclesteep_complex
 
         implicit none
@@ -2412,6 +2434,11 @@ contains
 
     end subroutine cyclesteep_complex
 
+    !> @brief Computes checksums of matrix elements for debugging and validation
+    !> @details This subroutine computes and prints checksums of various matrix
+    !>          elements including overlap, Hamiltonian, and density matrices.
+    !>          It is used for debugging and validation of the SCF calculations.
+    !>          Supports both serial and parallel execution with k-point sampling.
     subroutine checksum
 
         implicit none
@@ -2568,6 +2595,14 @@ contains
 
     end subroutine checksum
 
+    !> @brief Diagonalizes the Kohn-Sham Hamiltonian matrix
+    !> @details This subroutine diagonalizes the Kohn-Sham Hamiltonian matrix
+    !>          to obtain eigenvalues and eigenvectors. It handles both real and
+    !>          complex wavefunctions, supports LSDA calculations, and includes
+    !>          parallel (SCALAPACK) execution. The eigenvectors are stored in
+    !>          molecorb and molecorbdo arrays.
+    !> @param[in] iopt Option flag for diagonalization type
+    !> @param[in,out] lworkr Workspace size for LAPACK routines
     subroutine diagonalize_hamiltonian(iopt, lworkr)
 
         implicit none
@@ -2703,6 +2738,16 @@ contains
 
 end module freeelmod_complex
 
+!> @brief Copies complex matrix from SCALAPACK distributed format to global array
+!> @details This subroutine copies a complex matrix from SCALAPACK distributed
+!>          format to a global array. It handles the mapping between local
+!>          block indices and global matrix indices for parallel execution.
+!> @param[in] n Global dimension of the matrix
+!> @param[in,out] a Local matrix in SCALAPACK format
+!> @param[in] lda Leading dimension of local matrix
+!> @param[in] desc SCALAPACK descriptor array
+!> @param[out] b Global matrix array
+!> @param[in] lcol Number of columns to copy
 subroutine eqmat_scalapack_complex(n, a, lda, desc, b, lcol)
     !nelorbu,molecorbldo,size(molecorbldo,1)/2,descla,molecorbdo
     use descriptors, only: descla_siz_, lambda_node_, nlar_, nlac_, &
@@ -2740,6 +2785,16 @@ subroutine eqmat_scalapack_complex(n, a, lda, desc, b, lcol)
     return
 end subroutine eqmat_scalapack_complex
 
+!> @brief Copies real matrix from SCALAPACK distributed format to global array
+!> @details This subroutine copies a real matrix from SCALAPACK distributed
+!>          format to a global array. It handles the mapping between local
+!>          block indices and global matrix indices for parallel execution.
+!> @param[in] n Global dimension of the matrix
+!> @param[in,out] a Local matrix in SCALAPACK format
+!> @param[in] lda Leading dimension of local matrix
+!> @param[in] desc SCALAPACK descriptor array
+!> @param[out] b Global matrix array
+!> @param[in] lcol Number of columns to copy
 subroutine eqmat_scalapack(n, a, lda, desc, b, lcol)
     !nelorbu,molecorbldo,size(molecorbldo,1)/2,descla,molecorbdo
     use descriptors, only: descla_siz_, lambda_node_, nlar_, nlac_, &

@@ -13,6 +13,23 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes inverse of symmetric positive definite matrix using SVD
+!> @details This subroutine computes the inverse of a symmetric positive definite matrix
+!>          using singular value decomposition (SVD). It eliminates singular directions
+!>          with eigenvalues smaller than the condition number threshold to ensure
+!>          numerical stability. Supports both serial and parallel (SCALAPACK) execution.
+!>          The input matrix is assumed to be positive definite and is overwritten with
+!>          its inverse.
+!> @param[in] n Order of the matrix
+!> @param[in,out] a Input matrix to be inverted (overwritten with inverse)
+!> @param[in] lda Leading dimension of array a
+!> @param[out] info Status flag (0 for success)
+!> @param[in] epsr Condition number threshold for eigenvalue filtering
+!> @param[out] mine Number of neglected singular directions
+!> @param[in] rank Rank of current MPI process
+!> @param[in] epssr Optional shift parameter for diagonal elements
+!> @param[in] bands Number of bands (for SCALAPACK)
+!> @param[in] nlax Leading dimension for SCALAPACK arrays
 subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
 
 #ifdef __SCALAPACK

@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for Fourier transform operations in DFT calculations
+!> @details This module contains all variables and procedures related to Fourier
+!>          transforms in the DFT code. It handles Hartree potential calculations,
+!>          density transforms, gradient computations, and parallel FFT operations.
+!>          Supports both periodic and non-periodic boundary conditions.
 module fourier_module
 
     !
@@ -54,6 +59,17 @@ module fourier_module
 
 contains
 
+    !> @brief Uploads density to Fourier space for FFT calculations
+    !> @details This subroutine uploads the electron density from real space to
+    !>          Fourier space for FFT calculations. It handles parallel distribution
+    !>          of grid points across processors and supports both periodic and
+    !>          non-periodic boundary conditions.
+    !> @param[in] indmesh Current mesh index
+    !> @param[in] nxi,nxf Starting and ending x grid indices
+    !> @param[in] nyi,nyf Starting and ending y grid indices
+    !> @param[in] nzi,nzf Starting and ending z grid indices
+    !> @param[in] ax,ay,az Grid spacing in x,y,z directions
+    !> @param[in] add Flag to add or subtract contributions
     subroutine upload_fp(indmesh, nxi, nxf, nyi, nyf, nzi, nzf, ax, ay, az, add)
         use setup, only: dent
         implicit none
@@ -161,6 +177,11 @@ contains
         return
     end subroutine upload_fp
 
+    !> @brief Initializes Fourier transform parameters and arrays
+    !> @details This subroutine initializes all parameters needed for Fourier
+    !>          transform operations including grid dimensions, FFT array sizes,
+    !>          and parallel distribution parameters. It handles double mesh
+    !>          calculations and different scaling factors.
     subroutine initialize_fourier
         use constants, only: zzero
         use setup, only: do_hartree, double_mesh, scale_z
@@ -234,6 +255,11 @@ contains
         return
     end subroutine initialize_fourier
 
+    !> @brief Evaluates Hartree potential in Fourier space (density-independent part)
+    !> @details This subroutine computes the density-independent part of the Hartree
+    !>          potential in Fourier space. It handles both periodic (Ewald) and
+    !>          non-periodic boundary conditions, includes dielectric corrections,
+    !>          and performs parallel FFT operations.
     subroutine evalvhartreeq
 
         use setup, only: voltot, voltot_double, vmax0, volmesh, double_mesh, time_fft, time_uploadfft, vmax0_in
@@ -603,6 +629,12 @@ contains
 
     end subroutine evalvhartreeq
 
+    !> @brief Updates Hartree potential in real space from density-dependent part
+    !> @details This subroutine computes the density-dependent part of the Hartree
+    !>          potential by performing FFT operations on the electron density.
+    !>          It transforms density to Fourier space, multiplies by the precomputed
+    !>          Hartree kernel, and transforms back to real space. Supports parallel
+    !>          execution and includes various corrections.
     subroutine update_vhartree
 
         use allio, only: zetar
@@ -1156,6 +1188,15 @@ contains
 
     end subroutine update_vhartree
 
+    !> @brief Uploads local vector to global array for parallel processing
+    !> @details This subroutine distributes a local vector across processors
+    !>          and assembles it into a global array. It handles periodic boundary
+    !>          conditions and supports different grid sizes for parallel FFT operations.
+    !> @param[in] vector Local vector to be uploaded
+    !> @param[out] vector_global Global array to store the distributed vector
+    !> @param[in] nxi,nxf Starting and ending x grid indices
+    !> @param[in] nyi,nyf Starting and ending y grid indices
+    !> @param[in] nzi,nzf Starting and ending z grid indices
     subroutine upload_vector_global(vector, vector_global, nxi, nxf, nyi, nyf, nzi, nzf)
         implicit none
         integer indmesh, i, j, k, ip, jp, kp, indproc, nxi, nxf, nyi, nyf, nzi, nzf&
@@ -1273,6 +1314,16 @@ contains
 #endif
     end subroutine upload_vector_global
 
+    !> @brief Uploads Hartree potential to fine mesh for double mesh calculations
+    !> @details This subroutine interpolates the Hartree potential from the coarse
+    !>          mesh to a fine mesh around atomic positions. It uses linear or cubic
+    !>          interpolation and supports parallel execution for double mesh calculations.
+    !> @param[in] indmesh Current mesh index
+    !> @param[in] scalea Scaling factor for mesh refinement
+    !> @param[in] nxi,nxf Starting and ending x grid indices
+    !> @param[in] nyi,nyf Starting and ending y grid indices
+    !> @param[in] nzi,nzf Starting and ending z grid indices
+    !> @param[in] add Flag to add or subtract contributions
     subroutine upload_vhartree(indmesh, scalea, nxi, nxf, nyi, nyf, nzi, nzf, add)
         implicit none
         integer indproc, i, j, k, ii, jj, kk, nxi, nxf, nyi, nyf, nzi, nzf, scalea, indmesh, irest
@@ -1424,6 +1475,12 @@ contains
     ! Therefore this subroutine is UNUSED for the moment.
     !
 
+    !> @brief Computes gradient of electron density in Fourier space
+    !> @details This subroutine computes the gradient of the electron density
+    !>          using FFT operations. It is designed for GGA exchange-correlation
+    !>          functionals but is currently unused in the present version of the code.
+    !>          It performs FFT on density, multiplies by wave vector components,
+    !>          and transforms back to real space.
     subroutine evalgrad
 
         use setup, only: dent, gradt, voltot, volmesh
@@ -1870,6 +1927,13 @@ contains
 
     end subroutine evalgrad
 
+    !> @brief Uploads Hartree potential from Fourier space to real space
+    !> @details This subroutine transfers the Hartree potential from Fourier space
+    !>          representation back to real space grid points. It handles parallel
+    !>          distribution of data across processors and supports both periodic
+    !>          and non-periodic boundary conditions.
+    !> @note Uses MPI gather operations for parallel execution and includes
+    !>       special handling for periodic boundary conditions through iespbc flag
     subroutine upload_vhartree_fromfp
         implicit none
         integer i, i1, j, k, ii, jj, kk, ind, indx, indmesh, indtot, indproc, nbufrep, ierr&
@@ -1973,6 +2037,15 @@ contains
 
     end subroutine upload_vhartree_fromfp
 
+    !> @brief Uploads electron density from real space to Fourier space
+    !> @details This subroutine transfers electron density data from real space to
+    !>          Fourier space for FFT calculations. It handles both regular and
+    !>          Hartree potential calculations, using buffer arrays for parallel
+    !>          distribution of data across processors.
+    !> @param[in,out] dent Input electron density array
+    !> @param[in] do_hartree Flag for Hartree potential calculation
+    !> @param[out] buffer_fft 2D buffer array for FFT data distribution
+    !> @param[out] buffer_local 1D local buffer for processor-specific data
     subroutine upload_fp_fromdent
         use setup, only: dent, do_hartree
         use allio, only: zetar
@@ -2058,6 +2131,13 @@ contains
     end subroutine upload_fp_fromdent
 
 end module fourier_module
+
+!> @brief Computes cubic interpolation weights using Lagrange polynomials
+!> @details This subroutine computes the weights for cubic interpolation
+!>          using Lagrange polynomials. For x=0, p(2)=1 and all others are zero,
+!>          which is used to avoid computing unsampled mesh points.
+!> @param[in] x Input coordinate in unit of lattice space (0<=x<=1)
+!> @param[out] p Array of 4 interpolation weights
 subroutine cubic(x, p)
     implicit none
     real*8 x ! input x in unit of lattice space a   0<=x<=1
@@ -2082,6 +2162,12 @@ subroutine cubic(x, p)
     return
 end
 
+!> @brief Computes attenuation function for FFT operations
+!> @details This function computes an attenuation factor used in FFT operations
+!>          to reduce aliasing effects. It supports linear, cubic, and higher-order
+!>          polynomial fits depending on the linear flag.
+!> @param[in] x Input coordinate
+!> @return Attenuation factor
 function attenuate(x)
     use constants, only: Pi
     use setup, only: linear
@@ -2112,6 +2198,13 @@ function attenuate(x)
     end if
     return
 end
+
+!> @brief Computes true modulo operation with positive result
+!> @details This function computes the modulo operation ensuring the result
+!>          is always positive, even for negative input values.
+!> @param[in] i Input integer
+!> @param[in] n Modulo base
+!> @return Positive modulo result
 function mod_true(i, n)
     implicit none
     integer mod_true, i, n
@@ -2119,6 +2212,15 @@ function mod_true(i, n)
     if (mod_true .lt. 0) mod_true = mod_true + n
     return
 end
+
+!> @brief Checks if index is within bounds considering periodic boundary conditions
+!> @details This function checks if an index is within specified bounds,
+!>          taking into account periodic boundary conditions when iespbc is true.
+!> @param[in] i Index to check
+!> @param[in] mini Minimum bound
+!> @param[in] maxi Maximum bound
+!> @param[in] iespbc Flag for periodic boundary conditions
+!> @return True if index is within bounds
 function condp(i, mini, maxi, iespbc)
     logical condp, iespbc
     integer i, mini, maxi

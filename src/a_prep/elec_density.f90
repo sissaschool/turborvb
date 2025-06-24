@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Updates electron density and spin density on the grid
+!> @details This subroutine computes charge (dent) and spin (spint) density
+!>          on the mesh from occupations of DFT orbitals and k-points weights.
+!>          It handles both real and complex algorithms, supports LSDA calculations,
+!>          and includes double mesh capabilities for improved accuracy around
+!>          atomic positions.
 subroutine updenorb_new
 
     ! This subroutine updates charge and spin density
@@ -278,6 +284,17 @@ subroutine updenorb_new
 
 contains
 
+    !> @brief Uploads density contributions from grid points
+    !> @details This subroutine processes grid points and computes density
+    !>          contributions by evaluating wave functions and applying
+    !>          occupation numbers. It handles both real and complex
+    !>          wavefunctions, supports LSDA calculations, and includes
+    !>          parallel processing with memory optimization options.
+    !> @param[in] nxi,nxf Starting and ending x grid indices
+    !> @param[in] nyi,nyf Starting and ending y grid indices
+    !> @param[in] nzi,nzf Starting and ending z grid indices
+    !> @param[in] ax,ay,az Grid spacing in x,y,z directions
+    !> @param[in] add Flag to add or subtract contributions
     subroutine upload_dens(nxi, nxf, nyi, nyf, nzi, nzf, ax, ay, az, add)
         implicit none
         integer nxi, ii, nxf, nyi, nyf, nzi, nzf, nx, ny, nz, indtot, bufmax
@@ -580,6 +597,15 @@ contains
         end if
     end subroutine upload_dens
 
+    !> @brief Computes wave function values at a single grid point for density calculation
+    !> @details This subroutine computes the wave function values for up/down spin
+    !>          electrons at a given grid point. It is thread-safe and handles
+    !>          both real and complex wavefunctions, Jastrow factors, and contracted
+    !>          basis sets for density calculations.
+    !> @param[in] x Cartesian coordinates of the grid point
+    !> @param[in] tid Thread ID for scratch space access
+    !> @param[in] ind Index in the grid buffer
+    !> @param[in] indmesh Global index of the current grid point
     subroutine compute_one_grid_point(x, tid, ind, indmesh)
         ! it is thread-safe and intended to be called from threaded region.
         ! computing the wave function for up/down spin electrons
@@ -661,6 +687,11 @@ end subroutine updenorb_new
 ! It is called at the end of each DFT cycle to check
 ! if eigenvectors are correct: /int_mesh n(r) dr = nel
 
+!> @brief Integrates charge and spin density over the mesh
+!> @details This subroutine integrates the charge and spin density over the
+!>          whole mesh and computes the total charge. It is called at the end
+!>          of each DFT cycle to check if eigenvectors are correct by verifying
+!>          that the integral of the density equals the number of electrons.
 subroutine cutdens
 
     use allio, only: nelup, neldo, nel, rank, commrep_mpi, rankcolrep, rankrep
@@ -785,6 +816,18 @@ end subroutine cutdens
 ! to the symmetry operation of the Bravais lattice.
 ! Adapted from QuantumESPRESSO
 !
+
+!> @brief Symmetrizes charge/spin density according to crystal symmetries
+!> @details This subroutine symmetrizes the charge or spin density according
+!>          to the symmetry operations of the Bravais lattice. It applies
+!>          all symmetry operations to each grid point and averages the
+!>          density values over equivalent points. Adapted from QuantumESPRESSO.
+!> @param[in,out] rho Density array to be symmetrized
+!> @param[in,out] buffer_grid Buffer for grid communication
+!> @param[in] meshproc Number of mesh points per processor
+!> @param[in] nx,ny,nz Grid dimensions
+!> @param[in] isymm Symmetry matrices
+!> @param[in] nsym Number of symmetry operations
 subroutine symmetrize_density(rho, buffer_grid, meshproc, nx, ny, nz, isymm, nsym)
 
     use symmetries, only: transform_point
@@ -866,6 +909,19 @@ subroutine symmetrize_density(rho, buffer_grid, meshproc, nx, ny, nz, isymm, nsy
 
 end subroutine symmetrize_density
 
+!> @brief Fills wave function buffer with proper phase for complex calculations
+!> @details This subroutine handles the phase of complex wave functions
+!>          when computing density contributions. It applies complex
+!>          conjugation if needed and performs matrix multiplication
+!>          with the molecular orbitals.
+!> @param[in] molecorb Molecular orbitals matrix
+!> @param[in] nbas Number of basis functions
+!> @param[in,out] wf Wave function array
+!> @param[in] wf_dim Dimension of wave function array
+!> @param[in,out] buffer Buffer array for results
+!> @param[in] buf_dim Dimension of buffer array
+!> @param[in] same_phase Flag indicating if same phase should be used
+!> @param[in] bufbuf Buffer size
 subroutine fill_phase_wf(molecorb, nbas, wf, wf_dim, buffer, buf_dim, same_phase, bufbuf)
 
     use constants, only: zzero, zone

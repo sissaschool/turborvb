@@ -19,6 +19,13 @@
 !     ipc.eq.2 -> complex case, all matrices and buffer/scratch arrays
 !                 are defined with double dimension.
 
+!> @brief Initializes main matrices for self-consistent DFT calculations
+!> @details This subroutine initializes the overlap and Hamiltonian matrices
+!>          used in self-consistent field calculations. It handles both real
+!>          and complex wavefunctions, supports parallel execution with SCALAPACK,
+!>          and includes double mesh capabilities for improved accuracy around
+!>          atomic positions. The matrices are computed by integrating over
+!>          the real-space grid.
 subroutine initialize_mats_new
 
     ! use cell,            only: ApplyPBC,CartesianToCrystal,map,metric,unit_volume
@@ -736,6 +743,22 @@ subroutine initialize_mats_new
 
 contains
 
+    !> @brief Uploads matrix elements for a specific grid region
+    !> @details This subroutine processes a rectangular grid region and computes
+    !>          matrix elements for overlap and Hamiltonian matrices. It handles
+    !>          both real and complex wavefunctions, supports parallel execution,
+    !>          and includes contraction of basis functions when needed.
+    !> @param nxi Starting x-index of the grid region
+    !> @param nxf Ending x-index of the grid region
+    !> @param nyi Starting y-index of the grid region
+    !> @param nyf Ending y-index of the grid region
+    !> @param nzi Starting z-index of the grid region
+    !> @param nzf Ending z-index of the grid region
+    !> @param ax Grid spacing in x-direction
+    !> @param ay Grid spacing in y-direction
+    !> @param az Grid spacing in z-direction
+    !> @param add Logical flag to add to existing matrices
+    !> @param memlarge Logical flag for large memory usage
     subroutine upload_mat(nxi, nxf, nyi, nyf, nzi, nzf, ax, ay, az, add, memlarge)
         implicit none
         integer nxi, ii, jj, kk, i, j, k, nxf, nyi, nyf, nzi, nzf, nx, ny, nz, indtot, nbufrep
@@ -943,6 +966,19 @@ contains
 
     end subroutine upload_mat
 
+    !> @brief Computes wavefunction values and matrix elements for a single grid point
+    !> @details This thread-safe subroutine evaluates the wavefunction, pseudopotential,
+    !>          and Jastrow factors at a single grid point. It computes the basis
+    !>          functions, handles periodic boundary conditions, and evaluates
+    !>          one-body and many-body Jastrow factors.
+    !> @param x Electron positions (3, 0:indt)
+    !> @param tid Thread ID for scratch space access
+    !> @param ind Index in the grid buffer
+    !> @param indmesh Global index of the current grid point
+    !> @param costq0 Output: Coulomb energy contribution
+    !> @param vlocaltot Output: Local pseudopotential energy contribution
+    !> @param memlarge Logical flag for large memory usage
+    !> @param volmesh Volume element for this grid point
     subroutine compute_one_grid_point(x, tid, ind, indmesh, costq0, vlocaltot &
                                       , memlarge, volmesh)
         ! This routine computes the WF on a single grid point.
@@ -1218,6 +1254,34 @@ contains
     end subroutine compute_one_grid_point
 
 end subroutine initialize_mats_new
+
+!> @brief Sets grid intervals and weights for atomic-centered regions
+!> @details This subroutine determines the grid intervals around atomic positions
+!>          for computing matrix elements. It handles both position changes and
+!>          mesh refinement, computes integration weights, and manages periodic
+!>          boundary conditions.
+!> @param scalea Scaling factor for mesh refinement
+!> @param nx0r Number of grid points in x-direction around atom
+!> @param ny0r Number of grid points in y-direction around atom
+!> @param nz0r Number of grid points in z-direction around atom
+!> @param rion Atomic position
+!> @param rion_upload Reference position for grid alignment
+!> @param ax Grid spacing in x-direction
+!> @param ay Grid spacing in y-direction
+!> @param az Grid spacing in z-direction
+!> @param nxi Output: Starting x-index of the grid region
+!> @param nxf Output: Ending x-index of the grid region
+!> @param nyi Output: Starting y-index of the grid region
+!> @param nyf Output: Ending y-index of the grid region
+!> @param nzi Output: Starting z-index of the grid region
+!> @param nzf Output: Ending z-index of the grid region
+!> @param nxr Output: Relative x-position in grid units
+!> @param nyr Output: Relative y-position in grid units
+!> @param nzr Output: Relative z-position in grid units
+!> @param changer Logical flag indicating position change
+!> @param weightx Output: Integration weights in x-direction
+!> @param weighty Output: Integration weights in y-direction
+!> @param weightz Output: Integration weights in z-direction
 subroutine set_interval(scalea, nx0r, ny0r, nz0r, rion, rion_upload&
         &, ax, ay, az, nxi, nxf, nyi, nyf, nzi, nzf, nxr, nyr, nzr, changer, weightx&
         &, weighty, weightz)
@@ -1377,6 +1441,14 @@ subroutine set_interval(scalea, nx0r, ny0r, nz0r, rion, rion_upload&
     end if
     return
 end
+
+!> @brief Computes integration weights for finite difference schemes
+!> @details This subroutine generates integration weights for numerical
+!>          integration using finite difference schemes. The weights are
+!>          designed for accurate integration of functions over grid points,
+!>          with special handling for different numbers of grid points.
+!> @param n Number of grid points
+!> @param w Output: Integration weights array (n)
 subroutine prepw(n, w)
     integer n, i
     real*8 w(n), fb(4), fe(4)

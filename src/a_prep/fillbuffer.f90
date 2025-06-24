@@ -13,6 +13,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Fills buffer with complex wavefunction values for Hamiltonian calculations
+!> @details This subroutine computes the buffer array for complex wavefunctions by combining
+!>          potential energy contributions, non-local potential terms, and kinetic energy.
+!>          It handles complex arithmetic and uses BLAS operations for matrix-vector products.
+!> @param[in] nelorb Number of orbitals
+!> @param[in] indt Maximum angular momentum index
+!> @param[in] istart Starting index for non-local potential
+!> @param[in] indtms Ending index for non-local potential
+!> @param[in] tcost Array of cost factors for non-local potential
+!> @param[in] vpots Scalar potential value
+!> @param[in] winv_c Complex wavefunction inverse matrix
+!> @param[out] buffer Output buffer array to be filled
 subroutine fillbuff_complex(nelorb, indt, istart, indtms, tcost, vpots, winv_c, buffer)
 
     use constants, only: zhalf, zone
@@ -44,6 +56,18 @@ subroutine fillbuff_complex(nelorb, indt, istart, indtms, tcost, vpots, winv_c, 
     return
 end subroutine fillbuff_complex
 
+!> @brief Fills buffer with real wavefunction values for Hamiltonian calculations
+!> @details This subroutine computes the buffer array for real wavefunctions by combining
+!>          potential energy contributions, non-local potential terms, and kinetic energy.
+!>          It uses real arithmetic and BLAS operations for efficient matrix-vector products.
+!> @param[in] nelorb Number of orbitals
+!> @param[in] indt Maximum angular momentum index
+!> @param[in] istart Starting index for non-local potential
+!> @param[in] indtms Ending index for non-local potential
+!> @param[in] tcost Array of cost factors for non-local potential
+!> @param[in] vpots Scalar potential value
+!> @param[in] winv Real wavefunction inverse matrix
+!> @param[out] buffer Output buffer array to be filled
 subroutine fillbuff(nelorb, indt, istart, indtms, tcost, vpots, winv, buffer)
     implicit none
     integer nelorb, indt, istart, indtms, dims, i

@@ -13,6 +13,10 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for computing Fermi energy in DFT calculations
+!> @details This module provides subroutines for calculating the Fermi energy
+!>          in both fixed occupation and smearing methods. It supports both
+!>          k-point averaging and independent k-point calculations.
 module compute_efermi
 
     use allio, only: rank, qp
@@ -43,6 +47,14 @@ module compute_efermi
 contains
     !
     ! Fermi energy in the case of fixed occupations
+    !> @brief Calculates Fermi energy for fixed occupations with k-point averaging
+    !> @details This subroutine calculates the Fermi energy for systems with fixed
+    !>          occupations by averaging over k-points. It places the Fermi energy
+    !>          in the middle of the band gap or just above the HOMO level.
+    !> @param[in] eig Eigenvalues array (bands, nk)
+    !> @param[in] occupations Occupation numbers array (bands, nk)
+    !> @param[in] bands Number of bands
+    !> @param[out] ef Fermi energy
     subroutine efermiFix_kaverage(eig, occupations, bands, ef)
         implicit none
         integer, intent(in) :: bands
@@ -74,6 +86,14 @@ contains
         return
     end subroutine efermiFix_kaverage
 
+    !> @brief Calculates Fermi energy for fixed occupations without k-point averaging
+    !> @details This subroutine calculates the Fermi energy for systems with fixed
+    !>          occupations for a single k-point. It places the Fermi energy in the
+    !>          middle of the band gap or just above the HOMO level.
+    !> @param[in] eig Eigenvalues array (bands)
+    !> @param[in] occupations Occupation numbers array (bands)
+    !> @param[in] bands Number of bands
+    !> @param[out] ef Fermi energy
     subroutine efermiFix_kindependent(eig, occupations, bands, ef)
         implicit none
         integer, intent(in) :: bands
@@ -99,6 +119,15 @@ contains
     !
     ! Fermi energy in case of smearing
     !
+    !> @brief Calculates Fermi energy with smearing using k-point averaging
+    !> @details This subroutine calculates the Fermi energy using smearing functions
+    !>          with k-point averaging. It uses a bisection method to find the Fermi
+    !>          energy that gives the correct number of electrons.
+    !> @param[in] eig Eigenvalues array (bands, nk)
+    !> @param[in] bands Number of bands
+    !> @param[in] nel Number of electrons
+    !> @param[in] dt Smearing parameter
+    !> @param[in,out] ef Fermi energy (initial guess, updated on output)
     subroutine efermiMet_kaverage(eig, bands, nel, dt, ef)
 
         implicit none
@@ -147,6 +176,15 @@ contains
 
     end subroutine efermiMet_kaverage
 
+    !> @brief Calculates Fermi energy with smearing without k-point averaging
+    !> @details This subroutine calculates the Fermi energy using smearing functions
+    !>          for a single k-point. It uses a bisection method to find the Fermi
+    !>          energy that gives the correct number of electrons.
+    !> @param[in] eig Eigenvalues array (bands)
+    !> @param[in] bands Number of bands
+    !> @param[in] nel Number of electrons
+    !> @param[in] dt Smearing parameter
+    !> @param[in,out] ef Fermi energy (initial guess, updated on output)
     subroutine efermiMet_kindependent(eig, bands, nel, dt, ef)
 
         implicit none
@@ -191,6 +229,14 @@ contains
     ! Smearing functions
     !--------------------
 
+    !> @brief Computes smearing function for occupation numbers
+    !> @details This function computes the smearing function used for occupation
+    !>          numbers. Currently supports Fermi-Dirac smearing (ityp=1).
+    !> @param[in] e Energy level
+    !> @param[in] dt Smearing parameter
+    !> @param[in] ef Fermi energy
+    !> @param[in] ityp Smearing type (1: Fermi-Dirac)
+    !> @return Smearing function value
     real(qp) function smear(e, dt, ef, ityp)
 
         implicit none
@@ -218,6 +264,14 @@ contains
     ! Entropy functions
     !--------------------
 
+    !> @brief Computes entropy contribution from smearing
+    !> @details This function computes the entropy contribution from the smearing
+    !>          function. Currently supports Fermi-Dirac smearing (ityp=1).
+    !> @param[in] e Energy level
+    !> @param[in] dt Smearing parameter
+    !> @param[in] ef Fermi energy
+    !> @param[in] ityp Smearing type (1: Fermi-Dirac)
+    !> @return Entropy contribution
     real(8) function smearS(e, dt, ef, ityp)
 
         implicit none
@@ -253,6 +307,14 @@ contains
     ! Delta function
     !--------------------
 
+    !> @brief Computes delta function for density of states
+    !> @details This function computes the delta function used for density of states
+    !>          calculations. Currently supports Fermi-Dirac smearing (ityp=1).
+    !> @param[in] e Energy level
+    !> @param[in] dt Smearing parameter
+    !> @param[in] ef Fermi energy
+    !> @param[in] ityp Smearing type (1: Fermi-Dirac)
+    !> @return Delta function value
     real(qp) function smearD(e, dt, ef, ityp)
 
         implicit none

@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Main program for DFT preparation and calculations
+!> @details This is the main program for TurboRVB DFT calculations. It initializes
+!>          the parallel environment, reads input parameters, sets up the calculation
+!>          environment, and performs either self-consistent or non-self-consistent
+!>          calculations depending on the input options. Supports both real and
+!>          complex wavefunctions with k-point sampling and LSDA calculations.
 program main
 
     use setup
