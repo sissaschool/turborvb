@@ -1,0 +1,77 @@
+\doxysection{enercont.\+f90}
+\hypertarget{enercont_8f90_source}{}\label{enercont_8f90_source}\index{src/a\_turborvb/enercont.f90@{src/a\_turborvb/enercont.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Calculate\ energy\ contribution\ from\ wave\ function\ derivatives}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ function\ computes\ the\ energy\ contribution\ from\ the\ Laplacian}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ and\ gradient\ terms\ of\ the\ wave\ function\ for\ both\ up\ and\ down\ electrons.}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ It\ combines\ terms\ from\ winv\ (inverse\ matrix)\ and\ tabpip\ (derivatives).}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ Index\ offset\ for\ derivatives}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ nelup\ \ \ \ Number\ of\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ neldo\ \ \ \ Number\ of\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ winvup\ \ \ Inverse\ matrix\ for\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ winvdo\ \ \ Inverse\ matrix\ for\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ tabpip\ \ \ Wave\ function\ derivatives\ table}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @return\ \ \ \ \ enercont\ Energy\ contribution\ from\ derivatives}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00027}00027\ \textcolor{keyword}{function\ }enercont(indt,\ nelup,\ neldo,\ winvup,\ winvdo,\ tabpip)}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ jj,\ indt,\ nelup,\ neldo}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00030}00030\ \ \ \ \ real*8\ winvup(nelup,\ *),\ winvdo(neldo,\ *)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00031}00031\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tabpip(nelup\ +\ neldo,\ *),\ enercont}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00033}00033\ \ \ \ \ enercont\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00035}00035\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Laplacian\ up\ '}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ enercont\ =\ enercont\ -\/\ winvup(i,\ indt\ +\ 4)\ -\/\ tabpip(i,\ indt\ +\ 4)}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,tabpip(i,indt+4),winvup(i,indt+4)}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00041}00041\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00043}00043\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Gradient\ up\ \ '}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ jj\ =\ indt\ +\ j}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ enercont\ =\ enercont\ -\/\ 2.d0*tabpip(i,\ jj)*winvup(i,\ jj)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ tabpip(i,\ jj)*tabpip(i,\ jj)}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ i,jj,tabpip(i,jj),winvup(i,jj)}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00050}00050\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Laplacian\ down\ '}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ neldo}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ enercont\ =\ enercont\ -\/\ winvdo(i,\ indt\ +\ 4)\ -\/\ tabpip(i\ +\ nelup,\ indt\ +\ 4)}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,tabpip(i+nelup,indt+4),winvdo(i,indt+4)}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00058}00058\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Gradient\ down\ \ \ '}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00060}00060\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ jj\ =\ indt\ +\ j}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ neldo}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ enercont\ =\ enercont\ -\/\ 2.d0*tabpip(i\ +\ nelup,\ jj)*winvdo(i,\ jj)\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ tabpip(i\ +\ nelup,\ jj)*tabpip(i\ +\ nelup,\ jj)}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,jj,tabpip(i+nelup,jj),winvdo(i,jj)}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00067}00067\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00068}00068\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{enercont_8f90_source_l00071}00071\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

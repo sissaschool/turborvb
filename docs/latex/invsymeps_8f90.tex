@@ -40,6 +40,10 @@ Turbo\+RVB group
 \item Parallelization support (MPI) 
 \end{DoxyItemize}
 
+Definition in file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{invsymeps_8f90_doc-func-members}
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -89,6 +93,105 @@ Writes warnings for small or negative eigenvalues
 
 Returns inverse in-\/place in a 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00052}{52}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ zone,\ zzero}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ lda,\ info,\ i,\ j,\ mine,\ neig,\ rank,\ ierr,\ countexc,\ dimorb\&}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ dime,\ minen,\ nproc,\ comm\_mpi,\ ipc}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordtype}{real*8}\ a(ipc*lda,\ *),\ eps,\ umat(ipc*n,\ n),\ eigmat(n),\ abstol,\ dlamch,\ condnum}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{}\ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ b}
+\DoxyCodeLine{00062\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ eig}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\#ifndef\ \_\_CASO}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{!\#endif}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keyword}{allocate}\ (b(ipc*n,\ n),\ eig(n))}
+\DoxyCodeLine{00066\ \ \ \ \ b\ =\ 0.d0}
+\DoxyCodeLine{00067\ \ \ \ \ eig\ =\ 0.d0}
+\DoxyCodeLine{00068\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Now\ the\ inverse\ of\ this\ matrix\ using\ SDV\ diagonalization}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ by\ eliminating\ the\ irrelevant\ directions}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ maximum\ accuracy}}
+\DoxyCodeLine{00073\ \ \ \ \ abstol\ =\ 0.d0}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ b(1:ipc*n,\ j)\ =\ a(1:ipc*n,\ j)\ \textcolor{comment}{!\ save\ original\ matrix}}
+\DoxyCodeLine{00077\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ umat(1:ipc*n,\ j)\ =\ a(1:ipc*n,\ j)}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev\_my(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ n,\ umat,\ n,\ eig,\ info,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zsyev\_my(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ n,\ umat,\ n,\ eig,\ info,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{00086\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00087\ \ \ \ \ countexc\ =\ 1}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .le.\ -\/1d12)\ countexc\ =\ countexc\ +\ 1}
+\DoxyCodeLine{00090\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ countexc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ERROR\ in\ dsyevx,\ some\ eigenv<=\ -\/1d12\ '}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ info\ =\ -\/1}
+\DoxyCodeLine{00094\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00095\ \ \ \ \ condnum\ =\ eig(1)/eig(n)}
+\DoxyCodeLine{00096\ \ \ \ \ i\ =\ 1}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (condnum\ .le.\ 0.d0)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ condnum\ =\ eig(i)/eig(n)}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ first\ non\ zero/Inverse\ condition\ number\ basis\ =\ '},\ i,\ condnum}
+\DoxyCodeLine{00102\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)/eig(n)\ .gt.\ eps)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/eig(i))}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ eig(i)\ =\ dsqrt(eig(i))}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ eig(i)\ .le.\ eps\ .and.\ eig(i)\ .ne.\ -\/1d12)\&}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ warning\ small\ \ eigenvalue\ !!!\ '},\ eig(i)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ j=1,n}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ j,umat(j,i)}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ eig(i)\ =\ 0.d0}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00118\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .gt.\ 0\ .and.\ rank\ .eq.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ info\ >\ 0\ in\ dsyevx\ !!!\ '},\ info}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ define\ \ b}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ipc*n}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ umat(i,\ j)*eigmat(j)}
+\DoxyCodeLine{00127\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ it\ should\ be\ authomatically\ symmetric/hermitian}}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_my(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ n,\ n,\ n,\ 1.d0,\ b,\ n,\ b,\ n,\ 0.d0,\ a,\ lda,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm\_my(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'C'},\ n,\ n,\ n,\ zone,\ b,\ n,\ b,\ n,\ zzero,\ a,\ lda,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{00135\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ neglecting'},\ mine\ -\/\ 1,\ \textcolor{stringliteral}{'over'},\ n,\ \textcolor{stringliteral}{'directions\ in\ SVD'}}
+\DoxyCodeLine{00139\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{deallocate}\ (b,\ eig)}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
 \Hypertarget{invsymeps_8f90_ab874df30d74248482fb9c2fb24b686ab}\index{invsymeps.f90@{invsymeps.f90}!tracemat@{tracemat}}
 \index{tracemat@{tracemat}!invsymeps.f90@{invsymeps.f90}}
 \doxysubsubsection{\texorpdfstring{tracemat()}{tracemat()}}
@@ -111,6 +214,32 @@ Returns sum\+\_\+\{i,j\} a(i,j)\texorpdfstring{$\ast$}{*}a(j,i) for a real matri
 \begin{DoxyReturn}{Returns}
 Sum of squared elements (trace-\/like quantity) 
 \end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00153}{153}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ n,\ lda}
+\DoxyCodeLine{00156\ \ \ \ \ real*8\ \mbox{\hyperlink{invsymeps_8f90_ab874df30d74248482fb9c2fb24b686ab}{tracemat}},\ a(lda,\ *)}
+\DoxyCodeLine{00157\ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_ab874df30d74248482fb9c2fb24b686ab}{tracemat}}\ =\ 0.d0}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_ab874df30d74248482fb9c2fb24b686ab}{tracemat}}\ =\ \mbox{\hyperlink{invsymeps_8f90_ab874df30d74248482fb9c2fb24b686ab}{tracemat}}\ +\ a(i,\ j)*a(j,\ i)}
+\DoxyCodeLine{00161\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00162\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{invsymeps_8f90_source_l00154}{tracemat()}}.
+
+
+
+Referenced by \mbox{\hyperlink{invsymeps_8f90_source_l00154}{tracemat()}}.
+
 \Hypertarget{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}\index{invsymeps.f90@{invsymeps.f90}!tracemat2@{tracemat2}}
 \index{tracemat2@{tracemat2}!invsymeps.f90@{invsymeps.f90}}
 \doxysubsubsection{\texorpdfstring{tracemat2()}{tracemat2()}}
@@ -139,6 +268,37 @@ Returns sum\+\_\+\{i,j\} a(i,j)\texorpdfstring{$\ast$}{*}b(j,i) for real or comp
 \begin{DoxyReturn}{Returns}
 Sum of products (trace-\/like quantity) 
 \end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00205}{205}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ n,\ m,\ lda,\ ldb}
+\DoxyCodeLine{00209\ \ \ \ \ real*8\ \mbox{\hyperlink{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}{tracemat2}},\ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}},\ a(ipc*lda,\ *),\ b(ipc*ldb,\ *)}
+\DoxyCodeLine{00210\ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}{tracemat2}}\ =\ 0.d0}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ m}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}{tracemat2}}\ =\ \mbox{\hyperlink{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}{tracemat2}}\ +\ a(i,\ j)*b(j,\ i)}
+\DoxyCodeLine{00215\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00216\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_ac92ddc50d1d27cfbf39078459c2952dd}{tracemat2}}\ =\ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}}(n,\ m,\ a,\ lda,\ b,\ ldb)}
+\DoxyCodeLine{00219\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{invsymeps_8f90_source_l00206}{tracemat2()}}, and \mbox{\hyperlink{invsymeps_8f90_source_l00234}{tracemat2c()}}.
+
+
+
+Referenced by \mbox{\hyperlink{invsymeps_8f90_source_l00206}{tracemat2()}}.
+
 \Hypertarget{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}\index{invsymeps.f90@{invsymeps.f90}!tracemat2c@{tracemat2c}}
 \index{tracemat2c@{tracemat2c}!invsymeps.f90@{invsymeps.f90}}
 \doxysubsubsection{\texorpdfstring{tracemat2c()}{tracemat2c()}}
@@ -167,6 +327,33 @@ Returns sum\+\_\+\{i,j\} a(i,j)\texorpdfstring{$\ast$}{*}b(j,i) for complex matr
 \begin{DoxyReturn}{Returns}
 Sum of products (trace-\/like quantity) 
 \end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00233}{233}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ n,\ m,\ lda,\ ldb}
+\DoxyCodeLine{00236\ \ \ \ \ real*8\ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}}}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ a(lda,\ *),\ b(ldb,\ *)}
+\DoxyCodeLine{00238\ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}}\ =\ 0.d0}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ m}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}}\ =\ \mbox{\hyperlink{invsymeps_8f90_a94e1032f01b0042b68041099319593d3}{tracemat2c}}\ +\ a(i,\ j)*b(j,\ i)}
+\DoxyCodeLine{00242\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00243\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{invsymeps_8f90_source_l00234}{tracemat2c()}}.
+
+
+
+Referenced by \mbox{\hyperlink{invsymeps_8f90_source_l00206}{tracemat2()}}, and \mbox{\hyperlink{invsymeps_8f90_source_l00234}{tracemat2c()}}.
+
 \Hypertarget{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}\index{invsymeps.f90@{invsymeps.f90}!tracematc@{tracematc}}
 \index{tracematc@{tracematc}!invsymeps.f90@{invsymeps.f90}}
 \doxysubsubsection{\texorpdfstring{tracematc()}{tracematc()}}
@@ -189,6 +376,41 @@ Returns sum\+\_\+\{i,j\} a(i,j)\texorpdfstring{$\ast$}{*}a(j,i) for a real or co
 \begin{DoxyReturn}{Returns}
 Sum of squared elements (trace-\/like quantity) 
 \end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00173}{173}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ n,\ lda}
+\DoxyCodeLine{00177\ \ \ \ \ real*8\ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}},\ a(ipc*lda,\ *)}
+\DoxyCodeLine{00178\ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}}\ =\ 0.d0}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}}\ =\ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}}\ +\ a(i,\ j)*a(j,\ i)}
+\DoxyCodeLine{00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}}\ =\ \mbox{\hyperlink{invsymeps_8f90_a8ca9b7c5b0b297c8899754ebc5598ec7}{tracematc}}\ +\ a(2*i\ -\/\ 1,\ j)*a(2*j\ -\/\ 1,\ i)\ +\ a(2*i,\ j)*a(2*j,\ i)}
+\DoxyCodeLine{00189\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00190\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00191\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{invsymeps_8f90_source_l00174}{tracematc()}}.
+
+
+
+Referenced by \mbox{\hyperlink{invsymeps_8f90_source_l00174}{tracematc()}}.
+
 \Hypertarget{invsymeps_8f90_a3cb0b5db71f10fe6267665dffbba21c5}\index{invsymeps.f90@{invsymeps.f90}!tracetrue@{tracetrue}}
 \index{tracetrue@{tracetrue}!invsymeps.f90@{invsymeps.f90}}
 \doxysubsubsection{\texorpdfstring{tracetrue()}{tracetrue()}}
@@ -211,3 +433,27 @@ Returns sum\+\_\+\{i\} a(i,i) for a real matrix a.
 \begin{DoxyReturn}{Returns}
 Trace of the matrix 
 \end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{invsymeps_8f90_source_l00254}{254}} of file \mbox{\hyperlink{invsymeps_8f90_source}{invsymeps.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ n,\ lda}
+\DoxyCodeLine{00257\ \ \ \ \ real*8\ \mbox{\hyperlink{invsymeps_8f90_a3cb0b5db71f10fe6267665dffbba21c5}{tracetrue}},\ a(lda,\ *)}
+\DoxyCodeLine{00258\ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a3cb0b5db71f10fe6267665dffbba21c5}{tracetrue}}\ =\ 0.d0}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{invsymeps_8f90_a3cb0b5db71f10fe6267665dffbba21c5}{tracetrue}}\ =\ \mbox{\hyperlink{invsymeps_8f90_a3cb0b5db71f10fe6267665dffbba21c5}{tracetrue}}\ +\ a(i,\ i)}
+\DoxyCodeLine{00261\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{invsymeps_8f90_source_l00255}{tracetrue()}}.
+
+
+
+Referenced by \mbox{\hyperlink{invsymeps_8f90_source_l00255}{tracetrue()}}.
+

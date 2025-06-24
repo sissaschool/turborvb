@@ -1,0 +1,148 @@
+\doxysection{gather\+\_\+avgs.\+f90}
+\hypertarget{gather__avgs_8f90_source}{}\label{gather__avgs_8f90_source}\index{src/a\_turborvb/gather\_avgs.f90@{src/a\_turborvb/gather\_avgs.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Gather\ averages\ and\ weights\ from\ all\ processes}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ gathers\ energy,\ weights,\ and\ correlation}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ functions\ from\ all\ MPI\ processes\ to\ the\ root\ process.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ Used\ for\ parallel\ QMC\ calculations.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ \ wbra\ \ \ \ \ \ Local\ walker\ weight}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ ener\ \ \ \ \ \ Local\ energy}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ wtotf\ \ \ \ \ Local\ total\ weights\ (array)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ etot\ \ \ \ \ \ Local\ correlation\ function\ array}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[inout]\ ener\_t\ \ Gathered\ energies\ (root\ only)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[inout]\ wbra\_t\ \ Gathered\ weights\ (root\ only)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[inout]\ wtotf\_t\ Gathered\ total\ weights\ (root\ only)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[inout]\ etot\_t\ \ Gathered\ correlation\ functions\ (root\ only)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ np3\ \ \ \ \ \ \ Number\ of\ correlation\ functions}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ \ pdim\ \ \ \ \ \ Number\ of\ processes}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00030}00030\ \textcolor{keyword}{subroutine\ }gather\_avgs(wbra,\ ener,\ etot,\ wtotf,\ wbra\_t,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00031}00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ener\_t,\ etot\_t,\ wtotf\_t,\ np3,\ pdim)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ commcolrep\_mpi}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{use\ }kpoints\_mod,\ \textcolor{keywordtype}{only}:\ kaverage,\ decoupled\_run}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00035}00035\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ np3,\ pdim}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00037}00037\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ wbra,\ ener,\ wtotf(2),\ etot(np3)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00038}00038\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ener\_t(pdim),\ wbra\_t(pdim),\ wtotf\_t(2,\ pdim),\ etot\_t(np3,\ pdim)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00041}00041\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00042}00042\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00043}00043\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00044}00044\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00045}00045\ \ \ \ \ ener\_t\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00046}00046\ \ \ \ \ wbra\_t\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00047}00047\ \ \ \ \ wtotf\_t\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00048}00048\ \ \ \ \ etot\_t\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00049}00049\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00050}00050\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00051}00051\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ correlation\ functions}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(etot,\ np3,\ mpi\_double\_precision,\ etot\_t,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ np3,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ weights}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(wtotf,\ 2,\ mpi\_double\_precision,\ wtotf\_t,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00057}00057\ \ \ \ \ \textcolor{comment}{!\ energy\ (real\ part)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(ener,\ 1,\ mpi\_double\_precision,\ ener\_t,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ wbra\ (total\ weight)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(wbra,\ 1,\ mpi\_double\_precision,\ wbra\_t,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00063}00063\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00064}00064\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00067}00067\ \textcolor{keyword}{end\ subroutine\ }gather\_avgs}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00068}00068\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00069}00069\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Gather\ walker\ configuration\ weights\ from\ all\ processes}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00070}00070\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ gathers\ walker\ configuration\ weights\ from\ all}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00071}00071\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ MPI\ processes\ to\ the\ root\ process\ for\ each\ k-\/point\ pool.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00072}00072\ \textcolor{comment}{!>\ @param[in]\ \ ist\ \ \ \ \ \ \ Start\ index\ for\ local\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00073}00073\ \textcolor{comment}{!>\ @param[in]\ \ ien\ \ \ \ \ \ \ End\ index\ for\ local\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00074}00074\ \textcolor{comment}{!>\ @param[in]\ \ w\_tot\ \ \ \ \ Local\ walker\ weights}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00075}00075\ \textcolor{comment}{!>\ @param[inout]\ w\_loc\_kp\ Local\ weights\ for\ k-\/point\ pool}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00076}00076\ \textcolor{comment}{!>\ @param[in]\ \ nw\ \ \ \ \ \ \ \ Total\ number\ of\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00077}00077\ \textcolor{comment}{!>\ @param[in]\ \ nk\ \ \ \ \ \ \ \ Number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00078}00078\ \textcolor{keyword}{subroutine\ }gather\_wconfn(ist,\ ien,\ w\_tot,\ w\_loc\_kp,\ nw,\ nk)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00079}00079\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rankrep,\ nprocrep,\ commrep\_mpi,\ in1,\ psip}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00081}00081\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nw,\ nk,\ ien,\ ist}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00084}00084\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ w\_tot(nw)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00085}00085\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ w\_loc\_kp(nw/nk)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keywordtype}{integer}\ ist\_loc,\ ien\_loc,\ nw\_rep,\ ierr}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00087}00087\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00088}00088\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00089}00089\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00090}00090\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00091}00091\ \ \ \ \ nw\_rep\ =\ nw/nk}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00092}00092\ \ \ \ \ ist\_loc\ =\ rankrep*(nw\_rep/nprocrep)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00093}00093\ \ \ \ \ ien\_loc\ =\ (rankrep\ +\ 1)*(nw\_rep/nprocrep)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00094}00094\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00095}00095\ \ \ \ \ \textcolor{comment}{!\ collect\ local\ weights\ on\ each\ pool}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00096}00096\ \ \ \ \ \textcolor{comment}{!\ in1\ =\ \#\ of\ walkers\ per\ process\ must\ always\ be\ equal\ to\ 1}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00097}00097\ \ \ \ \ w\_loc\_kp(ist\_loc:ien\_loc)\ =\ w\_tot(ist:ien)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00098}00098\ \ \ \ \ psip(1:in1)\ =\ w\_loc\_kp(ist\_loc:ien\_loc)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00099}00099\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00100}00100\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(psip,\ in1,\ mpi\_double\_precision,\ w\_loc\_kp,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in1,\ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00102}00102\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00103}00103\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00104}00104\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00106}00106\ \textcolor{keyword}{end\ subroutine\ }gather\_wconfn}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00107}00107\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00108}00108\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Scatter\ walker\ configuration\ weights\ to\ all\ processes}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00109}00109\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ scatters\ walker\ configuration\ weights\ from\ the}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00110}00110\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ root\ process\ to\ all\ MPI\ processes\ for\ each\ k-\/point\ pool.}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00111}00111\ \textcolor{comment}{!>\ @param[in]\ \ ist\ \ \ \ \ \ \ Start\ index\ for\ local\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00112}00112\ \textcolor{comment}{!>\ @param[in]\ \ ien\ \ \ \ \ \ \ End\ index\ for\ local\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00113}00113\ \textcolor{comment}{!>\ @param[inout]\ w\_tot\ \ \ Walker\ weights\ (scattered)}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00114}00114\ \textcolor{comment}{!>\ @param[inout]\ w\_loc\_kp\ Local\ weights\ for\ k-\/point\ pool}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00115}00115\ \textcolor{comment}{!>\ @param[in]\ \ nw\ \ \ \ \ \ \ \ Total\ number\ of\ walkers}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00116}00116\ \textcolor{comment}{!>\ @param[in]\ \ nk\ \ \ \ \ \ \ \ Number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00117}00117\ \textcolor{keyword}{subroutine\ }scatter\_wconfn(ist,\ ien,\ w\_tot,\ w\_loc\_kp,\ nw,\ nk)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00119}00119\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rankrep,\ nprocrep,\ commrep\_mpi,\ psip,\ in1}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00120}00120\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00121}00121\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00122}00122\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nw,\ nk,\ ien,\ ist}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00123}00123\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ w\_tot(nw),\ w\_loc\_kp(nw/nk)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00124}00124\ \ \ \ \ \textcolor{keywordtype}{integer}\ ist\_loc,\ ien\_loc,\ nw\_rep,\ ierr}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00125}00125\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00126}00126\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00127}00127\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00128}00128\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00129}00129\ \ \ \ \ nw\_rep\ =\ nw/nk}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00130}00130\ \ \ \ \ ist\_loc\ =\ rankrep*(nw\_rep/nprocrep)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00131}00131\ \ \ \ \ ien\_loc\ =\ (rankrep\ +\ 1)*(nw\_rep/nprocrep)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00133}00133\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00134}00134\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_scatter(w\_loc\_kp(ist\_loc),\ in1,\ mpi\_double\_precision,\ \&}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip,\ in1,\ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00136}00136\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00137}00137\ \textcolor{preprocessor}{}\ \ \ \ w\_loc\_kp(ist\_loc:ien\_loc)\ =\ psip(1:in1)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00138}00138\ \ \ \ \ w\_tot(ist:ien)\ =\ w\_loc\_kp(ist\_loc:ien\_loc)}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00140}00140\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{gather__avgs_8f90_source_l00142}00142\ \textcolor{keyword}{end\ subroutine\ }scatter\_wconfn}
+
+\end{DoxyCode}

@@ -43,6 +43,10 @@ Key output files include\+:
 \item velocity.\+dat\+: Velocity data (dynamics) 
 \end{DoxyItemize}
 
+Definition in file \mbox{\hyperlink{file_o_p_8f90_source}{file\+OP.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{file_o_p_8f90_doc-func-members}
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -74,6 +78,78 @@ Validates directory existence across all nodes
 
 Handles KCOMP compiler-\/specific behavior 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{file_o_p_8f90_source_l00053}{53}} of file \mbox{\hyperlink{file_o_p_8f90_source}{file\+OP.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ oldscra,\ wherescratch,\ chara,\ charaq,\ rankrep,\ rankcolrep\&}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ yesquantum,\ io\_level,\ manyfort10,\ yesdft}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{use\ }io\_m}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{character(*)}\ ::\ path,\ scratchpath}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflagerr,\ rank,\ idigit(6)}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (oldscra)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{'./'}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ wherescratch\ =\ \textcolor{stringliteral}{'./scratch'}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(wherescratch)\ .ne.\ \textcolor{stringliteral}{'./'}\ .and.\ trim(wherescratch)\ .ne.\ trim(path))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ check\ if\ path\ wherescratch\ exist\ in\ each\ processor}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ but\ only\ if\ wherescratch\ is\ not\ the\ current\ directory\ that\ exist\ by\ def.}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ inquire(directory=trim(wherescratch),exist=dir\_exist)}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#ifndef\ \_\_KCOMP}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cd\_dir(trim(wherescratch))}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }get\_dir(scratchpath)}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cd\_dir(trim(path))}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ iflagerr\ =\ 0}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(scratchpath)\ .eq.\ trim(path))\ iflagerr\ =\ 1}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }checkiflagerr(iflagerr,\ rank,\ \textcolor{stringliteral}{'ERROR\ the\ directory\ '}//trim(wherescratch)//\ \&}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{stringliteral}{'\ does\ not\ exist\ at\ least\ in\ some\ node,\ pls.\ check\ wherescratch\ '})}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{"{}./"{}}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ scratchpath\ =\ trim(wherescratch)//\textcolor{stringliteral}{"{}turborvb.scratch/"{}}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mk\_dir(trim(scratchpath))}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{"{}./"{}}}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ wherescratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{"{}tmp"{}}}
+\DoxyCodeLine{00094\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,a)'})\ \textcolor{stringliteral}{'\ \ Scratch\ extension\ '},\ trim(wherescratch)}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (len\_trim(scratchpath)\ .ge.\ lchlen)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ your\ probably\ truncated,\ please\ \&}}
+\DoxyCodeLine{00099\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \&\ \ try\ to\ increase\ lchlen\ in\ mod\_IO'}}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keyword}{call\ }convertdec(rank,\ idigit)}
+\DoxyCodeLine{00103\ \ \ \ \ chara\ =\ char(idigit(1))//char(idigit(2))//char(idigit(3))//\ \&}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \&char(idigit(4))//char(idigit(5))//char(idigit(6))}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{comment}{!\ \ charaq\ defined\ always\ as\ does\ not\ cost\ anything}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }convertdec(rank,\ idigit)}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }convertdec(rankcolrep,\ idigit)}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{}\ \ \ \ charaq\ =\ char(idigit(1))//char(idigit(2))//char(idigit(3))//\ \&}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ char(idigit(4))//char(idigit(5))//char(idigit(6))}
+\DoxyCodeLine{00113\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{setup_8f90_source_l00207}{setup\+::initializeall()}}.
+
 \Hypertarget{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}\index{fileOP.f90@{fileOP.f90}!close\_files@{close\_files}}
 \index{close\_files@{close\_files}!fileOP.f90@{fileOP.f90}}
 \doxysubsubsection{\texorpdfstring{close\_files()}{close\_files()}}
@@ -100,6 +176,76 @@ Closes MPI-\/\+IO handles for parallel runs
 
 Only rank 0 closes main output files 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{file_o_p_8f90_source_l00339}{339}} of file \mbox{\hyperlink{file_o_p_8f90_source}{file\+OP.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ itestr,\ ieskint,\ idyn,\ iespbc,\ ncg\_adr,\ iread,\ writescratch\&}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ kl,\ write\_cov,\ yesquantum,\ rankrep,\ yeswrite10,\ io\_level,\ kelcont\&}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ quantcont,\ details\_sp,\ details\_dp,\ decoupled\_run,\ molyes}
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ manyfort10}
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keywordtype}{use\ }mpiio}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ rank}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ close(6)}}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (11)}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (12)}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (13)}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (16)}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (write\_cov)\ \textcolor{keyword}{close}\ (18)}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ieskint\ .ne.\ 0)\ \textcolor{keyword}{close}\ (17)}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (idyn\ .gt.\ 1)\ \textcolor{keyword}{close}\ (22)}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keyword}{close}\ (23)}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncg\_adr\ .gt.\ 0)\ \textcolor{keyword}{close}\ (25)}
+\DoxyCodeLine{00362\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iread\ .ge.\ 6)\ \textcolor{keyword}{close}\ (15)}
+\DoxyCodeLine{00364\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!rank.eq.0}}
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (9)}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(kelcont)}
+\DoxyCodeLine{00371\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesquantum)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (8)}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(quantcont)}
+\DoxyCodeLine{00378\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00379\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((yesquantum\ .and.\ yeswrite10)\ .or.\ (manyfort10\ .and.\ molyes))\ \textcolor{keyword}{close}\ (27)}
+\DoxyCodeLine{00381\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iread\ .eq.\ 2\ .or.\ iread\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (15)}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\#ifndef\ PARALLEL}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(details\_sp)}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(details\_dp)}
+\DoxyCodeLine{00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keyword}{close}\ (unit=19,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(kl)\ .eq.\ 9)\ \textcolor{keyword}{close}\ (unit=20,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{00399\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+
+\end{DoxyCode}
 \Hypertarget{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}\index{fileOP.f90@{fileOP.f90}!open\_files@{open\_files}}
 \index{open\_files@{open\_files}!fileOP.f90@{fileOP.f90}}
 \doxysubsubsection{\texorpdfstring{open\_files()}{open\_files()}}
@@ -138,3 +284,198 @@ Files opened include\+:
 \item covmat.\+dat\+: Covariance matrix data
 \item parametrization.\+dat\+: Parameter optimization data 
 \end{DoxyItemize}
+
+Definition at line \mbox{\hyperlink{file_o_p_8f90_source_l00137}{137}} of file \mbox{\hyperlink{file_o_p_8f90_source}{file\+OP.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ iopt,\ itestr,\ ieskint,\ idyn,\ iespbc,\ ncg\_adr,\ npower,\ npowersz\&}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iread,\ wherescratch,\ writescratch,\ kl,\ chara,\ write\_cov\&}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ yesquantum,\ rankrep,\ charaq,\ yeswrite10,\ io\_level\&}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ kel,\ angle,\ indt,\ kelcont,\ commcolrep\_mpi,\ quantcont\&}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ details\_sp,\ details\_dp,\ decoupled\_run,\ molyes}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ manyfort10}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordtype}{use\ }io\_m}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordtype}{use\ }mpiio}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{integer}\ rank}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordtype}{character(lchlen)}\ ::\ scratchpath}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{character(lchlen\ +\ 80)}\ ::\ charascratch}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{character(6)}\ ::\ positi}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordtype}{character(9)}\ ::\ message}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer(kind=MPI\_OFFSET\_KIND)}\ ::\ disp\_zero\ =\ 0}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .or.\ iopt\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ positi\ =\ \textcolor{stringliteral}{'APPEND'}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ message\ =\ \textcolor{stringliteral}{'appended!'}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ positi\ =\ \textcolor{stringliteral}{'REWIND'}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ message\ =\ \textcolor{stringliteral}{'rewinded!'}}
+\DoxyCodeLine{00164\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=7,\ file=\textcolor{stringliteral}{'stop.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (unit=7,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ open(unit=10,file='fort.10',form='formatted',position='REWIND')}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ file=\textcolor{stringliteral}{'fort.11'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'REWIND'})}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ it\ contains\ energy}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=12,\ file=\textcolor{stringliteral}{'fort.12'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ they\ contains\ ionic\ forces\ and\ positions}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Energy\ files\ '},\ message}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=16,\ file=\textcolor{stringliteral}{'forces.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (write\_cov)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=18,\ file=\textcolor{stringliteral}{'covmat.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=13,\ file=\textcolor{stringliteral}{'fort.12.fn'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (idyn\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Velocity\ file\ '},\ message}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=22,\ file=\textcolor{stringliteral}{'velocity.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ieskint\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'forces\ and\ position\ files\ '},\ message}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=17,\ file=\textcolor{stringliteral}{'position.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(yesquantum)\ then}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ 'Beads\ position\ files\ (PIMD)\ ',message}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ open(unit=27,file='beadposition.dat',form='formatted',position=positi)}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00192\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ Pressure\ file\ '},\ message}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=23,\ file=\textcolor{stringliteral}{'pressure.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00196\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncg\_adr\ .gt.\ 0\ .or.\ npower\ +\ npowersz\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ parametrization\ file\ '},\ message}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=25,\ file=\textcolor{stringliteral}{'parametrization.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{00200\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!itestr.eq.-\/5}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iread\ .ge.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=\textcolor{stringliteral}{'fort.12.new'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!rank.eq.0}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ POSIX\ IO}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.'}//trim(chara)}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=9,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ MPI-\/IO}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.all'},\ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ kelcont)}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.all'},\ mpi\_mode\_rdwr,\ kelcont)}
+\DoxyCodeLine{00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00223\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iread\ .eq.\ 2\ .or.\ iread\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ POSIX\ IO}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'details.'}//trim(chara)}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ MPI-\/IO}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .or.\ iopt\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_SP.all'},\ \&}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_append,\ details\_sp)}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_DP.all'},\ \&}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_append,\ details\_dp)}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_SP.all'},\ \&}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ details\_sp)}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_DP.all'},\ \&}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ details\_dp)}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_set\_zero(details\_sp)}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_set\_zero(details\_dp)}
+\DoxyCodeLine{00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00244\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00245\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00247\ \textcolor{comment}{!\ \ \ definition\ name\ file\ scratch}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(wherescratch)//\textcolor{stringliteral}{'conf.'}//trim(chara)}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=19,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00251\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(kl)\ .eq.\ 9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(wherescratch)//\textcolor{stringliteral}{'lan.'}//trim(chara)}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=20,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00255\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00256\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.'}//trim(chara)}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.'}//trim(charaq)}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesquantum)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=8,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (io\_level\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(commcolrep\_mpi,\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.all'},\ \&}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ quantcont)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(commcolrep\_mpi,\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.all'},\ \&}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_rdwr,\ quantcont)}
+\DoxyCodeLine{00273\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_create\_view(quantcont,\ 512,\ mpi\_double\_precision)\ \textcolor{comment}{!\ using\ 512\ as\ block\ size\ for\ simplicity}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quantcont\%disp\ =\ 0}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_reset\_view(quantcont)}
+\DoxyCodeLine{00277\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(chara)}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(charaq)}
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeswrite10)\ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (io\_level\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00286\ \textcolor{comment}{!\ \ \ Open\ in\ any\ event\ an\ empty\ file}}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=8,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(chara)}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeswrite10)\ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ rankrep==0}}
+\DoxyCodeLine{00292\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!endif\ yesquantum}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ open\ DFT\ wavefunction\ for\ each\ k-\/point!}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (manyfort10\ .and.\ molyes)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(charaq)}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00299\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\#\ fort10name:\ ',trim(charascratch),'\ rank:\ ',rank}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'},\ err=101)}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'},\ err=101)}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00306\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ serial}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iread\ .eq.\ 2\ .or.\ iread\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=\textcolor{stringliteral}{'fort.12.new'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(wherescratch)//\textcolor{stringliteral}{'.conf'}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=19,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00316\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(kl)\ .eq.\ 9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(wherescratch)//\textcolor{stringliteral}{'.lan'}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=20,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00321\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00324\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00325\ 101\ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ open\_files\ '},\ \textcolor{stringliteral}{'\ fort.10\ for\ each\ k-\/point\ needed!!!\ '},\ 1,\ rank)}
+
+\end{DoxyCode}

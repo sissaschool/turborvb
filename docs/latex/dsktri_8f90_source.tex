@@ -1,0 +1,150 @@
+\doxysection{dsktri.\+f90}
+\hypertarget{dsktri_8f90_source}{}\label{dsktri_8f90_source}\index{src/m\_common/dsktri.f90@{src/m\_common/dsktri.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Invert\ a\ skew-\/symmetric\ matrix\ using\ LU\ decomposition}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ computes\ the\ inverse\ of\ a\ skew-\/symmetric\ matrix\ A}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00019}00019\ \textcolor{comment}{!>\ using\ the\ LU\ decomposition\ A\ =\ L*U*P,\ where\ P\ is\ a\ permutation\ matrix.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00020}00020\ \textcolor{comment}{!>\ The\ inverse\ is\ computed\ as\ A\string^(-\/1)\ =\ P\string^T\ *\ U\string^(-\/1)\ *\ L\string^(-\/1).}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00022}00022\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00023}00023\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00024}00024\ \textcolor{comment}{!>\ UPLO\ :\ character,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ Specifies\ which\ part\ of\ the\ matrix\ A\ is\ stored:}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ 'U'\ or\ 'u':\ Upper\ triangular\ part\ is\ stored.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ 'L'\ or\ 'l':\ Lower\ triangular\ part\ is\ stored.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00028}00028\ \textcolor{comment}{!>\ N\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ Order\ of\ the\ matrix\ A.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00030}00030\ \textcolor{comment}{!>\ A\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \ \ \ \ The\ skew-\/symmetric\ matrix\ A,\ stored\ in\ packed\ format.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ \ On\ entry,\ contains\ the\ LU\ factors\ from\ DSKTRF.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00033}00033\ \textcolor{comment}{!>\ LDA\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ array\ A.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00035}00035\ \textcolor{comment}{!>\ AINV\ :\ real*8\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \ \ \ \ The\ inverse\ of\ matrix\ A.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00037}00037\ \textcolor{comment}{!>\ LDINV\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ array\ AINV.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00039}00039\ \textcolor{comment}{!>\ IPIV\ :\ integer\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ \ Pivot\ indices\ from\ DSKTRF;\ dimension\ at\ least\ N.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00041}00041\ \textcolor{comment}{!>\ WORK\ :\ real*8\ array,\ work}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ \ Workspace\ array;\ dimension\ at\ least\ N\string^2\ +\ 12*N\ -\/\ 2.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00043}00043\ \textcolor{comment}{!>\ INFO\ :\ integer,\ out}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ =\ 0:\ successful\ exit.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ \ <\ 0:\ if\ INFO\ =\ -\/i,\ the\ i-\/th\ argument\ had\ an\ illegal\ value.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ >\ 0:\ if\ INFO\ =\ i,\ U(i,i)\ is\ exactly\ zero;\ the\ matrix\ is\ singular.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00048}00048\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00049}00049\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00050}00050\ \textcolor{comment}{!>\ -\/\ Assumes\ that\ DSKTRF\ has\ been\ called\ previously\ to\ factorize\ A.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00051}00051\ \textcolor{comment}{!>\ -\/\ Uses\ a\ three-\/step\ process:\ permutation,\ triangular\ solve,\ permutation.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00052}00052\ \textcolor{comment}{!>\ -\/\ Supports\ both\ upper\ and\ lower\ triangular\ storage\ formats.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00053}00053\ \textcolor{comment}{!>\ -\/\ The\ algorithm\ handles\ the\ special\ structure\ of\ skew-\/symmetric\ matrices.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00054}00054\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00055}00055\ \textcolor{comment}{!>\ Algorithm}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00056}00056\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00057}00057\ \textcolor{comment}{!>\ 1.\ Initialize\ AINV\ as\ identity\ matrix}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00058}00058\ \textcolor{comment}{!>\ 2.\ Apply\ first\ permutation\ (reverse\ order)}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00059}00059\ \textcolor{comment}{!>\ 3.\ Extract\ skew-\/symmetric\ elements\ and\ prepare\ for\ triangular\ solve}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00060}00060\ \textcolor{comment}{!>\ 4.\ Solve\ triangular\ system\ using\ DTRTRS}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00061}00061\ \textcolor{comment}{!>\ 5.\ Solve\ tridiagonal\ system\ using\ DSKTRS\ or\ DGTSVX}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00062}00062\ \textcolor{comment}{!>\ 6.\ Solve\ triangular\ system\ with\ transpose}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00063}00063\ \textcolor{comment}{!>\ 7.\ Apply\ final\ permutation}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00064}00064\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00065}00065\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00066}00066\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00067}00067\ \textcolor{comment}{!>\ Used\ in\ quantum\ Monte\ Carlo\ calculations\ for\ matrix\ operations.}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00068}00068\ \textcolor{keyword}{subroutine\ }dsktri(uplo,\ n,\ a,\ lda,\ ainv,\ ldinv,\ ipiv,\ work,\ info)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{character}\ uplo}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i,\ j,\ lda,\ ldinv,\ info,\ lwork,\ ipiv(*)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00072}00072\ \ \ \ \ real*8\ a(lda,\ *),\ ainv(ldinv,\ *),\ work(*)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00073}00073\ \ \ \ \ real*8\ rcond}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordtype}{logical}\ yeslap\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00075}00075\ \textcolor{comment}{!>\ @brief\ Flag\ to\ choose\ between\ LAPACK\ and\ homemade\ algorithm}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00076}00076\ \ \ \ \ yeslap\ =\ .false.\ \textcolor{comment}{!\ if\ .false.\ the\ homemade\ algorithm\ is\ done.}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00077}00077\ \textcolor{comment}{!>\ @brief\ Initialize\ AINV\ as\ identity\ matrix}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ ainv(i,\ i)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00087}00087\ \textcolor{comment}{!>\ @brief\ Apply\ first\ permutation\ in\ reverse\ order}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ n,\ 1,\ -\/1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00093}00093\ \textcolor{comment}{!>\ @brief\ Extract\ skew-\/symmetric\ elements\ and\ prepare\ triangular\ solve}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00094}00094\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'u'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'U'})\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00095}00095\ \textcolor{comment}{!>\ @brief\ Upper\ triangular\ case:\ extract\ superdiagonal\ elements}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ a(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ -\/a(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ a(1:j\ -\/\ 1,\ j)\ =\ a(1:j\ -\/\ 1,\ j\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ a(1:n\ -\/\ 1,\ n)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00104}00104\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00105}00105\ \textcolor{comment}{!>\ @brief\ Lower\ triangular\ case:\ extract\ subdiagonal\ elements}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ -\/a(i\ +\ 1,\ i)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ a(i\ +\ 1,\ i)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ n\ -\/\ 1,\ 2,\ -\/1}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ a(j\ +\ 1:n,\ j)\ =\ a(j\ +\ 1:n,\ j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00112}00112\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ a(2:n,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00114}00114\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00115}00115\ \textcolor{comment}{!>\ @brief\ Set\ diagonal\ elements\ to\ zero\ (skew-\/symmetric\ property)}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00116}00116\ \ \ \ \ work(2*n\ -\/\ 1:3*n\ -\/\ 2)\ =\ 0.d0\ \textcolor{comment}{!\ diagonal\ elements\ of\ skew\ matrix\ ,\ obviously\ set\ to\ zero.}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00117}00117\ \textcolor{comment}{!>\ @brief\ First\ triangular\ solve:\ U\ *\ X\ =\ B}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00118}00118\ \ \ \ \ \textcolor{keyword}{call\ }dtrtrs(uplo,\ \textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00119}00119\ \textcolor{comment}{!>\ @brief\ Solve\ tridiagonal\ system\ using\ LAPACK\ or\ homemade\ algorithm}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00120}00120\ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslap)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00121}00121\ \textcolor{comment}{!>\ @brief\ Use\ LAPACK\ DGTSVX\ for\ tridiagonal\ solve}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgtsvx(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ work(n),\ work(2*n\ -\/\ 1),\ work,\ work(3*n)\&}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(4*n),\ work(5*n),\ work(6*n),\ ipiv(n\ +\ 1),\ ainv,\ lda,\ work(7*n),\ n\&}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rcond,\ work(7*n\ +\ n*n\ -\/\ 1),\ work(8*n\ +\ n*n\ -\/\ 1)\&}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(9*n\ +\ n*n\ -\/\ 1),\ ipiv(2*n\ +\ 1),\ info)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(1:n,\ i)\ =\ work(7*n\ +\ (i\ -\/\ 1)*n:7*n\ +\ i*n\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00128}00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00129}00129\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00130}00130\ \textcolor{comment}{!>\ @brief\ Use\ homemade\ DSKTRS\ for\ skew-\/symmetric\ tridiagonal\ solve}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsktrs(uplo,\ n,\ n,\ work,\ ainv,\ ldinv,\ work(n),\ info)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00133}00133\ \textcolor{comment}{!>\ @brief\ Second\ triangular\ solve:\ L\string^T\ *\ X\ =\ B}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keyword}{call\ }dtrtrs(uplo,\ \textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00135}00135\ \textcolor{comment}{!>\ @brief\ Apply\ final\ permutation\ to\ complete\ A\string^(-\/1)\ =\ P\string^T\ *\ U\string^(-\/1)\ *\ L\string^(-\/1)}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00140}00140\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00143}00143\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{dsktri_8f90_source_l00144}00144\ }
+
+\end{DoxyCode}

@@ -1,0 +1,96 @@
+\doxysection{t\+\_\+lrdmc.\+f90}
+\hypertarget{t__lrdmc_8f90_source}{}\label{t__lrdmc_8f90_source}\index{src/c\_adjoint\_forward/t\_lrdmc.f90@{src/c\_adjoint\_forward/t\_lrdmc.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00016}00016\ \textcolor{keyword}{function\ }t\_lrdmc(kel,\ nion,\ rion,\ indvic,\ alat,\ ivic,\ plat,\ cellscale,\ iespbc)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00017}00017\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ yes\_tilted,\ s2r,\ car2cry}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00018}00018\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ zmin,\ zetar}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ nel,\ i}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00021}00021\ \ \ \ \ \textcolor{keywordtype}{integer}\ indvic,\ imu,\ jmu}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00022}00022\ \ \ \ \ real*8\ t\_lrdmc,\ alat,\ plat(*),\ ivic(3,\ *),\ distmu,\ distmin,\ rion(3,\ *),\ fun\ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00023}00023\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rmu(3),\ srmu(3),\ cellscale(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00024}00024\ \ \ \ \ real*8\ kel(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{logical}\ iespbc}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00026}00026\ \ \ \ \ \textcolor{comment}{!\ the\ kinetic\ part\ on\ the\ lattice\ is\ required\ (first\ 12\ ivic)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00027}00027\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Compute\ the\ minimum\ distance\ between\ the\ electron}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00028}00028\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ and\ the\ nuclei's\ with\ maximum\ Z}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordflow}{if}\ (plat(1)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00030}00030\ \ \ \ \ \ \ \ \ rmu(:)\ =\ kel(:)\ +\ 0.5d0*ivic(:,\ indvic)\ -\/\ rion(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00031}00031\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_tilted)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ CartesianToCrystal(srmu,1)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00034}00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(:)\ =\ car2cry(:,\ 1)*rmu(1)\ +\ car2cry(:,\ 2)*rmu(2)\ +\ car2cry(:,\ 3)*rmu(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(1)\ =\ anint(srmu(1)/cellscale(1))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(2)\ =\ anint(srmu(2)/cellscale(2))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(3)\ =\ anint(srmu(3)/cellscale(3))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(:)\ =\ rmu(:)\ -\/\ s2r(:,\ 1)*srmu(1)\ -\/\ s2r(:,\ 2)*srmu(2)\ -\/\ s2r(:,\ 3)*srmu(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ dgemv('N',3,3,-\/1.d0,s2r,3,srmu,1,1.d0,rmu,1)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(:)\ =\ rmu(:)\ -\/\ cellscale(:)*anint(rmu(:)/cellscale(:))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00042}00042\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00043}00043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ distmin\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (zetar(1)\ .ge.\ zmin)\ distmin\ =\ sum(rmu(:)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Calculate\ min\ el-\/ion\ \ distance\ -\/-\/>\ distmu}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nion}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (zetar(i)\ .ge.\ zmin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(:)\ =\ kel(:)\ +\ 0.5d0*ivic(:,\ indvic)\ -\/\ rion(:,\ i)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_tilted)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(:)\ =\ car2cry(:,\ 1)*rmu(1)\ +\ car2cry(:,\ 2)*rmu(2)\ +\ car2cry(:,\ 3)*rmu(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(1)\ =\ anint(srmu(1)/cellscale(1))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(2)\ =\ anint(srmu(2)/cellscale(2))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ srmu(3)\ =\ anint(srmu(3)/cellscale(3))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(:)\ =\ rmu(:)\ -\/\ s2r(:,\ 1)*srmu(1)\ -\/\ s2r(:,\ 2)*srmu(2)\ -\/\ s2r(:,\ 3)*srmu(3)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ srmu(:)=rmu(:)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ call\ CartesianToCrystal(srmu,1)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ srmu(1)=anint(srmu(1)/cellscale(1))}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ srmu(2)=anint(srmu(2)/cellscale(2))}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ srmu(3)=anint(srmu(3)/cellscale(3))}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ call\ dgemv('N',3,3,-\/1.d0,s2r,3,srmu,1,1.d0,rmu,1)}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(:)\ =\ rmu(:)\ -\/\ cellscale(:)*anint(rmu(:)/cellscale(:))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00065}00065\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00066}00066\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distmu\ =\ sum(rmu(:)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (distmu\ .lt.\ distmin\ .or.\ distmin\ .eq.\ 0.d0)\ distmin\ =\ distmu}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00070}00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (plat(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ fun\ =\ 1.d0/(1.d0\ +\ plat(1)*distmin)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ fun\ =\ exp(distmin/plat(1))}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00075}00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indvic\ .le.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ t\_lrdmc\ =\ plat(2)*fun/sum(ivic(:,\ indvic)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ t\_lrdmc\ =\ plat(3)*(1.d0\ -\/\ fun)/sum(ivic(:,\ indvic)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00081}00081\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indvic\ .le.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ t\_lrdmc\ =\ plat(2)/sum(ivic(:,\ indvic)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ t\_lrdmc\ =\ plat(3)/sum(ivic(:,\ indvic)**2)}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00087}00087\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{t__lrdmc_8f90_source_l00090}00090\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

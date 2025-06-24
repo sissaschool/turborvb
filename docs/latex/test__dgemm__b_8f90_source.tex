@@ -1,0 +1,189 @@
+\doxysection{test\+\_\+dgemm\+\_\+b.\+f90}
+\hypertarget{test__dgemm__b_8f90_source}{}\label{test__dgemm__b_8f90_source}\index{src/a\_module\_tests/test\_dgemm\_b.f90@{src/a\_module\_tests/test\_dgemm\_b.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00016}00016\ \textcolor{keyword}{program}\ test\_dgemm\_b}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00017}00017\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00019}00019\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{dimension(:,\ :)}\ ::\ a,\ b,\ ab,\ bb,\ cb,\ cb\_i}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00020}00020\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{dimension(:,\ :)}\ ::\ ab\_orig,\ bb\_orig,\ cb\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00021}00021\ \ \ \ \ real*8,\ \textcolor{keywordtype}{parameter}\ ::\ one\ =\ 1.d0,\ zero\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00022}00022\ \ \ \ \ real*8\ ::\ time\_sec\ =\ 0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{integer*4}\ ::\ s,\ gen,\ ii,\ repeats}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{integer*8}\ ::\ T\_start,\ T\_end,\ rate,\ N\_ops}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{character(len=1)}\ ::\ first,\ second}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{character(len=100)}\ ::\ message,\ str\_tmp1,\ str\_tmp2}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00027}00027\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00028}00028\ \ \ \ \ \textcolor{comment}{!\ gen\ =\ 1\ :\ Generate\ matrices}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00029}00029\ \ \ \ \ \textcolor{comment}{!\ gen\ =\ 0\ :\ Compare\ matrices}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keyword}{read}\ (*,\ *)\ s,\ first,\ second,\ gen}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keyword}{allocate}\ (a(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keyword}{allocate}\ (b(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keyword}{allocate}\ (ab(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keyword}{allocate}\ (bb(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keyword}{allocate}\ (cb(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keyword}{allocate}\ (cb\_i(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keyword}{allocate}\ (ab\_orig(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keyword}{allocate}\ (bb\_orig(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keyword}{allocate}\ (cb\_orig(s,\ s))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordflow}{if}\ (gen\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(a)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(b)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(cb)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}A"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ a}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}B"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ b}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}CB"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ cb}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}AB"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ ab\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}BB"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ bb\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}CB\_out"{}},\ action=\textcolor{stringliteral}{"{}read"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (10)\ cb\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00066}00066\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00068}00068\ \ \ \ \ a(1,\ 1)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00070}00070\ \ \ \ \ rate\ =\ 1}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (gen\ .lt.\ 0\ .or.\ gen\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ repeats\ =\ abs(gen)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }system\_clock(count\_rate=rate)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ repeats\ =\ 1}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00076}00076\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00078}00078\ \ \ \ \ ab\ =\ 0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00079}00079\ \ \ \ \ bb\ =\ 0}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00080}00080\ \ \ \ \ cb\_i\ =\ cb}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00081}00081\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00082}00082\ \textcolor{preprocessor}{\#if\ defined(\_OFFLOAD)\ \&\&\ defined(\_CUBLAS)}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00083}00083\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ data\ map(to:A,B)}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00084}00084\ \textcolor{comment}{!\$omp\ target\ data\ map(tofrom:AB,BB,CB)}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00085}00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00086}00086\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (gen\ .lt.\ 0\ .or.\ gen\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ If\ speed\ test\ is\ on,\ do\ 10\%\ extra\ warm\ up\ steps}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ repeats/10}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_b(first,\ second\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ s,\ s,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ one\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ a,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ab,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ b,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ bb,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ zero\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ cb,\ s)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00100}00100\ \ \ \ \ \textcolor{keyword}{call\ }system\_clock(t\_start)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00101}00101\ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ repeats}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_b(first,\ second\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ s,\ s,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ one\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ a,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ab,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ b,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ bb,\ s\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ zero\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ cb,\ s)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00112}00112\ \ \ \ \ \textcolor{keyword}{call\ }system\_clock(t\_end)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00113}00113\ \textcolor{preprocessor}{\#if\ defined(\_OFFLOAD)\ \&\&\ defined(\_CUBLAS)}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00114}00114\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ data}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00115}00115\ \textcolor{comment}{!\$omp\ end\ target\ data}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00116}00116\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00117}00117\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00118}00118\ \ \ \ \ \textcolor{keywordflow}{if}\ (gen\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}A"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ a}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}B"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ b}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}AB"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ ab}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}BB"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ bb}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}CB"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ cb\_i}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ form=\textcolor{stringliteral}{"{}unformatted"{}},\ file=\textcolor{stringliteral}{"{}CB\_out"{}},\ action=\textcolor{stringliteral}{"{}write"{}})}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (10)\ cb}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00137}00137\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (gen\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ ab\ =\ ab\ -\/\ ab\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ bb\ =\ bb\ -\/\ bb\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ cb\ =\ cb\ -\/\ cb\_orig}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxval(abs(ab))\ >\ 1.0d-\/10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ print\ *,\ \textcolor{stringliteral}{"{}ERROR\ AB"{}},\ maxval(abs(ab))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00143}00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxval(abs(bb))\ >\ 1.0d-\/10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ print\ *,\ \textcolor{stringliteral}{"{}ERROR\ BB"{}},\ maxval(abs(bb))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00146}00146\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxval(abs(cb))\ >\ 1.0d-\/10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ print\ *,\ \textcolor{stringliteral}{"{}ERROR\ CB"{}},\ maxval(abs(cb))}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxval(abs(ab))\ <=\ 10d-\/10\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ maxval(abs(bb))\ <=\ 10d-\/10\&}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ maxval(abs(cb))\ <=\ 10d-\/10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ print\ *,\ \textcolor{stringliteral}{"{}OK"{}}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00154}00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00155}00155\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ time\_sec\ =\ (t\_end\ -\/\ t\_start)/real(rate)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ n\_ops\ =\ s}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ n\_ops\ =\ n\_ops*n\_ops*(2*n\_ops\ +\ 2)\ \textcolor{comment}{!\ First\ dgemm}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ n\_ops\ =\ n\_ops*2\ \textcolor{comment}{!\ There\ are\ actually\ two\ dgemms}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ n\_ops\ =\ n\_ops\ +\ s*s\ \textcolor{comment}{!\ Plus\ one\ scale}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ n\_ops\ =\ n\_ops*repeats\ \textcolor{comment}{!\ Times\ number\ of\ repeats}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00162}00162\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (str\_tmp1,\ \textcolor{stringliteral}{"{}(I5)"{}})\ repeats}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ str\_tmp1\ =\ adjustl(str\_tmp1)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (str\_tmp2,\ *)\ \textcolor{stringliteral}{"{}dgemm\_b\ "{}},\ trim(str\_tmp1),\ \textcolor{stringliteral}{"{}x"{}},\ first,\ second}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (str\_tmp1,\ \textcolor{stringliteral}{"{}(I5)"{}})\ s}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ str\_tmp1\ =\ adjustl(str\_tmp1)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (message,\ *)\ trim(str\_tmp2),\ \textcolor{stringliteral}{"{}("{}},\ trim(str\_tmp1),\ \textcolor{stringliteral}{"{}x"{}},\ trim(str\_tmp1),\ \textcolor{stringliteral}{"{}):"{}}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ str\_tmp2\ =\ message}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (str\_tmp1,\ \textcolor{stringliteral}{"{}(10F5.2)"{}})\ time\_sec}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ str\_tmp1\ =\ adjustl(str\_tmp1)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (message,\ *)\ trim(str\_tmp2),\ \textcolor{stringliteral}{"{}\ \ "{}},\ trim(str\_tmp1),\ \textcolor{stringliteral}{"{}\ sec"{}}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ str\_tmp2\ =\ message}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (str\_tmp1,\ \textcolor{stringliteral}{"{}(10F6.2)"{}})\ n\_ops/(1000**3*time\_sec)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ str\_tmp1\ =\ adjustl(str\_tmp1)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (message,\ *)\ trim(str\_tmp2),\ \textcolor{stringliteral}{"{}\ \ ("{}},\ trim(str\_tmp1),\ \textcolor{stringliteral}{"{}\ GFlops)"{}}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ trim(message)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00178}00178\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00180}00180\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00181}00181\ \ \ \ \ \textcolor{keyword}{deallocate}\ (a,\ b,\ ab,\ bb,\ cb,\ cb\_i,\ ab\_orig,\ bb\_orig,\ cb\_orig)}
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00182}00182\ }
+\DoxyCodeLine{\Hypertarget{test__dgemm__b_8f90_source_l00183}00183\ \textcolor{keyword}{end\ program\ }test\_dgemm\_b}
+
+\end{DoxyCode}

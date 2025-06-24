@@ -1,0 +1,142 @@
+\doxysection{compute\+\_\+rho.\+f90}
+\hypertarget{compute__rho_8f90_source}{}\label{compute__rho_8f90_source}\index{src/a\_readforward/compute\_rho.f90@{src/a\_readforward/compute\_rho.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00016}00016\ \textcolor{keyword}{module}\ rho\_corr\_module}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00018}00018\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ ifrho\_corr}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{private}\ ::\ yesprojm}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{private}\ ::\ nelorbjmax,\ indtmax,\ neldomax,\ nshelljmax}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00021}00021\ \ \ \ \ real*8,\ \textcolor{keywordtype}{private}\ ::\ logpsim(2),\ elocm(2)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00023}00023\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00024}00024\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00025}00025\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Computes\ correlation\ function\ for\ electron\ density}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00026}00026\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ computes\ the\ correlation\ function\ for\ electron}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00027}00027\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ density\ by\ evaluating\ the\ wave\ function\ at\ different\ grid\ points.}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00028}00028\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ It\ handles\ both\ spin-\/up\ and\ spin-\/down\ electrons,\ computes\ local}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00029}00029\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ energy\ and\ wave\ function\ ratios,\ and\ stores\ density\ correlation}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00030}00030\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ values\ for\ analysis.}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00031}00031\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ rnew\ Electron\ positions\ (3,\ nel\_read)}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00032}00032\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nel\_read\ Number\ of\ electrons\ to\ read}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00033}00033\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nelup\_read\ Number\ of\ spin-\/up\ electrons\ to\ read}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00034}00034\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ density\_c\ Density\ correlation\ values}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00035}00035\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ signpsi\ Sign\ of\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00036}00036\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ spsiln\ Logarithm\ of\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00037}00037\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ shiftlog\ Logarithmic\ shift\ parameter}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keyword}{subroutine\ }compute\_rho\_corr(rnew,\ nel\_read,\ nelup\_read,\ density\_c,\ signpsi,\ spsiln,\ shiftlog)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacegrid__module}{grid\_module}}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ nel\_read,\ nelup\_read}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ rnew(3,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ density\_c(*)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ shiftlog,\ spsiln}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00048}00048\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00049}00049\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}\ signpsi}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ defines\ once\ for\ all\ the\ parameters\ for\ upscratch}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ iflagnorm\ =\ 3}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ psisn=0}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ singdet\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ test\_aad\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ pseudologic\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ iesrandoml\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ itestrfn\ =\ 2}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ pseudologic\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ iesrandoml\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ nshelljmax\ =\ max(nshellj,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ neldomax\ =\ max(neldo,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ indtmax\ =\ max(indt,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ nelorbjmax\ =\ max(nelorbj,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ itest\ =\ 2}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ yesprojm\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ yesprojm\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelup\_read\ .lt.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelup\_read}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kel(:,\ i)\ =\ rnew(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00077}00077\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ kel(:,\ nelup)\ =\ out\_grid(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nelup\ +\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kel(:,\ i)\ =\ rnew(:,\ i\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel\_read}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kel(:,\ i)\ =\ rnew(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ kel(:,\ nel)\ =\ out\_grid(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00087}00087\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }compute\_eloc\_logpsi(indt,\ indt4,\ indt4j,\ nelorb,\ nelup,\ neldo\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tabpip,\ kel,\ kel,\ winv,\ winvup,\ winvdo,\ ainv,\ ainvup,\ ainvdo,\ psip\ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ipsip,\ wconfn,\ psisn,\ iesdr,\ vj,\ dupr\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ zetar,\ rion,\ dist,\ ioccup,\ ioccdo,\ ioptorb\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nshell,\ nshelldo,\ ivic,\ alat,\ plat,\ vpot,\ tmu\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion,\ r,\ rmu,\ kion,\ iond,\ winvj,\ ioccj,\ kionj,\ vjur,\ nelorbj\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ioptorbj,\ nshellj,\ winvbar,\ detmat,\ winvjbar,\ winvjbarsz,\ jasmat\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ jasmatsz,\ muj\_c,\ jasmat\_c,\ jasmatsz\_c,\ contractionj,\ nelorbj\_c,\ iessz,\ cnorm,\ iflagerr,\ npsa,\ lmax\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nintpseudo,\ prefactor,\ rcutoff,\ parshell\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nparpshell,\ kindion,\ pshell,\ wpseudo,\ legendre,\ versor,\ wintpseudo\ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ jpseudo,\ pseudolocal,\ istart,\ costz,\ costz3\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ angle,\ indtm,\ lbox,\ rmucos,\ rmusin,\ kappa,\ vpotreg,\ cutreg\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ psidetln,\ 1,\ nelorbh,\ nelorbjh\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ niesd\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iond\_cart,\ mu\_c,\ detmat\_c,\ projm,\ yesprojm,\ nelorb\_c,\ firstmol,\ nmolfn,\ yesfast,\ elocm,\ logpsim\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbjmax,\ neldomax,\ indtmax,\ nshelljmax,\ cellscale\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ indpar\_tab,\ indorb\_tab,\ indshell\_tab,\ indparj\_tab,\ indorbj\_tab,\ indshellj\_tab)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ density\_c(1)\ =\ dexp(2.d0*(psiln(1)\ -\/\ spsiln\ -\/\ shiftlog))}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ density\_c(1),\ signpsi*dexp(psiln(1)\ -\/\ spsiln\ -\/\ shiftlog)*psisn(1)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00109}00109\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ grid\_points}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelup\_read\ .lt.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcart(:)\ =\ out\_grid(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iout\ =\ nelup}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcart(:)\ =\ out\_grid(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iout\ =\ nel}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }ratiovar(iout,\ nelorb,\ nelorbh,\ nelup,\ neldo,\ ratior\ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ainv,\ kel,\ rcart,\ iesdr,\ vj,\ dupr\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ zetar,\ rion,\ psip,\ ioccup,\ ioccdo,\ ioptorb,\ nshellr,\ nshellr\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ainvs,\ winvs,\ r,\ rmu,\ nion,\ kion,\ ioccj,\ kionj,\ vjur\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj,\ nelorbjh,\ ioptorbj,\ nshelljr,\ winvsj,\ winvbar\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ winvjbar,\ winvjbarsz,\ iflagnorm,\ cnorm,\ iflagerr\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ratiodet,\ costz,\ costz3,\ iessz,\ lbox,\ rmucos,\ rmusin,\ timewf,\ rcne\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ jastrowall\_ee(1,\ iout,\ 0,\ 1),\ jasnew\_ee,\ jastrowall\_ei(1,\ iout,\ 1)\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ jasnew\_ei,\ n\_body\_on,\ niesd,\ nshell,\ 0\&}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ indpar\_tab,\ indorb\_tab,\ indshell\_tab,\ indparj\_tab,\ indorbj\_tab,\ indshellj\_tab)}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ density\_c(i)\ =\ density\_c(1)*ratior(1)**2.d0}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00133}00133\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }compute\_rho\_corr}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00135}00135\ \textcolor{keyword}{end\ module\ }rho\_corr\_module}
+\DoxyCodeLine{\Hypertarget{compute__rho_8f90_source_l00136}00136\ }
+
+\end{DoxyCode}

@@ -27,6 +27,10 @@ Program for copying and transferring Jastrow parameters between Turbo\+RVB wave 
 
 This program reads two Turbo\+RVB wave functions (fort.\+10 and fort.\+10\+\_\+new) and copies Jastrow parameters from one to the other. It handles orbital mapping, parameter scaling, and supports various modes including k-\/points calculations, ion position copying, and contracted orbital parameter transfer. 
 
+Definition in file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{copyjas_8f90_doc-func-members}
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -59,6 +63,51 @@ Copies Jastrow matrix elements from old to new wave function with appropriate sc
 \mbox{\texttt{in}}  & {\em nomul} & Logical flag for multiple subsystems \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00855}{855}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00858\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00859\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nel\_new,\ nel\_old,\ nelorbu}
+\DoxyCodeLine{00860\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ nelorbj\_new)}
+\DoxyCodeLine{00861\ \ \ \ \ real*8\ cost}
+\DoxyCodeLine{00862\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{00863\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{00864\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{00865\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{00866\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00867\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{00868\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00869\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{00870\ \ \ \ \ cost\ =\ dble(nel\_old\ -\/\ 1)/dble(nel\_new\ -\/\ 1)}
+\DoxyCodeLine{00871\ \ \ \ \ jastrow\_new\ =\ 0.d0}
+\DoxyCodeLine{00872\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00875\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0\ .or.\ mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ +\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))*cost}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00878\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{00879\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00883\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00884\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00886\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00887\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00888\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00889\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00890\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{copyjas_8f90_source_l00027}{copyjas()}}.
+
 \Hypertarget{copyjas_8f90_a52597e4e45d19486c02e988b5643d4ae}\index{copyjas.f90@{copyjas.f90}!copyin2to1@{copyin2to1}}
 \index{copyin2to1@{copyin2to1}!copyjas.f90@{copyjas.f90}}
 \doxysubsubsection{\texorpdfstring{copyin2to1()}{copyin2to1()}}
@@ -88,6 +137,62 @@ Handles copying of Jastrow parameters when converting from a 2-\/component (spin
 \mbox{\texttt{in}}  & {\em nomul} & Logical flag for multiple subsystems \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00903}{903}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00904\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00905\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nelup,\ neldo,\ nelorbh,\ nelorbu}
+\DoxyCodeLine{00906\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ *)}
+\DoxyCodeLine{00907\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{00908\ \ \ \ \ real*8\ cost(2,\ 2)}
+\DoxyCodeLine{00909\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{00910\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{00911\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{00912\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{00914\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00915\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{00916\ }
+\DoxyCodeLine{00917\ \ \ \ \ cost\ =\ 0.d0}
+\DoxyCodeLine{00918\ \ \ \ \ cost(1,\ 2)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(nelup)}
+\DoxyCodeLine{00919\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelup\ .gt.\ 1)\ cost(1,\ 1)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(nelup\ -\/\ 1)}
+\DoxyCodeLine{00920\ \ \ \ \ \textcolor{keywordflow}{if}\ (neldo\ .gt.\ 1)\ cost(2,\ 2)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(neldo\ -\/\ 1)}
+\DoxyCodeLine{00921\ \ \ \ \ \textcolor{keywordflow}{if}\ (neldo\ .gt.\ 0)\ cost(2,\ 1)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(neldo)}
+\DoxyCodeLine{00922\ \ \ \ \ nelorbh\ =\ nelorbj\_new/2}
+\DoxyCodeLine{00923\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00924\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00925\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{00926\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00927\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0\ .or.\ mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00928\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{00929\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)*cost((i\ -\/\ 1)/nelorbh\ +\ 1,\ (j\ -\/\ 1)/nelorbh\ +\ 1)}
+\DoxyCodeLine{00931\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00932\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)*cost((j\ -\/\ 1)/nelorbh\ +\ 1,\ (i\ -\/\ 1)/nelorbh\ +\ 1)}
+\DoxyCodeLine{00933\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00935\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{00936\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00939\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00940\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00941\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00942\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00943\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00944\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00945\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00946\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00947\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{copyjas_8f90_source_l00027}{copyjas()}}.
+
 \Hypertarget{copyjas_8f90_a433052fc2e0b63d9139a9787007cd706}\index{copyjas.f90@{copyjas.f90}!copyinsz@{copyinsz}}
 \index{copyinsz@{copyinsz}!copyjas.f90@{copyjas.f90}}
 \doxysubsubsection{\texorpdfstring{copyinsz()}{copyinsz()}}
@@ -113,6 +218,46 @@ Copies Jastrow matrix elements with special handling for spin-\/z components. Ap
 \mbox{\texttt{in}}  & {\em nomul} & Logical flag for multiple subsystems \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00959}{959}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00960\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00961\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nelorbjh,\ nelorbu}
+\DoxyCodeLine{00962\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ *)}
+\DoxyCodeLine{00963\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{00964\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{00965\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{00966\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{00967\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00968\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{00969\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00970\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{00971\ }
+\DoxyCodeLine{00972\ \ \ \ \ nelorbjh\ =\ nelorbj\_new/2}
+\DoxyCodeLine{00973\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00974\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0\ .and.\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .gt.\ nelorbjh\ .and.\ j\ .le.\ nelorbjh\ .or.\&}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ i\ .le.\ nelorbjh\ .and.\ j\ .gt.\ nelorbjh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00978\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ -\/\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00980\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ +\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{00981\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00982\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00983\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,j)=0.d0}}
+\DoxyCodeLine{00984\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00985\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00986\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{copyjas_8f90_source_l00027}{copyjas()}}.
+
 \Hypertarget{copyjas_8f90_a09432fd9942265e11aa06f4ac41dce1d}\index{copyjas.f90@{copyjas.f90}!copyjas@{copyjas}}
 \index{copyjas@{copyjas}!copyjas.f90@{copyjas.f90}}
 \doxysubsubsection{\texorpdfstring{copyjas()}{copyjas()}}
@@ -123,7 +268,15 @@ program copyjas}
 
 Main program for copying Jastrow parameters between wave functions. 
 
-Reads source and target wave functions, maps orbitals between different bases, copies Jastrow parameters with appropriate scaling, and supports multiple operation modes including k-\/points, ion position copying, and parameter transfer. \Hypertarget{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}\index{copyjas.f90@{copyjas.f90}!mapping@{mapping}}
+Reads source and target wave functions, maps orbitals between different bases, copies Jastrow parameters with appropriate scaling, and supports multiple operation modes including k-\/points, ion position copying, and parameter transfer. 
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00027}{27}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+
+References \mbox{\hyperlink{copyjas_8f90_source_l00858}{copyin()}}, \mbox{\hyperlink{copyjas_8f90_source_l00904}{copyin2to1()}}, \mbox{\hyperlink{copyjas_8f90_source_l00960}{copyinsz()}}, \mbox{\hyperlink{copyjas_8f90_source_l00780}{mapping()}}, and \mbox{\hyperlink{copyjas_8f90_source_l00710}{mappingu()}}.
+
+\Hypertarget{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}\index{copyjas.f90@{copyjas.f90}!mapping@{mapping}}
 \index{mapping@{mapping}!copyjas.f90@{copyjas.f90}}
 \doxysubsubsection{\texorpdfstring{mapping()}{mapping()}}
 {\footnotesize\ttfamily \label{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952} 
@@ -162,6 +315,80 @@ Creates a mapping between orbitals in different basis sets, handling real wave f
 \mbox{\texttt{out}}  & {\em map} & Mapping array between orbitals \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00779}{779}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00780\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00781\ \ \ \ \ \textcolor{keywordtype}{integer}\ nshell,\ nshell\_c,\ i,\ j,\ k,\ l,\ indorb,\ indorbnew,\ ind,\ indnew,\ adr,\ adrnew\&}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion\_c,\ nion}
+\DoxyCodeLine{00783\ \ \ \ \ \textcolor{keywordtype}{integer}\ mult\_c(*),\ ioccup\_c(*),\ kion\_c(*),\ mult(*),\ ioccup(*),\ kion(*),\ map(*),\ ioptorb\_c(*),\ ioptorb(*)}
+\DoxyCodeLine{00784\ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{00785\ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{00786\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{00787\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ 0}
+\DoxyCodeLine{00789\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00790\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion(k\ -\/\ 1)\ .ne.\ kion(k)\ .or.\ ioptorb(k\ -\/\ 1)\ .ne.\ ioptorb(k))\ adr\ =\ 0}
+\DoxyCodeLine{00791\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ adr\ +\ 1}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ 0}
+\DoxyCodeLine{00798\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00799\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00800\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00801\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ New\ basis\ inside\ ='},\ indorbnew}
+\DoxyCodeLine{00802\ \ \ \ \ indorb\ =\ 0}
+\DoxyCodeLine{00803\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00804\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshell\_c}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ 0}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00808\ \textcolor{comment}{!\ \ \ \ if\ i-\/term\ points\ to\ different\ atom\ or\ orbital\ compared\ to\ the\ previous\ one}}
+\DoxyCodeLine{00809\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion\_c(i\ -\/\ 1)\ .ne.\ kion\_c(i)\ .or.\ ioptorb\_c(i\ -\/\ 1)\ .ne.\ ioptorb\_c(i))\ adr\ =\ 0}
+\DoxyCodeLine{00810\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00811\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mult\_c(i)}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup\_c(ind)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorb\ =\ indorb\ +\ 1}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ adr\ +\ 1}
+\DoxyCodeLine{00816\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{00817\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{00818\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adrnew\ =\ 0}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00822\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion(k)\ .ne.\ kion(k\ -\/\ 1)\ .or.\ ioptorb(k)\ .ne.\ ioptorb(k\ -\/\ 1))\ adrnew\ =\ 0}
+\DoxyCodeLine{00823\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00824\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adrnew\ =\ adrnew\ +\ 1}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{00829\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((kion(k)\ .eq.\ kion\_c(i)\ .and.\ (adrnew\ .eq.\ adr\ .and.\ ioptorb(k)\ .eq.\ ioptorb\_c(i)))\ \&}
+\DoxyCodeLine{00830\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .or.\ (ioptorb(k)\ .eq.\ 200\ .and.\ ioptorb\_c(i)\ .eq.\ 200))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ indorb}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .eq.\ 200)\ map(indorbnew)\ =\ -\/map(indorbnew)}
+\DoxyCodeLine{00833\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Match\ found\ =',kion(k),kion\_c(i),indorb,indorbnew,adr,adrnew}}
+\DoxyCodeLine{00834\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00835\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00836\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00837\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00838\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00839\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00840\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00841\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{copyjas_8f90_source_l00027}{copyjas()}}.
+
 \Hypertarget{copyjas_8f90_ab636c0f866fd52570c043d78e04c3573}\index{copyjas.f90@{copyjas.f90}!mappingu@{mappingu}}
 \index{mappingu@{mappingu}!copyjas.f90@{copyjas.f90}}
 \doxysubsubsection{\texorpdfstring{mappingu()}{mappingu()}}
@@ -201,3 +428,66 @@ Creates a mapping between orbitals in different basis sets, handling complex wav
 \mbox{\texttt{out}}  & {\em map} & Mapping array between orbitals \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{copyjas_8f90_source_l00707}{707}} of file \mbox{\hyperlink{copyjas_8f90_source}{copyjas.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00710\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00711\ \ \ \ \ \textcolor{keywordtype}{integer}\ nshell,\ nshell\_c,\ i,\ j,\ k,\ l,\ indorb,\ indorbnew,\ ind,\ indnew\&}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion\_c,\ nion}
+\DoxyCodeLine{00713\ \ \ \ \ \textcolor{keywordtype}{integer}\ mult\_c(*),\ ioccup\_c(*),\ kion\_c(*),\ mult(*),\ ioccup(*),\ kion(*),\ map(*),\ ioptorb\_c(*),\ ioptorb(*)}
+\DoxyCodeLine{00714\ \ \ \ \ real*8\ vju\_c(*),\ vju(*)}
+\DoxyCodeLine{00715\ \ \ \ \ \textcolor{keywordtype}{integer}\ indp,\ indp\_c,\ indpu,\ indpu\_c}
+\DoxyCodeLine{00716\ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{00717\ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{00718\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{00719\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{00723\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ 0}
+\DoxyCodeLine{00724\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00725\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00726\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00727\ \ \ \ \ indorb\ =\ 0}
+\DoxyCodeLine{00728\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00729\ \ \ \ \ indp\_c\ =\ 0}
+\DoxyCodeLine{00730\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshell\_c}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb\_c(i)\ .ne.\ 200)\ indp\_c\ =\ indp\_c\ +\ 1}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ indpu\_c\ =\ max(indp\_c,\ 1)\ \textcolor{comment}{!\ to\ avoid\ the\ first\ orbital\ is\ 200}}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mult\_c(i)}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00735\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup\_c(ind)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorb\ =\ indorb\ +\ 1}
+\DoxyCodeLine{00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indp\ =\ 0}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{00741\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .ne.\ 200)\ indp\ =\ indp\ +\ 1}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpu\ =\ max(indp,\ 1)\ \textcolor{comment}{!\ to\ avoid\ the\ first\ orbital\ is\ 200}}
+\DoxyCodeLine{00743\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{00744\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{00745\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00746\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{00747\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((l\ .eq.\ j\ .and.\ kion(k)\ .eq.\ kion\_c(i)\ .and.\&}
+\DoxyCodeLine{00748\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(ioptorb(k)\ .eq.\ ioptorb\_c(i))\ .and.\ abs(vju(indpu)\ -\/\ vju\_c(indpu\_c))\ .le.\ 1d-\/4)\&}
+\DoxyCodeLine{00749\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (ioptorb(k)\ .eq.\ 200\ .and.\ ioptorb\_c(i)\ .eq.\ 200))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00750\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ indorb}
+\DoxyCodeLine{00751\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .eq.\ 200)\ map(indorbnew)\ =\ -\/map(indorbnew)}
+\DoxyCodeLine{00752\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Match\ found\ =',kion(k),kion\_c(i),indorb,indorbnew,adr,adrnew}}
+\DoxyCodeLine{00753\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00754\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00755\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00756\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00757\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00758\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00759\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00760\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{copyjas_8f90_source_l00027}{copyjas()}}.
+

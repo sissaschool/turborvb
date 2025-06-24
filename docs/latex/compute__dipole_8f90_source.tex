@@ -1,0 +1,158 @@
+\doxysection{compute\+\_\+dipole.\+f90}
+\hypertarget{compute__dipole_8f90_source}{}\label{compute__dipole_8f90_source}\index{src/a\_readforward/compute\_dipole.f90@{src/a\_readforward/compute\_dipole.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Module\ for\ dipole\ and\ quadrupole\ moment\ calculations}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ module\ provides\ functionality\ for\ computing\ dipole\ and}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ quadrupole\ moments\ of\ molecular\ systems.\ It\ includes\ subroutines}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ for\ calculating\ electronic\ and\ nuclear\ contributions\ to\ these}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ multipole\ moments\ and\ diagonalizing\ the\ quadrupole\ tensor.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00021}\mbox{\hyperlink{namespacedipole__module}{00021}}\ \textcolor{keyword}{module}\ \mbox{\hyperlink{namespacedipole__module}{dipole\_module}}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ ifdipole\ \textcolor{comment}{!\ flag\ for\ dipole\ moment\ calculation}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ndipole\ \textcolor{comment}{!\ the\ number\ of\ dipole\ components}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nquad\ \textcolor{comment}{!\ the\ dimension\ of\ the\ quadrupole\ matrix}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00027}00027\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ nuclear\_dipole,\ dipole}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00028}00028\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ cc\_chg,\ quad\_diag}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00029}00029\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ quad}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00031}00031\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00032}00032\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00033}00033\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Calculates\ dipole\ moment\ of\ the\ system}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00034}00034\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ calculates\ the\ total\ dipole\ moment\ by}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00035}00035\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ combining\ nuclear\ and\ electronic\ contributions.\ The\ nuclear}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00036}00036\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ dipole\ is\ pre-\/calculated\ and\ stored,\ while\ the\ electronic}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00037}00037\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ dipole\ is\ computed\ from\ the\ electron\ positions.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00038}00038\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ r\_el\ Electron\ positions\ (3,\ nel)}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00039}00039\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ vdim\ Vector\ dimensions}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00040}00040\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ell\ System\ dimensions}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00041}\mbox{\hyperlink{namespacedipole__module_a59728aa5a2dc030242204c5bcfeb6313}{00041}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }calc\_dipole(r\_el,\ vdim,\ ell)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rion,\ zetar,\ nion,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00046}00046\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ r\_el(3,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00047}00047\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ ell(*)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ vdim(*)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00049}00049\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ r\_tmp(3)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ n,\ ll,\ l}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ check\_inside}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ dipole(1:ndipole)\ =\ nuclear\_dipole(1:ndipole)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ dipole(1:ndipole)\ =\ dipole(1:ndipole)\ -\/\ r\_el(1:ndipole,\ n)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00059}00059\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00060}00060\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }calc\_dipole}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00062}00062\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00063}00063\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Calculates\ quadrupole\ moment\ tensor\ of\ the\ system}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00064}00064\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ calculates\ the\ quadrupole\ moment\ tensor}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00065}00065\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ using\ the\ formula\ Q\_ij\ =\ sum\_n\ 0.5*(q\_k*3*x\_in*x\_jn\ -\/\ r\_n\string^2*delta\_ij).}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00066}00066\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ It\ computes\ both\ nuclear\ and\ electronic\ contributions\ relative}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ to\ the\ center\ of\ charge.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00068}00068\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ r\_el\ Electron\ positions\ (3,\ nel)}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00069}00069\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ vdim\ Vector\ dimensions}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00070}00070\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ell\ System\ dimensions}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00071}\mbox{\hyperlink{namespacedipole__module_a049d95f5e1b72ac6549a49dcb3232fbc}{00071}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }calc\_quadrupole(r\_el,\ vdim,\ ell)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ to\ be\ modified!!!}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rion,\ zetar,\ nion,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00078}00078\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ r\_el(3,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ vdim(*)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00080}00080\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ ell(*)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ n}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00082}00082\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ qtot,\ dist,\ cion(3,\ nion),\ cel(3,\ nel),\ sumw,\ nuc\_charge}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00083}00083\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!!Calculation\ of\ the\ center\ of\ the\ nuclear\ charge}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!!(use\ this\ until\ the\ problem\ of\ the\ asymmetry\ of\ the\ electronic\ charge\ is\ solved)}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{comment}{!!Warning:\ this\ way\ to\ calculate\ the\ quadrupole\ is\ correct\ only\ if\ the\ dipole\ of\ the\ system\ is\ zero}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ cc\_chg\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ cc\_chg(:)\ =\ cc\_chg(:)\ +\ zetar(i)*rion(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00090}00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ cc\_chg(:)\ =\ cc\_chg(:)/sum(zetar(:))}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Reference\ frame\ of\ center\ of\ charge}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ cion(:,\ i)\ =\ rion(:,\ i)\ -\/\ cc\_chg(:)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ cel(:,\ i)\ =\ r\_el(:,\ i)\ -\/\ cc\_chg(:)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Formula\ of\ quadrupole\ moment\ is\ as\ following\ by\ E.Coccia}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Q\_ij\ =\ \(\backslash\)sum\_n\string^nel\ 0.5*(q\_k*3*x\_in*x\_jn\ -\/\ r\_n\string^2d\_ij)}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Nuclear\ contribution\ to\ the\ quadrupole\ moment}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ quad\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ dist\ =\ cion(1,\ n)**2\ +\ cion(2,\ n)**2\ +\ cion(3,\ n)**2}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i,\ 3}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ j)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(i,\ j)\ =\ quad(i,\ j)\ +\ zetar(n)*(3.d0*cion(i,\ n)*cion(j,\ n)\ -\/\ dist)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(i,\ j)\ =\ quad(i,\ j)\ +\ zetar(n)*3.d0*cion(i,\ n)*cion(j,\ n)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(j,\ i)\ =\ quad(i,\ j)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00114}00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00115}00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Electronic\ contribution\ to\ the\ quadrupole\ moment}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ dist\ =\ cel(1,\ n)**2\ +\ cel(2,\ n)**2\ +\ cel(3,\ n)**2}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i,\ 3}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ j)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(i,\ j)\ =\ quad(i,\ j)\ -\/\ (3.d0*cel(i,\ n)*cel(j,\ n)\ -\/\ dist)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(i,\ j)\ =\ quad(i,\ j)\ -\/\ 3.d0*cel(i,\ n)*cel(j,\ n)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quad(j,\ i)\ =\ quad(i,\ j)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00129}00129\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ quad\ =\ 0.5d0*quad}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keyword}{end\ subroutine}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00137}00137\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00138}00138\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Diagonalizes\ the\ quadrupole\ moment\ tensor}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00139}00139\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ diagonalizes\ the\ quadrupole\ moment\ tensor}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00140}00140\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ using\ LAPACK\ routines\ DSYTRD\ and\ DSTERF.\ The\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00141}00141\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ are\ stored\ in\ quad\_diag\ array.}}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00142}\mbox{\hyperlink{namespacedipole__module_ab462b522b8f5eea10f6c847dbd4ef9de}{00142}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }diag\_quad}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00143}00143\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ n,\ INFO}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ real*8\ ::\ e(2),\ tau(2),\ work(10)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsytrd(\textcolor{stringliteral}{'U'},\ nquad,\ quad,\ nquad,\ quad\_diag,\ e,\ tau,\ work,\ 10,\ info)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsterf(nquad,\ quad\_diag,\ e,\ info)}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00149}00149\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }diag\_quad}
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00151}00151\ }
+\DoxyCodeLine{\Hypertarget{compute__dipole_8f90_source_l00152}00152\ \textcolor{keyword}{end\ module\ }\mbox{\hyperlink{namespacedipole__module}{dipole\_module}}}
+
+\end{DoxyCode}

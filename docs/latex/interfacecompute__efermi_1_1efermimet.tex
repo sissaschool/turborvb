@@ -9,6 +9,13 @@ subroutine \mbox{\hyperlink{interfacecompute__efermi_1_1efermimet_aeaa4c49cec3a8
 \begin{DoxyCompactList}\small\item\em Calculates Fermi energy with smearing without k-\/point averaging. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
+\doxysubsection{Detailed Description}
+
+
+Definition at line \mbox{\hyperlink{eval__efermi_8f90_source_l00042}{42}} of file \mbox{\hyperlink{eval__efermi_8f90_source}{eval\+\_\+efermi.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{interfacecompute__efermi_1_1efermimet_doc-func-members}
 \doxysubsection{Member Function/\+Subroutine Documentation}
@@ -35,6 +42,59 @@ This subroutine calculates the Fermi energy using smearing functions with k-\/po
 \mbox{\texttt{in,out}}  & {\em ef} & Fermi energy (initial guess, updated on output) \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{eval__efermi_8f90_source_l00131}{131}} of file \mbox{\hyperlink{eval__efermi_8f90_source}{eval\+\_\+efermi.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ bands,\ nel}
+\DoxyCodeLine{00136\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ eig(bands,\ *)}
+\DoxyCodeLine{00137\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(in)}\ ::\ dt}
+\DoxyCodeLine{00138\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ef}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iter,\ ibnd,\ ikp}
+\DoxyCodeLine{00141\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp)\ ::\ efmin,\ efmax,\ efsum,\ ntry,\ error}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{parameter}\ ::\ maxit\ =\ 100}
+\DoxyCodeLine{00143\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{parameter}\ ::\ eps\ =\ 1.d-\/14}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ find\ energy\ bounds\ among\ k-\/points}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ efmin\ =\ eig(1,\ 1)}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ efmax\ =\ eig(bands,\ 1)}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ikp\ =\ 1,\ nk}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(1,\ ikp)\ .lt.\ efmin)\ efmin\ =\ eig(1,\ ikp)}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(bands,\ ikp)\ .gt.\ efmax)\ efmax\ =\ eig(bands,\ ikp)}
+\DoxyCodeLine{00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ efmin\ =\ efmin\ -\/\ dt*10.0\_qp}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ efmax\ =\ efmax\ +\ dt*10.0\_qp}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ error\ =\ (efmax\ -\/\ efmin)/2.0\_qp}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ use\ bisection\ method\ to\ evaluate\ Fermi\ energy}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (error\ .gt.\ eps\ .and.\ iter\ .le.\ maxit)}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ ntry\ =\ 0.0\_qp}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ ef\ =\ (efmin\ +\ efmax)/2.0\_qp}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ikp\ =\ 1,\ nk}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efsum\ =\ 0.0\_qp}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ibnd\ =\ 1,\ bands}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efsum\ =\ efsum\ +\ smear(eig(ibnd,\ ikp),\ dt,\ ef,\ smear\_type\textcolor{comment}{)}}
+\DoxyCodeLine{00164\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ntry\ =\ ntry\ +\ wkp(ikp)*efsum}
+\DoxyCodeLine{00166\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ntry\ .gt.\ nel)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efmax\ =\ ef}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ntry\ .lt.\ nel)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efmin\ =\ ef}
+\DoxyCodeLine{00171\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ max(efmax\ -\/\ efmin,\ 0.0\_qp)}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ iter\ =\ iter\ +\ 1}
+\DoxyCodeLine{00174\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00176\ }
+
+\end{DoxyCode}
 \Hypertarget{interfacecompute__efermi_1_1efermimet_aeaa4c49cec3a84204a8eea82001c2732}\index{compute\_efermi::efermimet@{compute\_efermi::efermimet}!efermimet\_kindependent@{efermimet\_kindependent}}
 \index{efermimet\_kindependent@{efermimet\_kindependent}!compute\_efermi::efermimet@{compute\_efermi::efermimet}}
 \doxysubsubsection{\texorpdfstring{efermimet\_kindependent()}{efermimet\_kindependent()}}
@@ -58,6 +118,51 @@ This subroutine calculates the Fermi energy using smearing functions for a singl
 \mbox{\texttt{in,out}}  & {\em ef} & Fermi energy (initial guess, updated on output) \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{eval__efermi_8f90_source_l00188}{188}} of file \mbox{\hyperlink{eval__efermi_8f90_source}{eval\+\_\+efermi.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ bands,\ nel}
+\DoxyCodeLine{00193\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ eig(bands)}
+\DoxyCodeLine{00194\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(in)}\ ::\ dt}
+\DoxyCodeLine{00195\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ef}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iter,\ ibnd,\ ikp}
+\DoxyCodeLine{00198\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp)\ ::\ efmin,\ efmax,\ efsum,\ ntry,\ error}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{parameter}\ ::\ maxit\ =\ 100}
+\DoxyCodeLine{00200\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{parameter}\ ::\ eps\ =\ 1.d-\/14}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ find\ energy\ bounds\ among\ k-\/points}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ efmin\ =\ eig(1)\ -\/\ 10.0\_qp*dt}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ efmax\ =\ eig(bands)\ +\ 10.0\_qp*dt}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ error\ =\ (efmax\ -\/\ efmin)/2.0\_qp}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ use\ bisection\ method\ to\ evaluate\ Fermi\ energy}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (error\ .gt.\ eps\ .and.\ iter\ .le.\ maxit)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ ntry\ =\ 0.0\_qp}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ ef\ =\ (efmin\ +\ efmax)/2.0\_qp}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ efsum\ =\ 0.0\_qp}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ibnd\ =\ 1,\ bands}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efsum\ =\ efsum\ +\ smear(eig(ibnd),\ dt,\ ef,\ smear\_type)}
+\DoxyCodeLine{00214\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ ntry\ =\ ntry\ +\ efsum}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ntry\ .gt.\ nel)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efmax\ =\ ef}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ntry\ .lt.\ nel)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ efmin\ =\ ef}
+\DoxyCodeLine{00220\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ max(efmax\ -\/\ efmin,\ 0.0\_qp)}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ iter\ =\ iter\ +\ 1}
+\DoxyCodeLine{00223\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00225\ }
+
+\end{DoxyCode}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

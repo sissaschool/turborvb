@@ -1,0 +1,195 @@
+\doxysection{upsimp.\+f90}
+\hypertarget{upsimp_8f90_source}{}\label{upsimp_8f90_source}\index{src/m\_common/upsimp.f90@{src/m\_common/upsimp.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Matrix\ increment\ utilities\ for\ quantum\ Monte\ Carlo\ calculations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ module\ provides\ subroutines\ for\ incrementing\ matrix\ elements\ in\ quantum}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00019}00019\ \textcolor{comment}{!>\ Monte\ Carlo\ calculations,\ supporting\ both\ real\ and\ complex\ matrices.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00020}00020\ \textcolor{comment}{!>\ It\ handles\ different\ matrix\ types\ including\ standard\ matrices\ and}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00021}00021\ \textcolor{comment}{!>\ Pfaffian\ matrices\ for\ paired\ and\ unpaired\ electrons.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00023}00023\ \textcolor{comment}{!>\ The\ module\ includes:}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00024}00024\ \textcolor{comment}{!>\ -\/\ Real\ matrix\ increment\ with\ symmetry\ handling}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00025}00025\ \textcolor{comment}{!>\ -\/\ Complex\ matrix\ increment\ with\ Hermitian/transpose\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00026}00026\ \textcolor{comment}{!>\ -\/\ Support\ for\ Pfaffian\ matrices\ with\ up/down\ electron\ blocks}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00027}00027\ \textcolor{comment}{!>\ -\/\ Proper\ handling\ of\ paired\ and\ unpaired\ electron\ configurations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00028}00028\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00032}00032\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @brief\ Increment\ real\ matrix\ elements\ with\ symmetry\ handling}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00034}00034\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00035}00035\ \textcolor{comment}{!>\ This\ subroutine\ increments\ matrix\ elements\ in\ a\ real\ matrix,\ handling}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00036}00036\ \textcolor{comment}{!>\ different\ matrix\ types\ and\ symmetry\ conditions.\ It\ supports\ both}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00037}00037\ \textcolor{comment}{!>\ standard\ matrices\ and\ Pfaffian\ matrices\ for\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00038}00038\ \textcolor{comment}{!>\ calculations.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00039}00039\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in,out]\ amat\ Matrix\ to\ be\ updated\ (ndim,\ *)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @param[in]\ ndim\ Leading\ dimension\ of\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @param[in]\ ind\ Linear\ index\ of\ the\ matrix\ element\ to\ update}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @param[in]\ value\ Value\ to\ add\ to\ the\ matrix\ element}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00044}00044\ \textcolor{comment}{!>\ @param[in]\ symmagp\ Flag\ for\ symmetric\ matrix\ updates}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00045}00045\ \textcolor{comment}{!>\ @param[in]\ ipf\ Flag\ indicating\ matrix\ type:}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ ipf\ =\ 1:\ Standard\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00047}00047\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ ipf\ ≠\ 1:\ Pfaffian\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00048}00048\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00050}00050\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00051}00051\ \textcolor{comment}{!>\ 1.\ Converts\ linear\ index\ to\ (i,j)\ matrix\ coordinates}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00052}00052\ \textcolor{comment}{!>\ 2.\ For\ standard\ matrices\ (ipf\ =\ 1):}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00053}00053\ \textcolor{comment}{!>\ \ \ \ -\/\ Adds\ value\ to\ amat(i,j)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00054}00054\ \textcolor{comment}{!>\ \ \ \ -\/\ If\ symmagp\ is\ true\ and\ i\ ≠\ j,\ adds\ value\ to\ amat(j,i)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00055}00055\ \textcolor{comment}{!>\ 3.\ For\ Pfaffian\ matrices\ (ipf\ ≠\ 1):}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00056}00056\ \textcolor{comment}{!>\ \ \ \ -\/\ Adds\ value\ to\ amat(i,j)\ and\ subtracts\ from\ amat(j,i)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00057}00057\ \textcolor{comment}{!>\ \ \ \ -\/\ Handles\ up/down\ electron\ blocks\ with\ proper\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00058}00058\ \textcolor{comment}{!>\ \ \ \ -\/\ Manages\ paired\ and\ unpaired\ electron\ configurations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00059}00059\ \textcolor{comment}{!>\ \ \ \ -\/\ Applies\ symmetry\ conditions\ based\ on\ ion\ types}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00060}00060\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00061}00061\ \textcolor{comment}{!>\ @note\ The\ subroutine\ handles\ antisymmetry\ of\ Pfaffian\ matrices}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00062}00062\ \textcolor{comment}{!>\ @note\ Up/down\ electron\ blocks\ are\ handled\ separately\ for\ paired\ electrons}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @note\ The\ subroutine\ respects\ ion\ type\ constraints\ (kiontot)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00064}00064\ \textcolor{comment}{!>\ @note\ Used\ in\ wave\ function\ optimization\ and\ gradient\ calculations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00065}00065\ \textcolor{keyword}{subroutine\ }upsimp(amat,\ ndim,\ ind,\ value,\ symmagp,\ ipf)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ nelorb\_at,\ pfaffup,\ kiontot}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim,\ ndimh,\ ind,\ i,\ j,\ ipf}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00069}00069\ \ \ \ \ real*8\ amat(ndim,\ *),\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{logical}\ symmagp}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/ndim\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ ndim*(j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .ne.\ i\ .and.\ j\ .le.\ ndim\ .and.\ symmagp)\ amat(j,\ i)\ =\ amat(j,\ i)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ ndimh\ =\ nelorb\_at/2}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/ndim\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ ndim*(j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndim)\ amat(j,\ i)\ =\ amat(j,\ i)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp\ .and.\ kiontot(i)\ .ne.\ 0\ .and.\ kiontot(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ pfaffup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=amat(j+ndimh,\ i-\/ndimh)+value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=amat(i-\/ndimh,\ j+ndimh)-\/value}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00095}00095\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00096}00096\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00097}00097\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00098}00098\ \textcolor{comment}{!>\ @brief\ Increment\ complex\ matrix\ elements\ with\ symmetry\ handling}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00099}00099\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00100}00100\ \textcolor{comment}{!>\ This\ subroutine\ increments\ matrix\ elements\ in\ a\ complex\ matrix,\ handling}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00101}00101\ \textcolor{comment}{!>\ different\ matrix\ types\ and\ symmetry\ conditions.\ It\ supports\ both}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00102}00102\ \textcolor{comment}{!>\ standard\ matrices\ and\ Pfaffian\ matrices\ with\ proper\ handling\ of}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00103}00103\ \textcolor{comment}{!>\ Hermitian\ and\ transpose\ symmetries.}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00104}00104\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00105}00105\ \textcolor{comment}{!>\ @param[in,out]\ amat\ Complex\ matrix\ to\ be\ updated\ (ndim,\ *)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00106}00106\ \textcolor{comment}{!>\ @param[in]\ ndim\ Leading\ dimension\ of\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00107}00107\ \textcolor{comment}{!>\ @param[in]\ ind\ Linear\ index\ of\ the\ matrix\ element\ to\ update}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00108}00108\ \textcolor{comment}{!>\ @param[in]\ value\ Array\ containing\ complex\ value\ to\ add\ to\ the\ matrix\ element}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00109}00109\ \textcolor{comment}{!>\ @param[in]\ symmagp\ Flag\ for\ symmetric\ matrix\ updates}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00110}00110\ \textcolor{comment}{!>\ @param[in]\ ipf\ Flag\ indicating\ matrix\ type:}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00111}00111\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ ipf\ =\ 1:\ Standard\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00112}00112\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ ipf\ ≠\ 1:\ Pfaffian\ matrix}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00113}00113\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00114}00114\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00115}00115\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00116}00116\ \textcolor{comment}{!>\ 1.\ Converts\ linear\ index\ to\ (i,j)\ matrix\ coordinates}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00117}00117\ \textcolor{comment}{!>\ 2.\ For\ standard\ matrices\ (ipf\ =\ 1):}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00118}00118\ \textcolor{comment}{!>\ \ \ \ -\/\ For\ diagonal\ elements\ with\ Hermitian\ symmetry,\ adds\ real\ part\ only}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00119}00119\ \textcolor{comment}{!>\ \ \ \ -\/\ For\ off-\/diagonal\ elements,\ adds\ value(1)\ to\ amat(i,j)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00120}00120\ \textcolor{comment}{!>\ \ \ \ -\/\ If\ symmagp\ is\ true,\ applies\ Hermitian\ or\ transpose\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00121}00121\ \textcolor{comment}{!>\ 3.\ For\ Pfaffian\ matrices\ (ipf\ ≠\ 1):}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00122}00122\ \textcolor{comment}{!>\ \ \ \ -\/\ Adds\ value(1)\ to\ amat(i,j)\ and\ subtracts\ from\ amat(j,i)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00123}00123\ \textcolor{comment}{!>\ \ \ \ -\/\ Handles\ up/down\ electron\ blocks\ with\ proper\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00124}00124\ \textcolor{comment}{!>\ \ \ \ -\/\ Applies\ Hermitian\ or\ transpose\ symmetry\ based\ on\ yes\_hermite\ flag}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00125}00125\ \textcolor{comment}{!>\ \ \ \ -\/\ Manages\ paired\ and\ unpaired\ electron\ configurations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00126}00126\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00127}00127\ \textcolor{comment}{!>\ @note\ For\ Hermitian\ matrices\ (yes\_hermite\ =\ .true.),\ uses\ conjugate\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00128}00128\ \textcolor{comment}{!>\ @note\ For\ non-\/Hermitian\ matrices,\ uses\ transpose\ symmetry}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00129}00129\ \textcolor{comment}{!>\ @note\ Diagonal\ elements\ in\ Hermitian\ matrices\ are\ constrained\ to\ be\ real}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00130}00130\ \textcolor{comment}{!>\ @note\ The\ subroutine\ handles\ antisymmetry\ of\ Pfaffian\ matrices}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00131}00131\ \textcolor{comment}{!>\ @note\ Used\ in\ complex\ wave\ function\ optimization\ and\ gradient\ calculations}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00132}00132\ \textcolor{keyword}{subroutine\ }upsimp\_complex(amat,\ ndim,\ ind,\ value,\ symmagp,\ ipf)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00133}00133\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ yes\_hermite,\ nelorb\_at,\ pfaffup,\ kiontot}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00135}00135\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim,\ ndimh,\ ind,\ ipf,\ i,\ j}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ amat(ndim,\ *),\ \textcolor{keywordtype}{value}(*)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00137}00137\ \ \ \ \ \textcolor{keywordtype}{logical}\ symmagp}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/ndim\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ ndim*(j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ j\ .and.\ yes\_hermite\ .and.\ symmagp\ .and.\ j\ .le.\ nelorb\_at)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i,\ i)\ =\ amat(i,\ i)\ +\ real(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00145}00145\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .ne.\ i\ .and.\ j\ .le.\ nelorb\_at\ .and.\ i\ .le.\ nelorb\_at\ .and.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j,\ i)\ =\ amat(j,\ i)\ +\ dconjg(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j,\ i)\ =\ amat(j,\ i)\ +\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00151}00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00152}00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ ndimh\ =\ nelorb\_at/2}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/ndim\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ ndim*(j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \textcolor{comment}{!if(j.le.2*nelorb\_at.and.i.le.2*nelorb\_at)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndim)\ amat(j,\ i)\ =\ amat(j,\ i)\ -\/\ value(1)\ \textcolor{comment}{!\ \ it\ has\ to\ be\ replicated\ even\ if\ it\ is\ unpaired}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00160}00160\ }
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp\ .and.\ kiontot(j)\ .ne.\ 0\ .and.\ kiontot(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ pfaffup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ conjg(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ conjg(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ conjg(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ conjg(value(1))}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=conjg(value(1))}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=-\/conjg(value(1))}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00172}00172\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ pfaffup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ value(1)}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=value(1)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=-\/value(1)}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00185}00185\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00187}00187\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00188}00188\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upsimp_8f90_source_l00189}00189\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

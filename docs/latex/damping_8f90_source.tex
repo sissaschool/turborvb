@@ -1,0 +1,79 @@
+\doxysection{damping.\+f90}
+\hypertarget{damping_8f90_source}{}\label{damping_8f90_source}\index{src/m\_common/damping.f90@{src/m\_common/damping.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Calculate\ damping\ function\ for\ quantum\ chemistry\ interactions}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ function\ computes\ a\ damping\ factor\ used\ in\ quantum\ chemistry}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00019}00019\ \textcolor{comment}{!>\ calculations\ to\ modify\ the\ strength\ of\ interactions\ based\ on\ distance}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00020}00020\ \textcolor{comment}{!>\ and\ quantum\ number.\ The\ damping\ function\ is\ based\ on\ the\ work\ by}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00021}00021\ \textcolor{comment}{!>\ G.\ Scoles\ et\ al.\ in\ J.\ Chem.\ Phys.\ 76,\ 3057\ (1982).}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ r\ Distance\ parameter\ (typically\ interatomic\ distance)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ n\ Quantum\ number\ parameter\ (0\ for\ no\ damping)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @return\ damping\ Damping\ factor\ (0\ ≤\ damping\ ≤\ 1)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00026}00026\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00028}00028\ \textcolor{comment}{!>\ The\ damping\ function\ implements\ the\ following\ formula:}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00029}00029\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00030}00030\ \textcolor{comment}{!>\ **For\ n\ ≠\ 0:**}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00032}00032\ \textcolor{comment}{!>\ damping\ =\ (1\ -\/\ exp(-\/r*2.1/n\ -\/\ 0.109*r²/√n))\string^n}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00033}00033\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00034}00034\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00035}00035\ \textcolor{comment}{!>\ **For\ n\ =\ 0:**}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00037}00037\ \textcolor{comment}{!>\ damping\ =\ 1.0}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00039}00039\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00040}00040\ \textcolor{comment}{!>\ **Physical\ Interpretation:**}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00041}00041\ \textcolor{comment}{!>\ -\/\ The\ damping\ function\ reduces\ the\ strength\ of\ interactions\ at\ short\ distances}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00042}00042\ \textcolor{comment}{!>\ -\/\ The\ reduction\ is\ more\ pronounced\ for\ larger\ quantum\ numbers\ (n)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00043}00043\ \textcolor{comment}{!>\ -\/\ The\ function\ approaches\ 1.0\ as\ distance\ increases}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00044}00044\ \textcolor{comment}{!>\ -\/\ For\ n\ =\ 0,\ no\ damping\ is\ applied\ (damping\ =\ 1.0)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00045}00045\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00046}00046\ \textcolor{comment}{!>\ **Parameters:**}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00047}00047\ \textcolor{comment}{!>\ -\/\ r:\ Distance\ parameter\ (typically\ in\ atomic\ units)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00048}00048\ \textcolor{comment}{!>\ -\/\ n:\ Quantum\ number\ that\ controls\ the\ damping\ strength}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00049}00049\ \textcolor{comment}{!>\ -\/\ 2.1:\ Linear\ damping\ coefficient}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00050}00050\ \textcolor{comment}{!>\ -\/\ 0.109:\ Quadratic\ damping\ coefficient}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00051}00051\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @note\ The\ function\ is\ commonly\ used\ in\ van\ der\ Waals\ and\ dispersion\ interactions.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00053}00053\ \textcolor{comment}{!>\ @note\ The\ damping\ factor\ is\ always\ in\ the\ range\ [0,\ 1].}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @note\ For\ n\ =\ 0,\ the\ function\ returns\ 1.0\ regardless\ of\ the\ distance\ r.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @note\ The\ exponential\ form\ ensures\ smooth\ behavior\ across\ all\ distances.}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00056}00056\ \textcolor{keyword}{function\ }damping(r,\ n)}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00058}00058\ \ \ \ \ real*8\ damping,\ r}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordtype}{integer}\ n}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ damping=1.d0}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00061}00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ return}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00062}00062\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ From\ G.\ Scoles\ et\ al.\ J.\ Chem.\ Phys.\ 76,\ 3057\ (1982);}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00063}00063\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Return\ unity\ damping\ for\ n\ =\ 0\ (no\ damping)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ .ne.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00065}00065\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Calculate\ damping\ factor\ using\ Scoles\ formula}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00066}00066\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @note\ Based\ on\ G.\ Scoles\ et\ al.\ J.\ Chem.\ Phys.\ 76,\ 3057\ (1982)}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ damping\ =\ (1.d0\ -\/\ dexp(-\/r*2.1d0/n\ -\/\ 0.109d0*r**2/dsqrt(dble(n))))**n}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00069}00069\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ No\ damping\ applied\ for\ n\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ damping\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00071}00071\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{damping_8f90_source_l00073}00073\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

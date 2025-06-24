@@ -1,0 +1,159 @@
+\doxysection{zsktri.\+f90}
+\hypertarget{zsktri_8f90_source}{}\label{zsktri_8f90_source}\index{src/m\_common/zsktri.f90@{src/m\_common/zsktri.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Invert\ a\ complex\ skew-\/symmetric\ matrix\ using\ LU\ decomposition}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ computes\ the\ inverse\ of\ a\ complex\ skew-\/symmetric\ matrix\ A}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00019}00019\ \textcolor{comment}{!>\ using\ the\ LU\ decomposition\ A\ =\ L*U*P,\ where\ P\ is\ a\ permutation\ matrix.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00020}00020\ \textcolor{comment}{!>\ The\ inverse\ is\ computed\ as\ A\string^(-\/1)\ =\ P\string^T\ *\ U\string^(-\/1)\ *\ L\string^(-\/1).}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00022}00022\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00023}00023\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00024}00024\ \textcolor{comment}{!>\ UPLO\ :\ character,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ Specifies\ which\ part\ of\ the\ matrix\ A\ is\ stored:}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ 'U'\ or\ 'u':\ Upper\ triangular\ part\ is\ stored.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ 'L'\ or\ 'l':\ Lower\ triangular\ part\ is\ stored.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00028}00028\ \textcolor{comment}{!>\ N\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ Order\ of\ the\ matrix\ A.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00030}00030\ \textcolor{comment}{!>\ A\ :\ complex*16\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \ \ \ \ The\ complex\ skew-\/symmetric\ matrix\ A,\ stored\ in\ packed\ format.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ \ On\ entry,\ contains\ the\ LU\ factors\ from\ ZSKTRF.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00033}00033\ \textcolor{comment}{!>\ LDA\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ array\ A.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00035}00035\ \textcolor{comment}{!>\ AINV\ :\ complex*16\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \ \ \ \ The\ inverse\ of\ matrix\ A.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00037}00037\ \textcolor{comment}{!>\ LDINV\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ array\ AINV.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00039}00039\ \textcolor{comment}{!>\ IPIV\ :\ integer\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ \ Pivot\ indices\ from\ ZSKTRF;\ dimension\ at\ least\ N.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00041}00041\ \textcolor{comment}{!>\ WORK\ :\ complex*16\ array,\ work}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ \ Workspace\ array;\ dimension\ at\ least\ N\string^2\ +\ 12*N\ -\/\ 2.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00043}00043\ \textcolor{comment}{!>\ INFO\ :\ integer,\ out}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ =\ 0:\ successful\ exit.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ \ <\ 0:\ if\ INFO\ =\ -\/i,\ the\ i-\/th\ argument\ had\ an\ illegal\ value.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ >\ 0:\ if\ INFO\ =\ i,\ U(i,i)\ is\ exactly\ zero;\ the\ matrix\ is\ singular.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00048}00048\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00049}00049\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00050}00050\ \textcolor{comment}{!>\ -\/\ Assumes\ that\ ZSKTRF\ has\ been\ called\ previously\ to\ factorize\ A.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00051}00051\ \textcolor{comment}{!>\ -\/\ Uses\ a\ three-\/step\ process:\ permutation,\ triangular\ solve,\ permutation.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00052}00052\ \textcolor{comment}{!>\ -\/\ Supports\ both\ upper\ and\ lower\ triangular\ storage\ formats.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00053}00053\ \textcolor{comment}{!>\ -\/\ The\ algorithm\ handles\ the\ special\ structure\ of\ complex\ skew-\/symmetric\ matrices.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00054}00054\ \textcolor{comment}{!>\ -\/\ Complex\ arithmetic\ is\ used\ throughout\ the\ computation.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00055}00055\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00056}00056\ \textcolor{comment}{!>\ Algorithm}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00057}00057\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00058}00058\ \textcolor{comment}{!>\ 1.\ Initialize\ AINV\ as\ identity\ matrix}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00059}00059\ \textcolor{comment}{!>\ 2.\ Apply\ first\ permutation\ (reverse\ order)}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00060}00060\ \textcolor{comment}{!>\ 3.\ Extract\ skew-\/symmetric\ elements\ and\ prepare\ for\ triangular\ solve}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00061}00061\ \textcolor{comment}{!>\ 4.\ Solve\ triangular\ system\ using\ ZTRTRS}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00062}00062\ \textcolor{comment}{!>\ 5.\ Solve\ tridiagonal\ system\ using\ ZSKTRS\ or\ ZGTSVX}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00063}00063\ \textcolor{comment}{!>\ 6.\ Solve\ triangular\ system\ with\ transpose}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00064}00064\ \textcolor{comment}{!>\ 7.\ Apply\ final\ permutation}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00065}00065\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00066}00066\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00067}00067\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00068}00068\ \textcolor{comment}{!>\ Used\ in\ quantum\ Monte\ Carlo\ calculations\ for\ complex\ matrix\ operations.}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00069}00069\ \textcolor{keyword}{subroutine\ }zsktri(uplo,\ n,\ a,\ lda,\ ainv,\ ldinv,\ ipiv,\ work,\ info)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00072}00072\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordtype}{character},\ \textcolor{keywordtype}{intent(in)}\ ::\ uplo}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ n,\ lda,\ ldinv,\ ipiv(*)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(in\ out)}\ ::\ a(lda,\ *),\ work(*)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(out)}\ ::\ ainv(ldinv,\ *)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(out)}\ ::\ info}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00081}00081\ \ \ \ \ real*8\ rcond}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00082}00082\ \ \ \ \ \textcolor{keywordtype}{logical}\ yeslap}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00083}00083\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00084}00084\ \textcolor{comment}{!>\ @brief\ Initialize\ INFO\ and\ choose\ algorithm}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00085}00085\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00086}00086\ \ \ \ \ yeslap\ =\ .false.\ \textcolor{comment}{!\ if\ false\ the\ homemade\ algorithm\ is\ done.}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00087}00087\ \textcolor{comment}{!>\ @brief\ Initialize\ AINV\ as\ identity\ matrix}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ dcmplx(0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ ainv(i,\ i)\ =\ dcmplx(1.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ dcmplx(0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00095}00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00097}00097\ \textcolor{comment}{!>\ @brief\ Apply\ first\ permutation\ in\ reverse\ order}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ n,\ 1,\ -\/1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00103}00103\ \textcolor{comment}{!>\ @brief\ Extract\ skew-\/symmetric\ elements\ and\ prepare\ triangular\ solve}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00104}00104\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'u'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'U'})\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00105}00105\ \textcolor{comment}{!>\ @brief\ Upper\ triangular\ case:\ extract\ superdiagonal\ elements}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ a(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ -\/a(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ a(1:j\ -\/\ 1,\ j)\ =\ a(1:j\ -\/\ 1,\ j\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00112}00112\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ a(1:n\ -\/\ 1,\ n)\ =\ dcmplx(0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00114}00114\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00115}00115\ \textcolor{comment}{!>\ @brief\ Lower\ triangular\ case:\ extract\ subdiagonal\ elements}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ -\/a(i\ +\ 1,\ i)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ a(i\ +\ 1,\ i)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00119}00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ n\ -\/\ 1,\ 2,\ -\/1}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ a(j\ +\ 1:n,\ j)\ =\ a(j\ +\ 1:n,\ j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ a(2:n,\ 1)\ =\ dcmplx(0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00125}00125\ \textcolor{comment}{!>\ @brief\ Set\ diagonal\ elements\ to\ zero\ (skew-\/symmetric\ property)}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00126}00126\ \ \ \ \ work(2*n\ -\/\ 1:3*n\ -\/\ 2)\ =\ dcmplx(0.d0,\ 0.d0)\ \textcolor{comment}{!\ diagonal\ elements\ of\ skew\ matrix\ ,\ obviously\ set\ to\ zero.}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00127}00127\ \textcolor{comment}{!>\ @brief\ First\ triangular\ solve:\ U\ *\ X\ =\ B}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00128}00128\ \ \ \ \ \textcolor{keyword}{call\ }ztrtrs(uplo,\ \textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\ \textcolor{comment}{!\ ainv\ =\ A\string^-\/1}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00129}00129\ \textcolor{comment}{!>\ @brief\ Solve\ tridiagonal\ system\ using\ LAPACK\ or\ homemade\ algorithm}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00130}00130\ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslap)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00131}00131\ \textcolor{comment}{!>\ @brief\ Use\ LAPACK\ ZGTSVX\ for\ complex\ tridiagonal\ solve}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgtsvx(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ work(n),\ work(2*n\ -\/\ 1),\ work,\ work(3*n)\&}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(4*n),\ work(5*n),\ work(6*n),\ ipiv(n\ +\ 1),\ ainv,\ ldinv,\ work(7*n),\ n\&}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rcond,\ work(7*n\ +\ n*n\ -\/\ 1),\ work(8*n\ +\ n*n\ -\/\ 1)\&}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(9*n\ +\ n*n\ -\/\ 1),\ work(11*n\ +\ n*n\ -\/\ 1),\ info)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(1:n,\ i)\ =\ work(7*n\ +\ (i\ -\/\ 1)*n:7*n\ +\ i*n\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00138}00138\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00139}00139\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00140}00140\ \textcolor{comment}{!>\ @brief\ Use\ homemade\ ZSKTRS\ for\ complex\ skew-\/symmetric\ tridiagonal\ solve}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zsktrs(uplo,\ n,\ n,\ work,\ ainv,\ ldinv,\ work(n),\ info)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00142}00142\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00143}00143\ \textcolor{comment}{!>\ @brief\ Second\ triangular\ solve:\ L\string^T\ *\ X\ =\ B}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keyword}{call\ }ztrtrs(uplo,\ \textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00145}00145\ \textcolor{comment}{!>\ @brief\ Apply\ final\ permutation\ to\ complete\ A\string^(-\/1)\ =\ P\string^T\ *\ U\string^(-\/1)\ *\ L\string^(-\/1)}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00146}00146\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00152}00152\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{zsktri_8f90_source_l00153}00153\ }
+
+\end{DoxyCode}

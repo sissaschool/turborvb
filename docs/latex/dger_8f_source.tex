@@ -1,0 +1,82 @@
+\doxysection{dger.\+f}
+\hypertarget{dger_8f_source}{}\label{dger_8f_source}\index{src/d\_qlapack/dger.f@{src/d\_qlapack/dger.f}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00001}00001\ \textcolor{comment}{cTL\ off}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00002}00002\ \textcolor{comment}{*}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00003}00003\ \textcolor{comment}{*\ The\ 3-\/Clause\ BSD\ License}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00004}00004\ \textcolor{comment}{*}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00005}00005\ \textcolor{comment}{*\ Copyright\ (c)\ 2022\ TurboRVB\ group\ based\ on\ the\ following\ works}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00006}00006\ \textcolor{comment}{*}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00007}00007\ \textcolor{comment}{*\ This\ fortran\ implementation\ is\ derived\ in\ parts\ on\ the\ reference}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00008}00008\ \textcolor{comment}{*\ implementation\ of\ LAPACK\ and\ BLAS\ on\ www.netlib.org.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00009}00009\ \textcolor{comment}{*\ LAPACK\ is\ subject\ to\ the\ following\ license:}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00010}00010\ \textcolor{comment}{*}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00011}00011\ \textcolor{comment}{*\ Copyright\ (c)\ 1992-\/2010\ The\ University\ of\ Tennessee\ and\ The\ University}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00012}00012\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ Tennessee\ Research\ Foundation.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00013}00013\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ All\ rights\ reserved.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00014}00014\ \textcolor{comment}{*\ Copyright\ (c)\ 2000-\/2010\ The\ University\ of\ California\ Berkeley.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00015}00015\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ All\ rights\ reserved.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00016}00016\ \textcolor{comment}{*\ Copyright\ (c)\ 2006-\/2010\ The\ University\ of\ Colorado\ Denver.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00017}00017\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ All\ rights\ reserved.}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00018}00018\ \textcolor{comment}{*}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00019}00019\ \ \ \ \ \ \ \textcolor{keyword}{SUBROUTINE\ }dger\_(M,N,ALPHA,X,INCX,Y,INCY,A,LDA)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00020}00020\ \ \ \ \ \ \ \textcolor{keywordtype}{USE\ }allio,\ \textcolor{keywordtype}{ONLY}:\ yes\_ontarget}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00021}00021\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00022}00022\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00023}00023\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00024}00024\ \ \ \ \ \ \ real*8\ ::\ alpha}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00025}00025\ \ \ \ \ \ \ real*8\ ::\ a(lda*(n-\/1)+m),\ x(incx*(m-\/1)+1),\ y(incy*(n-\/1)+1)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00026}00026\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ INCX,\ INCY,\ LDA,\ M,\ N}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00027}00027\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ I,\ INFO,\ J}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00028}00028\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00029}00029\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00030}00030\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dger(m,n,alpha,x,incx,y,incy,a,lda)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00031}00031\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00032}00032\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00033}00033\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00034}00034\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00035}00035\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00036}00036\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00037}00037\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dger\_offload\_(m,n,alpha,x,incx,y}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00038}00038\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incy,a,lda)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00039}00039\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00040}00040\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00041}00041\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dger\_offload(m,n,alpha,x,incx,y}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00042}00042\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incy,a,lda)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00043}00043\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00044}00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00045}00045\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00046}00046\ \textcolor{preprocessor}{}\textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00047}00047\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00048}00048\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (m.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00050}00050\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (n.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ info\ =\ 2}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00052}00052\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incx.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ info\ =\ 5}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00054}00054\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incy.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ info\ =\ 7}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00056}00056\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (lda.LT.max(1,m))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ info\ =\ 9}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00058}00058\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00059}00059\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00060}00060\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ ((info.NE.0)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00061}00061\ \ \ \ \ \ +\ \ \ \ .OR.(m.EQ.0)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00062}00062\ \ \ \ \ \ +\ \ \ \ .OR.(n.EQ.0)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00063}00063\ \ \ \ \ \ +\ \ \ \ .OR.(alpha.EQ.0))}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00064}00064\ \ \ \ \ \ +\ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00065}00065\ \textcolor{comment}{c}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00066}00066\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00067}00067\ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ 1,n}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,m}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(lda*(j-\/1)+i)\ =\ a(lda*(j-\/1)+i)\ +}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00070}00070\ \ \ \ \ \ 1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alpha*x(incx*(i-\/1)+1)*y(incy*(j-\/1)+1)}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00071}00071\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00073}00073\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00074}00074\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00075}00075\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{\Hypertarget{dger_8f_source_l00076}00076\ \ \ \ \ \ \ \textcolor{keyword}{END}}
+
+\end{DoxyCode}

@@ -26,6 +26,10 @@ Turbo\+RVB group
 \end{DoxyVersion}
 
 
+Definition in file \mbox{\hyperlink{bconstrbr__complex_8f90_source}{bconstrbr\+\_\+complex.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{bconstrbr__complex_8f90_doc-func-members}
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -116,3 +120,67 @@ Constants module for ipc parameter
 \mbox{\texttt{in}}  & {\em ddw} & ddw Input array of constrained parameter changes \\
 \hline
 \end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{bconstrbr__complex_8f90_source_l00070}{70}} of file \mbox{\hyperlink{bconstrbr__complex_8f90_source}{bconstrbr\+\_\+complex.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ iesfreer\ Switch\ flag\ for\ constraint\ handling\ (0:\ no\ constraints,\ >0:\ apply\ constraints)}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ iesfreer}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ n3body\ Number\ of\ 3-\/body\ Jastrow\ parameters}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ n3body}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ jbraj\ Mapping\ array\ from\ constrained\ to\ unconstrained\ Jastrow\ parameters}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ jbraj(*)}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ derjas\ Output\ array\ for\ unconstrained\ Jastrow\ derivatives}}
+\DoxyCodeLine{00085\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(out)}\ ::\ derjas(*)}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ddw\ Input\ array\ of\ constrained\ parameter\ changes}}
+\DoxyCodeLine{00088\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ ddw(*)}
+\DoxyCodeLine{00089\ \ \ \ \ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{!\ Local\ variables}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j}
+\DoxyCodeLine{00092\ \ \ \ \ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{!\ Early\ return\ if\ no\ constraints\ are\ applied}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesfreer\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00095\ \ \ \ \ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{!\ Handle\ complex\ wave\ functions\ (ipc\ =\ 2)}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Map\ complex\ Jastrow\ parameters\ with\ real\ and\ imaginary\ parts}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Direct\ mapping\ for\ positive\ indices}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(2*i\ -\/\ 1)\ =\ ddw(2*j\ -\/\ 1)\ \ \textcolor{comment}{!\ Real\ part}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(2*i)\ =\ ddw(2*j)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Imaginary\ part}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Sign-\/flipped\ mapping\ for\ negative\ indices}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(2*i\ -\/\ 1)\ =\ -\/ddw(-\/2*j\ -\/\ 1)\ \ \textcolor{comment}{!\ Sign-\/flipped\ real\ part}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(2*i)\ =\ -\/ddw(-\/2*j)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Sign-\/flipped\ imaginary\ part}}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{!\ Handle\ real\ wave\ functions\ (ipc\ =\ 1)}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Map\ real\ Jastrow\ parameters}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Direct\ mapping\ for\ positive\ indices}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(i)\ =\ ddw(j)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Sign-\/flipped\ mapping\ for\ negative\ indices}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derjas(i)\ =\ -\/ddw(-\/j)}
+\DoxyCodeLine{00123\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00125\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00126\ \ \ \ \ }
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

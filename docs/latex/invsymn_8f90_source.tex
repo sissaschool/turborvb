@@ -1,0 +1,290 @@
+\doxysection{invsymn.\+f90}
+\hypertarget{invsymn_8f90_source}{}\label{invsymn_8f90_source}\index{src/a\_prep/invsymn.f90@{src/a\_prep/invsymn.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Computes\ inverse\ of\ symmetric\ positive\ definite\ matrix\ using\ SVD}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ inverse\ of\ a\ symmetric\ positive\ definite\ matrix}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ using\ singular\ value\ decomposition\ (SVD).\ It\ eliminates\ singular\ directions}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ with\ eigenvalues\ smaller\ than\ the\ condition\ number\ threshold\ to\ ensure}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ numerical\ stability.\ Supports\ both\ serial\ and\ parallel\ (SCALAPACK)\ execution.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ The\ input\ matrix\ is\ assumed\ to\ be\ positive\ definite\ and\ is\ overwritten\ with}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ its\ inverse.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ n\ Order\ of\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in,out]\ a\ Input\ matrix\ to\ be\ inverted\ (overwritten\ with\ inverse)}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ array\ a}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ info\ Status\ flag\ (0\ for\ success)}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ epsr\ Condition\ number\ threshold\ for\ eigenvalue\ filtering}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ mine\ Number\ of\ neglected\ singular\ directions}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ rank\ Rank\ of\ current\ MPI\ process}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ epssr\ Optional\ shift\ parameter\ for\ diagonal\ elements}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ bands\ Number\ of\ bands\ (for\ SCALAPACK)}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ nlax\ Leading\ dimension\ for\ SCALAPACK\ arrays}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00033}00033\ \textcolor{keyword}{subroutine\ }invsymn(n,\ a,\ lda,\ info,\ epsr,\ mine,\ rank,\ epssr,\ bands,\ nlax)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00035}00035\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00036}00036\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ ortho\_cntx,\ me\_blacs,\ np\_ortho,\ me\_ortho,\ ortho\_comm,\ ortho\_comm\_id}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{use\ }dspev\_module}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00039}00039\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00040}00040\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00041}00041\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00042}00042\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00043}00043\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00044}00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00045}00045\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ The\ input\ \ a\ is\ assumed\ to\ be\ a\ positive\ definite\ matrix.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ The\ output\ a\ is\ the\ inverse\ of\ this\ matrix,\ without\ singular}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ direction\ with\ too\ small\ eigenvalues,\ so\ as\ to\ have}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ condition\ number\ >\ epsr.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Cholesky\ is\ not\ used\ for\ the\ inverse\ since\ for\ matrices\ with}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ very\ small\ condition\ number\ slightly\ negative\ eigenvalues\ can\ appear}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ and\ Choleski\ crash.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ lda,\ info,\ i,\ j,\ lwork,\ mine,\ neig,\ rank,\ ierr,\ neginfo,\ bands,\ nlax}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ integer\ iwork(5*n),ifail(n)}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real*8\ a(lda,n),work(n*8),eig(n),eps,b(n,n),umat(n,n)}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ 1,eigmat(n),premat(n),abstol,dlamch}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00056}00056\ \ \ \ \ real*8\ eps,\ epsr,\ abstol,\ dlamch,\ epssr,\ condnumber,\ cost}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00057}00057\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ work,\ eig,\ eigmat,\ premat}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ iwork,\ ifail}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00059}00059\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ umatl(:,\ :)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00060}00060\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00061}00061\ \textcolor{preprocessor}{}\ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ diag(:,\ :),\ vv(:,\ :),\ overlap(:,\ :)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00062}00062\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ overs(:,\ :)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00063}00063\ \ \ \ \ real*8\ a(nlax,\ nlax)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00064}00064\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00065}00065\ \textcolor{preprocessor}{}\ \ \ \ real*8\ a(lda,\ n)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00066}00066\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ b,\ umat}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keyword}{allocate}\ (b(n,\ n),\ work(30*n),\ eig(n),\ iwork(5*n),\ ifail(n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keyword}{allocate}\ (umat(n,\ n),\ premat(n),\ eigmat(n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00069}00069\ \ \ \ \ b\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00070}00070\ \ \ \ \ work\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00071}00071\ \ \ \ \ eig\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00072}00072\ \ \ \ \ iwork\ =\ 0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00073}00073\ \ \ \ \ ifail\ =\ 0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00074}00074\ \ \ \ \ umat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00075}00075\ \ \ \ \ premat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00076}00076\ \ \ \ \ eigmat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00077}00077\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00078}00078\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00079}00079\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00080}00080\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desch(20)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00081}00081\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desc(descla\_siz\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00082}00082\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ LIWORK,\ ic,\ ir,\ mm,\ nz,\ ii,\ jj,\ ip,\ jp,\ nrlx}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00083}00083\ \ \ \ \ real*8\ ::\ rtmp(10)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00084}00084\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ itmp(10)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00085}00085\ \ \ \ \ real*8\ ::\ pdlamch}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ INDXG2L,\ INDXG2P,\ INDXL2G}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00087}00087\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00088}00088\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00089}00089\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00090}00090\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{allocate}\ (eig(n),\ eigmat(n),\ premat(n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00091}00091\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00092}00092\ \ \ \ \ eig\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00093}00093\ \ \ \ \ eigmat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00094}00094\ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00096}00096\ \ \ \ \ \textcolor{keyword}{call\ }descla\_init(desc,\ n,\ n,\ np\_ortho,\ me\_ortho,\ ortho\_comm,\ ortho\_comm\_id)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(lambda\_node\_)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (umatl(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overlap(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overs(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ umatl\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ overlap\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ ir\ =\ desc(ilar\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ ic\ =\ desc(ilac\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00109}00109\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ abstol\ =\ 2.0d0*pdlamch(ortho\_cntx,\ \textcolor{stringliteral}{'U'})}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ eps\ =\ epsr}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00113}00113\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ abstol}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00115}00115\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }descinit(desch,\ n,\ n,\ desc(nlax\_),\ desc(nlax\_),\ 0,\ 0,\ ortho\_cntx,\ \textcolor{keyword}{size}(umatl,\ 1),\ info)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ cdiaghg\ '},\ \textcolor{stringliteral}{'\ desckinit\ '},\ abs(info))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00119}00119\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ a(i,\ j)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (epssr\ .gt.\ 0.d0\ .and.\ (i\ +\ ir\ .eq.\ j\ +\ ic))\ overs(i,\ j)\ =\ overs(i,\ j)*(1.d0\ +\ epssr)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00125}00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ nrlx\ =\ desc(la\_nrlx\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00128}00128\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (diag(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ diag\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blk2cyc\_redist(n,\ diag,\ nrlx,\ overs,\ \textcolor{keyword}{size}(overs,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ diag,\ nrlx,\ eig,\ vv,\ nrlx,\ desc(la\_nrl\_),\ n,\ \&}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00136}00136\ \ \ \ \ \ \ \&desc(la\_npr\_)*desc(la\_npc\_),\ desc(la\_me\_),\ desc(la\_comm\_),\ eps,\ 0)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cyc2blk\_redist(n,\ vv,\ nrlx,\ umatl,\ \textcolor{keyword}{size}(umatl,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (diag,\ vv)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00146}00146\ \textcolor{comment}{!\ \ \ \ \ \ \ IF(\ info\ /=\ 0\ )\ CALL\ errore(\ '\ D\ 02\ ',\ '\ PDSYEVD\ ',\ info\ )}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00147}00147\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Eigenvalues\ inside\ \ inverse\ '}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)/eig(n)\ .gt.\ eps)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ i,\ eig(i)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/eig(i))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00157}00157\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00158}00158\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00159}00159\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(j\ +\ ic\ -\/\ 1)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ umatl(i,\ j)*premat(i\ +\ ir\ -\/\ 1)*eigmat(j\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00165}00165\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00166}00166\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00167}00167\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00168}00168\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00169}00169\ \textcolor{comment}{!\ \ \ \ \ \ \ \ it\ should\ be\ authomatically\ symmetric}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ n,\ n,\ n,\ 1.d0,\ overs,\ 1,\ 1,\ desch,\ overs,\ 1,\ 1,\ desch,\ 0.d0,\ a,\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ neglecting'},\ mine\ -\/\ 1,\ \textcolor{stringliteral}{'directions\ in\ SDV'}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00174}00174\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ condnumber\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs(eig(i)/eig(n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ condnumber)\ condnumber\ =\ cost}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00181}00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00182}00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Condition\ number\ basis\ set\ '},\ condnumber}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (overs)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (umatl)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (overlap)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00189}00189\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00190}00190\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00191}00191\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00192}00192\ \ \ \ \ \textcolor{keyword}{deallocate}\ (eig,\ eigmat,\ premat)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00193}00193\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00194}00194\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00195}00195\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00196}00196\ \ \ \ \ b\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00197}00197\ \ \ \ \ work\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00198}00198\ \ \ \ \ umat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00199}00199\ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00200}00200\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ There\ is\ numerical\ instability\ to\ use\ premat\ ne\ 1}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00201}00201\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ the\ orthogonality\ of\ the\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00202}00202\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ with\ respect\ to\ the\ metric\ given\ by\ overs\ \ is\ poorly\ satisfied}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00203}00203\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if\ premat\ ne\ 1\ is\ used.}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00204}00204\ \ \ \ \ eigmat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00205}00205\ \ \ \ \ eig\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00206}00206\ \ \ \ \ iwork\ =\ 0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00207}00207\ \ \ \ \ ifail\ =\ 0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00208}00208\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00209}00209\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Now\ the\ inverse\ of\ this\ matrix\ using\ SDV\ diagonalization}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00210}00210\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ by\ eliminating\ the\ irrelevant\ directions}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00211}00211\ \ \ \ \ lwork\ =\ 30*n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00213}00213\ \ \ \ \ eps\ =\ abs(epsr)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00214}00214\ \ \ \ \ \textcolor{comment}{!\ maximum\ accuracy}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00215}00215\ \ \ \ \ abstol\ =\ 2.d0*dlamch(\textcolor{stringliteral}{'S'})}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00216}00216\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00217}00217\ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ abstol}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00218}00218\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00219}00219\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ a(i,\ j)\ =\ premat(i)*premat(j)*a(i,\ j)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00222}00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00223}00223\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00224}00224\ \ \ \ \ \textcolor{keywordflow}{if}\ (epssr\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ a(i,\ i)\ =\ a(i,\ i)*(1.d0\ +\ epssr)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00227}00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00228}00228\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00230}00230\ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ n,\ a,\ lda,\ 0.d0,\ 0.d0,\ 1,\ 1,\ abstol\&}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ neig,\ eig,\ umat,\ n,\ work,\ lwork,\ iwork,\ ifail,\ info)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00232}00232\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00233}00233\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Eigenvalues\ inside\ \ inverse\ '}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00234}00234\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00235}00235\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)/eig(n)\ .gt.\ eps)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ i,\ eig(i)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/eig(i))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00242}00242\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00243}00243\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00244}00244\ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0\ .and.\ rank\ .eq.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ info\ >\ 0\ in\ dsyevx\ !!!\ '},\ info}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00246}00246\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00247}00247\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ info}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(ifail(i))\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(ifail(i))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00251}00251\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00252}00252\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00254}00254\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ positive\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00255}00255\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(j)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ premat(i)*umat(i,\ j)*eigmat(j)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00259}00259\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ b(:,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00262}00262\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00263}00263\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00264}00264\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00265}00265\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ it\ should\ be\ authomatically\ symmetric}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00266}00266\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ n,\ n,\ n,\ 1.d0,\ b,\ n,\ b,\ n,\ 0.d0,\ a,\ lda)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00267}00267\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00268}00268\ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ neglecting'},\ mine\ -\/\ 1,\ \textcolor{stringliteral}{'directions\ in\ SDV'}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00269}00269\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ condnumber\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs(eig(i)/eig(n))}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ condnumber)\ condnumber\ =\ cost}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00275}00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00276}00276\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Condition\ number\ basis\ set\ '},\ condnumber}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00278}00278\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00280}00280\ \ \ \ \ \textcolor{keyword}{deallocate}\ (b,\ work,\ eig,\ iwork,\ ifail,\ umat,\ premat,\ eigmat)}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00281}00281\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00282}00282\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00283}00283\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{invsymn_8f90_source_l00284}00284\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

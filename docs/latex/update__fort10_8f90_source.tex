@@ -1,0 +1,784 @@
+\doxysection{update\+\_\+fort10.\+f90}
+\hypertarget{update__fort10_8f90_source}{}\label{update__fort10_8f90_source}\index{src/a\_prep/update\_fort10.f90@{src/a\_prep/update\_fort10.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00016}00016\ \textcolor{comment}{!\ This\ subroutine\ is\ called\ at\ the\ beginning\ of\ the\ self-\/consistent\ cycle}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00017}00017\ \textcolor{comment}{!\ and\ it\ reads\ the\ molecular\ orbitals\ from\ the\ input\ real\ or\ complex\ wave}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00018}00018\ \textcolor{comment}{!\ function.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00019}00019\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00020}00020\ \textcolor{comment}{!\ Remember:\ ipc\ =\ 1\ -\/-\/>\ real\ wave\ function,\ real\ eigenvectors\ molecorb}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00021}00021\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ipc\ =\ 2\ -\/-\/>\ complex\ wave\ function,\ complex\ eigenvectors\ molecorb}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00022}00022\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @brief\ Reads\ molecular\ orbitals\ from\ input\ wavefunction}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @details\ This\ subroutine\ is\ called\ at\ the\ beginning\ of\ the\ self-\/consistent}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ cycle\ and\ reads\ molecular\ orbitals\ from\ the\ input\ real\ or\ complex}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ wavefunction.\ It\ handles\ both\ symmetric\ and\ non-\/symmetric\ AGP}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ cases,\ processes\ occupation\ numbers,\ and\ sets\ up\ the\ initial}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ molecular\ orbital\ coefficients\ for\ DFT\ calculations.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @note\ ipc\ =\ 1\ for\ real\ wavefunction,\ ipc\ =\ 2\ for\ complex\ wavefunction}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00030}00030\ \textcolor{keyword}{subroutine\ }read\_molecular}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ yeslsda,\ newocc,\ bands,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old,\ molecorbdo\_old}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefreeelmod__complex}{freeelmod\_complex}},\ \textcolor{keywordtype}{only}:\ nozeroc\_in,\ nnozeroc\_in,\ jbradetc\_in,\ jbradetnc\_in,\ nelcolc\_in,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbc\_in,\ niesd\_in,\ iesdrr\_in,\ contraction\_in,\ nmoltot,\ count2n,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ countalln,\ costalln}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00041}00041\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ indpar,\ i,\ j,\ k,\ i\_new,\ j\_new,\ maxup,\ nunpn,\ ind,\ indx,\ indy}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ done}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{!\ by\ definition\ the\ unpaired\ are\ the\ last\ molecular\ orbitals}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00046}00046\ \ \ \ \ indpar\ =\ iesup\_c\ -\/\ 2*molecular*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ read\ also\ occupations\ from\ detmat\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00048}00048\ \ \ \ \ done\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00049}00049\ \ \ \ \ newocc\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00050}00050\ \ \ \ \ count2n\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00051}00051\ \ \ \ \ countalln\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00052}00052\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ save\ initial\ w.f.\ important\ parameters}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00056}00056\ \ \ \ \ niesd\_in\ =\ niesd\ \textcolor{comment}{!\ 1/2\ Jastrow\ parameters}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00057}00057\ \ \ \ \ iesdrr\_in\ =\ iesdrr\ \textcolor{comment}{!\ 1/2\ Jastrow\ type}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00058}00058\ \ \ \ \ contraction\_in\ =\ contraction\ \textcolor{comment}{!\ number\ of\ contracted\ orbitals\ (atomic+molecular)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00059}00059\ \ \ \ \ nelcolc\_in\ =\ nelcol\_c\ \textcolor{comment}{!\ \#\ of\ contracted\ parameters}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00060}00060\ \ \ \ \ nelorbc\_in\ =\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keyword}{allocate}\ (nozeroc\_in(nnozero\_c),\ jbradetc\_in(nnozero\_c),\ jbradetnc\_in(3*nnozero\_c))}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00062}00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ nnozeroc\_in\ =\ nnozero\_c\ \textcolor{comment}{!\ \#\ of\ non-\/zero\ elements\ in\ the\ determinant}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ nozeroc\_in\ =\ nozero\_c\ \textcolor{comment}{!\ addresses\ of\ non-\/zero\ elements\ of\ the\ determinant}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ jbradetc\_in\ =\ jbradet\ \textcolor{comment}{!\ symmetries\ of\ the\ determinant}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ jbradetnc\_in\ =\ jbradetn\ \textcolor{comment}{!\ parameters\ of\ the\ determinant\ locked\ by\ symmetry}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ nnozeroc\_in\ =\ nnozero\_c}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ nozeroc\_in\ =\ nozero}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ jbradetc\_in\ =\ jbradet}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ jbradetnc\_in\ =\ jbradetn}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00074}00074\ \ \ \ \ molecorb\_old\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda\ .or.\ ipc\ .eq.\ 2)\ molecorbdo\_old\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,5I6)'})\ \textcolor{stringliteral}{'\ Read\ molecular\ orbitals'},\ nmol,\ nmoltot,\ nelorb\_c,\ nelorbh,\ bands}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .le.\ bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp\ .and.\ ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indx\ =\ nelorb\_c\ -\/\ nmoltot\ +\ i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indy\ =\ nelorb\_c\ -\/\ nmoltot\ +\ i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indx\ =\ nelorb\_c\ -\/\ nmoltot\ +\ 2*i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indy\ =\ indx\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ nelorb\_c*(indy\ -\/\ 1)\ +\ indx}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ ind\ =\ 2*ind\ -\/\ 1\ \textcolor{comment}{!\ Real\ part\ of\ detmat\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ newocc(i)\ =\ detmat\_c(ind)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00090}00090\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (detmat\_c(ind)\ .ne.\ 0.d0)\ countalln\ =\ countalln\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (detmat\_c(ind)\ .eq.\ 1.d0)\ count2n\ =\ count2n\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ real\ case\ with\ symmetric\ AGP}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp\ .and.\ ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(j\ -\/\ nelorbh,\ i)\ =\ dup\_c(indpar\ +\ j)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00100}00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ non-\/symmetric\ AGP\ for\ real\ case\ (spin\ calculation)\ or\ complex\ case}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ real\ case:\ read\ eigenvectors\ for\ down-\/spin\ electrons\ only}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ the\ case\ of\ a\ LSDA\ calculation}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbdo\_old(j\ -\/\ nelorbh,\ i)\ =\ dup\_c(indpar\ +\ j)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(j\ -\/\ nelorbh,\ i)\ =\ dup\_c(indpar\ +\ j\ +\ 2*nelorbh)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00113}00113\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(j\ -\/\ nelorbh,\ i)\ =\ dup\_c(indpar\ +\ j)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00118}00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!\ complex\ case:\ always\ read\ different\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ for\ up/down\ spin\ electrons.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh\ \textcolor{comment}{!\ down}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbdo\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ i)\ =\ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbdo\_old(2*(j\ -\/\ nelorbh),\ i)\ =\ dup\_c(2*(indpar\ +\ j))\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh\ \textcolor{comment}{!\ up}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ i)\ =\ dup\_c(2*(indpar\ +\ j)\ -\/\ 1\ +\ 4*nelorbh)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(2*(j\ -\/\ nelorbh),\ i)\ =\ dup\_c(2*(indpar\ +\ j)\ +\ 4*nelorbh)\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00128}00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00129}00129\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ done)\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning\ not\ all\ orbitals\ are\ read\ from\ fort10'}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ done\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00135}00135\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .or.\ ipc\ .eq.\ 2)\ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00138}00138\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00139}00139\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00141}00141\ \ \ \ \ \textcolor{keywordflow}{if}\ (ndiff\ .gt.\ 0\ .and.\ rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Read\ unpaired\ molecular\ orbitals'}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nmol\ +\ 1,\ nmol\ +\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ i\_new\ =\ i\ -\/\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ j\_new\ =\ nelorb\_c\ -\/\ ndiff\ +\ i\_new}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ ind\ =\ nelorb\_c*(nelorb\_c\ +\ i\_new\ -\/\ 1)\ +\ j\_new}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ newocc(bands\ +\ i\_new)\ =\ -\/abs(detmat\_c(ind))}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ newocc(bands\ +\ i\_new)\ =\ -\/abs(detmat\_c(2*ind\ -\/\ 1))}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ ind\ =\ i\ -\/\ nmol\ +\ bands\ -\/\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(j\ -\/\ nelorbh,\ i)\ =\ dup\_c(indpar\ +\ j)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ i)\ =\ dup\_c(2*indpar\ +\ 2*j\ -\/\ 1)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_old(2*(j\ -\/\ nelorbh),\ i)\ =\ dup\_c(2*indpar\ +\ 2*j)\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00158}00158\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00159}00159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00160}00160\ \textcolor{comment}{!\ \ \ \ \ if(rank.eq.0)\ \ write(6,*)\ i,sum(dup\_c(indpar+nelorbh+1:indpar+2*nelorbh))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00162}00162\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00163}00163\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00164}00164\ \ \ \ \ \textcolor{comment}{!\ definition\ of\ costalln}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00165}00165\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00166}00166\ \ \ \ \ maxup\ =\ (countalln\ -\/\ count2n)\ -\/\ (neldo\ -\/\ count2n)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00167}00167\ \ \ \ \ \textcolor{keywordflow}{if}\ (countalln\ .gt.\ count2n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxup\ .gt.\ ndiff)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ nunpn\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ costalln\ =\ dble(neldo\ +\ nelup\ -\/\ 2*count2n)/dble(countalln\ -\/\ count2n)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ nunpn\ =\ ndiff\ -\/\ maxup}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ costalln\ =\ dble(neldo\ +\ nelup\ -\/\ 2*count2n\ -\/\ nunpn)/dble(countalln\ -\/\ count2n)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00174}00174\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00175}00175\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (maxup\ .gt.\ ndiff)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ nunpn\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ costalln\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ nunpn\ =\ ndiff\ -\/\ maxup}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ costalln\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00182}00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00187}00187\ \textcolor{keyword}{end\ subroutine\ }read\_molecular}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00188}00188\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00189}00189\ \textcolor{comment}{!\ This\ subroutine\ is\ called\ at\ the\ end\ of\ the\ self-\/consistent}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00190}00190\ \textcolor{comment}{!\ cycle.\ It\ updates\ the\ wave\ function\ (written\ in\ the\ file\ fort.10\_new)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00191}00191\ \textcolor{comment}{!\ with\ the\ new\ molecular\ orbitals,\ eigenvectors\ of\ the\ converged\ Kohn-\/Sham\ hamiltonian.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00192}00192\ \textcolor{comment}{!\ It\ also\ recomputes\ all\ symmetries\ of\ the\ orbitals\ and\ update\ several\ variables}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00193}00193\ \textcolor{comment}{!\ needed\ by\ the\ subroutine\ write\_fort10().}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00194}00194\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00195}00195\ \textcolor{comment}{!\ Remember:\ ipc\ =\ 1\ -\/-\/>\ real\ wave\ function,\ real\ eigenvectors\ molecorb}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00196}00196\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ipc\ =\ 2\ -\/-\/>\ complex\ wave\ function,\ complex\ eigenvectors\ molecorb}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00197}00197\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00198}00198\ \textcolor{comment}{!>\ @brief\ Updates\ wavefunction\ with\ converged\ Kohn-\/Sham\ molecular\ orbitals}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00199}00199\ \textcolor{comment}{!>\ @details\ This\ subroutine\ is\ called\ at\ the\ end\ of\ the\ self-\/consistent\ cycle}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00200}00200\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ updates\ the\ wavefunction\ (written\ in\ fort.10\_new)\ with\ the\ new}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00201}00201\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ molecular\ orbitals,\ which\ are\ eigenvectors\ of\ the\ converged\ Kohn-\/Sham}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00202}00202\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Hamiltonian.\ It\ recomputes\ all\ orbital\ symmetries\ and\ updates\ several}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00203}00203\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ variables\ needed\ by\ the\ write\_fort10()\ subroutine.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00204}00204\ \textcolor{comment}{!>\ @note\ ipc\ =\ 1\ for\ real\ wavefunction,\ ipc\ =\ 2\ for\ complex\ wavefunction}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00205}00205\ \textcolor{keyword}{subroutine\ }update\_fort10}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00207}00207\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00208}00208\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00209}00209\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ molecorb\_old,\ molecorbdo\_old}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ bands,\ yeslsda,\ occupations,\ occupationdo}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00211}00211\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefreeelmod__complex}{freeelmod\_complex}},\ \textcolor{keywordtype}{only}:\ contraction\_in,\ nelcolc\_in,\ nelorbc\_in,\ yest,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbradetc\_in,\ jbradetnc\_in,\ nnozeroc\_in,\ nozeroc\_in,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ countall,\ optocc,\ iesswrc\_in,\ iesup\_cmol,\ nmoltot,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iesupindmol,\ iesupr\_cmol,\ indnn\_in,\ inddiff,\ inds,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecsw,\ nmol\_in,\ nelocc,\ neloccdo,\ nshellmol,\ occ\_cmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00216}00216\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00217}00217\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00218}00218\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00219}00219\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ k,\ ii,\ jj,\ kk,\ dimvect,\ icount1,\ icount2,\ indfirst,\ \&}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indlast,\ ind,\ indpar,\ indx,\ indy,\ occmax}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00221}00221\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ indexo,\ indexn}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00222}00222\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sortvect}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00223}00223\ \ \ \ \ \textcolor{keywordtype}{logical}\ found1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00224}00224\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00225}00225\ \ \ \ \ \textcolor{comment}{!\ nmoltot\ -\/>\ total\ number\ of\ molecular\ orbitals\ +\ unpaired\ electrons}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00226}00226\ \ \ \ \ nmoltot\ =\ nmol\ +\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00227}00227\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .or.\ ipc\ .eq.\ 2)\ nmoltot\ =\ nmoltot\ +\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00228}00228\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00229}00229\ \textcolor{comment}{!\ \ \ \ deallocate(ipsip)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00230}00230\ \textcolor{comment}{!\ \ \ \ allocate(ipsip(nshell\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00231}00231\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00232}00232\ \textcolor{comment}{!\ \ \ \ nshell\_c\ =\ nshell\_c\ -\/\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00233}00233\ \textcolor{comment}{!\ \ \ \ nshellmol\ =\ nshell\_c\ +\ nmoltot}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00234}00234\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00235}00235\ \ \ \ \ \textcolor{comment}{!\ mult\_c\ -\/>\ orbitals\ multiplicity}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00236}00236\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ mult\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00237}00237\ \textcolor{comment}{!\ \ \ \ deallocate(mult\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00238}00238\ \textcolor{comment}{!\ \ \ \ allocate(mult\_c(nshellmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00239}00239\ \textcolor{comment}{!\ \ \ \ mult\_c(1:nshell\_c)\ =\ ipsip(1:nshell\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00240}00240\ \textcolor{comment}{!\ \ \ \ mult\_c(nshell\_c\ +\ 1:nshellmol)\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00241}00241\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00242}00242\ \ \ \ \ \textcolor{comment}{!\ nparam\_c\ -\/>\ basis\ set\ parameters}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00243}00243\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ nparam\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00244}00244\ \textcolor{comment}{!\ \ \ \ deallocate(nparam\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00245}00245\ \textcolor{comment}{!\ \ \ \ allocate(nparam\_c(nshellmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00246}00246\ \textcolor{comment}{!\ \ \ \ nparam\_c(1:nshell\_c)\ =\ ipsip(1:nshell\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00247}00247\ \textcolor{comment}{!\ \ \ \ nparam\_c(nshell\_c\ +\ 1:nshellmol)\ =\ 2\ *\ nelorbh}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00248}00248\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00249}00249\ \ \ \ \ \textcolor{comment}{!\ ioptorb\_c\ -\/>\ orbitals\ type}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00250}00250\ \ \ \ \ \textcolor{comment}{!\ ioptorb\_c\ =\ 1000000\ -\/>\ molecular\ orbital}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00251}00251\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ ioptorb\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00252}00252\ \textcolor{comment}{!\ \ \ \ deallocate(ioptorb\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00253}00253\ \textcolor{comment}{!\ \ \ \ allocate(ioptorb\_c(nshellmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00254}00254\ \textcolor{comment}{!\ \ \ \ ioptorb\_c(1:nshell\_c)\ =\ ipsip(1:nshell\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00255}00255\ \textcolor{comment}{!\ \ \ \ ioptorb\_c(nshell\_c\ +\ 1:nshellmol)\ =\ 1000000}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00257}00257\ \ \ \ \ \textcolor{comment}{!\ kion\_c\ -\/>\ ion\ type\ in\ a\ particular\ shell}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00258}00258\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ kion\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00259}00259\ \textcolor{comment}{!\ \ \ \ deallocate(kion\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00260}00260\ \textcolor{comment}{!\ \ \ \ allocate(kion\_c(nshellmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00261}00261\ \textcolor{comment}{!\ \ \ \ kion\_c(1:nshell\_c)\ =\ ipsip(1:nshell\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00262}00262\ \textcolor{comment}{!\ \ \ \ kion\_c(nshell\_c\ +\ 1:nshellmol)\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00263}00263\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00264}00264\ \ \ \ \ \textcolor{comment}{!\ redefinition\ of\ matrix\ dup\_c\ with\ the}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00265}00265\ \ \ \ \ \textcolor{comment}{!\ new\ MOs\ coefficients\ taken\ from\ the\ KS\ cycle.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00266}00266\ \textcolor{comment}{!\ \ \ \ if(allocated(psip))\ deallocate(psip)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00267}00267\ \textcolor{comment}{!\ \ \ \ allocate(psip(ipc\ *\ iesupr\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00268}00268\ \textcolor{comment}{!\ \ \ \ psip(1:ipc\ *\ iesupr\_c)\ =\ dup\_c(1:ipc\ *\ iesupr\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00269}00269\ \textcolor{comment}{!\ \ \ \ deallocate(dup\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00270}00270\ \textcolor{comment}{!\ \ \ \ if(molecular.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00271}00271\ \textcolor{comment}{!\ \ \ \ \ \ \ \ iesup\_cmol\ =\ iesup\_c\ +\ 2\ *\ nmoltot\ *\ nelorbh}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00272}00272\ \textcolor{comment}{!\ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00273}00273\ \textcolor{comment}{!\ \ \ \ \ \ \ \ iesup\_cmol\ =\ iesup\_c\ +\ 2\ *\ (nmoltot\ -\/\ molecular)\ *\ nelorbh}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00274}00274\ \textcolor{comment}{!\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00275}00275\ \textcolor{comment}{!\ \ \ \ iesupr\_cmol\ =\ iesup\_cmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00276}00276\ \textcolor{comment}{!\ \ \ \ if(yeszagp)\ iesupr\_cmol\ =\ 2\ *\ iesupr\_cmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00277}00277\ \textcolor{comment}{!\ \ \ \ allocate(dup\_c(ipc\ *\ iesupr\_cmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00278}00278\ \textcolor{comment}{!\ \ \ \ dup\_c\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00279}00279\ \ \ \ \ \textcolor{comment}{!\ select\ the\ MOs\ part\ of\ dup\_c\ matrix\ only\ and}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00280}00280\ \ \ \ \ \textcolor{comment}{!\ do\ not\ change\ the\ atomic\ one.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00281}00281\ \ \ \ \ indpar\ =\ iesup\_c\ -\/\ 2*molecular*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00282}00282\ \textcolor{comment}{!\ \ \ \ dup\_c(1:ipc\ *\ indpar)\ =\ psip(1:ipc\ *\ indpar)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00283}00283\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00284}00284\ \ \ \ \ \textcolor{comment}{!\ NB:\ in\ the\ case\ of\ a\ complex\ wave\ function,\ always\ consider\ the\ AGP}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00285}00285\ \ \ \ \ \textcolor{comment}{!\ non\ symmetric\ (as\ symmagp=.false.)\ and\ therefore\ I\ have\ different}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00286}00286\ \ \ \ \ \textcolor{comment}{!\ eigenvectors\ for\ spin\ up/down\ electrons.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00287}00287\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00288}00288\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00289}00289\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00297}00297\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00298}00298\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .le.\ bands)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ fill\ only\ MOs\ smaller\ than\ bands\ value}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ yeslsda\ .and.\ ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00302}00302\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ molecorb\_old(j\ -\/\ nelorbh,\ i)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00305}00305\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ for\ real\ functions\ the\ spin-\/down\ part\ for\ non-\/symmetric\ lambda}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equal\ to\ the\ spin-\/up\ part\ if\ no\ LSDA\ functional\ is\ used}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00312}00312\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ molecorb\_old(j\ -\/\ nelorbh,\ i)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00315}00315\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00316}00316\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00317}00317\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!\ LSDA\ calculation\ or\ complex\ wave\ function,\ different\ eigenvectors\ for\ up/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00319}00319\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00320}00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ molecorbdo\_old(j\ -\/\ nelorbh,\ i)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00323}00323\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00324}00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00326}00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ molecorbdo\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ i)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ molecorbdo\_old(2*(j\ -\/\ nelorbh),\ i)\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00328}00328\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00329}00329\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00330}00330\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00335}00335\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ molecorb\_old(j\ -\/\ nelorbh,\ i)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00338}00338\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00340}00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00343}00343\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ molecorb\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ i)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ molecorb\_old(2*(j\ -\/\ nelorbh),\ i)\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00347}00347\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00348}00348\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00349}00349\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00350}00350\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00351}00351\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!\ MOs\ index\ greater\ than\ number\ of\ bands\ required\ in\ input}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00353}00353\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00357}00357\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00360}00360\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00365}00365\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2*nelorbh\ +\ 1,\ 4*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*indpar\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00368}00368\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00369}00369\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00370}00370\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00376}00376\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00379}00379\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00384}00384\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2*nelorbh\ +\ 1,\ 4*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*indpar\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00387}00387\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00388}00388\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00389}00389\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00390}00390\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00391}00391\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ i.le.bands}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00393}00393\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00394}00394\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00395}00395\ \ \ \ \ \textcolor{comment}{!\ now\ filling\ the\ unpaired\ electrons\ in\ the\ last\ positions\ of\ dup\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00396}00396\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00397}00397\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nmol\ +\ 1,\ nmol\ +\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00398}00398\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (optocc\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ In\ any\ case\ the\ last\ ones}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ nelocc\ +\ i\ -\/\ nmol\ -\/\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ neldo\ +\ i\ -\/\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00404}00404\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00408}00408\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(indpar\ +\ j)\ =\ molecorb\_old(j\ -\/\ nelorbh,\ ind)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00411}00411\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ j\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ 0.d0\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00416}00416\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorbh\ +\ 1,\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j)\ -\/\ 1)\ =\ molecorb\_old(2*(j\ -\/\ nelorbh)\ -\/\ 1,\ ind)\ \textcolor{comment}{!\ Re}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00419}00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dup\_c(2*(indpar\ +\ j))\ =\ molecorb\_old(2*(j\ -\/\ nelorbh),\ ind)\ \textcolor{comment}{!\ Im}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00420}00420\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00421}00421\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ 2*nelorbh}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00423}00423\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00424}00424\ \textcolor{keywordflow}{\ \ \ \ end\ do}\ \textcolor{comment}{!\ enddo\ i=nmol+1,nmol+ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00425}00425\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00426}00426\ \ \ \ \ \textcolor{comment}{!\ if\ optimization\ of\ Z,\ required\ double\ dimension\ of\ dup\_c\ matrix}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00427}00427\ \ \ \ \ \textcolor{comment}{!\ necessary\ for\ write\_fort10()}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00428}00428\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00429}00429\ \textcolor{comment}{!\ \ \ \ if(yeszagp)\ \&}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00430}00430\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ dup\_c(ipc\ *\ iesup\_cmol\ +\ 1:ipc\ *\ iesupr\_cmol)\ =\ dup\_c(1:ipc\ *\ iesup\_cmol)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00431}00431\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00432}00432\ \textcolor{comment}{!\ \ \ \ deallocate(ipsip)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00433}00433\ \textcolor{comment}{!\ \ \ \ allocate(ipsip(occ\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00434}00434\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ ioccup\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00435}00435\ \textcolor{comment}{!\ \ \ \ deallocate(ioccup\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00436}00436\ \textcolor{comment}{!\ \ \ \ occ\_cmol\ =\ occ\_c\ +\ nmoltot\ -\/\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00437}00437\ \textcolor{comment}{!\ \ \ \ allocate(ioccup\_c(occ\_cmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00438}00438\ \textcolor{comment}{!\ \ \ \ if(occ\_cmol.gt.occ\_c)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00439}00439\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ioccup\_c(1:occ\_c)\ =\ ipsip(1:occ\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00440}00440\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ioccup\_c(occ\_c\ +\ 1:occ\_cmol)\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00441}00441\ \textcolor{comment}{!\ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00442}00442\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ioccup\_c(1:occ\_cmol)\ =\ ipsip(1:occ\_cmol)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00443}00443\ \textcolor{comment}{!\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00444}00444\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00445}00445\ \textcolor{comment}{!\ \ \ \ contraction\ =\ contraction\ +\ nmoltot\ -\/\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00446}00446\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00447}00447\ \textcolor{comment}{!\ \ \ \ if(allocated(detmat\_c))\ deallocate(detmat\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00448}00448\ \textcolor{comment}{!\ \ \ \ if(allocated(nozero\_c))\ deallocate(nozero\_c)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00449}00449\ \textcolor{comment}{!\ \ \ \ deallocate(jbradet,\ jbradetn)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00450}00450\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00451}00451\ \textcolor{comment}{!\ \ \ \ if(molecular.gt.0)\ nelorb\_c\ =\ nelorb\_c\ -\/\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00452}00452\ \textcolor{comment}{!\ \ \ \ nelorb\_c\ =\ nelorb\_c\ +\ nmoltot}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00453}00453\ \textcolor{comment}{!\ \ \ \ nelcol\_c\ =\ nelorb\_c\ +\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00454}00454\ \textcolor{comment}{!\ \ \ \ allocate(detmat\_c(ipc\ *\ nelorb\_c\ *\ nelcol\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00455}00455\ \ \ \ \ detmat\_c\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00456}00456\ \ \ \ \ ind\ =\ nnozero\_c\ -\/\ nmoltot}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00457}00457\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .or.\ ipc\ .eq.\ 2)\ ind\ =\ ind\ +\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00458}00458\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00459}00459\ \textcolor{comment}{!\ \ \ \ if(molecular.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00460}00460\ \textcolor{comment}{!\ \ \ \ \ \ \ \ nnozero\_c\ =\ nnozeroc\_in\ +\ nmol\ +\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00461}00461\ \textcolor{comment}{!\ \ \ \ \ \ \ \ iesswrc\_in\ =\ iesswr}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00462}00462\ \textcolor{comment}{!\ \ \ \ \ \ \ \ iesswr\ =\ iesswr\ +\ nmol\ +\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00463}00463\ \textcolor{comment}{!\ \ \ \ \ \ \ \ molecsw\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00464}00464\ \textcolor{comment}{!\ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00465}00465\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(symmagp.and.ipc.eq.1)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00466}00466\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nmol\_in\ =\ molecular\ -\/\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00467}00467\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ molecsw\ =\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00468}00468\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nnozeroc\_in\ =\ nnozeroc\_in\ -\/\ molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00469}00469\ \textcolor{comment}{!!\ \ \ \ \ \ \ \ \ \ \ \ iesswrc\_in\ =\ iesswr\ -\/\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00470}00470\ \textcolor{comment}{!\ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00471}00471\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nmol\_in\ =\ (molecular\ -\/\ ndiff)\ /\ 2}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00472}00472\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ molecsw\ =\ molecular\ -\/\ nmol\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00473}00473\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nnozeroc\_in\ =\ nnozeroc\_in\ -\/\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00474}00474\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ !nnozeroc\_in=nnozeroc\_in-\/molecular}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00475}00475\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ iesswrc\_in\ =\ iesswr\ -\/\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00476}00476\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00477}00477\ \textcolor{comment}{!\ \ \ \ \ \ \ \ nnozero\_c\ =\ nnozeroc\_in\ +\ nmol\ +\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00478}00478\ \textcolor{comment}{!\ \ \ \ \ \ \ \ iesswr\ =\ iesswrc\_in\ +\ nmol\ +\ ndiff}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00479}00479\ \textcolor{comment}{!\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00480}00480\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00481}00481\ \textcolor{comment}{!\ \ \ \ allocate(nozero\_c(nnozero\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00482}00482\ \textcolor{comment}{!\ \ \ \ allocate(jbradet(nnozero\_c),\ jbradetn(3\ *\ nnozero\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00483}00483\ \textcolor{comment}{!\ \ \ \ nozero\_c\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00484}00484\ \textcolor{comment}{!\ \ \ \ jbradet\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00485}00485\ \textcolor{comment}{!\ \ \ \ jbradetn\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00486}00486\ \textcolor{comment}{!\ \ \ \ if(allocated(ipsip))\ deallocate(ipsip)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00487}00487\ \textcolor{comment}{!\ \ \ \ allocate(ipsip(3\ *\ nnozero\_c))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00488}00488\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00489}00489\ \textcolor{comment}{!\ \ \ \ dimvect\ =\ nnozeroc\_in\ +\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00490}00490\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00491}00491\ \textcolor{comment}{!\ \ \ \ allocate(indexo(dimvect))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00492}00492\ \textcolor{comment}{!\ \ \ \ indexo\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00493}00493\ \textcolor{comment}{!\ \ \ \ allocate(sortvect(dimvect\ +\ 1))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00494}00494\ \textcolor{comment}{!\ \ \ \ sortvect\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00495}00495\ \textcolor{comment}{!\ \ \ \ sortvect(1:dimvect)\ =\ abs(jbradetc\_in(1:dimvect))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00496}00496\ \textcolor{comment}{!\ \ \ \ call\ dsortx(sortvect,\ 1,\ dimvect,\ indexo)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00497}00497\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00498}00498\ \textcolor{comment}{!\ \ \ \ jbradet\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00499}00499\ \textcolor{comment}{!\ \ \ \ jbradetn\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00500}00500\ \textcolor{comment}{!\ \ \ \ icount1\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00501}00501\ \textcolor{comment}{!\ \ \ \ !\ individuation\ indnn}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00502}00502\ \textcolor{comment}{!\ \ \ \ indnn\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00503}00503\ \textcolor{comment}{!\ \ \ \ indnn\_in\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00504}00504\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00505}00505\ \ \ \ \ \textcolor{comment}{!\ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00506}00506\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ 'INFO:',iesswrc\_in,iesswr,molecsw,nnozeroc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00507}00507\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ 'INFO:',molecular,dimvect,nmol,nmol\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00508}00508\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ 'INFO:',iesup\_cmol,iesupr\_c,iesupr\_cmol,iesupind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00509}00509\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i\ =\ 1,nnozeroc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00510}00510\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\#',i,nozeroc\_in(i)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00511}00511\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00512}00512\ \ \ \ \ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00513}00513\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00514}00514\ \textcolor{comment}{!\ \ \ \ do\ i\ =\ 1,\ iesswrc\_in\ +\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00515}00515\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ind\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00516}00516\ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ while(sortvect(icount1).lt.i.and.icount1.le.dimvect)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00517}00517\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00518}00518\ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00519}00519\ \textcolor{comment}{!\ \ \ \ \ \ \ \ !\ check\ the\ very\ last}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00520}00520\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(icount1.le.dimvect)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00521}00521\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ while(sortvect(icount1).eq.i.and.icount1.le.dimvect)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00522}00522\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00523}00523\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00524}00524\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00525}00525\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ -\/\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00526}00526\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00527}00527\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00528}00528\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(ind.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00529}00529\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ indnn\ =\ indnn\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00530}00530\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ !\ load\ ipsip}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00531}00531\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ipsip(1)\ =\ jbradetnc\_in(indnn)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00532}00532\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ ipsip(1)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00533}00533\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ yest\ =\ .true.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00534}00534\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ j\ =\ 1,\ -\/2\ *\ ii,\ 2}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00535}00535\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(j\ +\ 1)\ =\ jbradetnc\_in(j\ +\ indnn)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00536}00536\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(j\ +\ 2)\ =\ jbradetnc\_in(j\ +\ 1\ +\ indnn)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00537}00537\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if((abs(ipsip(j\ +\ 1)).gt.nelorbc\_in\ -\/\ molecular\&}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00538}00538\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.and.abs(ipsip(j\ +\ 1)).le.nelorbc\_in)\&}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00539}00539\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.(abs(ipsip(j\ +\ 2)).gt.nelorbc\_in\ -\/\ molecular.and.\&}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00540}00540\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&abs(ipsip(j\ +\ 2)).le.nelorbc\_in))\ yest\ =\ .false.}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00541}00541\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00542}00542\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ if(yest)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00543}00543\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ j\ =\ 1,\ -\/2\ *\ ii\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00544}00544\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(ipsip(j).gt.nelorbc\_in.and.j.ne.1)\ ipsip(j)\ =\ ipsip(j)\ +\ nelorb\_c\ -\/\ nelorbc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00545}00545\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbradetn(indnn\_in\ +\ j)\ =\ ipsip(j)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00546}00546\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00547}00547\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnn\_in\ =\ indnn\_in\ +\ 1\ -\/\ 2\ *\ ii}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00548}00548\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00549}00549\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ indnn\ =\ indnn\ -\/\ 2\ *\ ii}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00550}00550\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00551}00551\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00552}00552\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00553}00553\ \textcolor{comment}{!\ \ \ \ deallocate(indexo,\ sortvect)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00554}00554\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00555}00555\ \textcolor{comment}{!\ \ \ \ if(molecular.ne.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00556}00556\ \textcolor{comment}{!\ \ \ \ \ \ \ \ inddiff\ =\ (indnn\ -\/\ indnn\_in)\ /\ 3}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00557}00557\ \textcolor{comment}{!\ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00558}00558\ \textcolor{comment}{!\ \ \ \ \ \ \ \ inddiff\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00559}00559\ \textcolor{comment}{!\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00560}00560\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00561}00561\ \textcolor{comment}{!\ \ \ \ ind\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00562}00562\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00563}00563\ \textcolor{comment}{!\ \ \ \ do\ i\ =\ 1,\ nnozeroc\_in\ +\ molecsw}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00564}00564\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00565}00565\ \textcolor{comment}{!\ \ \ \ \ \ \ \ indy\ =\ (nozeroc\_in(i)\ -\/\ 1)\ /\ nelorbc\_in\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00566}00566\ \textcolor{comment}{!\ \ \ \ \ \ \ \ indx\ =\ nozeroc\_in(i)\ -\/\ (indy\ -\/\ 1)\ *\ nelorbc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00567}00567\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00568}00568\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(indx.le.nelorbc\_in\ -\/\ molecular.and.indy.le.nelorbc\_in\ -\/\ molecular)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00569}00569\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00570}00570\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ jbradet(ind)\ =\ jbradetc\_in(i)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00571}00571\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nozero\_c(ind)\ =\ (indy\ -\/\ 1)\ *\ nelorb\_c\ +\ indx}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00572}00572\ \textcolor{comment}{!\ \ \ \ \ \ \ \ elseif(indx.le.nelorbc\_in\ -\/\ molecular.and.indy.gt.nelorbc\_in)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00573}00573\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00574}00574\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ jbradet(ind)\ =\ jbradetc\_in(i)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00575}00575\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ nozero\_c(ind)\ =\ (indy\ +\ nelorb\_c\ -\/\ nelorbc\_in\ -\/\ 1)\ *\ nelorb\_c\ +\ indx}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00576}00576\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00577}00577\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00578}00578\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00579}00579\ \ \ \ \ \textcolor{comment}{!\ now\ sort\ jbradet}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00580}00580\ \textcolor{comment}{!\ \ \ \ dimvect\ =\ ind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00581}00581\ \textcolor{comment}{!\ \ \ \ allocate(indexo(dimvect),\ indexn(dimvect))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00582}00582\ \textcolor{comment}{!\ \ \ \ indexo\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00583}00583\ \textcolor{comment}{!\ \ \ \ indexn\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00584}00584\ \textcolor{comment}{!\ \ \ \ allocate(sortvect(dimvect\ +\ 1))\ !\ Important\ ovedundant\ allocation}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00585}00585\ \textcolor{comment}{!\ \ \ \ sortvect\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00586}00586\ \textcolor{comment}{!\ \ \ \ sortvect(1:dimvect)\ =\ abs(jbradet(1:dimvect))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00587}00587\ \textcolor{comment}{!\ \ \ \ indexn(1:dimvect)\ =\ jbradet(1:dimvect)\ \ !\ save\ the\ value...}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00588}00588\ \textcolor{comment}{!\ \ \ \ jbradet\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00589}00589\ \textcolor{comment}{!\ \ \ \ inds\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00590}00590\ \textcolor{comment}{!\ \ \ \ i\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00591}00591\ \textcolor{comment}{!\ \ \ \ call\ dsortx(sortvect,\ 1,\ dimvect,\ indexo)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00592}00592\ \textcolor{comment}{!\ \ \ \ icount1\ =\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00593}00593\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00594}00594\ \textcolor{comment}{!\ \ \ \ do\ while(inds.lt.iesswrc\_in.and.i.lt.ind)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00595}00595\ \textcolor{comment}{!\ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00596}00596\ \textcolor{comment}{!\ \ \ \ \ \ \ \ indj\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00597}00597\ \textcolor{comment}{!\ \ \ \ \ \ \ \ !\ Go\ to\ the\ first\ |jbradet|<i}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00598}00598\ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ while(sortvect(icount1).lt.i.and.icount1.le.dimvect)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00599}00599\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00600}00600\ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00601}00601\ \textcolor{comment}{!\ \ \ \ \ \ \ \ !\ If\ you\ are\ not\ at\ the\ end\ count\ how\ many\ |jbradet|\ =i}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00602}00602\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(icount1.le.dimvect)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00603}00603\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ while(sortvect(icount1).eq.i.and.icount1.le.dimvect)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00604}00604\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indj\ =\ indj\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00605}00605\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(indj.eq.1)\ indfirst\ =\ icount1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00606}00606\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00607}00607\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00608}00608\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ !\ At\ the\ end\ of\ the\ loop\ the\ condition\ |jbradet|\ /=i\ and\ icount1=icount1-\/1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00609}00609\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ icount1\ =\ icount1\ -\/\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00610}00610\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ indlast\ =\ icount1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00611}00611\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ if(indj.ne.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00612}00612\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inds\ =\ inds\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00613}00613\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ icount2\ =\ indfirst,\ indlast}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00614}00614\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ indexo(icount2)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00615}00615\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(indexn(j).gt.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00616}00616\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbradet(j)\ =\ inds}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00617}00617\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ elseif(indexn(j).lt.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00618}00618\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbradet(j)\ =\ -\/inds}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00619}00619\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00620}00620\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00621}00621\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00622}00622\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00623}00623\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00624}00624\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00625}00625\ \textcolor{comment}{!\ \ \ \ deallocate(sortvect,\ indexo,\ indexn)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00626}00626\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00627}00627\ \textcolor{comment}{!\ \ \ \ ind\ =\ nnozeroc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00628}00628\ \textcolor{comment}{!\ \ \ \ inds\ =\ iesswrc\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00629}00629\ \ \ \ \ \textcolor{comment}{!\ restored\ indnn\ here\ due\ to\ error\ in\ compiler\ ifort.10}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00630}00630\ \textcolor{comment}{!\ \ \ indnn\ =\ indnn\_in}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00631}00631\ \ \ \ \ occmax\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00632}00632\ \ \ \ \ found1\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00633}00633\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ min(nmol,\ bands)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00634}00634\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00635}00635\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ (occupations(i)\ +\ occupationdo(i))/2.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00636}00636\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.9d0)\ cost\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00637}00637\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00638}00638\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ occupations(i)/2.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00639}00639\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.9d0)\ cost\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00640}00640\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00641}00641\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .eq.\ 1.d0)\ found1\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00642}00642\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ 1.d0\ .and.\ cost\ .gt.\ 1.d0/bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00643}00643\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 0.001d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00644}00644\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (cost\ .lt.\ 1.d0\ .and.\ cost\ .le.\ 1.d0/bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00645}00645\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00646}00646\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00647}00647\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .eq.\ 0\ .and.\ .not.\ found1)\ cost\ =\ 0.001d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00648}00648\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .ne.\ 0.d0)\ occmax\ =\ occmax\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00649}00649\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00650}00650\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00651}00651\ \ \ \ \ ii\ =\ 0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00652}00652\ \ \ \ \ found1\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00653}00653\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmol}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00654}00654\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00655}00655\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp\ .and.\ ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00656}00656\ \ \ \ \ \ \ \ \ \ \ \ \ indx\ =\ nelorb\_c\ -\/\ nmoltot\ +\ i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00657}00657\ \ \ \ \ \ \ \ \ \ \ \ \ indy\ =\ nelorb\_c\ -\/\ nmoltot\ +\ i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00658}00658\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00659}00659\ \ \ \ \ \ \ \ \ \ \ \ \ indx\ =\ nelorb\_c\ -\/\ nmoltot\ +\ 2*i}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00660}00660\ \ \ \ \ \ \ \ \ \ \ \ \ indy\ =\ indx\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00661}00661\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00662}00662\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00663}00663\ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00664}00664\ \textcolor{comment}{!\ \ \ \ \ \ \ nozero\_c(ind)\ =\ nelorb\_c\ *\ (indy\ -\/\ 1)\ +\ indx}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00665}00665\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .le.\ bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00666}00666\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (occupations(i)\ .ne.\ 0.d0)\ ii\ =\ ii\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00667}00667\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ii\ .le.\ countall\ .or.\ optocc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00668}00668\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00669}00669\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00670}00670\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ (occupations(i)\ +\ occupationdo(i))/2.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00671}00671\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.9d0)\ cost\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00672}00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00673}00673\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ occupations(i)/2.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00674}00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.9d0)\ cost\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00675}00675\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00676}00676\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ degenerate\ shell,\ small\ coefficient}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00677}00677\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .eq.\ 1.d0)\ found1\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00678}00678\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00679}00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ 1.d0\ .and.\ cost\ .gt.\ 1.d0/bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00680}00680\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 0.001d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00681}00681\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (cost\ .lt.\ 1.d0\ .and.\ cost\ .le.\ 1.d0/bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00682}00682\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00683}00683\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00684}00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .eq.\ 0\ .and.\ .not.\ found1)\ cost\ =\ 0.001d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00685}00685\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ For\ a\ single\ determinant\ wf\ does\ not\ make\ sense\ to\ put\ 0.001d0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00686}00686\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nmol\ .eq.\ neldo\ .or.\ (occmax\ .le.\ neldo\ .and.\ i\ .le.\ neldo))\ cost\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00687}00687\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00688}00688\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(nozero\_c(ind))\ =\ cost}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00689}00689\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00690}00690\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*nozero\_c(ind)\ -\/\ 1)\ =\ cost}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00691}00691\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00692}00692\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00693}00693\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00694}00694\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00695}00695\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(nozero\_c(ind))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00696}00696\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00697}00697\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*nozero\_c(ind)\ -\/\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00698}00698\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00699}00699\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00700}00700\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00701}00701\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00702}00702\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(nozero\_c(ind))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00703}00703\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00704}00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*nozero\_c(ind)\ -\/\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00705}00705\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00706}00706\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00707}00707\ \textcolor{comment}{!\ \ \ \ \ \ \ indnn\ =\ indnn\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00708}00708\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn)\ =\ -\/1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00709}00709\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn\ +\ 1)\ =\ indx}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00710}00710\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn\ +\ 2)\ =\ indy}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00711}00711\ \textcolor{comment}{!\ \ \ \ \ \ \ indnn\ =\ indnn\ +\ 2}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00712}00712\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00713}00713\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00714}00714\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ndiff}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00715}00715\ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00716}00716\ \ \ \ \ \ \ \ \ j\ =\ nelorb\_c\ -\/\ ndiff\ +\ i\ \textcolor{comment}{!\ the\ unpaired\ are\ always\ the\ last\ ones}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00717}00717\ \textcolor{comment}{!\ \ \ \ \ \ \ nozero\_c(ind)\ =\ nelorb\_c\ *\ (nelorb\_c\ +\ i\ -\/\ 1)\ +\ j}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00718}00718\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00719}00719\ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(nozero\_c(ind))\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00720}00720\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00721}00721\ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*nozero\_c(ind)\ -\/\ 1)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00722}00722\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00723}00723\ \textcolor{comment}{!\ \ \ \ \ \ \ indnn\ =\ indnn\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00724}00724\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn)\ =\ -\/1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00725}00725\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn\ +\ 1)\ =\ j}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00726}00726\ \textcolor{comment}{!\ \ \ \ \ \ \ jbradetn(indnn\ +\ 2)\ =\ nelorb\_c\ +\ i}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00727}00727\ \textcolor{comment}{!\ \ \ \ \ \ \ indnn\ =\ indnn\ +\ 2}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00728}00728\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00729}00729\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00730}00730\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nnozero\_c\ -\/\ nmol\ -\/\ ndiff\ +\ 1,\ nnozero\_c}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00731}00731\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00732}00732\ \ \ \ \ \ \ \ \ \ \ \ \ scale\_c(i)\ =\ detmat\_c(nozero\_c(i))}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00733}00733\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00734}00734\ \ \ \ \ \ \ \ \ \ \ \ \ scale\_c(2*i\ -\/\ 1)\ =\ detmat\_c(2*nozero\_c(i)\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00735}00735\ \ \ \ \ \ \ \ \ \ \ \ \ scale\_c(2*i)\ =\ detmat\_c(2*nozero\_c(i))}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00736}00736\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00737}00737\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00738}00738\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00739}00739\ \textcolor{comment}{!\ \ \ \ deallocate(ipsip)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00740}00740\ \textcolor{comment}{!\ \ \ \ allocate(ipsip(iesup\_c\ +\ iesupind))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00741}00741\ \textcolor{comment}{!\ \ \ \ iesupindmol\ =\ iesupind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00742}00742\ \textcolor{comment}{!\ \ \ \ ipsip\ =\ jbraiesup\_sav}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00743}00743\ \textcolor{comment}{!\ \ \ \ deallocate(jbraiesup\_sav)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00744}00744\ \textcolor{comment}{!\ \ \ \ allocate(jbraiesup\_sav(iesup\_cmol\ +\ iesupindmol))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00745}00745\ \textcolor{comment}{!!\ \ \ \ jbraiesup\_sav\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00746}00746\ \textcolor{comment}{!\ \ \ \ !\ calculation\ of\ ind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00747}00747\ \textcolor{comment}{!\ \ \ \ ind\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00748}00748\ \textcolor{comment}{!\ \ \ \ do\ i\ =\ 1,\ iesupind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00749}00749\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00750}00750\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ii\ =\ abs(ipsip(ind))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00751}00751\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ind\ =\ ind\ +\ ii}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00752}00752\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00753}00753\ \textcolor{comment}{!\ \ \ \ jbraiesup\_sav(1:ind)\ =\ ipsip(1:ind)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00754}00754\ \textcolor{comment}{!\ \ \ \ if(molopt.ge.2.and.contraction\_in.ne.0)\ then}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00755}00755\ \textcolor{comment}{!\ \ \ \ \ \ \ \ !\ do\ not\ optimize\ the\ coefficients\ of\ the\ contracted\ orbitals}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00756}00756\ \ \ \ \ \textcolor{comment}{!\ But\ only\ if\ molopt>0\ otherwise\ optimize\ also\ the\ coefficients}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00757}00757\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ind\ =\ 0}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00758}00758\ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ i\ =\ 1,\ iesupind}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00759}00759\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00760}00760\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ jbraiesup\_sav(ind)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00761}00761\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ j\ =\ 1,\ abs(ii)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00762}00762\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(iesuptransb(jbraiesup\_sav(ind\ +\ j)).eq.0.and.ii.gt.0)\&}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00763}00763\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbraiesup\_sav(ind)\ =\ -\/abs(jbraiesup\_sav(ind))}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00764}00764\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00765}00765\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ abs(ii)}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00766}00766\ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00767}00767\ \textcolor{comment}{!\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00768}00768\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00769}00769\ \textcolor{comment}{!\ \ \ \ indpar\ =\ iesup\_c}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00770}00770\ \textcolor{comment}{!\ \ \ \ nshell\_c\ =\ nshellmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00771}00771\ \textcolor{comment}{!\ \ \ \ iesupr\_c\ =\ iesupr\_cmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00772}00772\ \textcolor{comment}{!\ \ \ \ iesup\_c\ =\ iesup\_cmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00773}00773\ \textcolor{comment}{!\ \ \ \ occ\_c\ =\ occ\_cmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00774}00774\ \textcolor{comment}{!\ \ \ \ iesupind\ =\ iesupindmol}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00775}00775\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00776}00776\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00777}00777\ }
+\DoxyCodeLine{\Hypertarget{update__fort10_8f90_source_l00778}00778\ \textcolor{keyword}{end\ subroutine\ }update\_fort10}
+
+\end{DoxyCode}

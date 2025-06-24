@@ -1,0 +1,468 @@
+\doxysection{conjginv.\+f90}
+\hypertarget{conjginv_8f90_source}{}\label{conjginv_8f90_source}\index{src/a\_turborvb/conjginv.f90@{src/a\_turborvb/conjginv.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Conjugate\ gradient\ method\ for\ matrix\ inversion\ with\ complex\ parameters}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ implements\ the\ conjugate\ gradient\ method\ for\ solving}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ linear\ systems\ involving\ complex\ parameters.\ It\ handles\ both\ real\ and}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ complex\ variational\ parameters\ with\ proper\ matrix\ structure\ for}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ stochastic\ reconfiguration.\ The\ method\ includes\ regularization\ to}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ avoid\ noise\ in\ the\ inversion\ process.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ np\ \ \ \ \ \ \ \ \ \ Number\ of\ parameters}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ kp\_complex\ \ Number\ of\ complex\ parameters}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ symmagp\ \ \ \ \ Symmetry\ flag\ for\ AGP}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ nbin\ \ \ \ \ \ \ \ Number\ of\ bins}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ \ rank\_t\ \ \ \ \ \ Target\ rank}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ \ rank\ \ \ \ \ \ \ \ Process\ rank}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ comm\_mpi\ \ \ \ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in,out]\ mat\ \ \ \ \ \ Input\ matrix\ (normalized\ on\ output)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ \ forza\ \ \ \ \ \ \ Force\ vector}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in,out]\ g\ \ \ \ \ \ \ \ Gradient\ vector}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in,out]\ h\ \ \ \ \ \ \ \ Search\ direction\ vector}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in,out]\ psip\ \ \ \ \ Work\ array}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ \ maxit\ \ \ \ \ \ \ Maximum\ number\ of\ iterations}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ \ eps\ \ \ \ \ \ \ \ \ Convergence\ tolerance}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ \ epsdgel\ \ \ \ \ Regularization\ parameter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[out]\ fkav\ \ \ \ \ \ \ \ Diagonal\ elements\ of\ S\ matrix}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @param[out]\ x\ \ \ \ \ \ \ \ \ \ \ Solution\ vector}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[in]\ \ parcut\ \ \ \ \ \ Parameter\ cutoff}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in]\ \ eps\_umrigar\ Umrigar\ regularization\ parameter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00041}00041\ \textcolor{keyword}{subroutine\ }conjginv(np,\ kp\_complex,\ symmagp,\ nbin,\ rank\_t,\ rank,\ comm\_mpi,\ mat,\ forza\&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \&,\ g,\ h,\ psip,\ maxit,\ eps,\ epsdgel,\ fkav,\ x,\ parcut,\ eps\_umrigar)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ np,\ npk,\ i,\ ii,\ j,\ k,\ nl,\ npp,\ nbin,\ maxit,\ iter,\ rank,\ info,\ np3,\ np4\&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ npm,\ ierr,\ countzero,\ comm\_mpi,\ kpr,\ kpc,\ kp\_complex,\ kpcp,\ npt,\ kpp,\ rank\_t}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordtype}{real*8}\ mat(nbin,\ np),\ h(np),\ g(np),\ psip(*),\ eps\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ epsdgel,\ sv,\ eigmin,\ z,\ error,\ dnrm2,\ fkav(*),\ forza(*),\ cost\ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lambda,\ ng2,\ ddot,\ gamma,\ Fun,\ errorg,\ x(np),\ parcut,\ maxsr,\ eps\_umrigar\&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ cost\_umrigar}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordtype}{logical}\ symmagp,\ yes\_umrigar}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00051}00051\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00052}00052\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00054}00054\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00055}00055\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ input\ mat(i,j)=\ \ \(\backslash\)sqrt(\ w\_j)\ \ (O\_i(x\_j)-\/\(\backslash\)bar\ O\_i)/sqrt(sum\_k\ w\_k)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00056}00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ modified\ (normalized)\ on\ output}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00057}00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ input\ forza(i)\ i\ the\ force\ acting\ on\ the\ parameter\ i}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ fkav(i)=sqrt(\ s\_\{i,i\})\ where:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ s\_\{i,j\}\ =\ sum\_k\ \ mat\_\{i,k\}\ mat\_\{j,k\}}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Output\ \ x\ \ solution\ of\ the\ linear\ system\ \ s\ x\ =force}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00061}00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ within\ a\ tollerance\ eps}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00062}00062\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ For\ QMC\ convenience\ (avoid\ too\ much\ noise\ in\ the\ inversion)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ matrix\ s\ is\ regularized\ by\ s\_\{i,i\}\ -\/-\/-\/>\ s\_\{i,i\}\ (1\ +\ epsdgel)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00066}00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ COMPLEX\ CASE}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00067}00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ In\ this\ case\ the\ complex\ parameters\ are\ at\ the\ beginning.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00068}00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ For\ each\ variational\ parameter\ (both\ real\ and\ imaginary\ part\ if\ complex)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00069}00069\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ we\ have\ the\ real\ and\ imaginary\ part\ corresponding\ to\ the\ operator.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00070}00070\ \ \ \ \ \textcolor{comment}{!\ \ \ e.g.\ alpha\_k\ (always\ real,\ even\ when\ it\ correspond\ to\ an\ imaginary\ part)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00071}00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ -\/-\/>\ Ok\ =\ dlog\ Psi\string^*/d\ alpha\_k}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00072}00072\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ There\ are\ two\ cases:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ \ \ 1)\ symmagp\ =\ .true.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00074}00074\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ The\ parameter\ value\ (real\ or\ imaginary)\ alpha\_k\ Ok}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ occupy\ only\ odd\ position\ h(1),h(3)...\ the\ other\ assumed\ zero}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ the\ operator\ value\ (in\ the\ matrix)\ both.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ the\ SR\ matrix\ in\ this\ case\ is\ \ \ \ Re\ (<\ O\_k\string^*\ O\_k'>)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ \ \ 2)\ symmagp=.false.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ real\ part\ of\ the\ parameter\ occupy\ odd\ position\ h(1),h(3),...}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00080}00080\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ imaginary\ part\ the\ even\ position\ h(2),h(4),....}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00081}00081\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ operator\ O(1)\ O(2)\ means\ the\ real\ and\ -\/imaginary\ part\ of\ alpha\_1\ (real)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00082}00082\ \ \ \ \ \textcolor{comment}{!\ \ O\ =\ dlog\ Psi\string^*/dalphak\ \ alpha\_k\ (complex)=\ Re\ alpha\_k,\ Im\ alpha\_k\ both\ real}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00083}00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ O(1)=dlog\ Re\ Psi/dRe\ alpha\_1\ ,\ O(2)=-\/dIm\ log\ Psi/dRe\ alpha\_1}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00084}00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Im\ \ alpha\_1\ -\/-\/>\ \ \ \ dlog\ Re\ Psi/dIm\ alpha\_1\ ,\ -\/dIm\ log\ Psi/dIm\ alpha\_1}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ By\ the\ Cauchy\ relations\ the\ ones\ corresponding\ to\ the\ imaginary\ part\ are}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00086}00086\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ dlog\ Re\ log\ Psi/dIm\ alpha=\ -\/dlog\ Im\ log\ Psi/dRe\ alpha}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00087}00087\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ dlog\ Im\ log\ Psi/dIm\ alpha=\ dlog\ Re\ log\ Psi/dRe\ alpha}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00088}00088\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ we\ get:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00089}00089\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Im\ alpha\ -\/-\/>\ \ O(2)-\/i\ O(1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00090}00090\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Then\ the\ matrix\ SR\ between\ complex\ parameters\ read:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00091}00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real\ real:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00092}00092\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ \ <O(2k-\/1)+i\ O(2k)|\ O(2k'-\/1)\ +i\ O(2k')\ >=}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00093}00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ <\ O(2k-\/1)\ O(2k'-\/1)>+\ <O(2k)\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00094}00094\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real\ imag:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00095}00095\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ \ <\ O(2k-\/1)+i\ O(2k)\ |\ O(2k')-\/i\ O(2k'-\/1)>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00096}00096\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ <\ O(2k-\/1)\ O(2k')>-\/\ <O(2k)\ O(2k'-\/1)>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00097}00097\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ imag\ real:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00098}00098\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ \ <\ O(2k)-\/i\ O(2k-\/1)\ |\ O(2k'-\/1)+i\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00099}00099\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ <\ O(2k)\ O(2k'-\/1)>-\/\ <O(2k-\/1)\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00100}00100\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ imag\ imag:}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00101}00101\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ \ <\ O(2k-\/1)-\/i\ O(2k)\ |\ O(2k'-\/1)-\/i\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00102}00102\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ <\ O(2k-\/1)\ O(2k'-\/1)>+\ <O(2k)\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00103}00103\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00104}00104\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Instead\ between\ a\ complex\ and\ real}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00105}00105\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real\ of\ complex,\ real}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00106}00106\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ <\ O(2k-\/1)\ +i\ O(2k)\ |\ O(k')>\ =\ <\ O(2k-\/1)\ |\ O(k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00107}00107\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Imag\ of\ complex,\ real}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00108}00108\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ <\ O(2k)+i\ O(2k-\/1)\ |\ O(k')>\ =\ <\ O(2k)|\ O(k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00109}00109\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real,\ real\ of\ complex}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00110}00110\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ <\ O(k)\ |\ O(2k'-\/1)+iO(2k')>\ =\ <\ O(k)|\ O(2k'-\/1)>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00111}00111\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ real,\ imag\ of\ complex}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00112}00112\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ SR\ =\ Re\ <\ O(k)\ |\ O(2k')+iO(2k'-\/1)>\ =\ <\ O(k)|\ O(2k')>}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00113}00113\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ nothing\ change\ between\ real\ and\ real\ SR=\ \ <\ O(k)|\ O(k')>.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00114}00114\ \ \ \ \ \textcolor{comment}{!\ \ Now\ h\ has\ three\ parts\ hr\ (h(1),h(3)...),\ hi\ (h(2),\ h(4),...)\ and\ hn}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00115}00115\ \ \ \ \ \textcolor{comment}{!\ \ \ real\ parameters\ for\ i>kp\_complex}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00116}00116\ \ \ \ \ \textcolor{comment}{!\ \ \ The\ loaded\ matrix\ is}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00117}00117\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Srr\ Sri\ Srn\ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00118}00118\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Sir\ Sii\ Sin\ |\ \ \ =\ mat\string^T\ x\ mat\ \ \ \ (is\ stored\ in\ compact\ form\ in\ mat)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00119}00119\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Snr\ Sni\ Snn\ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00120}00120\ \ \ \ \ \textcolor{comment}{!\ \ \ \ And\ one\ has\ to\ apply\ a\ matrix\ vector\ of\ the\ type\ (according\ to\ above):}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00121}00121\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Srr+Sii\ \ Sri-\/Sir\ Srn\ |\ hr\ |\ =}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00122}00122\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Sir-\/Sri\ \ Sii+Srr\ Sin\ |\ hi\ |\ =}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00123}00123\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Snr\ \ \ \ \ \ Sni\ \ \ \ Snn\ |\ hn\ |\ =}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00124}00124\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Srr\ Sri\ Srn\ |\ hr\ |\ \ \ |\ Sii\ \ -\/Sir\ 0|\ hr\ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00125}00125\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Sir\ Sii\ Sin\ |\ hi\ |\ +\ |\ -\/Sri\ \ Srr\ 0|\ hi\ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00126}00126\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ |\ Snr\ Sni\ Snn\ |\ hn\ |\ \ \ |\ \ 0\ \ \ \ \ 0\ \ 0|\ 0\ \ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00128}00128\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ mat\string^T\ (mat\ h)\ +\ |\ -\/v\_2\ \ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00129}00129\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ v\_1\ \ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00130}00130\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ 0\ \ \ |}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00131}00131\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ where}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00132}00132\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ v\_1\ |\ \ \ \ =\ \ \ |\ Srr\ \ \ Sri\ |\ hi\ |=\ \ Srr\ hi\ -\/\ Sri\ hr}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00133}00133\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ v\_2\ |\ \ \ \ \ \ \ \ |\ Sir\ \ \ Sii\ |\ -\/hr\ |=\ \ Sir\ hi\ -\/\ Sii\ hr}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00134}00134\ \ \ \ \ \textcolor{comment}{!This\ is\ an\ ARROCCO\ of\ the\ stored\ matrix\ limited\ only\ to\ the\ complex\ parameters.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00135}00135\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ARROCCO=|\ 0\ I|}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00136}00136\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ |-\/I\ 0|}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00137}00137\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ So\ that\ the\ added\ contribution\ is\ written\ as\ ARROCCO\string^T\ \ mat\string^T\ mat\ ARROCCO}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00138}00138\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ that\ remains\ symmetric\ as\ it\ should.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00139}00139\ \ \ \ \ npk\ =\ np\ -\/\ kp\_complex\ \textcolor{comment}{!\ the\ number\ of\ \ real\ parameter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00140}00140\ \ \ \ \ kpr\ =\ kp\_complex\ +\ 1\ \textcolor{comment}{!\ the\ first\ real\ parameter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00141}00141\ \ \ \ \ kpc\ =\ kp\_complex/2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ kp\_complex,\ 2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ cost\ =\ sum(mat(1:nbin,\ i)**2)\ +\ sum(mat(1:nbin,\ i\ +\ 1)**2)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .ne.\ 0.d0)\ fkav(i)\ =\ cost}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i\ +\ 1)\ .ne.\ 0.d0)\ fkav(i\ +\ 1)\ =\ cost}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00146}00146\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ kpr,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .ne.\ 0.d0)\ fkav(i)\ =\ sum(mat(1:nbin,\ i)**2)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00151}00151\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00152}00152\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }reduce\_base\_real(np,\ fkav,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00153}00153\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00154}00154\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00155}00155\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ fkav\ inside\ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00156}00156\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,np}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00157}00157\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,fkav(i)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00158}00158\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00159}00159\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00160}00160\ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\_umrigar\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ yes\_umrigar\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ cost\_umrigar\ =\ eps\_umrigar}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ dsqrt(fkav(i)\ +\ eps\_umrigar)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00168}00168\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00169}00169\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00170}00170\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ cost\_umrigar\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ yes\_umrigar\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ dsqrt(fkav(i))}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00178}00178\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00180}00180\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00181}00181\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ call\ mpi\_finalize(ierr)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00182}00182\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ stop}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00183}00183\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ rescaling\ mat}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00184}00184\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00185}00185\ \textcolor{preprocessor}{}\textcolor{comment}{!\ Different\ processor\ may\ have\ different\ fkav\ due\ to\ different}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00186}00186\ \textcolor{comment}{!\ accuracy\ in\ sqrt}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00187}00187\ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(fkav,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00188}00188\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00189}00189\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00190}00190\ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00191}00191\ \ \ \ \ error\ =\ 2.d0*eps}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00192}00192\ \ \ \ \ npp\ =\ np\ +\ 1}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00193}00193\ \ \ \ \ \textcolor{keywordflow}{if}\ (kpc\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ kpp\ =\ kp\_complex\ +\ 1}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ npt\ =\ npk\ +\ kpc}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ kpcp\ =\ npp\ +\ kpc}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00197}00197\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00198}00198\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00199}00199\ \ \ \ \ maxsr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00200}00200\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ kp\_complex,\ 2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ maxsr)\ maxsr\ =\ fkav(i)\ \textcolor{comment}{!\ Only\ the\ real\ part\ matters}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00203}00203\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ kp\_complex\ +\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ maxsr)\ maxsr\ =\ fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00207}00207\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i=1,np}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00208}00208\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if(fkav(i).gt.parcut*maxsr)\ then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00209}00209\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ x(i)=forza(i)/fkav(i)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00210}00210\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00211}00211\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ x(i)=0.d0}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00212}00212\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00213}00213\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00215}00215\ \ \ \ \ countzero\ =\ 0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00216}00216\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ kp\_complex,\ 2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ parcut*maxsr\ .or.\ (yes\_umrigar\ .and.\ fkav(i)\ .gt.\ 0.d0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i)\ =\ mat(j,\ i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i\ +\ 1)\ =\ mat(j,\ i\ +\ 1)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00221}00221\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ forza(i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i\ +\ 1)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x(i\ +\ 1)\ =\ forza(i\ +\ 1)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x(i\ +\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00227}00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\_t\ .eq.\ 0\ .and.\ fkav(i)\ .ne.\ 0.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ sr\ parameter\ too\ small\ !!!\ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ countzero\ =\ countzero\ +\ 1}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i\ +\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00234}00234\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i\ +\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ x(i\ +\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00239}00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00240}00240\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00241}00241\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ kp\_complex\ +\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ parcut*maxsr\ .or.\ (yes\_umrigar\ .and.\ fkav(i)\ .ne.\ 0.d0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i)\ =\ mat(j,\ i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00245}00245\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ forza(i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\_t\ .eq.\ 0\ .and.\ fkav(i)\ .ne.\ 0.d0)\ \&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ sr\ parameter\ too\ small\ !!!\ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ countzero\ =\ countzero\ +\ 1}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00253}00253\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00256}00256\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00257}00257\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00258}00258\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00259}00259\ \textcolor{preprocessor}{\#if\ defined\ UNREL\_DIAG\ \&\&\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00260}00260\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ Different\ processor\ may\ have\ different\ countzero\ due\ to\ different}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00261}00261\ \ \ \ \ \textcolor{comment}{!\ accuracy\ in\ sqrt}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00262}00262\ \ \ \ \ \textcolor{comment}{!\ \ Just\ to\ be\ sure\ because\ also\ fkav\ was\ bcasted\ for\ safety.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00263}00263\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(countzero,\ 1,\ mpi\_integer,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00264}00264\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00265}00265\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00266}00266\ \ \ \ \ \textcolor{keywordflow}{if}\ (np\ -\/\ countzero\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00267}00267\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (iter\ .lt.\ maxit\ .and.\ error\ .gt.\ eps)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00269}00269\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter\ .eq.\ 0)\ h\ =\ x}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00271}00271\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ now\ psip=\ H\ h}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00273}00273\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00274}00274\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00275}00275\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00276}00276\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(h,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00277}00277\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00278}00278\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00279}00279\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kpc\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npk\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ npk,\ 1.d0,\ mat(1,\ kpr),\ nbin,\ h(kpr),\ 1,\ 0.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(npp:npp\ +\ nbin\ -\/\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00285}00285\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00286}00286\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1:kp\_complex)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ real-\/complex\ real}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ kpc,\ 1.d0,\ mat,\ 2*nbin,\ h,\ 2,\ 1.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ kpc,\ 1.d0,\ mat,\ 2*nbin,\ psip(npp),\ 1,\ 1.d0,\ psip,\ 2)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npk\ .gt.\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ npk,\ 1.d0,\ mat(1,\ kpr),\ nbin,\ psip(npp),\ 1,\ 0.d0,\ psip(kpr),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Adding\ remaining\ part\ coming\ form\ imag\ matrix.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ kpc,\ 1.d0,\ mat(1,\ 2),\ 2*nbin,\ h,\ 2,\ 0.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ kpc,\ 1.d0,\ mat(1,\ 2),\ 2*nbin,\ psip(npp),\ 1,\ 1.d0,\ psip,\ 2)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Making\ the\ ARROCCO\ v\_1,v\_2\ as\ above}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ kp\_complex,\ 2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i)\ =\ h(i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i\ +\ 1)\ =\ -\/h(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00301}00301\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ kp\_complex,\ 1.d0,\ mat,\ nbin,\ psip,\ 1,\ 0.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Now\ psip\ contains\ mat\ x\ \ |hi|}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |-\/hr|}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |0|}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ kp\_complex,\ 1.d0,\ mat,\ nbin,\ psip(npp),\ 1,\ 0.d0\&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ psip,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ARROCCO\string^T\ \ changing\ -\/v\_2\ with\ v\_1\ as\ above\ comments}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ kp\_complex,\ 2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psip(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i)\ =\ -\/psip(i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i\ +\ 1)\ =\ cost}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00313}00313\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00314}00314\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npk\ .gt.\ 0)\ psip(kpr:np)\ =\ 0.d0\ \textcolor{comment}{!\ Reinizializing\ psip\ to\ zero\ real\ parameters.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Now\ adding\ the\ total\ stored\ matrix\ \ to\ psip}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ np,\ 1.d0,\ mat,\ nbin,\ h,\ 1,\ 0.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Collecting\ mat\string^T\ x\ mat\ and\ add\ to\ psip}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ np,\ 1.d0,\ mat,\ nbin,\ psip(npp),\ 1,\ 1.d0,\ psip,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00320}00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nbin,\ npk,\ 1.d0,\ mat(1,\ kpr),\ nbin,\ h(kpr),\ 1,\ 0.d0,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nbin,\ npk,\ 1.d0,\ mat(1,\ kpr),\ nbin,\ psip(npp),\ 1,\ 0.d0,\ psip(kpr),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00324}00324\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Projecting}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00326}00326\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .eq.\ 0.d0)\ psip(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00328}00328\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00329}00329\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00330}00330\ \textcolor{preprocessor}{\#ifdef\ \ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00331}00331\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kpc\ .gt.\ 0\ .and.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00332}00332\ \textcolor{comment}{!\ \ \ \ \ \ \ To\ save\ a\ little\ communication.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npk\ .gt.\ 0)\ \textcolor{keyword}{call\ }dcopy(npk,\ psip(kpp),\ 1,\ psip(kpcp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(kpc,\ psip,\ 2,\ psip(npp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }reduce\_base\_real(npt,\ psip(npp),\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1:kp\_complex)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(kpc,\ psip(npp),\ 1,\ psip,\ 2)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npk\ .gt.\ 0)\ \textcolor{keyword}{call\ }dcopy(npk,\ psip(kpcp),\ 1,\ psip(kpp),\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00340}00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }reduce\_base\_real(np,\ psip,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00341}00341\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00342}00342\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00343}00343\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ regularization}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_umrigar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(ii)\ .ne.\ 0.d0)\ psip(ii)\ =\ psip(ii)\ +\ cost\_umrigar*h(ii)/fkav(ii)**2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00347}00347\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00348}00348\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ epsdgel,\ h,\ 1,\ psip,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00350}00350\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00352}00352\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ ddot(np,\ h,\ 1,\ psip,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ gauge\ invariant\ error}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00355}00355\ \textcolor{preprocessor}{\#if\ defined\ \ UNREL\_DIAG\ \&\&\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00356}00356\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(cost,\ 1,\ mpi\_double\_precision,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00357}00357\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00358}00358\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lambda\ =\ -\/ddot(np,\ h,\ 1,\ g,\ 1)/cost}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ abs(lambda)*dsqrt(cost)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ \ Non\ positive\ \ definite\ matrix\ !!!'}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00364}00364\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00365}00365\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00366}00366\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00367}00367\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00368}00368\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00369}00369\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00370}00370\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00371}00371\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ng2\ =\ dnrm2(np,\ g,\ 1)**2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ scalar\ g\ A\ h,\ h\ A\ h\ ng2\ \ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ 1,ddot(np,g,1,psip,1),ddot(np,h,1,psip,1),ng2,ddot(np,h,1,g,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Overlap\ g\ g\_i-\/1\ ',ng2+lambda*ddot(np,psip,1,g,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ g}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00377}00377\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ lambda,\ psip,\ 1,\ g,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00379}00379\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gamma\ =\ lambda*ddot(np,\ psip,\ 1,\ g,\ 1)/ng2}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00381}00381\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ \ x\ \ the\ solution}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lambda\ =\ -\/lambda}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ lambda,\ h,\ 1,\ x,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00385}00385\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ h}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ gamma*h(i)\ +\ g(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00389}00389\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00390}00390\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ compute\ function\ for\ check}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ call\ dgemv('T',np,nbin,1.d0,mat,np,x,1,0.d0,psip(npp),1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ call\ dgemv('N',np,nbin,1.d0,mat,np,psip(npp),1,0.d0,psip,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ daxpy(np,epsdgel,x,1,psip,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Fun=0.5d0*ddot(np,psip,1,x,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ '\ New\ gradient\ at\ new\ position\ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ i=1,np}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(fkav(i).gt.0.d0)\ then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Fun=Fun-\/x(i)*forza(i)/fkav(i)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ i,g(i),-\/psip(i)+forza(i)/fkav(i)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00403}00403\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ error=abs(lambda*dnrm2(np,h,1))}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ errorg=dnrm2(np,g,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Value\ of\ the\ function}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ -\/psip(i)\ +\ forza(i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00413}00413\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00414}00414\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(np,\ h,\ 1,\ g,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ dnrm2(np,\ g,\ 1)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00417}00417\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00418}00418\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00419}00419\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ The\ master\ force\ the\ calculation\ to\ be\ the\ same\ for\ all.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00420}00420\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(error,\ 1,\ mpi\_double\_precision,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00421}00421\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00422}00422\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ error=max(error,errorg)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00423}00423\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(iopen)\ h,g}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00425}00425\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ iter\ =\ iter\ +\ 1}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00427}00427\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00428}00428\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Output\ \ cg\ \ iter\ error\ \ \ ='},\ iter,\ error}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ endif\ countzero}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00431}00431\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00432}00432\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ x(i)/fkav(i)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00437}00437\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00438}00438\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00439}00439\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ Check\ orthogonality\ gs\ '}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00440}00440\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00441}00441\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ do\ j=1,iter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00442}00442\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ rewind(iopen)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00443}00443\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ k=1,j-\/1}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00444}00444\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ read(iopen)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00445}00445\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00446}00446\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ read(iopen)\ h,g}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00447}00447\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ dcopy(np,g,1,psip,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00448}00448\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00449}00449\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ rewind(iopen)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00450}00450\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i=1,iter}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00451}00451\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ read(iopen)\ h,g}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00452}00452\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,j,ddot(np,psip,1,g,1)}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00453}00453\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00454}00454\ }
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00455}00455\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00456}00456\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00457}00457\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ The\ master\ force\ the\ calculation\ to\ be\ the\ same\ for\ all.}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00458}00458\ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(x,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00459}00459\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00460}00460\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00461}00461\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{conjginv_8f90_source_l00462}00462\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

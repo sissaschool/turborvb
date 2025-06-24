@@ -148,6 +148,14 @@ Provides core/valence electron separation for double-grid schemes </dd></dl>
 <dd>
 Used in electron density calculations in Thomas-Fermi model </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="_thomas___fermi__model_8f90_source.html#l00146">146</a> of file <a class="el" href="_thomas___fermi__model_8f90_source.html">Thomas_Fermi_model.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  147</span> </div>
+<div class="line"><span class="lineno">  148</span><span class="keywordtype">        real</span>(8), <span class="keywordtype">intent(in)</span> :: x</div>
+<div class="line"><span class="lineno">  149</span><span class="keywordtype">        real</span>(8) f</div>
+<div class="line"><span class="lineno">  150</span> </div>
+<div class="line"><span class="lineno">  151</span>        f = 1.0d0/(1.0d0 + 1.4712d0*x - 0.4973d0*x**(3.0d0/2.0d0) + 0.38<span class="comment">75d0*x**(2.0d0) + 0.002102d0*x**(3.0d0))</span></div>
+<div class="line"><span class="lineno">  152</span><span class="comment"></span> </div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="afd8b4fd7dde5b28eb816577b81bc6c04" name="afd8b4fd7dde5b28eb816577b81bc6c04"></a>
@@ -195,6 +203,43 @@ Integration step: dr = 1.0d-3 </dd>
 <dd>
 Used in pseudopotential generation and core-valence separation </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="_thomas___fermi__model_8f90_source.html#l00090">90</a> of file <a class="el" href="_thomas___fermi__model_8f90_source.html">Thomas_Fermi_model.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   91</span> </div>
+<div class="line"><span class="lineno">   92</span><span class="keywordtype">        real</span>(8), <span class="keywordtype">intent(in)</span> :: atomic_number, r_c</div>
+<div class="line"><span class="lineno">   93</span><span class="keywordtype">        real</span>(8) num_core_electron, num_val_electron</div>
+<div class="line"><span class="lineno">   94</span><span class="keywordtype">        real</span>(8) r_TF, x_TF, b, pi, rho_r, p_r</div>
+<div class="line"><span class="lineno">   95</span><span class="keywordtype">        real</span>(8) :: r = 0.0d0, r_min = 1.0d-3, r_max = 25.0d0, dr = 1.0d-<span class="comment">3</span></div>
+<div class="line"><span class="lineno">   96</span><span class="comment"></span> </div>
+<div class="line"><span class="lineno">   97</span>        <span class="comment">! define constant</span></div>
+<div class="line"><span class="lineno">   98</span>        pi = 3.1415926535d0</div>
+<div class="line"><span class="lineno">   99</span>        b = (9*pi**2/128)**(1.0d0/3.0d0)</div>
+<div class="line"><span class="lineno">  100</span>        r_tf = b*atomic_number**(-1.0/3.0)</div>
+<div class="line"><span class="lineno">  101</span> </div>
+<div class="line"><span class="lineno">  102</span>        <span class="comment">! results</span></div>
+<div class="line"><span class="lineno">  103</span>        num_core_electron = 0.0d0</div>
+<div class="line"><span class="lineno">  104</span>        num_val_electron = 0.0d0</div>
+<div class="line"><span class="lineno">  105</span> </div>
+<div class="line"><span class="lineno">  106</span>        <span class="comment">! integral</span></div>
+<div class="line"><span class="lineno">  107</span>        r = r_min</div>
+<div class="line"><span class="lineno">  108</span>        <span class="keywordflow">do</span> <span class="keywordflow">while</span> (r .lt. r_max)</div>
+<div class="line"><span class="lineno">  109</span>            x_tf = r/r_tf</div>
+<div class="line"><span class="lineno">  110</span>            rho_r = (32.0d0*atomic_number**2.0d0)/(9.0d0*pi**3.0d0)*(gross_dreizler<span class="comment">(x_tf)/x_tf)**(3.0d0/2.0d0)</span></div>
+<div class="line"><span class="lineno">  111</span><span class="comment"></span>            p_r = dexp(-r**2.0d0/2.0d0/r_c**2.0d0)</div>
+<div class="line"><span class="lineno">  112</span>            num_core_electron = num_core_electron + (4.0d0*pi*r**2.0d0*rho_r<span class="comment">*p_r)*dr</span></div>
+<div class="line"><span class="lineno">  113</span><span class="comment"></span>            num_val_electron = num_val_electron + (4.0d0*pi*r**2.0d0*rho_r<span class="comment">*(1.0d0 - p_r))*dr</span></div>
+<div class="line"><span class="lineno">  114</span><span class="comment"></span>            r = r + dr</div>
+<div class="line"><span class="lineno">  115</span>            <span class="comment">! write(6,*) &quot;r = &quot;, r</span></div>
+<div class="line"><span class="lineno">  116</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  117</span> </div>
+<div class="line"><span class="lineno">  118</span>        <span class="comment">! output result (test)</span></div>
+<div class="line"><span class="lineno">  119</span>        <span class="comment">! write(6,*) &quot;Z = &quot;, atomic_number</span></div>
+<div class="line"><span class="lineno">  120</span>        <span class="comment">! write(6,*) &quot;r_c = &quot;, r_c</span></div>
+<div class="line"><span class="lineno">  121</span>        <span class="comment">! write(6,*) &quot;num_core_electron = &quot;, num_core_electron</span></div>
+<div class="line"><span class="lineno">  122</span>        <span class="comment">! write(6,*) &quot;num_val_electron = &quot;, num_val_electron</span></div>
+<div class="line"><span class="lineno">  123</span> </div>
+<div class="line"><span class="lineno">  124</span>        <span class="comment">! end</span></div>
+<div class="line"><span class="lineno">  125</span> </div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

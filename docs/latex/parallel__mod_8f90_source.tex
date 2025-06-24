@@ -1,0 +1,572 @@
+\doxysection{parallel\+\_\+mod.\+f90}
+\hypertarget{parallel__mod_8f90_source}{}\label{parallel__mod_8f90_source}\index{src/a\_prep/parallel\_mod.f90@{src/a\_prep/parallel\_mod.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00016}00016\ \textcolor{keyword}{module}\ parallel\_module}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00018}00018\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ nproc,\ rank,\ nprocrep,\ rankrep,\ nproccolrep,\ rankcolrep,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00019}00019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ commrep\_mpi,\ commcolrep\_mpi,\ manyfort10,\ iflagerr,\ nbead,\ yeswrite10,\ min\_block,\ writescratch}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{use\ }kpoints\_mod,\ \textcolor{keywordtype}{only}:\ nk,\ wkp,\ kaverage,\ compute\_bands}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00021}00021\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ old\_threads}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00025}\mbox{\hyperlink{structparallel__module_1_1pool}{00025}}\ \ \ \ \ \textcolor{keyword}{type}\ \mbox{\hyperlink{structparallel__module_1_1pool}{pool}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00026}00026\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ comm}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00027}00027\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ rank}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00028}00028\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keyword}{end\ type\ }\mbox{\hyperlink{structparallel__module_1_1pool}{pool}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{private}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{type}(pool),\ \textcolor{keywordtype}{public}\ ::\ intra\_pool,\ inter\_pool}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00034}00034\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00035}00035\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00036}00036\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sets\ up\ parallel\ environments\ for\ DFT\ calculations}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00037}00037\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ initializes\ the\ parallel\ environments\ for\ DFT}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00038}00038\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ calculations,\ including\ MPI\ communicators\ for\ k-\/point\ sampling}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00039}00039\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ and\ SCALAPACK\ environment\ for\ matrix\ operations.\ It\ handles}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00040}00040\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ processor\ grid\ splitting\ for\ efficient\ parallel\ execution.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keyword}{subroutine\ }setup\_para}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ setup\ the\ parallel\ environments\ involved}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ the\ DFT\ calculation.\ On\ top\ there\ is\ the\ splitting\ of}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ MPI\ communicators\ in\ rows/columns\ to\ deal\ with\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ sampling:}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ commrep\_mpi\ -\/-\/>\ communicator\ inside\ a\ processor\ row\ which\ deals\ with\ a}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ single\ k-\/point\ during\ the\ calculation.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ commcolrep\_mpi\ -\/-\/>\ communicator\ among\ different\ rows\ (columns\ communicator).\ It}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ has\ to\ be\ used\ in\ order\ to\ sum\ certain\ quantities\ among\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ such\ as\ density\ on\ the\ grid\ of\ DFT\ energy.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ If\ specified\ at\ compilation\ with\ the\ option\ -\/D\_\_SCALAPACK,\ inside\ a\ processor\ row\ the\ main}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ matrices\ are\ divided\ in\ square\ blocks\ to\ speed\ up\ the\ diagonalization\ with\ SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ routines.\ Also\ SCALAPACK\ environment\ is\ initialized\ in\ this\ subroutine.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00056}00056\ \textcolor{preprocessor}{\#if\ defined\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00057}00057\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ me\_blacs,\ np\_blacs,\ world\_cntx,\ np\_ortho1,\ np\_ortho,\ ortho\_cntx,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ leg\_ortho,\ ortho\_comm,\ me\_ortho,\ me\_ortho1,\ ortho\_comm\_id,\ nelorb}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00059}00059\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00060}00060\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00063}00063\ \textcolor{preprocessor}{\#if\ defined\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00064}00064\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacsmap(:,\ :)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacsmap\_other(:,\ :)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacstmp(:,\ :)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nprow,\ npcol,\ myrow,\ mycol,\ color,\ key}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00068}00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00069}00069\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ row\_id,\ col\_id,\ row\_comm,\ col\_comm,\ mcol,\ irow,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jcol,\ nk\_opt,\ mcol\_rep}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ split\_comms}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00072}00072\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00073}00073\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00074}00074\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00075}00075\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ iflagerr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ If\ kaverage=.true.\ then\ the\ calculation\ involves\ a\ k-\/points\ sampling\ (nk.gt.1\ and\ SC\ calculation).}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ When\ sampling\ is\ done\ we\ have:}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 1)\ initialization\ of\ parallel\ environment\ for\ splitting\ the\ k-\/points\ among\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 2)\ different\ printing\ of\ variables\ during\ the\ calculation}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 3)\ possibility\ to\ read/write\ multiple\ fort.10\ for\ each\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 4)\ Fermi\ energy\ and\ smeared\ occupations\ calculated\ within\ k-\/points\ framework}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ If\ band\ structure\ calculation,\ communicators\ must\ not\ be\ splitted.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ split\_comms\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (manyfort10\ .and.\ .not.\ compute\_bands)\ split\_comms\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Default\ values\ of\ communicators/id}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00089}00089\ \textcolor{preprocessor}{\#if\ defined\ \ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00090}00090\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ row\ =\ comm\ for\ processors\ dealing\ with\ a\ single\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ row\_comm\ =\ mpi\_comm\_world}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ commrep\_mpi\ =\ mpi\_comm\_world}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ rankrep\ =\ rank}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ nprocrep\ =\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ column\ =\ comm\ among\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ col\_comm\ =\ mpi\_comm\_world}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ commcolrep\_mpi\ =\ mpi\_comm\_world}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ rankcolrep\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ nproccolrep\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ mcol\ =\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00101}00101\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00102}00102\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ row\_comm\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ commrep\_mpi\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ rankrep\ =\ rank}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ nprocrep\ =\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ col\_comm\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ commcolrep\_mpi\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ rankcolrep\ =\ rank}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ nproccolrep\ =\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ mcol\ =\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00112}00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00113}00113\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ trivial\ check}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00115}00115\ \textcolor{preprocessor}{\#ifndef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00116}00116\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (split\_comms)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ setup\_parallel\ '},\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ compile\ with\ PARALLEL\ option\ for\ more\ than\ one\ k-\/point\ '},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00119}00119\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00120}00120\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00121}00121\ \textcolor{preprocessor}{\#if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00122}00122\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ split\ communicators\ only\ if\ dealing\ with\ more\ than\ 1\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (split\_comms)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00125}00125\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nk\ .gt.\ nproc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ \#\ MPI\ processes/\ \#\ of\ k-\/points\ '},\ nproc,\ nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ setup\_parallel\ '},\ \textcolor{stringliteral}{'\ choose\ an\ higher\ number\ of\ processors\ \&}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00129}00129\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&or\ decrease\ the\ number\ of\ k-\/points!\ '},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00131}00131\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(nproc,\ nk)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ \#\ MPI\ processes/\ \#\ of\ k-\/points\ '},\ nproc,\ nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ setup\_parallel\ '},\ \textcolor{stringliteral}{'\ Choose\ a\ number\ of\ processors\ multiple\ of\ the\ \&}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00135}00135\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&number\ of\ k-\/points!\ '},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00136}00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ OLD\ version.\ Now\ stop\ the\ program\ if\ nk\ is\ not\ multiple\ of\ nproc.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ !\ force\ number\ of\ k-\/points\ to\ be\ multiple\ of\ nproc\ if\ this\ is\ not\ the\ case}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ call\ find\_nk\_opt(nproc,nk,nk\_opt)}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ 'Warning:\ \#\ of\ k-\/points\ rescaled\ from',nk,'to',nk\_opt}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ nk\ =\ nk\_opt}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00147}00147\ \textcolor{preprocessor}{\#if\ defined\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00148}00148\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'Processors\ involved:'},\ nproc,\ nproc/nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ \ \ \ Iam\ \ \ \ irow\ \ \ \ jcol\ \ row-\/id\ \ col-\/id'}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00150}00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00151}00151\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ row\_id\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ col\_id\ =\ rank}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ mcol\ =\ nproc/nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ irow\ =\ rank/mcol}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ jcol\ =\ mod(rank,\ mcol)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ split\ the\ communicators}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_split(mpi\_comm\_world,\ irow,\ jcol,\ row\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_split(mpi\_comm\_world,\ jcol,\ irow,\ col\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(row\_comm,\ row\_id,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(col\_comm,\ col\_id,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)\ \textcolor{comment}{!\ for\ unreliable\ networks}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ intra-\/pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ intra\_pool\%comm\ =\ row\_comm}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ intra\_pool\%rank\ =\ row\_id}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ intra\_pool\%nproc\ =\ mcol}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ inter-\/pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ inter\_pool\%comm\ =\ col\_comm}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ inter\_pool\%rank\ =\ col\_id}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ inter\_pool\%nproc\ =\ nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ nproccolrep\ =\ nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ mcol\_rep\ =\ mcol}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ commrep\_mpi\ =\ row\_comm}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ nprocrep\ =\ mcol}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ commcolrep\_mpi\ =\ col\_comm}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ rankrep\ =\ row\_id}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ rankcolrep\ =\ col\_id}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00179}00179\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ check\ for\ errors\ in\ splitting\ communicators}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ .ne.\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ InitializeAll\ '},\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ ERROR\ in\ splitting\ communicators\ for\ k-\/points\ sampling!'},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ print\ processors\ grid\ for\ debugging}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00186}00186\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00187}00187\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(5I5)'})\ rank,\ irow,\ jcol,\ rankrep,\ rankcolrep}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00188}00188\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00189}00189\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00190}00190\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00191}00191\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00192}00192\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ setup\ SCALAPACK\ environment}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ the\ case\ of\ k-\/points\ sampling\ the\ SCALAPACK\ grid\ is}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ initialized\ within\ each\ processors\ pool.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ SCALAPACK\ version\ needs\ the\ MPI\ environment.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00199}00199\ \textcolor{preprocessor}{\#ifndef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00200}00200\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00201}00201\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ InitializeAll\ '},\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ compile\ with\ -\/DPARALLEL\ option\ if\ you\ want\ to\ use\ SCALAPACK\ version'},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00203}00203\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00204}00204\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00205}00205\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00206}00206\ \textcolor{preprocessor}{\#if\ defined\ \_\_SCALAPACK\ \&\&\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00207}00207\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blacs\_pinfo(me\_blacs,\ np\_blacs)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ me\_blacs\ =\ BLACS\ process\ identifier}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blacs\_get(-\/1,\ 0,\ world\_cntx)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ factorizes\ the\ number\ of\ processors\ (NPROC)}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ into\ NPROW\ and\ NPCOL\ according\ to\ the\ shape}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 'S'\ =\ square\ grid}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ np\_ortho(1)\ =\ \#\ of\ row\ of\ the\ grid}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ np\_ortho(2)\ =\ \#\ of\ column\ of\ the\ grid}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_dims(\textcolor{stringliteral}{'S'},\ nprocrep,\ np\_ortho(1),\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00217}00217\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ propagate\ nelorb\ in\ any\ case\ common\ to\ all\ processors}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }bcast\_integer(nelorb,\ 1,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelorb/np\_ortho(1)\ .lt.\ min\_block)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ np\_ortho(1)\ =\ nelorb/min\_block}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (np\_ortho(1)*min\_block\ .ne.\ nelorb)\ np\_ortho(1)\ =\ np\_ortho(1)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ np\_ortho(2)\ =\ np\_ortho(1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ using\ less\ number\ of\ processor\ to\ distribute\ the\ matrix\ ,\ block\ too\ small\ !!!\ '}\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ np\_ortho(1),\ nelorb}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00227}00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00228}00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ np\_ortho1\ =\ np\_ortho(1)*np\_ortho(2)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00231}00231\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ here\ we\ choose\ the\ first\ processors\ omp\ threads\ can\ be\ set\ anyway}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ color\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ <\ np\_ortho1)\ color\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ leg\_ortho\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ key\ =\ rankrep}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ initialize\ the\ communicator\ for\ the\ new\ group}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ color\ =\ 1\ :\ the\ group\ of\ processors\ performs\ matrix\ distribution}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ color\ =\ 0\ :\ processors\ not\ involved\ in\ the\ distribution}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00246}00246\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00247}00247\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_split(commrep\_mpi,\ color,\ key,\ ortho\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00248}00248\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00249}00249\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ error\ splitting\ communicator\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Computes\ coordinates\ of\ the\ processors,\ in\ row\ maior\ order}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00254}00254\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00255}00255\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(ortho\_comm,\ np\_ortho1,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(ortho\_comm,\ me\_ortho1,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00257}00257\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00258}00258\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ np\_ortho1\ =\ size\ of\ the\ group\ associated\ with\ ortho\_comm}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ me\_ortho1\ =\ rank\ of\ the\ current\ MPI\ task}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (color\ ==\ 1\ .and.\ np\_ortho1\ /=\ np\_ortho(1)*np\_ortho(2))\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ number\ of\ proc\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ ==\ 0\ .and.\ me\_ortho1\ /=\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ root\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (color\ ==\ 1)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ only\ for\ processes\ involved}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ ortho\_comm\_id\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_coords(\textcolor{stringliteral}{'R'},\ me\_ortho1,\ np\_ortho(1),\ np\_ortho(2),\ me\_ortho(1),\ me\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ me\_ortho(1)\ =\ row\ of\ the\ MPI\ task\ in\ the\ grid}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ me\_ortho(2)\ =\ column\ of\ the\ MPI\ task}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_rank(\textcolor{stringliteral}{'R'},\ np\_ortho(1),\ np\_ortho(2),\ me\_ortho(1),\ me\_ortho(2),\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ me\_ortho1)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ coordinates\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho1*leg\_ortho\ /=\ rankrep)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ rank\ assignment\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ ortho\_comm\_id\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ me\_ortho(1)\ =\ me\_ortho1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ me\_ortho(2)\ =\ me\_ortho1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00281}00281\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ortho\_comm\_id\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacsmap(np\_ortho(1),\ np\_ortho(2)))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacstmp(np\_ortho(1),\ np\_ortho(2)))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ blacstmp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ blacsmap\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ blacsmap(me\_ortho(1)\ +\ 1,\ me\_ortho(2)\ +\ 1)\ =\ me\_blacs}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ nprow\ =\ np\_ortho(1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ npcol\ =\ np\_ortho(2)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!\ processes\ not\ involved\ in\ distribution}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ nprow\ =\ np\_ortho1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ npcol\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacsmap(np\_ortho1,\ 1))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacstmp(np\_ortho1,\ 1))}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ blacstmp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ blacsmap\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ blacsmap(me\_ortho1\ +\ 1,\ 1)\ =\ me\_blacs}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00298}00298\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00299}00299\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00300}00300\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00301}00301\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(blacsmap,\ blacstmp,\ \textcolor{keyword}{size}(blacsmap),\ mpi\_integer,\ mpi\_sum,\ ortho\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00302}00302\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00303}00303\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ blacsmap\ =\ blacstmp}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00304}00304\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ map\ processors\ to\ grid}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ ortho\_cntx\ =\ world\_cntx}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blacs\_gridmap(ortho\_cntx,\ blacsmap,\ nprow,\ nprow,\ npcol)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00308}00308\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ get\ info\ from\ communicator\ ortho\_cntx\ and\ check\ the\ values}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blacs\_gridinfo(ortho\_cntx,\ nprow,\ npcol,\ myrow,\ mycol)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00311}00311\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ortho\_comm\_id\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (np\_ortho(1)\ /=\ nprow)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ nprow\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (np\_ortho(2)\ /=\ npcol)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ npcol\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho(1)\ /=\ myrow)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ myrow\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho(2)\ /=\ mycol)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ mycol\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00316}00316\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00317}00317\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (blacsmap)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (blacstmp)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00320}00320\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00321}00321\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00322}00322\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ final\ check\ for\ error\ flags}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00324}00324\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }checkiflagerr(iflagerr,\ rank,\ \textcolor{stringliteral}{"{}ERROR\ in\ initialization\ parallel\ environment"{}})}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00325}00325\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00326}00326\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00327}00327\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00328}00328\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }setup\_para}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00329}00329\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00330}00330\ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ check\ if\ the\ number\ of\ k-\/points\ in\ input}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00331}00331\ \ \ \ \ \textcolor{comment}{!\ is\ multiple\ of\ the\ processors\ requested\ and\ rescale\ this}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00332}00332\ \ \ \ \ \textcolor{comment}{!\ number\ otherwise.\ In\ order\ to\ avoid\ this\ rescaling,\ use}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00333}00333\ \ \ \ \ \textcolor{comment}{!\ the\ tool\ find\_kpoints.x\ in\ order\ to\ know\ how\ many\ processor}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00334}00334\ \ \ \ \ \textcolor{comment}{!\ need\ to\ be\ allocated\ for\ the\ DFT\ run.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00335}00335\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00336}00336\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Finds\ optimal\ number\ of\ k-\/points\ for\ given\ number\ of\ processors}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00337}00337\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ checks\ if\ the\ number\ of\ k-\/points\ is\ a\ multiple}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00338}00338\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ of\ the\ number\ of\ processors\ and\ rescales\ it\ if\ necessary\ to}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00339}00339\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ ensure\ efficient\ parallel\ execution.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00340}00340\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nproc\ Number\ of\ processors}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00341}00341\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nk\ Number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00342}00342\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ nk\_opt\ Optimal\ number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00343}00343\ \ \ \ \ \textcolor{keyword}{subroutine\ }find\_nk\_opt(nproc,\ nk,\ nk\_opt)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00344}00344\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ nproc,\ nk,\ nk\_opt,\ diff}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00347}00347\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ nk\_opt\ =\ nk}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ diff\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(nproc,\ nk)\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(nproc,\ i)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diff\ =\ nk\ -\/\ nproc/i}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (diff\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nk\_opt\ =\ nproc/i}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{exit}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00357}00357\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00358}00358\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00359}00359\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00360}00360\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00362}00362\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00363}00363\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }find\_nk\_opt}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00364}00364\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00365}00365\ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00366}00366\ \ \ \ \ \textcolor{comment}{!\ Set\ of\ routines\ to\ sum/average/collect\ quantities}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00367}00367\ \ \ \ \ \textcolor{comment}{!\ which\ are\ distributed\ across\ processor\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00368}00368\ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00369}00369\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00370}00370\ \ \ \ \ \textcolor{comment}{!\ This\ routine\ recovers\ eigenvalues\ and\ occupations\ of\ KS\ orbitals}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00371}00371\ \ \ \ \ \textcolor{comment}{!\ from\ the\ processor\ pools\ and\ collect\ then\ to\ the\ master\ in\ the\ variables}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00372}00372\ \ \ \ \ \textcolor{comment}{!\ occupations\_sav\ and\ eigmol\_sav.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00373}00373\ \ \ \ \ \textcolor{comment}{!\ It\ is\ used\ in\ the\ evaluation\ of\ electron\ occupations\ and\ for\ variables}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00374}00374\ \ \ \ \ \textcolor{comment}{!\ printout\ at\ the\ end\ of\ SC\ cycle.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00375}00375\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00376}00376\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Collects\ eigenvalues\ and\ occupations\ from\ processor\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00377}00377\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ gathers\ eigenvalues\ and\ occupation\ numbers}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00378}00378\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ from\ all\ processor\ pools\ and\ collects\ them\ to\ the\ master}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00379}00379\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ process.\ It\ handles\ both\ spin-\/up\ and\ spin-\/down\ components}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00380}00380\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ for\ LSDA\ calculations.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00381}00381\ \ \ \ \ \textcolor{keyword}{subroutine\ }collect\_from\_pools}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00382}00382\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ipc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ yeslsda,\ bands,\ indk,\ eigmol,\ eigmoldo,\ occupations,\ occupationdo,\ eigmol\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmoldo\_sav,\ occupations\_sav,\ occupationsdo\_sav,\ molecorb,\ molecorbdo,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\_sav,\ molecorbdo\_sav}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ double\_occ}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00391}00391\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00392}00392\ \textcolor{preprocessor}{\#if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00393}00393\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00394}00394\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00395}00395\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (compute\_bands)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00397}00397\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ double\_occ\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda\ .or.\ ipc\ .eq.\ 2)\ double\_occ\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00400}00400\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ eigmol\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ occupations\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ molecorb\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_occ)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ eigmoldo\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ occupationsdo\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ molecorbdo\_sav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00408}00408\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00409}00409\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ kaverage\ .or.\ (kaverage\ .and.\ nk\ .eq.\ 1))\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ therefore\ I\ have\ just\ one\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmol\_sav(1:bands,\ 1)\ =\ eigmol(1:bands)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupations\_sav(1:bands,\ 1)\ =\ occupations(1:bands)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ molecorb\_sav(:,\ 1:bands,\ 1)\ =\ molecorb(:,\ 1:bands)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_occ)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmoldo\_sav(1:bands,\ 1)\ =\ eigmoldo(1:bands)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupationsdo\_sav(1:bands,\ 1)\ =\ occupationdo(1:bands)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ molecorbdo\_sav(:,\ 1,\ 1)\ =\ molecorbdo(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00419}00419\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00420}00420\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00421}00421\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00423}00423\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00424}00424\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00425}00425\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(eigmol,\ bands,\ mpi\_double\_precision,\ eigmol\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bands,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(occupations,\ bands,\ mpi\_double\_precision,\ occupations\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bands,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \&\ \ \ \textcolor{keyword}{call\ }mpi\_gather(molecorb,\ \textcolor{keyword}{size}(molecorb),\ mpi\_double\_precision,\ molecorb\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{size}(molecorb),\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_occ)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(eigmoldo,\ bands,\ mpi\_double\_precision,\ eigmoldo\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bands,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(occupationdo,\ bands,\ mpi\_double\_precision,\ occupationsdo\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bands,\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \textcolor{keyword}{call\ }mpi\_gather(molecorbdo,\ \textcolor{keyword}{size}(molecorbdo),\ mpi\_double\_precision,\ molecorbdo\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00439}00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{size}(molecorbdo),\ mpi\_double\_precision,\ 0,\ commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00440}00440\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00441}00441\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00442}00442\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00443}00443\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00444}00444\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00445}00445\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ syncronize}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00446}00446\ \textcolor{preprocessor}{\#if\ defined\ PARALLEL\ \&\&\ defined\ UNREL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00447}00447\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00448}00448\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00449}00449\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00450}00450\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00451}00451\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }collect\_from\_pools}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00452}00452\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00453}00453\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Gathers\ distributed\ grid\ data\ to\ master\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00454}00454\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ collects\ distributed\ grid\ data\ from\ all}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00455}00455\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ processes\ in\ a\ pool\ and\ assembles\ it\ on\ the\ master\ process.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00456}00456\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ps\_in\ Input\ data\ distributed\ across\ processes}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00457}00457\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ buf\ Buffer\ for\ communication}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00458}00458\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ ps\_out\ Assembled\ data\ on\ master\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00459}00459\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ meshproc\ Number\ of\ grid\ points\ per\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00460}00460\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nx,ny,nz\ Grid\ dimensions}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00461}00461\ \ \ \ \ \textcolor{keyword}{subroutine\ }gather\_from\_grid(ps\_in,\ buf,\ ps\_out,\ meshproc,\ nx,\ ny,\ nz)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00462}00462\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nx,\ ny,\ nz,\ meshproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00465}00465\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ ps\_in(meshproc)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00466}00466\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps\_out(nx,\ ny,\ nz),\ buf(meshproc,\ nprocrep)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00468}00468\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ indmesh,\ indproc,\ proc,\ i,\ j,\ k,\ ierr}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00469}00469\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00470}00470\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00471}00471\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00472}00472\ \ \ \ \ \ \ \ \ buf\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(ps\_in,\ meshproc,\ mpi\_double\_precision,\ buf,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ meshproc,\ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00475}00475\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00476}00476\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00478}00478\ \ \ \ \ \ \ \ \ \ \ \ \ indmesh\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00479}00479\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nz}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00480}00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ny}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00481}00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nx}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00482}00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ indproc\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00483}00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps\_out(i,\ j,\ k)\ =\ buf(indmesh,\ indproc)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00484}00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indproc\ .eq.\ nprocrep)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00485}00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indmesh\ =\ indmesh\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00487}00487\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00488}00488\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00489}00489\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00490}00490\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00491}00491\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00492}00492\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00493}00493\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00494}00494\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }gather\_from\_grid}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00495}00495\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00496}00496\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Scatters\ grid\ data\ from\ master\ to\ all\ processes}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00497}00497\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ distributes\ grid\ data\ from\ the\ master\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00498}00498\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ to\ all\ processes\ in\ a\ pool\ for\ parallel\ processing.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00499}00499\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ps\_in\ Input\ data\ on\ master\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00500}00500\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ buf\ Buffer\ for\ communication}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00501}00501\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ ps\_out\ Distributed\ data\ on\ each\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00502}00502\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ meshproc\ Number\ of\ grid\ points\ per\ process}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00503}00503\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nx,ny,nz\ Grid\ dimensions}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00504}00504\ \ \ \ \ \textcolor{keyword}{subroutine\ }scatter\_to\_grid(ps\_in,\ buf,\ ps\_out,\ meshproc,\ nx,\ ny,\ nz)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00507}00507\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nx,\ ny,\ nz,\ meshproc}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00508}00508\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ ps\_in(nx,\ ny,\ nz)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00509}00509\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps\_out(meshproc),\ buf(meshproc,\ nprocrep)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00510}00510\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00511}00511\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ proc,\ i,\ j,\ k,\ indmesh,\ indproc,\ ierr}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00512}00512\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00513}00513\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00514}00514\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00515}00515\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ buf\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00516}00516\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00517}00517\ \ \ \ \ \ \ \ \ \ \ \ \ indmesh\ =\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00518}00518\ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00519}00519\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nz}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00520}00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ny}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00521}00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nx}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ indproc\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00523}00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buf(indmesh,\ indproc)\ =\ ps\_in(i,\ j,\ k)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00524}00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indproc\ .eq.\ nprocrep)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00525}00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indmesh\ =\ indmesh\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00526}00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00527}00527\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00528}00528\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00529}00529\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00530}00530\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00531}00531\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00532}00532\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00533}00533\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_scatter(buf,\ meshproc,\ mpi\_double\_precision,\ ps\_out,\ meshproc,\ \&}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00534}00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00535}00535\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00536}00536\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00537}00537\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }scatter\_to\_grid}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00538}00538\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00539}00539\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Collects\ k-\/point\ data\ across\ processor\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00540}00540\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ performs\ simple\ summation\ of\ quantities}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00541}00541\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ across\ processor\ pools\ for\ k-\/point\ calculations.}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00542}00542\ \textcolor{comment}{\ \ \ \ !>\ @param[in,out]\ ps\ Array\ to\ be\ summed\ across\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00543}00543\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ dim\_ps\ Dimension\ of\ the\ array}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00544}00544\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ value\ Value\ to\ be\ added}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00545}00545\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ the\ operation}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00546}00546\ \ \ \ \ \textcolor{keyword}{subroutine\ }collect\_kpoints(ps,\ dim\_ps,\ value,\ root)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00547}00547\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ simple\ summation\ over\ pools}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00548}00548\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00549}00549\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ dim\_ps,\ root}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00550}00550\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ value}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00551}00551\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps(dim\_ps)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00552}00552\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ind\_ps,\ ierr}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00553}00553\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00554}00554\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00555}00555\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00556}00556\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ manyfort10)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00557}00557\ \ \ \ \ \ \ \ \ ind\_ps\ =\ rankcolrep\ +\ 1}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00558}00558\ \ \ \ \ \ \ \ \ ps(ind\_ps)\ =\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00559}00559\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00560}00560\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }reduce\_base\_real(dim\_ps,\ ps,\ commcolrep\_mpi,\ root)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00561}00561\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00562}00562\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00563}00563\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00564}00564\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }collect\_kpoints}
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00565}00565\ }
+\DoxyCodeLine{\Hypertarget{parallel__mod_8f90_source_l00566}00566\ \textcolor{keyword}{end\ module\ }parallel\_module}
+
+\end{DoxyCode}

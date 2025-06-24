@@ -47,6 +47,10 @@ fort.\+11 contains\+:
 \item Contraction matrices (detmat\+\_\+proj, projmat\+\_\+c) 
 \end{DoxyItemize}
 
+Definition in file \mbox{\hyperlink{fort11__io_8f90_source}{fort11\+\_\+io.\+f90}}.
+
+
+
 \label{doc-func-members}
 \Hypertarget{fort11__io_8f90_doc-func-members}
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -75,6 +79,91 @@ Sets error flag (iflagerr) if read fails
 
 Handles backward compatibility for parameter changes 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fort11__io_8f90_source_l00124}{124}} of file \mbox{\hyperlink{fort11__io_8f90_source}{fort11\+\_\+io.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00127\ \ \ \ \ real*8\ tstepr,\ parr\_read,\ tpar\_read,\ min\_running\_ave\_read,\ \&}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\_read,\ min\_running\_std\_read,\ min\_running\_std\_energy\_read}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(tpar\_buffer\_len)}\ ::\ tpar\_buffer\_filled\_read}
+\DoxyCodeLine{00130\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(tpar\_buffer\_len)}\ ::\ energy\_list\_read,\ error\_energy\_list\_read}
+\DoxyCodeLine{00131\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(size(tpar\_stable\_list))}\ ::\ tpar\_stable\_list\_read}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesconv\_read,\ iesdelay\_read,\ delay\_changeparr\_read}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{logical}\ change\_parr\_old,\ change\_tpar\_old,\ stop\_increasing\_tpar\_read,\ use\_stable\_tpar\_old}
+\DoxyCodeLine{00134\ \ \ \ \ rewind(11,\ err=100)}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ ngenc,\ nbrar,\ npow,\ etryr,\ nrest,\ nwr,\ tbrar,\ npr\&}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ npbrar,\ nmatbr,\ nnozerojr,\ yesminr,\ membigr\&}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ireadr,\ nmpr,\ nfatr,\ np3r,\ npsovr\&}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ wcort,\ wcorwt,\ nweightr,\ ngs,\ iendr,\ indcor,\ parbest\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iflagerr,\ enermin,\ varmin,\ iesconv\_read,\ fmax,\ jmax\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ parcutr,\ inext,\ pippoc,\ pippo,\ nprocr,\ nbinread,\ stepcg,\ ncgread\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tmes,\ tstepr,\ iskipdynr,\ epscuttyper,\ change\_parr\_old,\ change\_tpar\_old,\ use\_stable\_tpar\_old,\ nbra\_cyrus\_read}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (scalermax)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ rmax,\ rmaxj}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)}
+\DoxyCodeLine{00146\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_parr\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)\ parr\_read,\ iesdelay\_read,\ delay\_changeparr\_read}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .and.\ change\_parr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ parr\ =\ parr\_read}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ iesdelay\ =\ iesdelay\_read}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ delay\_changeparr\ =\ delay\_changeparr\_read}
+\DoxyCodeLine{00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00155\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((iopt\ .eq.\ 2\ .or.\ tpar\ .gt.\ 0)\ .and.\ change\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)\ tpar\_read,\ min\_running\_ave\_read,\ min\_running\_ave\_energy\_read,\ min\_running\_std\_read,\ \&}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\_read,\ tpar\_buffer\_filled\_read,\ error\_energy\_list\_read,\ \&}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\_read,\ stop\_increasing\_tpar\_read,\ tpar\_stable\_list\_read}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)}
+\DoxyCodeLine{00163\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00164\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .and.\ change\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tpar\ .gt.\ 0\ .and.\ change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ use\_stable\_tpar\ =\ use\_stable\_tpar\_old}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ stop\_increasing\_tpar\ =\ stop\_increasing\_tpar\_read}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\ =\ tpar\_read}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_buffer\_filled\ =\ tpar\_buffer\_filled\_read}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\ =\ min\_running\_ave\_read}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\ =\ min\_running\_ave\_energy\_read}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\ =\ min\_running\_std\_read}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\ =\ min\_running\_std\_energy\_read}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ using\ tpar\ read\ in\ input\ |tpar|\ and\ restarting\ buffer\ '}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ stop\_increasing\_tpar\ =\ .false.}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\ =\ abs(tpar)}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_buffer\_filled(:)\ =\ .false.}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\ =\ 1.d20}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\ =\ 0.0d0}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\ =\ 1d20}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\ =\ 0.0d0}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\_read\ =\ 0.d0}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\_read\ =\ 0.d0}
+\DoxyCodeLine{00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\ =\ error\_energy\_list\_read}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\ =\ energy\_list\_read}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_stable\_list\ =\ tpar\_stable\_list\_read}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\ =\ 0.d0}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\ =\ 0.d0}
+\DoxyCodeLine{00194\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00195\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0)\ iesconv\ =\ iesconv\_read}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tstep)\ tstep\ =\ tstepr}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00200\ 100\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}From\ allio\ ERROR\ fort.11\ begin"{}}}
+\DoxyCodeLine{00201\ \ \ \ \ iflagerr\ =\ 1}
+
+\end{DoxyCode}
 \Hypertarget{fort11__io_8f90_a16a9970ed409b9a006488f55bdd8794f}\index{fort11\_io.f90@{fort11\_io.f90}!read\_fort11\_end@{read\_fort11\_end}}
 \index{read\_fort11\_end@{read\_fort11\_end}!fort11\_io.f90@{fort11\_io.f90}}
 \doxysubsubsection{\texorpdfstring{read\_fort11\_end()}{read\_fort11\_end()}}
@@ -92,6 +181,104 @@ Reads contraction matrices if allocated and not averaging
 
 Sets error flag (iflagerr) if reading fails 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fort11__io_8f90_source_l00213}{213}} of file \mbox{\hyperlink{fort11__io_8f90_source}{fort11\+\_\+io.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelnwr,\ i,\ j,\ k,\ l,\ indtel}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw\ .or.\ nprocr\ .ne.\ nproc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{00220\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ walkers'},\ nw,\ nwr}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nprocr\ .ne.\ nproc)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{00222\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ processors\ '},\ nproc,\ nprocr}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{00224\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00225\ \ \ \ \ nelnwr\ =\ nel*nwr*(indt\ +\ 1)}
+\DoxyCodeLine{00226\ \ \ \ \ indtel\ =\ nel*(indt\ +\ 1)}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{00234\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ walkers'},\ nw,\ nwr}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{00236\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npr\ .eq.\ np)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(mod(i\ -\/\ 1,\ ncgdim)\ +\ 1,\ j),\ j=1,\ np),\ i=1,\ ncgread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (allowcontr(i,\ 1),\ allowcontr(i,\ 2),\ i=1,\ nelorb\_c)}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ allowcontr\ =\ .true.}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ np\ read\ different\ from\ np\ found\ !!!\ '},\ np,\ npr}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncgdim\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ previous\ CG\ steps\ forgotten\ in\ read\ '}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stepcg\ =\ 0}
+\DoxyCodeLine{00258\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npr\ .eq.\ np)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(mod(i\ -\/\ 1,\ ncgdim)\ +\ 1,\ j),\ j=1,\ np),\ i=1,\ ncgread)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ np\ read\ different\ from\ np\ found\ !!!\ '},\ np,\ npr}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncgdim\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ previous\ CG\ steps\ forgotten\ in\ read\ '}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stepcg\ =\ 0}
+\DoxyCodeLine{00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{00282\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00283\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)}
+\DoxyCodeLine{00289\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00290\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(detmat\_proj)\ .and.\ .not.\ kaverage)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .ne.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ detmat\_proj,\ projmat\_c}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)}
+\DoxyCodeLine{00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00297\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(cov\_old))\ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ cov\_old}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ File\ fort.11\ is\ read\ correctly\ ...'}}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ 100\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}\ From\ fort11\_io.f90,\ Error\ fort.11\ end"{}}}
+\DoxyCodeLine{00303\ \ \ \ \ iflagerr\ =\ 1}
+
+\end{DoxyCode}
 \Hypertarget{fort11__io_8f90_a203f59c832cd1e2ed7c9814b0f66eca4}\index{fort11\_io.f90@{fort11\_io.f90}!write\_fort11\_begin@{write\_fort11\_begin}}
 \index{write\_fort11\_begin@{write\_fort11\_begin}!fort11\_io.f90@{fort11\_io.f90}}
 \doxysubsubsection{\texorpdfstring{write\_fort11\_begin()}{write\_fort11\_begin()}}
@@ -113,6 +300,31 @@ Conditionally writes parr and tpar arrays if change\+\_\+parr/change\+\_\+tpar a
 
 Handles adaptive parameter adjustment for optimization 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fort11__io_8f90_source_l00052}{52}} of file \mbox{\hyperlink{fort11__io_8f90_source}{fort11\+\_\+io.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00055\ \ \ \ \ rewind(11)}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Length\ record\ unit\ 12\ \ ='},\ nmatb}
+\DoxyCodeLine{00057\ \ \ \ \ nmatb\ =\ nnozero\_c}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{write}\ (11)\ ngg,\ nbra,\ npow,\ etryr,\ nrest,\ nw,\ tbra,\ np,\ npbra,\ nmatb\ \ \ \ \ \ \&}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nnozeroj,\ yesmin,\ membig\&}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iread,\ nmp,\ nfat,\ np3,\ npsov,\ wcort,\ wcorwt,\ nweight,\ ngn,\ iend\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ indcor,\ parbest,\ iflagerr,\ enermin,\ varmin\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iesconv,\ fmax,\ jmax,\ parcut,\ inext,\ pippoc,\ pippo,\ nproc,\ nbin,\ stepcg\ \ \ \ \ \&}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ncg,\ tmes,\ tstep,\ iskipdyn,\ epscuttype,\ change\_parr,\ change\_tpar,\ use\_stable\_tpar,\ nbra\_cyrus}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keyword}{write}\ (11)\ rmax,\ rmaxj}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_parr)\ \textcolor{keyword}{write}\ (11)\ parr,\ iesdelay,\ delay\_changeparr}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar)\ \textcolor{keyword}{write}\ (11)\ tpar,\ min\_running\_ave,\ min\_running\_ave\_energy,\ min\_running\_std,\ \&}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ min\_running\_std\_energy,\ tpar\_buffer\_filled,\ error\_energy\_list,\ energy\_list,\ \&}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ stop\_increasing\_tpar,\ tpar\_stable\_list}
+\DoxyCodeLine{00069\ }
+
+\end{DoxyCode}
 \Hypertarget{fort11__io_8f90_ad0bf47ee4034f7a8c55954a90877683d}\index{fort11\_io.f90@{fort11\_io.f90}!write\_fort11\_end@{write\_fort11\_end}}
 \index{write\_fort11\_end@{write\_fort11\_end}!fort11\_io.f90@{fort11\_io.f90}}
 \doxysubsubsection{\texorpdfstring{write\_fort11\_end()}{write\_fort11\_end()}}
@@ -136,3 +348,37 @@ Conditionally writes detmat\+\_\+proj and projmat\+\_\+c if allocated
 
 Writes covariance matrix (cov\+\_\+old) if allocated 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fort11__io_8f90_source_l00083}{83}} of file \mbox{\hyperlink{fort11__io_8f90_source}{fort11\+\_\+io.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordtype}{integer}\ indtel,\ l,\ i,\ j,\ k}
+\DoxyCodeLine{00087\ \ \ \ \ indtel\ =\ nel*(indt\ +\ 1)}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\&}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(i,\ j),\ j=1,\ np),\ i=1,\ ncgdim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (allowcontr(i,\ 1),\ allowcontr(i,\ 2),\ i=1,\ nelorb\_c)}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(i,\ j),\ j=1,\ np),\ i=1,\ ncgdim)}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)}
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(detmat\_proj)\ .and.\ .not.\ kaverage)\ \textcolor{keyword}{write}\ (11)\ detmat\_proj,\ projmat\_c}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(cov\_old))\ \textcolor{keyword}{write}\ (11)\ cov\_old}
+
+\end{DoxyCode}

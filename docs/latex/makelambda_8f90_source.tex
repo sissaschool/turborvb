@@ -1,0 +1,418 @@
+\doxysection{makelambda.\+f90}
+\hypertarget{makelambda_8f90_source}{}\label{makelambda_8f90_source}\index{src/a\_makefort10/makelambda.f90@{src/a\_makefort10/makelambda.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00015}00015\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00016}00016\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Generate\ symmetry-\/equivalent\ matrix\ elements\ for\ lambda\ parameters}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @details\ This\ subroutine\ generates\ the\ symmetry-\/equivalent\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ for\ the\ lambda\ parameters\ used\ in\ the\ Jastrow\ factor.\ It\ applies}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ rotation\ and\ translation\ symmetries\ to\ identify\ equivalent\ orbital}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ pairs\ and\ groups\ them\ into\ records\ for\ efficient\ computation.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00023}00023\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ The\ subroutine\ handles:}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Rotation\ symmetries\ (symrot)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Translation\ symmetries\ (symtra)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Hermitian\ constraints\ (symmagp)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Phase\ locking\ for\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Hybrid\ orbital\ cutting\ (cut\_hybrid)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ 4-\/body\ Jastrow\ restrictions\ (no\_4body\_jas)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00030}00030\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ norb\ Number\ of\ orbitals}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ symrot\ Rotation\ symmetry\ matrix\ (norb,\ nrot)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ nrot\ Number\ of\ rotation\ symmetries}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ symtra\ Translation\ symmetry\ matrix\ (norb,\ ntra)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ ntra\ Number\ of\ translation\ symmetries}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[out]\ occupied\ Logical\ matrix\ indicating\ allowed\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[out]\ recordsym\ Symmetry\ records\ for\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @param[out]\ lenrec\ Length\ of\ each\ symmetry\ record}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[in,out]\ nrec\ Number\ of\ records\ (input:\ max,\ output:\ actual)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in]\ symmagp\ Logical\ flag\ for\ Hermitian\ constraints}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @param[in]\ ipsip\ Temporary\ array\ for\ symmetry\ operations}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @param[in]\ rion\ Atomic\ positions\ (3,\ ntotatoms)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @param[in]\ ntotatoms\ Total\ number\ of\ atoms}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00044}00044\ \textcolor{comment}{!>\ @param[in]\ orb2atom\ Mapping\ from\ orbitals\ to\ atoms}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00045}00045\ \textcolor{comment}{!>\ @param[in]\ cellscale\ Cell\ dimensions}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00046}00046\ \textcolor{comment}{!>\ @param[in]\ deps\ Numerical\ tolerance\ for\ comparisons}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00047}00047\ \textcolor{comment}{!>\ @param[in]\ yes\_hermite\ Logical\ flag\ for\ Hermitian\ treatment}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @param[in]\ opposite\_phase\ Logical\ flag\ for\ opposite\ phase\ treatment}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @param[in]\ zeta\ Zeta\ parameters\ for\ atoms\ (2,\ ntotatoms)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @param[in]\ J3\_off\ Logical\ array\ disabling\ J3\ terms\ for\ specific\ atoms}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @param[in]\ check\_same\_atom\ Logical\ flag\ to\ check\ same\ atom\ conditions}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @param[in]\ no\_4body\_jas\ Logical\ flag\ to\ disable\ 4-\/body\ Jastrow\ terms}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00053}00053\ \textcolor{comment}{!>\ @param[in]\ cut\_hybrid\ Array\ specifying\ hybrid\ orbital\ cuts\ per\ atom}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00054}00054\ \textcolor{keyword}{subroutine\ }makelambda(norb,\ symrot,\ nrot,\ symtra,\ ntra,\ occupied,\ recordsym\ \&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ lenrec,\ nrec,\ symmagp,\ ipsip,\ rion,\ ntotatoms,\ orb2atom\ \&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ cellscale,\ deps,\ yes\_hermite,\ opposite\_phase,\ zeta,\ J3\_off\ \&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ check\_same\_atom,\ no\_4body\_jas,\ cut\_hybrid)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesymm__data}{symm\_data}},\ \textcolor{keywordtype}{only}:\ cartesiantocrystal}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordtype}{integer}\ norb,\ nrot,\ ntra,\ symrot(norb,\ nrot),\ symtra(norb,\ ntra)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordtype}{logical}\ occupied(norb,\ norb),\ symmagp,\ accept,\ yes\_hermite,\ J3\_off(ntotatoms),\ check\_same\_atom,\ yes\_cut}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00062}00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ recordsym(2,\ ntra*nrot,\ *),\ lenrec(*),\ i,\ j,\ k,\ l,\ jfirst,\ imap,\ jmap\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ signi,\ signj,\ imapr,\ jmapr,\ signir,\ signjr,\ ipsip(2,\ ntra*nrot),\ indsym,\ countrec\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nrec,\ count,\ kk,\ ntotatoms}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordtype}{real*8}\ rion(3,\ ntotatoms),\ rdiff(3),\ rdiff\_new(3),\ rdiff\_rot(3),\ cellscale(3),\ cost,\ deps,\ zeta(2,\ ntotatoms)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordtype}{integer}\ orb2atom(*),\ posi,\ posj,\ posi\_new,\ posj\_new}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordtype}{integer}\ cut\_hybrid(ntotatoms)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordtype}{logical}\ phase\_locked,\ phase\_bound,\ yesfirst,\ opposite\_phase,\ no\_4body\_jas}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ atbasis,\ refat}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{external}\ ::\ check\_longbond}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00072}00072\ \ \ \ \ \textcolor{comment}{!\ \ Input\ symrot(norb,nrot)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ \ \ j=symrot(i,is)\ \ \ is=1,nrot\ are\ the\ possible\ rotation\ symmetries}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00074}00074\ \ \ \ \ \textcolor{comment}{!\ \ |j|>0\ \ is\ the\ orbital\ obtained\ after\ application\ of\ the\ symmetry\ is}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ \ to\ the\ orbital\ i.\ if\ symrot(i,is)=0\ \ it\ is\ not\ possible\ to\ apply\ this}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ symmetry\ to\ the\ orbital\ i\ (generates\ more\ than\ a\ single\ orbital).}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ \ the\ sign\ of\ j\ is\ the\ sign\ obtained\ after\ this\ transformation\ to\ the}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ \ orbital\ including\ the\ sign\ of\ the\ boundary\ conditions.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00079}00079\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00080}00080\ \ \ \ \ \textcolor{comment}{!\ \ \ symtra(norb,ntra)\ as\ above\ for\ the\ translation\ symmetries.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00081}00081\ \ \ \ \ \textcolor{comment}{!\ \ \ assumed\ that\ the\ translation\ symmetries\ are\ always\ allowed\ (never\ symtra(i,j)=0.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00082}00082\ \ \ \ \ \textcolor{comment}{!\ \ \ Output\ occupied=.true.\ for\ an\ allowed\ matrix\ element\ of\ the}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00083}00083\ \ \ \ \ \textcolor{comment}{!\ \ \ lambda\_ij}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00084}00084\ \ \ \ \ \textcolor{comment}{!\ \ \ output\ record(2,1:lenrec(k),k)\ k<=nrec,\ if\ nrec\ large\ enough\ all\ matrix}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!\ \ \ elements\ are\ classified\ otherwise\ a\ Warning\ appears\ and\ nrec\ is\ the\ number}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00086}00086\ \ \ \ \ \textcolor{comment}{!\ \ \ of\ records\ that\ are\ actually\ required.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00087}00087\ \ \ \ \ \textcolor{comment}{!\ \ \ lenrec(k)\ \ is\ the\ length\ of\ the\ record\ \#k}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00089}00089\ \ \ \ \ occupied\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00090}00090\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00091}00091\ \ \ \ \ phase\_locked\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00092}00092\ \ \ \ \ countrec\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00093}00093\ \ \ \ \ yes\_cut\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00094}00094\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ntotatoms}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cut\_hybrid(i)\ .ne.\ -\/1)\ yes\_cut\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_cut\ .or.\ yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (atbasis(ntotatoms),\ refat(ntotatoms))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ atbasis\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ norb}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ atbasis(orb2atom(i))\ =\ atbasis(orb2atom(i))\ +\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00103}00103\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ computation\ cumulative\ index}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ refat\ =\ atbasis}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ ntotatoms}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ refat(i)\ =\ refat(i)\ +\ refat(i\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00108}00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ntotatoms}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ refat(i)\ =\ refat(i)\ -\/\ atbasis(i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ the\ first\ reference}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ write(6,*)\ '\ HERE\ refat\ '}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ do\ i=1,ntotatoms}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ write(6,*)\ i,refat(i)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ enddo}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00119}00119\ \ \ \ \ \textcolor{comment}{!\ \ write(6,*)\ '\ HERE\ orb2atom\ ',yes\_hermite}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00120}00120\ \ \ \ \ \textcolor{comment}{!\ \ do\ i=1,norb}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00121}00121\ \ \ \ \ \textcolor{comment}{!\ \ write(6,*)\ i,orb2atom(i)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00122}00122\ \ \ \ \ \textcolor{comment}{!\ \ enddo}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00124}00124\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ norb}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ jfirst\ =\ i}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ jfirst\ =\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00129}00129\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ jfirst,\ norb}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ posi\ =\ orb2atom(i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ posj\ =\ orb2atom(j)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rdiff(:)\ =\ rion(:,\ posi)\ -\/\ rion(:,\ posj)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rdiff,\ 1)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{pareff_8f90_ab48c0ada1c0a7c7d55b4c3ec3bcac987}{makeimage}}(rdiff,\ cellscale,\ deps)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_locked\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_bound\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00139}00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ occupied(i,\ j))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (check\_same\_atom\ .and.\ orb2atom(i)\ .eq.\ orb2atom(j))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ avoid\ J1}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orb2atom(j)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j3\_off(orb2atom(i)))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!write(6,*)\ "{}debug\ XXX\ "{},\ i,\ j,\ orb2atom(i),\ J3\_off(orb2atom(i))}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cycle}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00148}00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indsym\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ntra}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signi\ =\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signj\ =\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imap\ =\ symtra(i,\ k)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmap\ =\ symtra(j,\ k)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imap\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imap\ =\ -\/imap}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signi\ =\ -\/signi}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (jmap\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmap\ =\ -\/jmap}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signj\ =\ -\/signj}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00164}00164\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00165}00165\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imap\ .eq.\ 0\ .or.\ jmap\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Error\ in\ symtra\ !!!\ '},\ imap,\ jmap}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00169}00169\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ nrot}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imapr\ =\ symrot(imap,\ l)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmapr\ =\ symrot(jmap,\ l)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00173}00173\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imapr\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imapr\ =\ -\/imapr}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signir\ =\ -\/signi}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signir\ =\ signi}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (jmapr\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmapr\ =\ -\/jmapr}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signjr\ =\ -\/signj}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signjr\ =\ signj}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00185}00185\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imapr\ .ne.\ 0\ .and.\ jmapr\ .ne.\ 0)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ if\ it\ is\ an\ allowed\ symmetry}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ posi\ =\ orb2atom(abs(imapr))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ posj\ =\ orb2atom(abs(jmapr))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ rdiff\_rot\ remains\ n.n.\ image,\ apart\ for\ boundaries.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rdiff\_rot(:)\ =\ rion(:,\ posi)\ -\/\ rion(:,\ posj)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rdiff\_rot,\ 1)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{pareff_8f90_ab48c0ada1c0a7c7d55b4c3ec3bcac987}{makeimage}}(rdiff\_rot,\ cellscale,\ deps)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_bound\ =\ check\_longbond(rdiff\_rot,\ cellscale,\ deps)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Only\ for\ the\ same\ type\ of\ orbital\ and\ the\ same\ type\ of\ ion}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (opposite\_phase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (phase\_bound\ .and.\ (abs(imapr)\ -\/\ refat(posi))\ .eq.\ (abs(jmapr)\ -\/\ refat(posj))\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ opposite\_phase\ .and.\ zeta(1,\ orb2atom(i))\ .eq.\ zeta(1,\ orb2atom(j))\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ posi\ .ne.\ posj)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_locked\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00203}00203\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00204}00204\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00207}00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ conj}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indsym\ =\ indsym\ +\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(1,\ indsym)\ =\ imapr*signjr*signir}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(2,\ indsym)\ =\ jmapr}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00211}00211\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00212}00212\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00213}00213\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ check\ if\ it\ is\ a\ compatible\ record}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indsym\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indsym}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(abs(ipsip(1,\ k)),\ abs(ipsip(2,\ k)))\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00219}00219\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indsym}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(abs(ipsip(2,\ k)),\ abs(ipsip(1,\ k)))\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00223}00223\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00224}00224\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00227}00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (no\_4body\_jas)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orb2atom(i)\ .ne.\ orb2atom(j)\ .and.\ orb2atom(i)\ .ne.\ 0\ .and.\ orb2atom(j)\ .ne.\ 0)\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00230}00230\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_cut)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (posi\ .eq.\ posj\ .and.\ cut\_hybrid(posi)\ .ne.\ -\/1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(imapr)\ -\/\ refat(posi)\ .gt.\ cut\_hybrid(posi)\ \&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .or.\ abs(jmapr)\ -\/\ refat(posj)\ .gt.\ cut\_hybrid(posj))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00236}00236\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00237}00237\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (posi\ .ne.\ posj\ .and.\ cut\_hybrid(posi)\ .ne.\ -\/1\ .and.\ cut\_hybrid(posj)\ .ne.\ -\/1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(jmapr)\ -\/\ refat(posj)\ .le.\ cut\_hybrid(posj))\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(imapr)\ -\/\ refat(posi)\ .le.\ cut\_hybrid(posi))\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00241}00241\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (posi\ .ne.\ posj\ .and.\ cut\_hybrid(posi)\ .ne.\ -\/1\ .and.\ cut\_hybrid(posj)\ .eq.\ -\/1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(imapr)\ -\/\ refat(posi)\ .le.\ cut\_hybrid(posi))\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00244}00244\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (posi\ .ne.\ posj\ .and.\ cut\_hybrid(posi)\ .eq.\ -\/1\ .and.\ cut\_hybrid(posj)\ .ne.\ -\/1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(jmapr)\ -\/\ refat(posj)\ .le.\ cut\_hybrid(posj))\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00247}00247\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00248}00248\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00249}00249\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(i.eq.1.and.j.eq.54)\ then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Path\ 1-\/54\ ',phase\_bound,rdiff(1:3)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ k=1,indsym}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ k,ipsip(1,k),ipsip(2,k)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(.not.yes\_hermite)\ then\ \ !\ no\ parameter\ eliminated\ in\ the\ complex\ case.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indsym}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((abs(ipsip(2,\ k))\ .eq.\ i\ .and.\ ipsip(1,\ k)\ .eq.\ -\/j)\ .or.\ (ipsip(1,\ k)\ .eq.\ -\/i\ \&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .and.\ abs(ipsip(2,\ k))\ .eq.\ j))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00263}00263\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00264}00264\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indsym}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(ipsip(2,\ k))\ .eq.\ j\ .and.\ ipsip(1,\ k)\ .eq.\ -\/i)\ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00268}00268\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00269}00269\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00270}00270\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (accept)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ countrec\ =\ countrec\ +\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (countrec\ .le.\ nrec)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ group\ toghether\ the\ various\ pairs}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lenrec(countrec)\ =\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1:2,\ 1,\ countrec)\ =\ ipsip(1:2,\ 1)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ indsym}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ k\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((abs(ipsip(1,\ k))\ .eq.\ abs(ipsip(1,\ l))\ .and.\ abs(ipsip(2,\ k))\ .eq.\ abs(ipsip(2,\ l)))\ .or.\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(abs(ipsip(1,\ k))\ .eq.\ abs(ipsip(2,\ l))\ .and.\ abs(ipsip(2,\ k))\ .eq.\ abs(ipsip(1,\ l))))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00284}00284\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00285}00285\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ k\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((abs(ipsip(1,\ k))\ .eq.\ abs(ipsip(1,\ l))\ .and.\ abs(ipsip(2,\ k))\ .eq.\ abs(ipsip(2,\ l))))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00290}00290\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00291}00291\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00292}00292\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (accept)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lenrec(countrec)\ =\ lenrec(countrec)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1:2,\ lenrec(countrec),\ countrec)\ =\ ipsip(1:2,\ k)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00297}00297\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_hermite)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ lenrec(countrec)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (recordsym(2,\ l,\ countrec)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Forget\ about\ the\ phase\ as\ it\ is\ taken\ into\ account\ by\ the\ attaching\ flux.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1,\ l,\ countrec)\ =\ -\/abs(recordsym(1,\ l,\ countrec))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(2,\ l,\ countrec)\ =\ abs(recordsym(2,\ l,\ countrec))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1:2,\ l,\ countrec)\ =\ abs(recordsym(1:2,\ l,\ countrec))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00306}00306\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00307}00307\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (phase\_locked\ .and.\ opposite\_phase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(2,\ 1:lenrec(countrec),\ countrec)\ =\ -\/abs(recordsym(2,\ 1:lenrec(countrec),\ countrec))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00310}00310\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00311}00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00312}00312\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ if\ countrec<=nrec}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00313}00313\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ accepted}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00314}00314\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ occupied}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00315}00315\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00316}00316\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00317}00317\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00318}00318\ \ \ \ \ \textcolor{keywordflow}{if}\ (countrec\ .gt.\ nrec)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ \#\ record\ too\ small\ '},\ countrec,\ nrec}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00320}00320\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00321}00321\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00322}00322\ \ \ \ \ \ \ \ \ occupied\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ count\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00324}00324\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ min(nrec,\ countrec)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ lenrec(i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00326}00326\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(abs(recordsym(1,\ j,\ i)),\ abs(recordsym(2,\ j,\ i)))\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00328}00328\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00329}00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ lenrec(i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00330}00330\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(recordsym(1,\ j,\ i))\ .eq.\ abs(recordsym(1,\ k,\ i))\ .and.\ abs(recordsym(2,\ j,\ i))\ .eq.\&}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&abs(recordsym(2,\ k,\ i))\ .and.\ k\ .ne.\ j)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00333}00333\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Repetition\ !!!\ j,k,\ record\ \ '},\ j,\ k,\ i}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ first\ pair\ -\/-\/>\ '},\ recordsym(1,\ j,\ i),\ recordsym(2,\ j,\ i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ second\ pair\ -\/-\/>\ '},\ recordsym(1,\ k,\ i),\ recordsym(2,\ k,\ i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ lenrec(i),\ (recordsym(1,\ kk,\ i),\ recordsym(2,\ kk,\ i),\ kk=1,\ lenrec(i))}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00339}00339\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00340}00340\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00341}00341\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00342}00342\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00343}00343\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00344}00344\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ count\ =\ count\ +\ lenrec(i)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00346}00346\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ elements\ inside\ makelambda\ ='},\ count}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ count\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ norb}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ norb}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (occupied(i,\ j))\ count\ =\ count\ +\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00352}00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00353}00353\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00354}00354\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Count\ check\ inside\ makelambda\ '},\ count}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00356}00356\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00357}00357\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00358}00358\ \ \ \ \ nrec\ =\ countrec}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00359}00359\ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_cut\ .or.\ yes\_hermite)\ \textcolor{keyword}{deallocate}\ (atbasis,\ refat)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00360}00360\ }
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00361}00361\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00362}00362\ \textcolor{keyword}{end\ subroutine\ }makelambda}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00363}00363\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00364}00364\ \textcolor{comment}{!>\ @brief\ Check\ if\ a\ bond\ is\ a\ long\ bond\ across\ cell\ boundaries}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00365}00365\ \textcolor{comment}{!>\ @details\ This\ function\ determines\ if\ a\ bond\ vector\ represents\ a\ long\ bond}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00366}00366\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ that\ crosses\ cell\ boundaries.\ It\ checks\ if\ the\ bond\ vector\ is}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00367}00367\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ close\ to\ half\ the\ cell\ size\ in\ any\ direction.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00368}00368\ \textcolor{comment}{!>\ @param[in]\ rdiff\ Bond\ vector\ (3)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00369}00369\ \textcolor{comment}{!>\ @param[in]\ cellscale\ Cell\ dimensions\ (3)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00370}00370\ \textcolor{comment}{!>\ @param[in]\ deps\ Numerical\ tolerance\ for\ comparisons}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00371}00371\ \textcolor{comment}{!>\ @return\ Logical\ indicating\ if\ the\ bond\ is\ a\ long\ bond}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00372}00372\ \textcolor{keyword}{function\ }check\_longbond(rdiff,\ cellscale,\ deps)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00373}00373\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00374}00374\ \ \ \ \ \textcolor{keywordtype}{logical}\ check\_longbond}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00375}00375\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ check}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00376}00376\ \ \ \ \ real*8\ rdiff(3),\ cellscale(3),\ deps}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00377}00377\ \ \ \ \ check\ =\ 0}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00378}00378\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(2*abs(rdiff(i))\ -\/\ cellscale(i))\ .lt.\ deps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ check\ =\ check\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (abs(rdiff(i))\ .gt.\ deps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ check\ =\ check\ +\ 4}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00383}00383\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00384}00384\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00385}00385\ \ \ \ \ check\_longbond\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00386}00386\ \ \ \ \ \textcolor{keywordflow}{if}\ (check\ .lt.\ 0)\ check\_longbond\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00387}00387\ \textcolor{keyword}{end\ function\ }check\_longbond}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00388}00388\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00389}00389\ \textcolor{comment}{!>\ @brief\ Apply\ periodic\ boundary\ conditions\ to\ a\ vector\ (fake\ version)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00390}00390\ \textcolor{comment}{!>\ @details\ This\ subroutine\ applies\ periodic\ boundary\ conditions\ to\ a\ vector}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00391}00391\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ by\ reducing\ it\ to\ the\ first\ Brillouin\ zone.\ It\ handles\ special}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00392}00392\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ cases\ at\ zone\ boundaries\ where\ the\ vector\ is\ exactly\ at\ half}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00393}00393\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ the\ cell\ size.}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00394}00394\ \textcolor{comment}{!>\ @param[in,out]\ rdiff\ Vector\ to\ be\ reduced\ (3)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00395}00395\ \textcolor{comment}{!>\ @param[in]\ cellscale\ Cell\ dimensions\ (3)}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00396}00396\ \textcolor{comment}{!>\ @param[in]\ deps\ Numerical\ tolerance\ for\ boundary\ cases}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00397}00397\ \textcolor{keyword}{subroutine\ }makeimageo\_fake(rdiff,\ cellscale,\ deps)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00398}00398\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00399}00399\ \ \ \ \ \textcolor{keywordtype}{integer}\ kk,\ npip,\ m}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00400}00400\ \ \ \ \ real*8\ cost,\ rdiff(3),\ cellscale(3),\ deps}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00401}00401\ \ \ \ \ \textcolor{keywordflow}{do}\ kk\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ cost\ =\ rdiff(kk)/cellscale(kk)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ npip\ =\ nint(2*cost)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((npip/2)*2\ .ne.\ npip\ .and.\ abs(cost\ -\/\ npip/2.d0)\ .lt.\ deps)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ Boarder\ cases}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ m\ =\ (npip\ +\ 1)/2}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ m\ =\ nint(cost)}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00408}00408\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ rdiff(kk)\ =\ rdiff(kk)\ -\/\ cellscale(kk)*m}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00410}00410\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00411}00411\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{makelambda_8f90_source_l00412}00412\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

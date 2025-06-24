@@ -96,6 +96,8 @@ $(function(){initNavTree('pareff_8f90.html','',''); });
 
 <p>Parameterization system for Jastrow factors and determinant matrices.  
 <a href="#details">More...</a></p>
+
+<p><a href="pareff_8f90_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
@@ -124,6 +126,8 @@ Functions/Subroutines</h2></td></tr>
 <p>This module provides the core parameterization system for TurboRVB's variational wave function optimization. It handles the mapping between physical parameters (distances between particles) and variational parameters for Jastrow factors and determinant matrices. The system supports various parameterization schemes including power-law expansions, logarithmic forms, and constant parameterization with distance-dependent basis functions. </p><dl class="section note"><dt>Note</dt><dd>The parameterization distinguishes between Jastrow parameters (rpar &gt; 0) and determinant parameters (rpar &lt; 0) based on the sign of input distances. </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>TurboRVB group </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2022 </dd></dl>
+
+<p class="definition">Definition in file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a9287949dd9cb4d6b4baa18cc8804a713" name="a9287949dd9cb4d6b4baa18cc8804a713"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9287949dd9cb4d6b4baa18cc8804a713">&#9670;&#160;</a></span>attach_phase2det()</h2>
@@ -153,6 +157,272 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Handles both up-up, up-down, and down-down matrix blocks for AGP/Pfaffian wave functions. Uses cell and symmetry information for phase calculation. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="#aaacd40cffe563e115471762f1915a331" title="Compute periodic image index (unique definition)">makenpip</a>, <a class="el" href="#a47c11118fede4e379001b8f5354476f8" title="Apply minimum image convention and return periodic image indices.">makeimagep</a>, CartesianToCrystal</dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00744">744</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  745</span><span class="comment">    !&gt; @brief Attach phase factors to determinant matrix elements</span></div>
+<div class="line"><span class="lineno">  746</span><span class="comment">    !&gt; @details Applies the appropriate phase factors to the determinant matrix elements</span></div>
+<div class="line"><span class="lineno">  747</span><span class="comment">    !&gt;          according to the boundary conditions, symmetry, and spin structure.</span></div>
+<div class="line"><span class="lineno">  748</span><span class="comment">    !&gt;          Handles both real and complex wave functions, and supports AGP/Pfaffian</span></div>
+<div class="line"><span class="lineno">  749</span><span class="comment">    !&gt;          forms. Ensures correct phase conventions for periodic boundary conditions.</span></div>
+<div class="line"><span class="lineno">  750</span><span class="comment">    !&gt; @param[in] minus Logical flag: true for effective-to-real, false for real-to-effective</span></div>
+<div class="line"><span class="lineno">  751</span><span class="comment">    !&gt; @param[inout] detmat_c Determinant matrix to which phases are applied</span></div>
+<div class="line"><span class="lineno">  752</span><span class="comment">    !&gt; @note Handles both up-up, up-down, and down-down matrix blocks for AGP/Pfaffian</span></div>
+<div class="line"><span class="lineno">  753</span><span class="comment">    !&gt;       wave functions. Uses cell and symmetry information for phase calculation.</span></div>
+<div class="line"><span class="lineno">  754</span><span class="comment">    !&gt; @see makenpip, makeimagep, CartesianToCrystal</span></div>
+<div class="line"><span class="lineno">  755</span>    <span class="keywordtype">use </span>allio, <span class="keywordtype">only</span>: rion, kiontot, symmagp, yes_hermite, sjbradet&amp;</div>
+<div class="line"><span class="lineno">  756</span>            &amp;, jbradet, nnozero_c, nozero_c, nelorb_c, nelorb_at, opposite_phase, rank, ndiff, pfaffup</div>
+<div class="line"><span class="lineno">  757</span>    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespacecell.html">cell</a>, <span class="keywordtype">only</span>: cellscale, phase2pi, phase2pi_down, car2cry, cartesiantocrystal</div>
+<div class="line"><span class="lineno">  758</span>    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespaceconstants.html">constants</a>, <span class="keywordtype">only</span>: ipc, deps, ipf</div>
+<div class="line"><span class="lineno">  759</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  760</span> </div>
+<div class="line"><span class="lineno">  761</span>    <span class="comment">!nelorb_cm is half of nelorb_c-ndiff if ipf.eq.2</span></div>
+<div class="line"><span class="lineno">  762</span>    <span class="keywordtype">integer</span> npip(3), npipn(3), ix, iy, ind, i, k, nelorb_cm</div>
+<div class="line"><span class="lineno">  763</span>    <span class="keywordtype">complex*16</span> exp_phase</div>
+<div class="line"><span class="lineno">  764</span>    real*8 detmat_c(ipc*nelorb_c, nelorb_c)</div>
+<div class="line"><span class="lineno">  765</span>    real*8 riondiff(3), cost, cost_old, rdiff(3), phase2pi1(3), phase2pi2(3)</div>
+<div class="line"><span class="lineno">  766</span>    <span class="keywordtype">logical</span> minus, dolong, dodolong</div>
+<div class="line"><span class="lineno">  767</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">external</span> :: makenpip</div>
+<div class="line"><span class="lineno">  768</span> </div>
+<div class="line"><span class="lineno">  769</span>    <span class="comment">!       minus=.true.  From effective parametrization to real determinant</span></div>
+<div class="line"><span class="lineno">  770</span>    <span class="comment">!       minus=.false. From real to effective parametrization</span></div>
+<div class="line"><span class="lineno">  771</span>    <span class="comment">!       NB In te case symmagp=.false. also the hermitian conjugate is an</span></div>
+<div class="line"><span class="lineno">  772</span>    <span class="comment">!       independent transformation.</span></div>
+<div class="line"><span class="lineno">  773</span>    <span class="keywordflow">if</span> (ipf .eq. 2) nelorb_cm = (nelorb_c)/2</div>
+<div class="line"><span class="lineno">  774</span>    <span class="keywordflow">if</span> (ipf .eq. 1) nelorb_cm = nelorb_c</div>
+<div class="line"><span class="lineno">  775</span> </div>
+<div class="line"><span class="lineno">  776</span>    <span class="comment">!CCC questo è uguale se ipf=2, no?</span></div>
+<div class="line"><span class="lineno">  777</span>    <span class="keywordflow">if</span> (symmagp .and. opposite_phase .and. yes_hermite) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  778</span>        dolong = .true.</div>
+<div class="line"><span class="lineno">  779</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  780</span>        dolong = .false.</div>
+<div class="line"><span class="lineno">  781</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  782</span> </div>
+<div class="line"><span class="lineno">  783</span>    <span class="keywordflow">do</span> i = 1, nnozero_c</div>
+<div class="line"><span class="lineno">  784</span>        ind = nozero_c(i)</div>
+<div class="line"><span class="lineno">  785</span>        iy = (ind - 1)/nelorb_c + 1</div>
+<div class="line"><span class="lineno">  786</span>        ix = ind - (iy - 1)*nelorb_c</div>
+<div class="line"><span class="lineno">  787</span>        <span class="comment">!checking if the first phase is given by an up electron</span></div>
+<div class="line"><span class="lineno">  788</span>        <span class="keywordflow">if</span> (ipf .eq. 1 .or. ix .le. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  789</span>            phase2pi1(:) = phase2pi(:)</div>
+<div class="line"><span class="lineno">  790</span>            <span class="keywordflow">if</span> (ipf .eq. 1 .or. iy .gt. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  791</span>                phase2pi2(:) = phase2pi_down(:)</div>
+<div class="line"><span class="lineno">  792</span>                dodolong = .true.</div>
+<div class="line"><span class="lineno">  793</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  794</span>                phase2pi2(:) = phase2pi(:)</div>
+<div class="line"><span class="lineno">  795</span>                dodolong = .false.</div>
+<div class="line"><span class="lineno">  796</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  797</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  798</span>            phase2pi1(:) = phase2pi_down(:)</div>
+<div class="line"><span class="lineno">  799</span>            <span class="keywordflow">if</span> (iy .gt. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  800</span>                phase2pi2(:) = phase2pi_down(:)</div>
+<div class="line"><span class="lineno">  801</span>                dodolong = .false.</div>
+<div class="line"><span class="lineno">  802</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  803</span>                phase2pi2(:) = phase2pi(:)</div>
+<div class="line"><span class="lineno">  804</span>                dodolong = .true.</div>
+<div class="line"><span class="lineno">  805</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  806</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  807</span> </div>
+<div class="line"><span class="lineno">  808</span>        <span class="keywordflow">if</span> (.not. dolong) dodolong = .false.</div>
+<div class="line"><span class="lineno">  809</span> </div>
+<div class="line"><span class="lineno">  810</span>        <span class="keywordflow">if</span> (kiontot(ix) .ne. 0 .and. kiontot(iy) .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  811</span>            <span class="keywordflow">if</span> (ix .ne. iy) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  812</span>                riondiff(:) = rion(:, kiontot(ix)) - rion(:, kiontot(iy))</div>
+<div class="line"><span class="lineno">  813</span>                <span class="comment">!   L_mu of the notes (parbcs.tex) corresponds to -npip(:)*cellscale(:)</span></div>
+<div class="line"><span class="lineno">  814</span>                <span class="keyword">call </span>cartesiantocrystal(riondiff, 1)</div>
+<div class="line"><span class="lineno">  815</span>                <span class="keywordflow">do</span> k = 1, 3</div>
+<div class="line"><span class="lineno">  816</span>                    npip(k) = <a class="code hl_function" href="#aaacd40cffe563e115471762f1915a331">makenpip</a>(riondiff(k), cellscale(k), deps)</div>
+<div class="line"><span class="lineno">  817</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno">  818</span>                <span class="keywordflow">if</span> (dodolong) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  819</span>                    rdiff(:) = 2*riondiff(:)</div>
+<div class="line"><span class="lineno">  820</span>                    <span class="keyword">call </span><a class="code hl_function" href="#a47c11118fede4e379001b8f5354476f8">makeimagep</a>(rdiff, npipn, cellscale, deps)</div>
+<div class="line"><span class="lineno">  821</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  822</span>                <span class="keywordflow">if</span> (kiontot(ix) .ne. kiontot(iy) .and. abs(sum(rdiff(:)**2)) .lt. deps**2 .and. dodolong) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  823</span>                    <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  824</span>                        <span class="keywordflow">if</span> (minus) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  825</span>                            cost = sum(npipn(:)/4.d0*(phase2pi1(:) - phase2pi2(:)))</div>
+<div class="line"><span class="lineno">  826</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  827</span>                            cost = -sum(npipn(:)/4.d0*(phase2pi1(:) - phase2pi2(:)))</div>
+<div class="line"><span class="lineno">  828</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  829</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  830</span>                        cost = 0.d0 <span class="comment">! do nothing</span></div>
+<div class="line"><span class="lineno">  831</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  832</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  833</span>                    <span class="comment">!        npip * cellscale == - L_nu in the notes parbcs.tex because determined</span></div>
+<div class="line"><span class="lineno">  834</span>                    <span class="comment">!        by      R(ix)-cellscale(:)*npip is inside the reference &lt; cellscale/2</span></div>
+<div class="line"><span class="lineno">  835</span>                    <span class="keywordflow">if</span> (minus) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  836</span>                        cost = sum(npip(:)/2.d0*(phase2pi1(:) - phase2pi2(:)))</div>
+<div class="line"><span class="lineno">  837</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  838</span>                        cost = -sum(npip(:)/2.d0*(phase2pi1(:) - phase2pi2(:)))</div>
+<div class="line"><span class="lineno">  839</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  840</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  841</span>                exp_phase = dcmplx(dcos(cost), dsin(cost))</div>
+<div class="line"><span class="lineno">  842</span>            <span class="keywordflow">else</span> <span class="comment">! ix=iy</span></div>
+<div class="line"><span class="lineno">  843</span>                exp_phase = (1.d0, 0.d0)</div>
+<div class="line"><span class="lineno">  844</span><span class="keywordflow">            end if</span> <span class="comment">! ix=iy</span></div>
+<div class="line"><span class="lineno">  845</span> </div>
+<div class="line"><span class="lineno">  846</span>            <span class="keywordflow">if</span> (minus) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  847</span>                cost = sum((rion(:, kiontot(iy)) + rion(:, kiontot(ix)))*(phase2pi1(:) + phase2pi2(:))/cellscale(1:3))/2.d0</div>
+<div class="line"><span class="lineno">  848</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  849</span>                cost = -sum((rion(:, kiontot(iy)) + rion(:, kiontot(ix)))*(phase2pi1(:) + phase2pi2(:))/cellscale(1:3))/2.d0</div>
+<div class="line"><span class="lineno">  850</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  851</span>            exp_phase = exp_phase*dcmplx(dcos(cost), dsin(cost))</div>
+<div class="line"><span class="lineno">  852</span> </div>
+<div class="line"><span class="lineno">  853</span>            <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  854</span>                <span class="keyword">call </span>zscal(1, exp_phase, detmat_c(2*ix - 1, iy), 1)</div>
+<div class="line"><span class="lineno">  855</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  856</span>                <span class="keyword">call </span>dscal(1, dreal(exp_phase), detmat_c(ix, iy), 1)</div>
+<div class="line"><span class="lineno">  857</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  858</span> </div>
+<div class="line"><span class="lineno">  859</span>            <span class="keywordflow">if</span> (ipf .eq. 2 .and. ix .ne. iy) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  860</span>                <span class="keywordflow">if</span> (minus) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  861</span>                    <span class="keywordflow">if</span> (ix .le. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  862</span>                        <span class="keywordflow">if</span> (iy .le. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  863</span>                            <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  864</span>                                <span class="keywordflow">if</span> (symmagp .and. yes_hermite) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  865</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  866</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  867</span>                                    <span class="keywordflow">if</span> (.not. pfaffup) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  868</span>                                        detmat_c(2*(ix + nelorb_cm) - 1, iy + nelorb_cm) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  869</span>                                        detmat_c(2*(ix + nelorb_cm), iy + nelorb_cm) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  870</span>                                        detmat_c(2*(iy + nelorb_cm) - 1, ix + nelorb_cm) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  871</span>                                        detmat_c(2*(iy + nelorb_cm), ix + nelorb_cm) = detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  872</span><span class="keywordflow">                                    end if</span></div>
+<div class="line"><span class="lineno">  873</span>                                <span class="keywordflow">else</span> <span class="keywordflow">if</span> (symmagp) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  874</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  875</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  876</span>                                    <span class="keywordflow">if</span> (.not. pfaffup) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  877</span>                                        detmat_c(2*(ix + nelorb_cm) - 1, iy + nelorb_cm) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  878</span>                                        detmat_c(2*(ix + nelorb_cm), iy + nelorb_cm) = detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  879</span>                                        detmat_c(2*(iy + nelorb_cm) - 1, ix + nelorb_cm) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  880</span>                                        detmat_c(2*(iy + nelorb_cm), ix + nelorb_cm) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  881</span><span class="keywordflow">                                    end if</span></div>
+<div class="line"><span class="lineno">  882</span>                                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  883</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  884</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  885</span><span class="keywordflow">                                end if</span></div>
+<div class="line"><span class="lineno">  886</span>                            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  887</span>                                <span class="keywordflow">if</span> (symmagp) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  888</span>                                    detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  889</span>                                    <span class="keywordflow">if</span> (.not. pfaffup) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  890</span>                                        detmat_c(ix + nelorb_cm, iy + nelorb_cm) = detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  891</span>                                        detmat_c(iy + nelorb_cm, ix + nelorb_cm) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  892</span><span class="keywordflow">                                    end if</span></div>
+<div class="line"><span class="lineno">  893</span>                                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  894</span>                                    detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  895</span><span class="keywordflow">                                end if</span></div>
+<div class="line"><span class="lineno">  896</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  897</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  898</span>                            <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  899</span>                                <span class="keywordflow">if</span> (symmagp .and. yes_hermite) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  900</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  901</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  902</span>                                    detmat_c(2*(iy - nelorb_cm) - 1, ix + nelorb_cm) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  903</span>                                    detmat_c(2*(iy - nelorb_cm), ix + nelorb_cm) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  904</span>                                    detmat_c(2*(ix + nelorb_cm) - 1, iy - nelorb_cm) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  905</span>                                    detmat_c(2*(ix + nelorb_cm), iy - nelorb_cm) = detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  906</span>                                <span class="keywordflow">else</span> <span class="keywordflow">if</span> (symmagp) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  907</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  908</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  909</span>                                    detmat_c(2*(iy - nelorb_cm) - 1, ix + nelorb_cm) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  910</span>                                    detmat_c(2*(iy - nelorb_cm), ix + nelorb_cm) = detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  911</span>                                    detmat_c(2*(ix + nelorb_cm) - 1, iy - nelorb_cm) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  912</span>                                    detmat_c(2*(ix + nelorb_cm), iy - nelorb_cm) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  913</span>                                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  914</span>                                    detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  915</span>                                    detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  916</span><span class="keywordflow">                                end if</span></div>
+<div class="line"><span class="lineno">  917</span>                            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  918</span>                                <span class="keywordflow">if</span> (symmagp) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  919</span>                                    detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  920</span>                                    detmat_c(iy - nelorb_cm, ix + nelorb_cm) = detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  921</span>                                    detmat_c(ix + nelorb_cm, iy - nelorb_cm) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  922</span>                                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  923</span>                                    detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  924</span><span class="keywordflow">                                end if</span></div>
+<div class="line"><span class="lineno">  925</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  926</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  927</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  928</span>                        <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  929</span>                            detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  930</span>                            detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  931</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  932</span>                            detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  933</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  934</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  935</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  936</span>                    <span class="comment">!Inizia il minus dello pfaff</span></div>
+<div class="line"><span class="lineno">  937</span>                    <span class="keywordflow">if</span> (symmagp) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  938</span>                        <span class="keywordflow">if</span> (opposite_phase) exp_phase = dconjg(exp_phase)</div>
+<div class="line"><span class="lineno">  939</span> </div>
+<div class="line"><span class="lineno">  940</span>                        <span class="comment">!If symm agp the first here we have only up-up and</span></div>
+<div class="line"><span class="lineno">  941</span>                        <span class="comment">!up-down</span></div>
+<div class="line"><span class="lineno">  942</span>                        <span class="keywordflow">if</span> (iy .gt. nelorb_cm) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  943</span>                            <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  944</span>                                <span class="keyword">call </span>zscal(1, exp_phase, detmat_c(2*(iy - nelorb_cm) - 1, ix + nelorb_cm), 1)</div>
+<div class="line"><span class="lineno">  945</span>                                detmat_c(2*(ix + nelorb_cm) - 1, iy - nelorb_cm) =&amp;</div>
+<div class="line"><span class="lineno">  946</span>                                   &amp; -detmat_c(2*(iy - nelorb_cm) - 1, ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  947</span>                                detmat_c(2*(ix + nelorb_cm), iy - nelorb_cm) = -detmat_c(2*(iy - nelorb_cm), ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  948</span>                            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  949</span>                                <span class="keyword">call </span>dscal(1, dreal(exp_phase), detmat_c(iy - nelorb_cm, ix + nelorb_cm), 1)</div>
+<div class="line"><span class="lineno">  950</span>                                detmat_c(ix + nelorb_cm, iy - nelorb_cm) = -detmat_c(iy - nelorb_cm, ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  951</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  952</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  953</span>                            <span class="keywordflow">if</span> (.not. pfaffup) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  954</span>                                <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  955</span>                                    <span class="keyword">call </span>zscal(1, exp_phase, detmat_c(2*(iy + nelorb_cm) - 1, ix + nelorb_cm), 1)</div>
+<div class="line"><span class="lineno">  956</span>                                    detmat_c(2*(ix + nelorb_cm) - 1, iy + nelorb_cm) =&amp;</div>
+<div class="line"><span class="lineno">  957</span>                                       &amp; -detmat_c(2*(iy + nelorb_cm) - 1, ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  958</span>                                    detmat_c(2*(ix + nelorb_cm), iy + nelorb_cm) = -detmat_c(2*(iy + nelorb_cm), ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  959</span>                                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  960</span>                                    <span class="keyword">call </span>dscal(1, dreal(exp_phase), detmat_c(iy + nelorb_cm, ix + nelorb_cm), 1)</div>
+<div class="line"><span class="lineno">  961</span>                                    detmat_c(ix + nelorb_cm, iy + nelorb_cm) = -detmat_c(iy + nelorb_cm, ix + nelorb_cm)</div>
+<div class="line"><span class="lineno">  962</span><span class="keywordflow">                                end if</span></div>
+<div class="line"><span class="lineno">  963</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  964</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  965</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  966</span>                    <span class="keywordflow">if</span> (ipc .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  967</span>                        detmat_c(iy, ix) = -detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  968</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  969</span>                        detmat_c(2*iy - 1, ix) = -detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  970</span>                        detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  971</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  972</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  973</span>                <span class="comment">!Finisce il minus dello pfaff</span></div>
+<div class="line"><span class="lineno">  974</span>            <span class="keywordflow">elseif</span> (symmagp .and. ix .ne. iy) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  975</span>                <span class="comment">!                 From effective to real</span></div>
+<div class="line"><span class="lineno">  976</span>                <span class="keywordflow">if</span> (minus) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  977</span> </div>
+<div class="line"><span class="lineno">  978</span>                    <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  979</span>                        <span class="keywordflow">if</span> (yes_hermite) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  980</span>                            detmat_c(2*iy - 1, ix) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  981</span>                            detmat_c(2*iy, ix) = -detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  982</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  983</span>                            detmat_c(2*iy - 1, ix) = detmat_c(2*ix - 1, iy)</div>
+<div class="line"><span class="lineno">  984</span>                            detmat_c(2*iy, ix) = detmat_c(2*ix, iy)</div>
+<div class="line"><span class="lineno">  985</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  986</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  987</span>                        detmat_c(iy, ix) = detmat_c(ix, iy)</div>
+<div class="line"><span class="lineno">  988</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  989</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  990</span>                    <span class="comment">! From real to effective: NB we cannot assume that detmat_c is hermitian or</span></div>
+<div class="line"><span class="lineno">  991</span>                    <span class="comment">! symmetric as it is applied to derivative matrices after AAD (computeb_global)</span></div>
+<div class="line"><span class="lineno">  992</span>                    <span class="keywordflow">if</span> (opposite_phase) exp_phase = dconjg(exp_phase)</div>
+<div class="line"><span class="lineno">  993</span>                    <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  994</span>                        <span class="keyword">call </span>zscal(1, exp_phase, detmat_c(2*iy - 1, ix), 1)</div>
+<div class="line"><span class="lineno">  995</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  996</span>                        <span class="keyword">call </span>dscal(1, dreal(exp_phase), detmat_c(iy, ix), 1)</div>
+<div class="line"><span class="lineno">  997</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  998</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  999</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 1000</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 1001</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 1002</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="anamespacecell_html"><div class="ttname"><a href="namespacecell.html">cell</a></div><div class="ttdoc">Crystal lattice and coordinate transformation module.</div><div class="ttdef"><b>Definition</b> <a href="cell_8f90_source.html#l00033">cell.f90:33</a></div></div>
+<div class="ttc" id="anamespaceconstants_html"><div class="ttname"><a href="namespaceconstants.html">constants</a></div><div class="ttdoc">Physical and mathematical constants for quantum Monte Carlo calculations.</div><div class="ttdef"><b>Definition</b> <a href="constants_8f90_source.html#l00040">constants.f90:40</a></div></div>
+<div class="ttc" id="apareff_8f90_html_a47c11118fede4e379001b8f5354476f8"><div class="ttname"><a href="#a47c11118fede4e379001b8f5354476f8">makeimagep</a></div><div class="ttdeci">subroutine makeimagep(rdiff, npip, cellscale, eps)</div><div class="ttdoc">Apply minimum image convention and return periodic image indices.</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l01080">pareff.f90:1081</a></div></div>
+<div class="ttc" id="apareff_8f90_html_aaacd40cffe563e115471762f1915a331"><div class="ttname"><a href="#aaacd40cffe563e115471762f1915a331">makenpip</a></div><div class="ttdeci">integer function makenpip(rdiff, cellscale, eps)</div><div class="ttdoc">Compute periodic image index (unique definition)</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l01035">pareff.f90:1036</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l01081">makeimagep()</a>, and <a class="el" href="pareff_8f90_source.html#l01036">makenpip()</a>.</p>
 
 </div>
 </div>
@@ -250,6 +520,39 @@ Functions/Subroutines</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Integer index for the atom pair in the parameterization matrix </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Used for mapping atom pairs to parameter indices in Jastrow/determinant optimization </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00715">715</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  716</span><span class="comment">    !&gt; @brief Find index for atom pair in parameterization matrix</span></div>
+<div class="line"><span class="lineno">  717</span><span class="comment">    !&gt; @details Computes a unique index for a pair of atom types (iar, ibr) in the</span></div>
+<div class="line"><span class="lineno">  718</span><span class="comment">    !&gt;          parameterization matrix, depending on whether all atom pairs are fitted</span></div>
+<div class="line"><span class="lineno">  719</span><span class="comment">    !&gt;          or only unique pairs (symmetric or asymmetric).</span></div>
+<div class="line"><span class="lineno">  720</span><span class="comment">    !&gt; @param[in] iar First atom type index</span></div>
+<div class="line"><span class="lineno">  721</span><span class="comment">    !&gt; @param[in] ibr Second atom type index</span></div>
+<div class="line"><span class="lineno">  722</span><span class="comment">    !&gt; @param[in] nmax Maximum number of atom types</span></div>
+<div class="line"><span class="lineno">  723</span><span class="comment">    !&gt; @param[in] allfit Logical flag: if true, fit all pairs; if false, fit unique pairs only</span></div>
+<div class="line"><span class="lineno">  724</span><span class="comment">    !&gt; @return Integer index for the atom pair in the parameterization matrix</span></div>
+<div class="line"><span class="lineno">  725</span><span class="comment">    !&gt; @note Used for mapping atom pairs to parameter indices in Jastrow/determinant optimization</span></div>
+<div class="line"><span class="lineno">  726</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  727</span>    <span class="keywordtype">integer</span> ia, ib, iar, ibr, nmax, findindex</div>
+<div class="line"><span class="lineno">  728</span>    <span class="keywordtype">logical</span> allfit</div>
+<div class="line"><span class="lineno">  729</span>    <span class="keywordflow">if</span> (allfit) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  730</span>        <a class="code hl_function" href="#af8cd123903f05c92906d523f07ceffd3">findindex</a> = nmax*(ibr - 1) + iar</div>
+<div class="line"><span class="lineno">  731</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  732</span>        <span class="keywordflow">if</span> (iar .gt. ibr) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  733</span>            ia = iar</div>
+<div class="line"><span class="lineno">  734</span>            ib = ibr</div>
+<div class="line"><span class="lineno">  735</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  736</span>            ia = ibr</div>
+<div class="line"><span class="lineno">  737</span>            ib = iar</div>
+<div class="line"><span class="lineno">  738</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  739</span>        <a class="code hl_function" href="#af8cd123903f05c92906d523f07ceffd3">findindex</a> = (ia - ib + 1) + nmax*(ib - 1) - ((ib - 2)*(ib - 1))/2</div>
+<div class="line"><span class="lineno">  740</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  741</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="apareff_8f90_html_af8cd123903f05c92906d523f07ceffd3"><div class="ttname"><a href="#af8cd123903f05c92906d523f07ceffd3">findindex</a></div><div class="ttdeci">integer function findindex(iar, ibr, nmax, allfit)</div><div class="ttdoc">Find index for atom pair in parameterization matrix.</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l00715">pareff.f90:716</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l00716">findindex()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l00716">findindex()</a>, and <a class="el" href="pareff_8f90_source.html#l00033">pareff()</a>.</p>
+
 </div>
 </div>
 <a id="af23e312e9c6c57477a04e981e5746e09" name="af23e312e9c6c57477a04e981e5746e09"></a>
@@ -300,6 +603,33 @@ Functions/Subroutines</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Real*8 value (1.0 or 0.0) </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This function implements a step function basis for distance-dependent parameterization in Jastrow factors </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00633">633</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  634</span><span class="comment">    !&gt; @brief Local basis function for constant parameterization</span></div>
+<div class="line"><span class="lineno">  635</span><span class="comment">    !&gt; @details Returns 1.0 if r is within the interval [rmin(n), rmax(n)), 0.0 otherwise.</span></div>
+<div class="line"><span class="lineno">  636</span><span class="comment">    !&gt;          Used for constant parameterization schemes where parameters are piecewise</span></div>
+<div class="line"><span class="lineno">  637</span><span class="comment">    !&gt;          constant over distance intervals.</span></div>
+<div class="line"><span class="lineno">  638</span><span class="comment">    !&gt; @param[in] n Index of the basis function</span></div>
+<div class="line"><span class="lineno">  639</span><span class="comment">    !&gt; @param[in] r Distance value to evaluate</span></div>
+<div class="line"><span class="lineno">  640</span><span class="comment">    !&gt; @param[in] rmax Upper bounds for distance intervals</span></div>
+<div class="line"><span class="lineno">  641</span><span class="comment">    !&gt; @param[in] rmin Lower bounds for distance intervals</span></div>
+<div class="line"><span class="lineno">  642</span><span class="comment">    !&gt; @return Real*8 value (1.0 or 0.0)</span></div>
+<div class="line"><span class="lineno">  643</span><span class="comment">    !&gt; @note This function implements a step function basis for distance-dependent</span></div>
+<div class="line"><span class="lineno">  644</span><span class="comment">    !&gt;       parameterization in Jastrow factors</span></div>
+<div class="line"><span class="lineno">  645</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  646</span>    <span class="keywordtype">integer</span> n</div>
+<div class="line"><span class="lineno">  647</span>    real*8 r, rmax(*), rmin(*), <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a></div>
+<div class="line"><span class="lineno">  648</span>    <span class="keywordflow">if</span> (r .lt. rmax(n) .and. r .ge. rmin(n)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  649</span>        <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a> = 1.d0</div>
+<div class="line"><span class="lineno">  650</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  651</span>        <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a> = 0.d0</div>
+<div class="line"><span class="lineno">  652</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  653</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="apareff_8f90_html_af23e312e9c6c57477a04e981e5746e09"><div class="ttname"><a href="#af23e312e9c6c57477a04e981e5746e09">funloc</a></div><div class="ttdeci">real *8 function funloc(n, r, rmax, rmin)</div><div class="ttdoc">Local basis function for constant parameterization.</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l00633">pareff.f90:634</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l00634">funloc()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l00634">funloc()</a>.</p>
+
 </div>
 </div>
 <a id="ab48c0ada1c0a7c7d55b4c3ec3bcac987" name="ab48c0ada1c0a7c7d55b4c3ec3bcac987"></a>
@@ -335,6 +665,28 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Used for mapping coordinates into the primary simulation cell</dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l01059">1059</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 1060</span><span class="comment">    !&gt; @brief Apply minimum image convention to a 3D vector</span></div>
+<div class="line"><span class="lineno"> 1061</span><span class="comment">    !&gt; @details Modifies rdiff in-place so that each component is within [-L/2, L/2)</span></div>
+<div class="line"><span class="lineno"> 1062</span><span class="comment">    !&gt;          for the given cellscale. Used for periodic boundary conditions.</span></div>
+<div class="line"><span class="lineno"> 1063</span><span class="comment">    !&gt; @param[inout] rdiff 3D vector to be wrapped</span></div>
+<div class="line"><span class="lineno"> 1064</span><span class="comment">    !&gt; @param[in] cellscale Cell size for each dimension</span></div>
+<div class="line"><span class="lineno"> 1065</span><span class="comment">    !&gt; @param[in] eps Tolerance for boundary equivalence</span></div>
+<div class="line"><span class="lineno"> 1066</span><span class="comment">    !&gt; @note Used for mapping coordinates into the primary simulation cell</span></div>
+<div class="line"><span class="lineno"> 1067</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 1068</span>    <span class="keywordtype">integer</span> kk, npip</div>
+<div class="line"><span class="lineno"> 1069</span>    real*8 cut, cost, eps, rdiff(3), cellscale(3)</div>
+<div class="line"><span class="lineno"> 1070</span>    cut = 0.5d0 - eps</div>
+<div class="line"><span class="lineno"> 1071</span>    <span class="keywordflow">do</span> kk = 1, 3</div>
+<div class="line"><span class="lineno"> 1072</span>        cost = rdiff(kk)/cellscale(kk)</div>
+<div class="line"><span class="lineno"> 1073</span>        npip = nint(cost)</div>
+<div class="line"><span class="lineno"> 1074</span>        <span class="keywordflow">if</span> (cost - npip .gt. cut) npip = npip + 1</div>
+<div class="line"><span class="lineno"> 1075</span>        rdiff(kk) = rdiff(kk) - cellscale(kk)*npip</div>
+<div class="line"><span class="lineno"> 1076</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 1077</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="symmetries_8f90_source.html#l00373">symmetries::purge_isymm()</a>.</p>
 
 </div>
 </div>
@@ -372,6 +724,37 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Used for phase convention and periodic boundary handling</dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l01105">1105</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 1106</span><span class="comment">    !&gt; @brief Apply minimum image convention (fake version)</span></div>
+<div class="line"><span class="lineno"> 1107</span><span class="comment">    !&gt; @details Modifies rdiff in-place so that each component is within a convention</span></div>
+<div class="line"><span class="lineno"> 1108</span><span class="comment">    !&gt;          where L/2 and -L/2 are not equivalent. Used for special boundary</span></div>
+<div class="line"><span class="lineno"> 1109</span><span class="comment">    !&gt;          condition handling in periodic systems.</span></div>
+<div class="line"><span class="lineno"> 1110</span><span class="comment">    !&gt; @param[inout] rdiff 3D vector to be wrapped</span></div>
+<div class="line"><span class="lineno"> 1111</span><span class="comment">    !&gt; @param[in] cellscale Cell size for each dimension</span></div>
+<div class="line"><span class="lineno"> 1112</span><span class="comment">    !&gt; @param[in] deps Tolerance for boundary equivalence</span></div>
+<div class="line"><span class="lineno"> 1113</span><span class="comment">    !&gt; @note Used for phase convention and periodic boundary handling</span></div>
+<div class="line"><span class="lineno"> 1114</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 1115</span>    <span class="comment">!   L/2 and -L/2 are not equivalent in this routine.</span></div>
+<div class="line"><span class="lineno"> 1116</span>    <span class="keywordtype">integer</span> kk, npip, m</div>
+<div class="line"><span class="lineno"> 1117</span>    real*8 cost, rdiff(3), cellscale(3), deps</div>
+<div class="line"><span class="lineno"> 1118</span>    <span class="keywordflow">do</span> kk = 1, 3</div>
+<div class="line"><span class="lineno"> 1119</span>        cost = rdiff(kk)/cellscale(kk)</div>
+<div class="line"><span class="lineno"> 1120</span>        npip = nint(2*cost)</div>
+<div class="line"><span class="lineno"> 1121</span>        <span class="keywordflow">if</span> ((npip/2)*2 .ne. npip .and. abs(cost - npip/2.d0) .lt. deps) <span class="keywordflow">then</span> <span class="comment">! Boarder cases</span></div>
+<div class="line"><span class="lineno"> 1122</span>            <span class="keywordflow">if</span> (npip .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 1123</span>                m = 0</div>
+<div class="line"><span class="lineno"> 1124</span>            <span class="keywordflow">elseif</span> (npip .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 1125</span>                m = (npip - 1)/2</div>
+<div class="line"><span class="lineno"> 1126</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 1127</span>                m = (npip + 1)/2</div>
+<div class="line"><span class="lineno"> 1128</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 1129</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 1130</span>            m = nint(cost)</div>
+<div class="line"><span class="lineno"> 1131</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 1132</span>        rdiff(kk) = rdiff(kk) - cellscale(kk)*m</div>
+<div class="line"><span class="lineno"> 1133</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 1134</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a47c11118fede4e379001b8f5354476f8" name="a47c11118fede4e379001b8f5354476f8"></a>
@@ -421,6 +804,32 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Used for phase convention and periodic boundary handling </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l01080">1080</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 1081</span><span class="comment">    !&gt; @brief Apply minimum image convention and return periodic image indices</span></div>
+<div class="line"><span class="lineno"> 1082</span><span class="comment">    !&gt; @details Modifies rdiff in-place so that each component is within [-L/2, L/2),</span></div>
+<div class="line"><span class="lineno"> 1083</span><span class="comment">    !&gt;          and returns the periodic image index for each dimension in npip.</span></div>
+<div class="line"><span class="lineno"> 1084</span><span class="comment">    !&gt; @param[inout] rdiff 3D vector to be wrapped</span></div>
+<div class="line"><span class="lineno"> 1085</span><span class="comment">    !&gt; @param[out] npip Periodic image indices for each dimension</span></div>
+<div class="line"><span class="lineno"> 1086</span><span class="comment">    !&gt; @param[in] cellscale Cell size for each dimension</span></div>
+<div class="line"><span class="lineno"> 1087</span><span class="comment">    !&gt; @param[in] eps Tolerance for boundary equivalence</span></div>
+<div class="line"><span class="lineno"> 1088</span><span class="comment">    !&gt; @note Used for phase convention and periodic boundary handling</span></div>
+<div class="line"><span class="lineno"> 1089</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 1090</span>    <span class="keywordtype">integer</span> kk, npip(3)</div>
+<div class="line"><span class="lineno"> 1091</span>    real*8 cut, cost, eps, rdiff(3), cellscale(3)</div>
+<div class="line"><span class="lineno"> 1092</span>    cut = 0.5d0 - eps</div>
+<div class="line"><span class="lineno"> 1093</span>    <span class="keywordflow">do</span> kk = 1, 3</div>
+<div class="line"><span class="lineno"> 1094</span>        cost = rdiff(kk)/cellscale(kk)</div>
+<div class="line"><span class="lineno"> 1095</span>        npip(kk) = nint(cost)</div>
+<div class="line"><span class="lineno"> 1096</span>        <span class="keywordflow">if</span> (cost - npip(kk) .gt. cut) npip(kk) = npip(kk) + 1</div>
+<div class="line"><span class="lineno"> 1097</span>        rdiff(kk) = rdiff(kk) - cellscale(kk)*npip(kk)</div>
+<div class="line"><span class="lineno"> 1098</span>        <span class="comment">! BUG 1/8/2016  with the line below we do not put any phase to the</span></div>
+<div class="line"><span class="lineno"> 1099</span>        <span class="comment">! long distance bonds (see parbcs.tex).</span></div>
+<div class="line"><span class="lineno"> 1100</span>        <span class="comment">!     if(abs(rdiff(kk)+cellscale(kk)/2).gt.eps) rdiff(kk)=0.d0</span></div>
+<div class="line"><span class="lineno"> 1101</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 1102</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l00745">attach_phase2det()</a>.</p>
+
 </div>
 </div>
 <a id="aaacd40cffe563e115471762f1915a331" name="aaacd40cffe563e115471762f1915a331"></a>
@@ -460,6 +869,33 @@ Functions/Subroutines</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Integer periodic image index </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Used for phase convention handling in periodic systems </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l01035">1035</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 1036</span><span class="comment">    !&gt; @brief Compute periodic image index (unique definition)</span></div>
+<div class="line"><span class="lineno"> 1037</span><span class="comment">    !&gt; @details Computes the periodic image index for a coordinate difference rdiff</span></div>
+<div class="line"><span class="lineno"> 1038</span><span class="comment">    !&gt;          and cell size cellscale, using a unique convention where L/2 is mapped</span></div>
+<div class="line"><span class="lineno"> 1039</span><span class="comment">    !&gt;          to -L/2. Used for phase convention handling in periodic systems.</span></div>
+<div class="line"><span class="lineno"> 1040</span><span class="comment">    !&gt; @param[in] rdiff Coordinate difference</span></div>
+<div class="line"><span class="lineno"> 1041</span><span class="comment">    !&gt; @param[in] cellscale Cell size</span></div>
+<div class="line"><span class="lineno"> 1042</span><span class="comment">    !&gt; @param[in] eps Tolerance for boundary equivalence</span></div>
+<div class="line"><span class="lineno"> 1043</span><span class="comment">    !&gt; @return Integer periodic image index</span></div>
+<div class="line"><span class="lineno"> 1044</span><span class="comment">    !&gt; @note Used for phase convention handling in periodic systems</span></div>
+<div class="line"><span class="lineno"> 1045</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 1046</span>    <span class="keywordtype">integer</span> kk, makenpip</div>
+<div class="line"><span class="lineno"> 1047</span>    real*8 cut, cost, eps, rdiff, cellscale</div>
+<div class="line"><span class="lineno"> 1048</span>    <span class="comment">!       rdiff -cellscale* makenpip is inside the reference -L/2&lt;= rdiff &lt; L/2.</span></div>
+<div class="line"><span class="lineno"> 1049</span>    <span class="comment">!       NB L/2 is mapped to -L/2 in this unique definition.</span></div>
+<div class="line"><span class="lineno"> 1050</span>    cut = 0.5d0 - eps</div>
+<div class="line"><span class="lineno"> 1051</span>    cost = rdiff/cellscale</div>
+<div class="line"><span class="lineno"> 1052</span>    <span class="comment">!  if cost = n+0.5-small  makenpip--&gt; n , cost  -npip = 0.5-small --&gt;</span></div>
+<div class="line"><span class="lineno"> 1053</span>    <span class="comment">!   makenpip--mekenpip+1. cost=n+0.5+small, makenpip -&gt; n+1, cost-makenpip = -0.5-small</span></div>
+<div class="line"><span class="lineno"> 1054</span>    <a class="code hl_function" href="#aaacd40cffe563e115471762f1915a331">makenpip</a> = nint(cost)</div>
+<div class="line"><span class="lineno"> 1055</span>    <span class="keywordflow">if</span> (cost - <a class="code hl_function" href="#aaacd40cffe563e115471762f1915a331">makenpip</a> .gt. cut) <a class="code hl_function" href="#aaacd40cffe563e115471762f1915a331">makenpip</a> = <a class="code hl_function" href="#aaacd40cffe563e115471762f1915a331">makenpip</a> + 1</div>
+<div class="line"><span class="lineno"> 1056</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l01036">makenpip()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l00745">attach_phase2det()</a>, and <a class="el" href="pareff_8f90_source.html#l01036">makenpip()</a>.</p>
+
 </div>
 </div>
 <a id="adcd227ee6159e8b27a008576901a9def" name="adcd227ee6159e8b27a008576901a9def"></a>
@@ -498,6 +934,40 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Integer periodic image index </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Used for phase convention handling in periodic systems </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l01005">1005</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 1006</span><span class="comment">    !&gt; @brief Compute periodic image index (fake version)</span></div>
+<div class="line"><span class="lineno"> 1007</span><span class="comment">    !&gt; @details Computes the periodic image index for a coordinate difference rdiff</span></div>
+<div class="line"><span class="lineno"> 1008</span><span class="comment">    !&gt;          and cell size cellscale, using a convention where L/2 and -L/2 are not</span></div>
+<div class="line"><span class="lineno"> 1009</span><span class="comment">    !&gt;          equivalent. Used for special boundary condition handling.</span></div>
+<div class="line"><span class="lineno"> 1010</span><span class="comment">    !&gt; @param[in] rdiff Coordinate difference</span></div>
+<div class="line"><span class="lineno"> 1011</span><span class="comment">    !&gt; @param[in] cellscale Cell size</span></div>
+<div class="line"><span class="lineno"> 1012</span><span class="comment">    !&gt; @param[in] deps Tolerance for boundary equivalence</span></div>
+<div class="line"><span class="lineno"> 1013</span><span class="comment">    !&gt; @return Integer periodic image index</span></div>
+<div class="line"><span class="lineno"> 1014</span><span class="comment">    !&gt; @note Used for phase convention handling in periodic systems</span></div>
+<div class="line"><span class="lineno"> 1015</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 1016</span>    <span class="keywordtype">integer</span> kk, makenpip_fake, npip</div>
+<div class="line"><span class="lineno"> 1017</span>    real*8 cost, deps, rdiff, cellscale</div>
+<div class="line"><span class="lineno"> 1018</span>    <span class="comment">!   L/2 and -L/2 are not equivalent in this routine.</span></div>
+<div class="line"><span class="lineno"> 1019</span>    cost = rdiff/cellscale</div>
+<div class="line"><span class="lineno"> 1020</span>    npip = nint(2*cost)</div>
+<div class="line"><span class="lineno"> 1021</span>    <span class="keywordflow">if</span> ((npip/2)*2 .ne. npip .and. abs(cost - npip/2.d0) .lt. deps) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 1022</span>        <span class="keywordflow">if</span> (npip .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 1023</span>            <a class="code hl_function" href="#adcd227ee6159e8b27a008576901a9def">makenpip_fake</a> = 0</div>
+<div class="line"><span class="lineno"> 1024</span>        <span class="keywordflow">elseif</span> (npip .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 1025</span>            <a class="code hl_function" href="#adcd227ee6159e8b27a008576901a9def">makenpip_fake</a> = (npip - 1)/2</div>
+<div class="line"><span class="lineno"> 1026</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 1027</span>            <a class="code hl_function" href="#adcd227ee6159e8b27a008576901a9def">makenpip_fake</a> = (npip + 1)/2</div>
+<div class="line"><span class="lineno"> 1028</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 1029</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 1030</span>        <a class="code hl_function" href="#adcd227ee6159e8b27a008576901a9def">makenpip_fake</a> = nint(cost)</div>
+<div class="line"><span class="lineno"> 1031</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno"> 1032</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="apareff_8f90_html_adcd227ee6159e8b27a008576901a9def"><div class="ttname"><a href="#adcd227ee6159e8b27a008576901a9def">makenpip_fake</a></div><div class="ttdeci">integer function makenpip_fake(rdiff, cellscale, deps)</div><div class="ttdoc">Compute periodic image index (fake version)</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l01005">pareff.f90:1006</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l01006">makenpip_fake()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l01006">makenpip_fake()</a>.</p>
 
 </div>
 </div>
@@ -921,6 +1391,340 @@ Functions/Subroutines</h2></td></tr>
 </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="#ac539bdd7dc3d58c1f32deff9c2f3cd96" title="Prepare min/max intervals for constant parameterization.">preprminmax</a>, <a class="el" href="#af23e312e9c6c57477a04e981e5746e09" title="Local basis function for constant parameterization.">funloc</a>, damping </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00030">30</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   33</span><span class="comment">    !&gt; @brief Main parameterization routine for variational parameters</span></div>
+<div class="line"><span class="lineno">   34</span><span class="comment">    !&gt; @details Constructs the parameterization matrix that maps physical distances</span></div>
+<div class="line"><span class="lineno">   35</span><span class="comment">    !&gt;          to variational parameters for Jastrow factors and determinant matrices.</span></div>
+<div class="line"><span class="lineno">   36</span><span class="comment">    !&gt;          Handles three types of parameterization: spin Jastrow (inv), density-density</span></div>
+<div class="line"><span class="lineno">   37</span><span class="comment">    !&gt;          Jastrow (regular), and determinant parameters (sw). Supports multiple</span></div>
+<div class="line"><span class="lineno">   38</span><span class="comment">    !&gt;          parameterization schemes including power-law expansions, logarithmic forms,</span></div>
+<div class="line"><span class="lineno">   39</span><span class="comment">    !&gt;          and constant parameterization with distance-dependent basis functions.</span></div>
+<div class="line"><span class="lineno">   40</span><span class="comment">    !&gt; @param[in] npar Number of density-density Jastrow parameters</span></div>
+<div class="line"><span class="lineno">   41</span><span class="comment">    !&gt; @param[in] initpower Initial power for density-density Jastrow parameterization</span></div>
+<div class="line"><span class="lineno">   42</span><span class="comment">    !&gt; @param[in] nparsw Number of determinant parameters</span></div>
+<div class="line"><span class="lineno">   43</span><span class="comment">    !&gt; @param[in] initpowersw Initial power for determinant parameterization</span></div>
+<div class="line"><span class="lineno">   44</span><span class="comment">    !&gt; @param[in] nparinv Number of spin Jastrow parameters</span></div>
+<div class="line"><span class="lineno">   45</span><span class="comment">    !&gt; @param[in] initpowerinv Initial power for spin Jastrow parameterization</span></div>
+<div class="line"><span class="lineno">   46</span><span class="comment">    !&gt; @param[in] endinv End index for spin Jastrow parameters</span></div>
+<div class="line"><span class="lineno">   47</span><span class="comment">    !&gt; @param[in] nlead Leading dimension of reduce matrix</span></div>
+<div class="line"><span class="lineno">   48</span><span class="comment">    !&gt; @param[in] kp_ion Number of ion pairs</span></div>
+<div class="line"><span class="lineno">   49</span><span class="comment">    !&gt; @param[in] rpar Physical distances between particles (positive for Jastrow, negative for det)</span></div>
+<div class="line"><span class="lineno">   50</span><span class="comment">    !&gt; @param[out] reduce Parameterization matrix (npar+nparsw+nparinv, kp_ion)</span></div>
+<div class="line"><span class="lineno">   51</span><span class="comment">    !&gt; @param[in] jas_invariant Jastrow invariants for orbital-dependent terms</span></div>
+<div class="line"><span class="lineno">   52</span><span class="comment">    !&gt; @param[in] adrlambda Address mapping for lambda parameters</span></div>
+<div class="line"><span class="lineno">   53</span><span class="comment">    !&gt; @param[in] nmax_ion Maximum number of ion types</span></div>
+<div class="line"><span class="lineno">   54</span><span class="comment">    !&gt; @param[in] type_atom Atom type assignments</span></div>
+<div class="line"><span class="lineno">   55</span><span class="comment">    !&gt; @param[in] allfit Whether to fit all atom type combinations</span></div>
+<div class="line"><span class="lineno">   56</span><span class="comment">    !&gt; @param[in] orbps Orbital pairing information</span></div>
+<div class="line"><span class="lineno">   57</span><span class="comment">    !&gt; @note The routine handles different parameterization schemes based on initpower values:</span></div>
+<div class="line"><span class="lineno">   58</span><span class="comment">    !&gt;       - initpower &gt; 0: Power-law expansion r^(-power)</span></div>
+<div class="line"><span class="lineno">   59</span><span class="comment">    !&gt;       - initpower = 0: Logarithmic form log(r)</span></div>
+<div class="line"><span class="lineno">   60</span><span class="comment">    !&gt;       - initpower = -1: Constant parameterization with distance-dependent basis</span></div>
+<div class="line"><span class="lineno">   61</span><span class="comment">    !&gt;       - initpower &lt; -1: Advanced parameterization with orbital-dependent terms</span></div>
+<div class="line"><span class="lineno">   62</span><span class="comment">    !&gt; @see preprminmax, funloc, damping</span></div>
+<div class="line"><span class="lineno">   63</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">   64</span>    <span class="keywordtype">integer</span> npar, nparsw, initpowersw, ncg, kp_ion, i, j, initpower        &amp;</div>
+<div class="line"><span class="lineno">   65</span>            &amp;, nparinv, initpowerinv, endinv, nlead, nfun, ii, icek, powerexp, ntpar</div>
+<div class="line"><span class="lineno">   66</span>    <span class="keywordtype">real*8</span> rpar(*), reduce(nlead, *), funloc, jas_invariant(4, *)</div>
+<div class="line"><span class="lineno">   67</span><span class="keywordtype">    real</span>(8), <span class="keywordtype">dimension(:)</span>, <span class="keywordtype">allocatable</span> :: rmax, rmin, rmaxj, rminj, rind &amp;</div>
+<div class="line"><span class="lineno">   68</span>            &amp;, rmaxinv, rmininv</div>
+<div class="line"><span class="lineno">   69</span>    <span class="keywordtype">real*8</span>, <span class="keywordtype">external</span> :: damping</div>
+<div class="line"><span class="lineno">   70</span>    <span class="keywordtype">integer</span> powermin, powermax, nmax_ion, ifirst, adr_ion, k1, k2, kk</div>
+<div class="line"><span class="lineno">   71</span>    <span class="keywordtype">integer</span> adrlambda(2, *), type_atom(*)</div>
+<div class="line"><span class="lineno">   72</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">external</span> :: findindex</div>
+<div class="line"><span class="lineno">   73</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">dimension(:)</span>, <span class="keywordtype">allocatable</span> :: imap</div>
+<div class="line"><span class="lineno">   74</span>    <span class="keywordtype">logical</span> allfit</div>
+<div class="line"><span class="lineno">   75</span>    <span class="keywordtype">logical</span> orbps(*)</div>
+<div class="line"><span class="lineno">   76</span>    <span class="comment">!        rpar=0  untouched variational parameters</span></div>
+<div class="line"><span class="lineno">   77</span>    <span class="comment">!        rpar&gt;0 distance   lambda_{i,j}  Jastrow</span></div>
+<div class="line"><span class="lineno">   78</span>    <span class="comment">!        rpar&lt;0 distance lambda_{i,j}   Det</span></div>
+<div class="line"><span class="lineno">   79</span>    <span class="comment">!        prepare the vectors consecutevely on reduce</span></div>
+<div class="line"><span class="lineno">   80</span>    <span class="comment">!        special correlation for lambdas</span></div>
+<div class="line"><span class="lineno">   81</span> </div>
+<div class="line"><span class="lineno">   82</span>    <span class="comment">!        parametrizzazione costante per almeno un tipo di lambda</span></div>
+<div class="line"><span class="lineno">   83</span>    <span class="keywordflow">if</span> (initpowersw .eq. -1 .or. initpower .eq. -1 .or. initpowerinv .eq. -1) &amp;</div>
+<div class="line"><span class="lineno">   84</span>            &amp;   <span class="keyword">allocate</span> (rind(kp_ion), imap(kp_ion))</div>
+<div class="line"><span class="lineno">   85</span> </div>
+<div class="line"><span class="lineno">   86</span>    <span class="comment">!#########################################################</span></div>
+<div class="line"><span class="lineno">   87</span>    <span class="comment">!        parametrizzazione costante per il determinante</span></div>
+<div class="line"><span class="lineno">   88</span>    <span class="keywordflow">if</span> (nparsw .gt. 0 .and. initpowersw .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">   89</span>        <span class="keyword">allocate</span> (rmax(nparsw), rmin(nparsw))</div>
+<div class="line"><span class="lineno">   90</span>        rmin = 0.d0</div>
+<div class="line"><span class="lineno">   91</span>        rmax = 0.d0</div>
+<div class="line"><span class="lineno">   92</span>        <span class="comment">!        define rmax,rmin interval,in terms of rpar</span></div>
+<div class="line"><span class="lineno">   93</span>        <span class="keyword">call </span><a class="code hl_function" href="#ac539bdd7dc3d58c1f32deff9c2f3cd96">preprminmax</a>(kp_ion, nparsw, rpar, rmin, rmax, rind, imap, 0, endinv)</div>
+<div class="line"><span class="lineno">   94</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">   95</span> </div>
+<div class="line"><span class="lineno">   96</span>    <span class="comment">!##########################################################</span></div>
+<div class="line"><span class="lineno">   97</span>    <span class="comment">!        parametrizzazione costante per il jastrow</span></div>
+<div class="line"><span class="lineno">   98</span>    <span class="keywordflow">if</span> (npar .gt. 0 .and. initpower .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">   99</span>        <span class="keyword">allocate</span> (rmaxj(npar), rminj(npar))</div>
+<div class="line"><span class="lineno">  100</span>        rminj = 0.d0</div>
+<div class="line"><span class="lineno">  101</span>        rmaxj = 0.d0</div>
+<div class="line"><span class="lineno">  102</span>        <span class="comment">!        define rmax,rmin interval,in terms of rpar</span></div>
+<div class="line"><span class="lineno">  103</span>        <span class="keyword">call </span><a class="code hl_function" href="#ac539bdd7dc3d58c1f32deff9c2f3cd96">preprminmax</a>(kp_ion, npar, rpar, rminj, rmaxj, rind, imap, 1, endinv)</div>
+<div class="line"><span class="lineno">  104</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  105</span> </div>
+<div class="line"><span class="lineno">  106</span>    <span class="comment">!############################################################</span></div>
+<div class="line"><span class="lineno">  107</span>    <span class="comment">!       parametrizzazione costante per il jastrow Sz</span></div>
+<div class="line"><span class="lineno">  108</span>    <span class="keywordflow">if</span> (nparinv .gt. 0 .and. initpowerinv .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  109</span>        <span class="keyword">allocate</span> (rmaxinv(nparinv), rmininv(nparinv))</div>
+<div class="line"><span class="lineno">  110</span>        rmininv = 0.d0</div>
+<div class="line"><span class="lineno">  111</span>        rmaxinv = 0.d0</div>
+<div class="line"><span class="lineno">  112</span>        <span class="comment">!        define rmax,rmin interval,in terms of rpar</span></div>
+<div class="line"><span class="lineno">  113</span>        <span class="keyword">call </span><a class="code hl_function" href="#ac539bdd7dc3d58c1f32deff9c2f3cd96">preprminmax</a>(kp_ion, nparinv, rpar, rmininv, rmaxinv             &amp;</div>
+<div class="line"><span class="lineno">  114</span>                &amp;, rind, imap, 2, endinv)</div>
+<div class="line"><span class="lineno">  115</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  116</span>    <span class="comment">!#############################################################</span></div>
+<div class="line"><span class="lineno">  117</span> </div>
+<div class="line"><span class="lineno">  118</span>    <span class="comment">!        npar=sum npar_type</span></div>
+<div class="line"><span class="lineno">  119</span>    ncg = npar + nparsw + nparinv</div>
+<div class="line"><span class="lineno">  120</span> </div>
+<div class="line"><span class="lineno">  121</span>    <span class="comment">!        Initialize to zero reduce</span></div>
+<div class="line"><span class="lineno">  122</span>    <span class="keywordflow">do</span> i = 1, ncg</div>
+<div class="line"><span class="lineno">  123</span>        <span class="keywordflow">do</span> j = 1, kp_ion</div>
+<div class="line"><span class="lineno">  124</span>            reduce(i, j) = 0.d0</div>
+<div class="line"><span class="lineno">  125</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  126</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  127</span> </div>
+<div class="line"><span class="lineno">  128</span>    <span class="comment">!#########################################################</span></div>
+<div class="line"><span class="lineno">  129</span>    <span class="comment">!Firstly the parametrization of the Spin Jastrow</span></div>
+<div class="line"><span class="lineno">  130</span>    <span class="keywordflow">if</span> (initpowerinv .gt. 0 .and. nparinv .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  131</span> </div>
+<div class="line"><span class="lineno">  132</span>        <span class="keywordflow">do</span> i = ncg - nparinv + 1, ncg</div>
+<div class="line"><span class="lineno">  133</span> </div>
+<div class="line"><span class="lineno">  134</span>            <span class="comment">!         indice che conta i collettivi</span></div>
+<div class="line"><span class="lineno">  135</span> </div>
+<div class="line"><span class="lineno">  136</span>            <span class="keywordflow">do</span> j = 1, endinv</div>
+<div class="line"><span class="lineno">  137</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  138</span>                        &amp;     reduce(i, j) = rpar(j)**(-dble(i - ncg + nparinv - 1 + initpowerinv))</div>
+<div class="line"><span class="lineno">  139</span> </div>
+<div class="line"><span class="lineno">  140</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  141</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  142</span>    <span class="keywordflow">elseif</span> (initpowerinv .eq. 0 .and. nparinv .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  143</span> </div>
+<div class="line"><span class="lineno">  144</span>        <span class="keywordflow">do</span> j = 1, endinv</div>
+<div class="line"><span class="lineno">  145</span>            <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) reduce(ncg - nparinv + 1, j) = dlog(rpar(j))</div>
+<div class="line"><span class="lineno">  146</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  147</span> </div>
+<div class="line"><span class="lineno">  148</span>        <span class="keywordflow">do</span> i = ncg - nparinv + 2, ncg</div>
+<div class="line"><span class="lineno">  149</span>            <span class="keywordflow">do</span> j = 1, endinv</div>
+<div class="line"><span class="lineno">  150</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  151</span> </div>
+<div class="line"><span class="lineno">  152</span>                    reduce(i, j) = rpar(j)**(-dble(i - ncg + nparinv - 1))</div>
+<div class="line"><span class="lineno">  153</span> </div>
+<div class="line"><span class="lineno">  154</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  155</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  156</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  157</span>    <span class="keywordflow">elseif</span> (nparinv .ne. 0 .and. initpowerinv .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  158</span>        <span class="keywordflow">do</span> i = ncg - nparinv + 1, ncg</div>
+<div class="line"><span class="lineno">  159</span>            nfun = i + nparinv - ncg</div>
+<div class="line"><span class="lineno">  160</span>            <span class="keywordflow">do</span> j = 1, endinv</div>
+<div class="line"><span class="lineno">  161</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  162</span>                        &amp; reduce(i, j) = <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a>(nfun, rpar(j), rmaxinv, rmininv)</div>
+<div class="line"><span class="lineno">  163</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  164</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  165</span>        <span class="keyword">deallocate</span> (rmaxinv, rmininv)</div>
+<div class="line"><span class="lineno">  166</span>    <span class="keywordflow">elseif</span> (initpowerinv .lt. -1 .and. nparinv .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  167</span>        <span class="comment">! parametrizzazione</span></div>
+<div class="line"><span class="lineno">  168</span>        <span class="keywordflow">if</span> (allfit) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  169</span>            ntpar = nmax_ion*nmax_ion</div>
+<div class="line"><span class="lineno">  170</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  171</span>            ntpar = ((nmax_ion + 1)*nmax_ion)/2</div>
+<div class="line"><span class="lineno">  172</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  173</span>        powermin = -2 - initpowerinv</div>
+<div class="line"><span class="lineno">  174</span>        powermax = powermin + nparinv/ntpar/4 - 1</div>
+<div class="line"><span class="lineno">  175</span>        <span class="comment">!        do  i=ncg-nparinv+1,ncg,3</span></div>
+<div class="line"><span class="lineno">  176</span>        <span class="keywordflow">do</span> powerexp = powermin, powermax</div>
+<div class="line"><span class="lineno">  177</span>            ifirst = ncg - nparinv + 1 + (powerexp - powermin)*4*ntpar</div>
+<div class="line"><span class="lineno">  178</span>            <span class="keywordflow">do</span> j = 1, endinv</div>
+<div class="line"><span class="lineno">  179</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  180</span>                    k1 = type_atom(adrlambda(1, j))</div>
+<div class="line"><span class="lineno">  181</span>                    k2 = type_atom(adrlambda(2, j))</div>
+<div class="line"><span class="lineno">  182</span>                    <span class="keywordflow">if</span> (orbps(j)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  183</span>                        <span class="keywordflow">if</span> (k1 .lt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  184</span>                            kk = k2</div>
+<div class="line"><span class="lineno">  185</span>                            k2 = k1</div>
+<div class="line"><span class="lineno">  186</span>                            k1 = kk</div>
+<div class="line"><span class="lineno">  187</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  188</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  189</span>                        <span class="keywordflow">if</span> (k1 .gt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  190</span>                            kk = k2</div>
+<div class="line"><span class="lineno">  191</span>                            k2 = k1</div>
+<div class="line"><span class="lineno">  192</span>                            k1 = kk</div>
+<div class="line"><span class="lineno">  193</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  194</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  195</span>                    adr_ion = <a class="code hl_function" href="#af8cd123903f05c92906d523f07ceffd3">findindex</a>(k1, k2, nmax_ion, allfit)</div>
+<div class="line"><span class="lineno">  196</span>                    i = ifirst + 4*(adr_ion - 1)</div>
+<div class="line"><span class="lineno">  197</span>                    <span class="comment">!           powerexp=(i-ncg+nparinv-1)/3-2-initpower    !</span></div>
+<div class="line"><span class="lineno">  198</span>                    <span class="keywordflow">if</span> (powerexp .eq. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  199</span>                        reduce(i, j) = jas_invariant(1, j)*dlog(rpar(j))*damping(rpar(j), 0)</div>
+<div class="line"><span class="lineno">  200</span>                        reduce(i + 1, j) = jas_invariant(2, j)/rpar(j)*damping(rpar(j), 1)</div>
+<div class="line"><span class="lineno">  201</span>                        reduce(i + 2, j) = jas_invariant(3, j)/rpar(j)**2*damping(rpar(j), 2)</div>
+<div class="line"><span class="lineno">  202</span>                        reduce(i + 3, j) = jas_invariant(4, j)/rpar(j)**2*damping(rpar(j), 2)</div>
+<div class="line"><span class="lineno">  203</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  204</span>                        reduce(i, j) = jas_invariant(1, j)*rpar(j)**(-powerexp)&amp;</div>
+<div class="line"><span class="lineno">  205</span>                                      &amp; *damping(rpar(j), powerexp)</div>
+<div class="line"><span class="lineno">  206</span>                        reduce(i + 1, j) = jas_invariant(2, j)*rpar(j)**(-powerexp - 1)&amp;</div>
+<div class="line"><span class="lineno">  207</span>                                          &amp; *damping(rpar(j), powerexp + 1)</div>
+<div class="line"><span class="lineno">  208</span>                        reduce(i + 2, j) = jas_invariant(3, j)*rpar(j)**(-powerexp - 2)&amp;</div>
+<div class="line"><span class="lineno">  209</span>                                          &amp; *damping(rpar(j), powerexp + 2)</div>
+<div class="line"><span class="lineno">  210</span>                        reduce(i + 3, j) = jas_invariant(4, j)*rpar(j)**(-powerexp - 2)&amp;</div>
+<div class="line"><span class="lineno">  211</span>                                          &amp; *damping(rpar(j), powerexp + 2)</div>
+<div class="line"><span class="lineno">  212</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  213</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  214</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  215</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  216</span> </div>
+<div class="line"><span class="lineno">  217</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  218</span> </div>
+<div class="line"><span class="lineno">  219</span>    <span class="keywordflow">if</span> (initpower .gt. 0 .and. npar .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  220</span>        <span class="comment">!        s-wave</span></div>
+<div class="line"><span class="lineno">  221</span>        <span class="keywordflow">do</span> i = ncg - npar - nparinv + 1, ncg - nparinv</div>
+<div class="line"><span class="lineno">  222</span>            <span class="keywordflow">do</span> j = endinv + 1, kp_ion</div>
+<div class="line"><span class="lineno">  223</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  224</span>                        &amp;     reduce(i, j) = rpar(j)**(-dble(i - ncg + npar + nparinv - 1 + initpower))</div>
+<div class="line"><span class="lineno">  225</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  226</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  227</span> </div>
+<div class="line"><span class="lineno">  228</span>    <span class="keywordflow">elseif</span> (initpower .lt. -1 .and. npar .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  229</span>        <span class="comment">!        Parametrization  density-density Jastrow</span></div>
+<div class="line"><span class="lineno">  230</span>        <span class="comment">! parametrizzazione</span></div>
+<div class="line"><span class="lineno">  231</span>        <span class="keywordflow">if</span> (allfit) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  232</span>            ntpar = nmax_ion*nmax_ion</div>
+<div class="line"><span class="lineno">  233</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  234</span>            ntpar = ((nmax_ion + 1)*nmax_ion)/2</div>
+<div class="line"><span class="lineno">  235</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  236</span>        powermin = -2 - initpower</div>
+<div class="line"><span class="lineno">  237</span>        powermax = powermin + npar/ntpar/4 - 1</div>
+<div class="line"><span class="lineno">  238</span>        <span class="keywordflow">do</span> powerexp = powermin, powermax</div>
+<div class="line"><span class="lineno">  239</span>            ifirst = ncg - npar - nparinv + 1 + 4*ntpar*(powerexp - powermin)</div>
+<div class="line"><span class="lineno">  240</span>            <span class="keywordflow">do</span> j = endinv + 1, kp_ion</div>
+<div class="line"><span class="lineno">  241</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  242</span>                    <span class="comment">!           powerexp=(i-ncg+npar+nparinv-1)/3-2-initpower    !</span></div>
+<div class="line"><span class="lineno">  243</span>                    k1 = type_atom(adrlambda(1, j))</div>
+<div class="line"><span class="lineno">  244</span>                    k2 = type_atom(adrlambda(2, j))</div>
+<div class="line"><span class="lineno">  245</span>                    <span class="comment">!     The p(ix)-s(iy)  matrix element connecting an heavier p with a</span></div>
+<div class="line"><span class="lineno">  246</span>                    <span class="comment">!     lighter s is put in the upper part of the max_ion x max_ion matrix</span></div>
+<div class="line"><span class="lineno">  247</span>                    <span class="comment">!     as well as  s(ix)-p(iy) connecting a lighter s with an hevier p.</span></div>
+<div class="line"><span class="lineno">  248</span>                    <span class="comment">!     In the lower part of the matrix we put a lighter p with an heavier  s</span></div>
+<div class="line"><span class="lineno">  249</span> </div>
+<div class="line"><span class="lineno">  250</span>                    <span class="keywordflow">if</span> (orbps(j)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  251</span>                        <span class="comment">!            p -s</span></div>
+<div class="line"><span class="lineno">  252</span>                        <span class="keywordflow">if</span> (k1 .lt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  253</span>                            <span class="comment">!            k1 is lighter atom than k2</span></div>
+<div class="line"><span class="lineno">  254</span>                            kk = k2</div>
+<div class="line"><span class="lineno">  255</span>                            k2 = k1</div>
+<div class="line"><span class="lineno">  256</span>                            k1 = kk</div>
+<div class="line"><span class="lineno">  257</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  258</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  259</span>                        <span class="comment">!            s-p or anything else</span></div>
+<div class="line"><span class="lineno">  260</span>                        <span class="keywordflow">if</span> (k1 .gt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  261</span>                            <span class="comment">!            k1 is heavier than k2</span></div>
+<div class="line"><span class="lineno">  262</span>                            kk = k2</div>
+<div class="line"><span class="lineno">  263</span>                            k2 = k1</div>
+<div class="line"><span class="lineno">  264</span>                            k1 = kk</div>
+<div class="line"><span class="lineno">  265</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  266</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  267</span>                    adr_ion = <a class="code hl_function" href="#af8cd123903f05c92906d523f07ceffd3">findindex</a>(k1, k2, nmax_ion, allfit)</div>
+<div class="line"><span class="lineno">  268</span>                    i = ifirst + 4*(adr_ion - 1)</div>
+<div class="line"><span class="lineno">  269</span>                    <span class="keywordflow">if</span> (powerexp .eq. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  270</span>                        reduce(i, j) = jas_invariant(1, j)*dlog(rpar(j))*damping(rpar(j), 0)</div>
+<div class="line"><span class="lineno">  271</span>                        reduce(i + 1, j) = jas_invariant(2, j)/rpar(j)*damping(rpar(j), 1)</div>
+<div class="line"><span class="lineno">  272</span>                        reduce(i + 2, j) = jas_invariant(3, j)/rpar(j)**2*damping(rpar(j), 2)</div>
+<div class="line"><span class="lineno">  273</span>                        reduce(i + 3, j) = jas_invariant(4, j)/rpar(j)**2*damping(rpar(j), 2)</div>
+<div class="line"><span class="lineno">  274</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  275</span>                        reduce(i, j) = jas_invariant(1, j)*rpar(j)**(-powerexp)&amp;</div>
+<div class="line"><span class="lineno">  276</span>                                      &amp; *damping(rpar(j), powerexp)</div>
+<div class="line"><span class="lineno">  277</span>                        reduce(i + 1, j) = jas_invariant(2, j)*rpar(j)**(-powerexp - 1)&amp;</div>
+<div class="line"><span class="lineno">  278</span>                                          &amp; *damping(rpar(j), powerexp + 1)</div>
+<div class="line"><span class="lineno">  279</span>                        reduce(i + 2, j) = jas_invariant(3, j)*rpar(j)**(-powerexp - 2)&amp;</div>
+<div class="line"><span class="lineno">  280</span>                                          &amp; *damping(rpar(j), powerexp + 2)</div>
+<div class="line"><span class="lineno">  281</span>                        reduce(i + 3, j) = jas_invariant(4, j)*rpar(j)**(-powerexp - 2)&amp;</div>
+<div class="line"><span class="lineno">  282</span>                                          &amp; *damping(rpar(j), powerexp + 2)</div>
+<div class="line"><span class="lineno">  283</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  284</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  285</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  286</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  287</span> </div>
+<div class="line"><span class="lineno">  288</span>    <span class="keywordflow">elseif</span> (initpower .eq. 0 .and. npar .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  289</span>        <span class="keywordflow">do</span> j = endinv + 1, kp_ion</div>
+<div class="line"><span class="lineno">  290</span>            <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) reduce(ncg - npar - nparinv + 1, j) = dlog(rpar(j))</div>
+<div class="line"><span class="lineno">  291</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  292</span>        <span class="keywordflow">do</span> i = ncg - npar - nparinv + 2, ncg - nparinv</div>
+<div class="line"><span class="lineno">  293</span> </div>
+<div class="line"><span class="lineno">  294</span>            <span class="keywordflow">do</span> j = endinv + 1, kp_ion</div>
+<div class="line"><span class="lineno">  295</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0) reduce(i, j) = &amp;</div>
+<div class="line"><span class="lineno">  296</span>                        &amp;    rpar(j)**(-dble(i - ncg + npar + nparinv - 1))</div>
+<div class="line"><span class="lineno">  297</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  298</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  299</span> </div>
+<div class="line"><span class="lineno">  300</span>    <span class="keywordflow">elseif</span> (npar .ne. 0 .and. initpower .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  301</span>        <span class="keywordflow">do</span> i = ncg - nparinv - npar + 1, ncg - nparinv</div>
+<div class="line"><span class="lineno">  302</span> </div>
+<div class="line"><span class="lineno">  303</span>            nfun = i + nparinv + npar - ncg</div>
+<div class="line"><span class="lineno">  304</span>            <span class="keywordflow">do</span> j = endinv + 1, kp_ion</div>
+<div class="line"><span class="lineno">  305</span>                <span class="keywordflow">if</span> (rpar(j) .gt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  306</span>                        &amp; reduce(i, j) = <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a>(nfun, rpar(j), rmaxj, rminj)</div>
+<div class="line"><span class="lineno">  307</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  308</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  309</span>        <span class="keyword">deallocate</span> (rmaxj, rminj)</div>
+<div class="line"><span class="lineno">  310</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  311</span> </div>
+<div class="line"><span class="lineno">  312</span>    <span class="comment">!         output reduce  --&gt;</span></div>
+<div class="line"><span class="lineno">  313</span>    <span class="comment">!          le ultime npar direzioni</span></div>
+<div class="line"><span class="lineno">  314</span> </div>
+<div class="line"><span class="lineno">  315</span>    <span class="comment">!#######      End parametrization for the 3Body Jastrow        ##########</span></div>
+<div class="line"><span class="lineno">  316</span>    <span class="comment">!########################################################################</span></div>
+<div class="line"><span class="lineno">  317</span> </div>
+<div class="line"><span class="lineno">  318</span>    <span class="keywordflow">if</span> (initpowersw .gt. 0 .and. nparsw .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  319</span>        <span class="keywordflow">do</span> i = ncg - nparsw - npar - nparinv + 1, ncg - npar - nparinv</div>
+<div class="line"><span class="lineno">  320</span>            <span class="comment">!        sostituire direzioni con una parametrizzazione prefissata</span></div>
+<div class="line"><span class="lineno">  321</span>            <span class="comment">!        a npar parametri</span></div>
+<div class="line"><span class="lineno">  322</span>            <span class="comment">!        direzioni d labda_{i,j}</span></div>
+<div class="line"><span class="lineno">  323</span>            <span class="comment">!        introdurre un modulo che definisce</span></div>
+<div class="line"><span class="lineno">  324</span>            <span class="keywordflow">do</span> j = 1, kp_ion</div>
+<div class="line"><span class="lineno">  325</span>                <span class="keywordflow">if</span> (rpar(j) .lt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  326</span>                        &amp; reduce(i, j) = (-rpar(j))                                           &amp;</div>
+<div class="line"><span class="lineno">  327</span>                        &amp;**(-dble(i - ncg + npar + nparsw + nparinv - 1 + initpowersw))</div>
+<div class="line"><span class="lineno">  328</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  329</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  330</span>    <span class="keywordflow">elseif</span> (initpowersw .eq. 0 .and. nparsw .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  331</span>        <span class="keywordflow">do</span> j = 1, kp_ion</div>
+<div class="line"><span class="lineno">  332</span>            <span class="keywordflow">if</span> (rpar(j) .lt. 0.d0) reduce(ncg - npar - nparsw - nparinv + 1, j)        &amp;</div>
+<div class="line"><span class="lineno">  333</span>                    &amp; = dlog(-rpar(j))</div>
+<div class="line"><span class="lineno">  334</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  335</span>        <span class="keywordflow">do</span> i = ncg - npar - nparsw - nparinv + 2, ncg - npar - nparinv</div>
+<div class="line"><span class="lineno">  336</span>            <span class="comment">!        sostituire direzioni con una parametrizzazione prefissata</span></div>
+<div class="line"><span class="lineno">  337</span>            <span class="comment">!        a npar parametri</span></div>
+<div class="line"><span class="lineno">  338</span>            <span class="comment">!        direzioni d labda_{i,j}</span></div>
+<div class="line"><span class="lineno">  339</span>            <span class="comment">!        introdurre un modulo che definisce</span></div>
+<div class="line"><span class="lineno">  340</span>            <span class="keywordflow">do</span> j = 1, kp_ion</div>
+<div class="line"><span class="lineno">  341</span>                <span class="keywordflow">if</span> (rpar(j) .lt. 0.d0) reduce(i, j) = (-rpar(j))**                  &amp;</div>
+<div class="line"><span class="lineno">  342</span>                        &amp; (-dble(i - ncg + npar + nparsw + nparinv - 1))</div>
+<div class="line"><span class="lineno">  343</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  344</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  345</span>    <span class="keywordflow">elseif</span> (nparsw .ne. 0 .and. initpowersw .eq. -1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  346</span>        <span class="keywordflow">do</span> i = ncg - nparsw - npar - nparinv + 1, ncg - npar - nparinv</div>
+<div class="line"><span class="lineno">  347</span>            <span class="comment">!        sostituire direzioni con una parametrizzazione prefissata</span></div>
+<div class="line"><span class="lineno">  348</span>            <span class="comment">!        a npar parametri</span></div>
+<div class="line"><span class="lineno">  349</span>            <span class="comment">!        direzioni d labda_{i,j}</span></div>
+<div class="line"><span class="lineno">  350</span>            <span class="comment">!        introdurre un modulo che definisce</span></div>
+<div class="line"><span class="lineno">  351</span>            nfun = i + nparsw + npar + nparinv - ncg</div>
+<div class="line"><span class="lineno">  352</span>            <span class="keywordflow">do</span> j = 1, kp_ion</div>
+<div class="line"><span class="lineno">  353</span>                <span class="keywordflow">if</span> (rpar(j) .lt. 0.d0)                                          &amp;</div>
+<div class="line"><span class="lineno">  354</span>                        &amp; reduce(i, j) = <a class="code hl_function" href="#af23e312e9c6c57477a04e981e5746e09">funloc</a>(nfun, -rpar(j), rmax, rmin)</div>
+<div class="line"><span class="lineno">  355</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  356</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  357</span>        <span class="keyword">deallocate</span> (rmax, rmin)</div>
+<div class="line"><span class="lineno">  358</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  359</span>    <span class="keywordflow">if</span> (initpowersw .eq. -1 .or. initpower .eq. -1 .or. initpowerinv .eq. -1) &amp;</div>
+<div class="line"><span class="lineno">  360</span>            &amp;   <span class="keyword">deallocate</span> (rind, imap)</div>
+<div class="line"><span class="lineno">  361</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="apareff_8f90_html_ac539bdd7dc3d58c1f32deff9c2f3cd96"><div class="ttname"><a href="#ac539bdd7dc3d58c1f32deff9c2f3cd96">preprminmax</a></div><div class="ttdeci">subroutine preprminmax(kp, npar, rpar, rmin, rmax, rind, imap, iopt, endinv)</div><div class="ttdoc">Prepare min/max intervals for constant parameterization.</div><div class="ttdef"><b>Definition</b> <a href="pareff_8f90_source.html#l00655">pareff.f90:657</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="pareff_8f90_source.html#l00716">findindex()</a>, and <a class="el" href="pareff_8f90_source.html#l00657">preprminmax()</a>.</p>
+
 </div>
 </div>
 <a id="ac539bdd7dc3d58c1f32deff9c2f3cd96" name="ac539bdd7dc3d58c1f32deff9c2f3cd96"></a>
@@ -1088,6 +1892,67 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Uses different distance ranges based on iopt parameter type </dd></dl>
 <dl class="section see"><dt>See also</dt><dd>dsortx </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00655">655</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  657</span><span class="comment">    !&gt; @brief Prepare min/max intervals for constant parameterization</span></div>
+<div class="line"><span class="lineno">  658</span><span class="comment">    !&gt; @details Divides the range of physical distances into npar subintervals</span></div>
+<div class="line"><span class="lineno">  659</span><span class="comment">    !&gt;          for constant parameterization schemes. Sorts unique distances and</span></div>
+<div class="line"><span class="lineno">  660</span><span class="comment">    !&gt;          creates evenly spaced intervals covering the full range.</span></div>
+<div class="line"><span class="lineno">  661</span><span class="comment">    !&gt; @param[in] kp Number of ion pairs</span></div>
+<div class="line"><span class="lineno">  662</span><span class="comment">    !&gt; @param[in] npar Number of parameters (intervals)</span></div>
+<div class="line"><span class="lineno">  663</span><span class="comment">    !&gt; @param[in] rpar Physical distances array</span></div>
+<div class="line"><span class="lineno">  664</span><span class="comment">    !&gt; @param[out] rmin Lower bounds of intervals</span></div>
+<div class="line"><span class="lineno">  665</span><span class="comment">    !&gt; @param[out] rmax Upper bounds of intervals</span></div>
+<div class="line"><span class="lineno">  666</span><span class="comment">    !&gt; @param[out] rind Sorted unique distances</span></div>
+<div class="line"><span class="lineno">  667</span><span class="comment">    !&gt; @param[out] imap Sorting index array</span></div>
+<div class="line"><span class="lineno">  668</span><span class="comment">    !&gt; @param[in] iopt Parameter type option (0=det, 1=Jastrow, 2=spin Jastrow)</span></div>
+<div class="line"><span class="lineno">  669</span><span class="comment">    !&gt; @param[in] endinv End index for spin Jastrow parameters</span></div>
+<div class="line"><span class="lineno">  670</span><span class="comment">    !&gt; @note Uses different distance ranges based on iopt parameter type</span></div>
+<div class="line"><span class="lineno">  671</span><span class="comment">    !&gt; @see dsortx</span></div>
+<div class="line"><span class="lineno">  672</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  673</span>    <span class="keywordtype">integer</span> kp, npar, ndist, ngroup, nrest, ind, i, imap(*)                  &amp;</div>
+<div class="line"><span class="lineno">  674</span>            &amp;, iopt, endinv</div>
+<div class="line"><span class="lineno">  675</span>    <span class="keywordtype">real*8</span> rpar(*), rmin(*), rmax(*), rind(*), eps, dist, rmint, rmaxt, delta</div>
+<div class="line"><span class="lineno">  676</span>    <span class="comment">!     compute how many independent distances are present</span></div>
+<div class="line"><span class="lineno">  677</span>    eps = 1d-6</div>
+<div class="line"><span class="lineno">  678</span>    ndist = 0</div>
+<div class="line"><span class="lineno">  679</span>    <span class="keywordflow">if</span> (iopt .eq. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  680</span>        <span class="keywordflow">do</span> i = 1, kp</div>
+<div class="line"><span class="lineno">  681</span>            <span class="keywordflow">if</span> (rpar(i) .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  682</span>                ndist = ndist + 1</div>
+<div class="line"><span class="lineno">  683</span>                rind(ndist) = -rpar(i)</div>
+<div class="line"><span class="lineno">  684</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  685</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  686</span>    <span class="keywordflow">elseif</span> (iopt .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  687</span>        <span class="keywordflow">do</span> i = endinv + 1, kp</div>
+<div class="line"><span class="lineno">  688</span>            <span class="keywordflow">if</span> (rpar(i) .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  689</span>                ndist = ndist + 1</div>
+<div class="line"><span class="lineno">  690</span>                rind(ndist) = rpar(i)</div>
+<div class="line"><span class="lineno">  691</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  692</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  693</span>    <span class="keywordflow">elseif</span> (iopt .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  694</span>        <span class="keywordflow">do</span> i = 1, endinv</div>
+<div class="line"><span class="lineno">  695</span>            <span class="keywordflow">if</span> (rpar(i) .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  696</span>                ndist = ndist + 1</div>
+<div class="line"><span class="lineno">  697</span>                rind(ndist) = rpar(i)</div>
+<div class="line"><span class="lineno">  698</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  699</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  700</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  701</span> </div>
+<div class="line"><span class="lineno">  702</span>    <span class="comment">!     dividing the full interval in npar subintervals</span></div>
+<div class="line"><span class="lineno">  703</span> </div>
+<div class="line"><span class="lineno">  704</span>    <span class="keyword">call </span>dsortx(rind, 1, ndist, imap)</div>
+<div class="line"><span class="lineno">  705</span>    rmint = rind(1) - eps</div>
+<div class="line"><span class="lineno">  706</span>    rmaxt = rind(ndist) + eps</div>
+<div class="line"><span class="lineno">  707</span>    delta = (rmaxt - rmint)/npar</div>
+<div class="line"><span class="lineno">  708</span> </div>
+<div class="line"><span class="lineno">  709</span>    <span class="keywordflow">do</span> i = 1, npar</div>
+<div class="line"><span class="lineno">  710</span>        rmin(i) = rmint + (i - 1)*delta</div>
+<div class="line"><span class="lineno">  711</span>        rmax(i) = rmint + i*delta</div>
+<div class="line"><span class="lineno">  712</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  713</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="pareff_8f90_source.html#l00033">pareff()</a>.</p>
 
 </div>
 </div>
@@ -2668,6 +3533,271 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Handles different wave function types (real vs complex) and symmetry considerations for AGP wave functions </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="evaluate__invariant_8f90.html#a57a7c143f4e716dd4ddd652df10efe58" title="Evaluate invariants between two orbitals for Jastrow or symmetry purposes.">evaluate_invariant</a> </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pareff_8f90_source.html#l00364">364</a> of file <a class="el" href="pareff_8f90_source.html">pareff.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  371</span><span class="comment">    !&gt; @brief Prepare parameter arrays for Jastrow and determinant optimization</span></div>
+<div class="line"><span class="lineno">  372</span><span class="comment">    !&gt; @details Initializes the rpar array with physical distances between particles</span></div>
+<div class="line"><span class="lineno">  373</span><span class="comment">    !&gt;          and sets up the adrlambda mapping for variational parameters. Handles</span></div>
+<div class="line"><span class="lineno">  374</span><span class="comment">    !&gt;          three types of parameters: free Jastrow (iesfree), spin Jastrow (iesinv),</span></div>
+<div class="line"><span class="lineno">  375</span><span class="comment">    !&gt;          and determinant parameters (iessw). Computes Jastrow invariants for</span></div>
+<div class="line"><span class="lineno">  376</span><span class="comment">    !&gt;          orbital-dependent terms and handles complex vs real wave functions.</span></div>
+<div class="line"><span class="lineno">  377</span><span class="comment">    !&gt; @param[out] rpar Physical distances array (positive for Jastrow, negative for det)</span></div>
+<div class="line"><span class="lineno">  378</span><span class="comment">    !&gt; @param[in] kp_ion Number of ion pairs</span></div>
+<div class="line"><span class="lineno">  379</span><span class="comment">    !&gt; @param[in] iond Ion-ion distance matrix</span></div>
+<div class="line"><span class="lineno">  380</span><span class="comment">    !&gt; @param[in] nion Number of ions</span></div>
+<div class="line"><span class="lineno">  381</span><span class="comment">    !&gt; @param[in] kiontotj Ion mapping for Jastrow orbitals</span></div>
+<div class="line"><span class="lineno">  382</span><span class="comment">    !&gt; @param[in] nozeroj_c Non-zero indices for Jastrow matrix</span></div>
+<div class="line"><span class="lineno">  383</span><span class="comment">    !&gt; @param[in] nnozeroj_c Number of non-zero Jastrow elements</span></div>
+<div class="line"><span class="lineno">  384</span><span class="comment">    !&gt; @param[in] nelorbj_c Number of Jastrow orbitals</span></div>
+<div class="line"><span class="lineno">  385</span><span class="comment">    !&gt; @param[in] jbraj Jastrow parameter mapping</span></div>
+<div class="line"><span class="lineno">  386</span><span class="comment">    !&gt; @param[in] iesfree Number of free Jastrow parameters</span></div>
+<div class="line"><span class="lineno">  387</span><span class="comment">    !&gt; @param[in] indfree Starting index for free parameters</span></div>
+<div class="line"><span class="lineno">  388</span><span class="comment">    !&gt; @param[in] jbrajsz Spin Jastrow parameter mapping</span></div>
+<div class="line"><span class="lineno">  389</span><span class="comment">    !&gt; @param[in] iesinv Number of spin Jastrow parameters</span></div>
+<div class="line"><span class="lineno">  390</span><span class="comment">    !&gt; @param[in] indinv Starting index for spin parameters</span></div>
+<div class="line"><span class="lineno">  391</span><span class="comment">    !&gt; @param[in] orbcost Orbital cost information</span></div>
+<div class="line"><span class="lineno">  392</span><span class="comment">    !&gt; @param[in] kiontot Ion mapping for determinant orbitals</span></div>
+<div class="line"><span class="lineno">  393</span><span class="comment">    !&gt; @param[in] nozero_c Non-zero indices for determinant matrix</span></div>
+<div class="line"><span class="lineno">  394</span><span class="comment">    !&gt; @param[in] nnozero_c Number of non-zero determinant elements</span></div>
+<div class="line"><span class="lineno">  395</span><span class="comment">    !&gt; @param[in] nelorb_c Number of determinant orbitals</span></div>
+<div class="line"><span class="lineno">  396</span><span class="comment">    !&gt; @param[in] jbra Determinant parameter mapping</span></div>
+<div class="line"><span class="lineno">  397</span><span class="comment">    !&gt; @param[in] iessw Number of determinant parameters</span></div>
+<div class="line"><span class="lineno">  398</span><span class="comment">    !&gt; @param[in] indsw Starting index for determinant parameters</span></div>
+<div class="line"><span class="lineno">  399</span><span class="comment">    !&gt; @param[out] adrlambda Address mapping for lambda parameters</span></div>
+<div class="line"><span class="lineno">  400</span><span class="comment">    !&gt; @param[in] whereiesm Mapping for molecular parameters</span></div>
+<div class="line"><span class="lineno">  401</span><span class="comment">    !&gt; @param[in] iesm Number of molecular parameters</span></div>
+<div class="line"><span class="lineno">  402</span><span class="comment">    !&gt; @param[in] whereiesup Mapping for upper parameters</span></div>
+<div class="line"><span class="lineno">  403</span><span class="comment">    !&gt; @param[in] iesup Number of upper parameters</span></div>
+<div class="line"><span class="lineno">  404</span><span class="comment">    !&gt; @param[in] iond_cart Cartesian ion-ion distance matrix</span></div>
+<div class="line"><span class="lineno">  405</span><span class="comment">    !&gt; @param[in] typeorb Orbital type assignments</span></div>
+<div class="line"><span class="lineno">  406</span><span class="comment">    !&gt; @param[in] nshellj_c Number of Jastrow shells</span></div>
+<div class="line"><span class="lineno">  407</span><span class="comment">    !&gt; @param[in] multij_c Jastrow multiplicity</span></div>
+<div class="line"><span class="lineno">  408</span><span class="comment">    !&gt; @param[in] ioccj_c Jastrow occupation</span></div>
+<div class="line"><span class="lineno">  409</span><span class="comment">    !&gt; @param[in] occj_c Jastrow occupation array</span></div>
+<div class="line"><span class="lineno">  410</span><span class="comment">    !&gt; @param[out] jas_invariant Jastrow invariants for orbital-dependent terms</span></div>
+<div class="line"><span class="lineno">  411</span><span class="comment">    !&gt; @param[out] orbps Orbital pairing information</span></div>
+<div class="line"><span class="lineno">  412</span><span class="comment">    !&gt; @note Handles different wave function types (real vs complex) and symmetry</span></div>
+<div class="line"><span class="lineno">  413</span><span class="comment">    !&gt;       considerations for AGP wave functions</span></div>
+<div class="line"><span class="lineno">  414</span><span class="comment">    !&gt; @see evaluate_invariant</span></div>
+<div class="line"><span class="lineno">  415</span>    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespaceconstants.html">constants</a>, <span class="keywordtype">only</span>: ipc, ipj</div>
+<div class="line"><span class="lineno">  416</span>    <span class="keywordtype">use </span>allio, <span class="keywordtype">only</span>: symmagp, yes_correct, yes_sparse</div>
+<div class="line"><span class="lineno">  417</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  418</span>    <span class="keywordtype">integer</span> kp_ion, i, ii, iii, j, ix, iy, jbraj(*), nozeroj_c(*)    &amp;</div>
+<div class="line"><span class="lineno">  419</span>            &amp;, nelorbj_c, kiontotj(*), iesfree, indfree, nion, nnozeroj_c            &amp;</div>
+<div class="line"><span class="lineno">  420</span>            &amp;, nozero_c(*), iessw, indsw, nnozero_c, nelorb_c, jbra(*), kiontot(*)    &amp;</div>
+<div class="line"><span class="lineno">  421</span>            &amp;, iesinv, indinv, jbrajsz(*), whereiesup(*), iesup, adrlambda(2, *)      &amp;</div>
+<div class="line"><span class="lineno">  422</span>            &amp;, whereiesm(*), iesm, typeorb(*), multij_c(*)                         &amp;</div>
+<div class="line"><span class="lineno">  423</span>            &amp;, nshellj_c, ioccj_c(*), occj_c, icek, icek2, jcek</div>
+<div class="line"><span class="lineno">  424</span>    <span class="keywordtype">real*8</span> iond(nion, nion), rpar(*), jas_invariant(4, *), &amp;</div>
+<div class="line"><span class="lineno">  425</span>            &amp; iond_cart(3, nion, nion), pip, vec_r(3)</div>
+<div class="line"><span class="lineno">  426</span>    <span class="keywordtype">logical</span> orbcost(*), orbps(*)</div>
+<div class="line"><span class="lineno">  427</span>    <span class="keywordtype">integer</span> k1, k2</div>
+<div class="line"><span class="lineno">  428</span>    <span class="keywordtype">integer*8</span> ind</div>
+<div class="line"><span class="lineno">  429</span>    <span class="comment">!          indfree=primo indirizzo da riempire-1</span></div>
+<div class="line"><span class="lineno">  430</span> </div>
+<div class="line"><span class="lineno">  431</span>    <span class="keyword">call </span>dscalzero(kp_ion, 0.d0, rpar, 1)</div>
+<div class="line"><span class="lineno">  432</span> </div>
+<div class="line"><span class="lineno">  433</span>    <span class="keywordflow">if</span> (iesfree .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  434</span> </div>
+<div class="line"><span class="lineno">  435</span>        <span class="keywordflow">do</span> i = 1, nnozeroj_c</div>
+<div class="line"><span class="lineno">  436</span>            j = abs(jbraj(i))</div>
+<div class="line"><span class="lineno">  437</span>            <span class="keywordflow">if</span> (j .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  438</span>                <span class="keywordflow">if</span> (yes_sparse) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  439</span>                    ix = nozeroj_c(i)</div>
+<div class="line"><span class="lineno">  440</span>                    iy = nozeroj_c(i + nnozeroj_c)</div>
+<div class="line"><span class="lineno">  441</span>                    ind = ix + int(ipj*nelorbj_c, 8)*(iy - 1)</div>
+<div class="line"><span class="lineno">  442</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  443</span>                    ind = nozeroj_c(i)</div>
+<div class="line"><span class="lineno">  444</span>                    iy = (ind - 1)/(ipj*nelorbj_c) + 1</div>
+<div class="line"><span class="lineno">  445</span>                    ix = ind - (iy - 1)*nelorbj_c*ipj</div>
+<div class="line"><span class="lineno">  446</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  447</span>                <span class="keywordflow">if</span> (ix .ne. iy .and. iy .le. ipj*nelorbj_c .and. .not. orbcost(ix)       &amp;</div>
+<div class="line"><span class="lineno">  448</span>                        &amp;.and. .not. orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  449</span>                    adrlambda(1, j + indfree) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  450</span>                    adrlambda(2, j + indfree) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  451</span> </div>
+<div class="line"><span class="lineno">  452</span>                    rpar(j + indfree) = iond(kiontotj(ix), kiontotj(iy))</div>
+<div class="line"><span class="lineno">  453</span> </div>
+<div class="line"><span class="lineno">  454</span>                    <span class="keywordflow">if</span> (kiontotj(ix) .ne. kiontotj(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  455</span>                        k1 = typeorb(ix)</div>
+<div class="line"><span class="lineno">  456</span>                        k2 = typeorb(iy)</div>
+<div class="line"><span class="lineno">  457</span>                        <span class="comment">! In order to compute the invariant 2 in a way that is invariant</span></div>
+<div class="line"><span class="lineno">  458</span>                        <span class="comment">! we have to define the direction from p to s, so change sign if k1&lt;k2</span></div>
+<div class="line"><span class="lineno">  459</span>                        <span class="comment">! (s-&gt;p).</span></div>
+<div class="line"><span class="lineno">  460</span>                        <span class="keywordflow">if</span> (k1 .gt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  461</span>                            <span class="keywordflow">do</span> icek = 1, 3</div>
+<div class="line"><span class="lineno">  462</span>                                vec_r(icek) = iond_cart(icek, kiontotj(ix), kiontotj(iy))&amp;</div>
+<div class="line"><span class="lineno">  463</span>                                        &amp; /iond(kiontotj(ix), kiontotj(iy)) <span class="comment">! the unit vecors obviously</span></div>
+<div class="line"><span class="lineno">  464</span><span class="keywordflow">                            end do</span></div>
+<div class="line"><span class="lineno">  465</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  466</span>                            <span class="keywordflow">do</span> icek = 1, 3</div>
+<div class="line"><span class="lineno">  467</span>                                vec_r(icek) = iond_cart(icek, kiontotj(iy), kiontotj(ix))&amp;</div>
+<div class="line"><span class="lineno">  468</span>                                        &amp; /iond(kiontotj(iy), kiontotj(ix)) <span class="comment">! the unit vecors obviously</span></div>
+<div class="line"><span class="lineno">  469</span><span class="keywordflow">                            end do</span></div>
+<div class="line"><span class="lineno">  470</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  471</span>                        <span class="keyword">call </span><a class="code hl_function" href="evaluate__invariant_8f90.html#a57a7c143f4e716dd4ddd652df10efe58">evaluate_invariant</a>(vec_r, ix, iy, typeorb, &amp;</div>
+<div class="line"><span class="lineno">  472</span>                                &amp;  jas_invariant(1, j + indfree), orbps(j + indfree))</div>
+<div class="line"><span class="lineno">  473</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  474</span> </div>
+<div class="line"><span class="lineno">  475</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  476</span>                    <span class="keywordflow">if</span> (orbcost(ix) .and. orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  477</span>                        adrlambda(1, j + indfree) = 0</div>
+<div class="line"><span class="lineno">  478</span>                        adrlambda(2, j + indfree) = 0</div>
+<div class="line"><span class="lineno">  479</span>                    <span class="keywordflow">elseif</span> (orbcost(ix)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  480</span>                        adrlambda(1, j + indfree) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  481</span>                        adrlambda(2, j + indfree) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  482</span>                    <span class="keywordflow">elseif</span> (orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  483</span>                        adrlambda(1, j + indfree) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  484</span>                        adrlambda(2, j + indfree) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  485</span>                    <span class="keywordflow">elseif</span> (ix .eq. iy) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  486</span>                        adrlambda(1, j + indfree) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  487</span>                        adrlambda(2, j + indfree) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  488</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  489</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  490</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  491</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  492</span> </div>
+<div class="line"><span class="lineno">  493</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  494</span> </div>
+<div class="line"><span class="lineno">  495</span>    <span class="comment">!############################################################</span></div>
+<div class="line"><span class="lineno">  496</span> </div>
+<div class="line"><span class="lineno">  497</span>    <span class="keywordflow">if</span> (iesinv .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  498</span>        <span class="keywordflow">do</span> i = 1, nnozeroj_c</div>
+<div class="line"><span class="lineno">  499</span>            j = abs(jbrajsz(i))</div>
+<div class="line"><span class="lineno">  500</span>            <span class="keywordflow">if</span> (j .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  501</span>                ind = nozeroj_c(i)</div>
+<div class="line"><span class="lineno">  502</span>                iy = (ind - 1)/nelorbj_c + 1</div>
+<div class="line"><span class="lineno">  503</span>                ix = ind - (iy - 1)*nelorbj_c</div>
+<div class="line"><span class="lineno">  504</span>                <span class="keywordflow">if</span> (ix .ne. iy .and. iy .le. nelorbj_c .and. .not. orbcost(ix)       &amp;</div>
+<div class="line"><span class="lineno">  505</span>                        &amp;.and. .not. orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  506</span>                    rpar(j + indinv) = iond(kiontotj(ix), kiontotj(iy))</div>
+<div class="line"><span class="lineno">  507</span>                    adrlambda(1, j + indinv) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  508</span>                    adrlambda(2, j + indinv) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  509</span>                    <span class="keywordflow">if</span> (kiontotj(ix) .ne. kiontotj(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  510</span>                        k1 = typeorb(ix)</div>
+<div class="line"><span class="lineno">  511</span>                        k2 = typeorb(iy)</div>
+<div class="line"><span class="lineno">  512</span>                        <span class="comment">! In order to compute the invariant 2 in a way that is invariant</span></div>
+<div class="line"><span class="lineno">  513</span>                        <span class="comment">! we have to define the direction from p to s, so vec_r changes its sign if k1&lt;k2</span></div>
+<div class="line"><span class="lineno">  514</span>                        <span class="comment">! (s-&gt;p).</span></div>
+<div class="line"><span class="lineno">  515</span>                        <span class="keywordflow">if</span> (k1 .gt. k2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  516</span>                            <span class="keywordflow">do</span> icek = 1, 3</div>
+<div class="line"><span class="lineno">  517</span>                                vec_r(icek) = iond_cart(icek, kiontotj(ix), kiontotj(iy))&amp;</div>
+<div class="line"><span class="lineno">  518</span>                                        &amp; /iond(kiontotj(ix), kiontotj(iy)) <span class="comment">! the unit vecors obviously</span></div>
+<div class="line"><span class="lineno">  519</span><span class="keywordflow">                            end do</span></div>
+<div class="line"><span class="lineno">  520</span>                        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  521</span>                            <span class="keywordflow">do</span> icek = 1, 3</div>
+<div class="line"><span class="lineno">  522</span>                                vec_r(icek) = iond_cart(icek, kiontotj(iy), kiontotj(ix))&amp;</div>
+<div class="line"><span class="lineno">  523</span>                                        &amp; /iond(kiontotj(iy), kiontotj(ix)) <span class="comment">! the unit vecors obviously</span></div>
+<div class="line"><span class="lineno">  524</span><span class="keywordflow">                            end do</span></div>
+<div class="line"><span class="lineno">  525</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  526</span>                        <span class="keyword">call </span><a class="code hl_function" href="evaluate__invariant_8f90.html#a57a7c143f4e716dd4ddd652df10efe58">evaluate_invariant</a>(vec_r, ix, iy, typeorb, &amp;</div>
+<div class="line"><span class="lineno">  527</span>                                &amp;  jas_invariant(1, j + indinv), orbps(j + indinv))</div>
+<div class="line"><span class="lineno">  528</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  529</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  530</span>                    <span class="keywordflow">if</span> (orbcost(ix) .and. orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  531</span>                        adrlambda(1, j + indinv) = 0</div>
+<div class="line"><span class="lineno">  532</span>                        adrlambda(2, j + indinv) = 0</div>
+<div class="line"><span class="lineno">  533</span>                    <span class="keywordflow">elseif</span> (orbcost(ix)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  534</span>                        adrlambda(1, j + indinv) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  535</span>                        adrlambda(2, j + indinv) = kiontotj(iy)</div>
+<div class="line"><span class="lineno">  536</span>                    <span class="keywordflow">elseif</span> (orbcost(iy)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  537</span>                        adrlambda(1, j + indinv) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  538</span>                        adrlambda(2, j + indinv) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  539</span>                    <span class="keywordflow">elseif</span> (ix .eq. iy) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  540</span>                        adrlambda(1, j + indinv) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  541</span>                        adrlambda(2, j + indinv) = kiontotj(ix)</div>
+<div class="line"><span class="lineno">  542</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  543</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  544</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  545</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  546</span> </div>
+<div class="line"><span class="lineno">  547</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  548</span> </div>
+<div class="line"><span class="lineno">  549</span>    <span class="keywordflow">if</span> (iessw .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  550</span>        <span class="keywordflow">if</span> (ipc .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  551</span>            <span class="keywordflow">do</span> i = 1, nnozero_c</div>
+<div class="line"><span class="lineno">  552</span>                j = abs(jbra(i))</div>
+<div class="line"><span class="lineno">  553</span>                <span class="keywordflow">if</span> (j .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  554</span>                    ind = nozero_c(i)</div>
+<div class="line"><span class="lineno">  555</span>                    iy = (ind - 1)/nelorb_c + 1</div>
+<div class="line"><span class="lineno">  556</span>                    ix = ind - (iy - 1)*nelorb_c</div>
+<div class="line"><span class="lineno">  557</span>                    <span class="keywordflow">if</span> (ix .ne. iy .and. iy .le. nelorb_c) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  558</span>                        <span class="keywordflow">if</span> (kiontot(ix) .ne. 0 .and. kiontot(iy) .ne. 0) rpar(j + indsw) = -iond(kiontot(ix), kiontot(iy))</div>
+<div class="line"><span class="lineno">  559</span>                        adrlambda(1, j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  560</span>                        adrlambda(2, j + indsw) = kiontot(iy)</div>
+<div class="line"><span class="lineno">  561</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  562</span>                        adrlambda(1, j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  563</span>                        adrlambda(2, j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  564</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  565</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  566</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  567</span>        <span class="keywordflow">elseif</span> (symmagp .and. yes_correct) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  568</span>            <span class="keywordflow">do</span> i = 1, nnozero_c</div>
+<div class="line"><span class="lineno">  569</span>                j = abs(jbra(i))</div>
+<div class="line"><span class="lineno">  570</span>                <span class="keywordflow">if</span> (j .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  571</span>                    ind = nozero_c(i)</div>
+<div class="line"><span class="lineno">  572</span>                    iy = (ind - 1)/nelorb_c + 1</div>
+<div class="line"><span class="lineno">  573</span>                    ix = ind - (iy - 1)*nelorb_c</div>
+<div class="line"><span class="lineno">  574</span>                    <span class="keywordflow">if</span> (ix .ne. iy .and. iy .le. nelorb_c) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  575</span>                        <span class="keywordflow">if</span> (kiontot(ix) .ne. 0 .and. kiontot(iy) .ne. 0)&amp;</div>
+<div class="line"><span class="lineno">  576</span>                           &amp; rpar(4*j - 3 + indsw:4*j + indsw) = -iond(kiontot(ix), kiontot(iy))</div>
+<div class="line"><span class="lineno">  577</span>                        adrlambda(1, 4*j - 3 + indsw:4*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  578</span>                        adrlambda(2, 4*j - 3 + indsw:4*j + indsw) = kiontot(iy)</div>
+<div class="line"><span class="lineno">  579</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  580</span>                        adrlambda(1, 4*j - 3 + indsw:4*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  581</span>                        adrlambda(2, 4*j - 3 + indsw:4*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  582</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  583</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  584</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  585</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  586</span>            <span class="keywordflow">do</span> i = 1, nnozero_c</div>
+<div class="line"><span class="lineno">  587</span>                j = abs(jbra(i))</div>
+<div class="line"><span class="lineno">  588</span>                <span class="keywordflow">if</span> (j .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  589</span>                    ind = nozero_c(i)</div>
+<div class="line"><span class="lineno">  590</span>                    iy = (ind - 1)/nelorb_c + 1</div>
+<div class="line"><span class="lineno">  591</span>                    ix = ind - (iy - 1)*nelorb_c</div>
+<div class="line"><span class="lineno">  592</span>                    <span class="keywordflow">if</span> (ix .ne. iy .and. iy .le. nelorb_c) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  593</span>                        <span class="keywordflow">if</span> (kiontot(ix) .ne. 0 .and. kiontot(iy) .ne. 0) rpar(2*j - 1 + indsw) = -iond(kiontot(ix), kiontot(iy))</div>
+<div class="line"><span class="lineno">  594</span>                        <span class="keywordflow">if</span> (kiontot(ix) .ne. 0 .and. kiontot(iy) .ne. 0) rpar(2*j + indsw) = -iond(kiontot(ix), kiontot(iy))</div>
+<div class="line"><span class="lineno">  595</span>                        adrlambda(1, 2*j - 1 + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  596</span>                        adrlambda(1, 2*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  597</span>                        adrlambda(2, 2*j - 1 + indsw) = kiontot(iy)</div>
+<div class="line"><span class="lineno">  598</span>                        adrlambda(2, 2*j + indsw) = kiontot(iy)</div>
+<div class="line"><span class="lineno">  599</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  600</span>                        adrlambda(1, 2*j - 1 + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  601</span>                        adrlambda(1, 2*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  602</span>                        adrlambda(2, 2*j - 1 + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  603</span>                        adrlambda(2, 2*j + indsw) = kiontot(ix)</div>
+<div class="line"><span class="lineno">  604</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  605</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  606</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  607</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  608</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  609</span>    <span class="keywordflow">if</span> (iesup .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  610</span>        <span class="keywordflow">if</span> (ipc .eq. 2) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  611</span>            <span class="keywordflow">do</span> i = 1, iesup/2</div>
+<div class="line"><span class="lineno">  612</span>                adrlambda(1, 2*i - 1 + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  613</span>                adrlambda(1, 2*i + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  614</span>                adrlambda(2, 2*i - 1 + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  615</span>                adrlambda(2, 2*i + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  616</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  617</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  618</span>            <span class="keywordflow">do</span> i = 1, iesup</div>
+<div class="line"><span class="lineno">  619</span>                adrlambda(1, i + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  620</span>                adrlambda(2, i + indsw + iessw) = whereiesup(i)</div>
+<div class="line"><span class="lineno">  621</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno">  622</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  623</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  624</span>    <span class="keywordflow">if</span> (iesm .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  625</span>        <span class="keywordflow">do</span> i = 1, iesm</div>
+<div class="line"><span class="lineno">  626</span>            adrlambda(1, i + iesinv) = whereiesm(i)</div>
+<div class="line"><span class="lineno">  627</span>            adrlambda(2, i + iesinv) = whereiesm(i)</div>
+<div class="line"><span class="lineno">  628</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  629</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno">  630</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="aevaluate__invariant_8f90_html_a57a7c143f4e716dd4ddd652df10efe58"><div class="ttname"><a href="evaluate__invariant_8f90.html#a57a7c143f4e716dd4ddd652df10efe58">evaluate_invariant</a></div><div class="ttdeci">subroutine evaluate_invariant(vec_r, ix, iy, typeorb, jas_invariant, orbps)</div><div class="ttdoc">Evaluate invariants between two orbitals for Jastrow or symmetry purposes.</div><div class="ttdef"><b>Definition</b> <a href="evaluate__invariant_8f90_source.html#l00067">evaluate_invariant.f90:68</a></div></div>
+</div><!-- fragment -->
+<p class="reference">References <a class="el" href="evaluate__invariant_8f90_source.html#l00068">evaluate_invariant()</a>.</p>
 
 </div>
 </div>

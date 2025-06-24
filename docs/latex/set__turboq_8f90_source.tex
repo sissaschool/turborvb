@@ -1,0 +1,207 @@
+\doxysection{set\+\_\+turboq.\+f90}
+\hypertarget{set__turboq_8f90_source}{}\label{set__turboq_8f90_source}\index{src/a\_turborvb/set\_turboq.f90@{src/a\_turborvb/set\_turboq.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Set\ up\ TurboQ\ parameters\ for\ quantum\ dynamics}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ Computes\ TurboQ\ parameters\ for\ quantum\ dynamics\ including\ Green's\ functions,}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ noise\ matrices,\ and\ time\ evolution\ operators.\ Handles\ both\ overdamped\ and}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ underdamped\ regimes\ with\ proper\ noise\ corrections\ for\ quantum\ Monte\ Carlo.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ \ gamma\_eig\ \ \ \ Eigenvalue\ of\ gamma\ matrix}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ kdyn\_eig\ \ \ \ \ Eigenvalue\ of\ kinetic\ matrix}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ dt\ \ \ \ \ \ \ \ \ \ \ Time\ step}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ alphaall\ \ \ \ \ All\ alpha\ parameter}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ alphaqmc\ \ \ \ \ QMC\ alpha\ parameter}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[out]\ mnoise\ \ \ \ \ \ \ Noise\ matrix}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ Gn\ \ \ \ \ \ \ \ \ \ \ Green's\ function}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ Tn\ \ \ \ \ \ \ \ \ \ \ T\ function}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ Gni\ \ \ \ \ \ \ \ \ \ Green's\ function\ inverse}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[out]\ Gnh\ \ \ \ \ \ \ \ \ \ Half-\/step\ Green's\ function}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[out]\ Gnih\ \ \ \ \ \ \ \ \ Half-\/step\ Green's\ function\ inverse}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00031}00031\ \textcolor{keyword}{subroutine\ }set\_turboq(gamma\_eig,\ kdyn\_eig,\ dt,\ alphaall,\ alphaqmc,\ mnoise\&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ \&,\ Gn,\ Tn,\ Gni,\ Gnh,\ Gnih)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00034}00034\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ gamma\_eig,\ kdyn\_eig,\ alphaall,\ alphaqmc,\ dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00035}00035\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(out)}\ ::\ mnoise(2,\ 2),\ gn,\ tn,\ gni(2,\ 2),\ gnh,\ gnih}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00036}00036\ \ \ \ \ real*8\ cost,\ costm1,\ xbar,\ sinhx,\ coshx,\ sinx,\ cosx,\ gammag,\ gammagx,\ gammagxm}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00037}00037\ \ \ \ \ real*8\ dergamma,\ der2gamma,\ costh,\ sinhxh,\ coshxh,\ costhm1}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00038}00038\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ mygamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ gammagxc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{external}\ ::\ mygammac}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{logical}\ xbarpos}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordflow}{if}\ (kdyn\_eig\ .gt.\ 1d-\/6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ cost\ =\ exp(-\/dt*gamma\_eig/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ costh\ =\ exp(-\/dt*gamma\_eig/4.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ xbar\ =\ (gamma\_eig/2.d0)**2\ -\/\ kdyn\_eig}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (xbar\ .ge.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ xbar\ =\ sqrt(xbar)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ coshx\ =\ cosh(xbar*dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ sinhx\ =\ sinh(xbar*dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ coshxh\ =\ cosh(xbar*dt/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ sinhxh\ =\ sinh(xbar*dt/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ xbarpos\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ xbar\ =\ sqrt(-\/xbar)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ coshx\ =\ cos(xbar*dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ sinhx\ =\ sin(xbar*dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ coshxh\ =\ cos(xbar*dt/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ sinhxh\ =\ sin(xbar*dt/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ xbarpos\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00061}00061\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (xbar*dt\ .gt.\ 1d-\/6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ gn\ =\ cost/xbar*sinhx}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ gnh\ =\ costh/xbar*sinhxh}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ tn\ =\ (1\ -\/\ cost*coshx)/kdyn\_eig\ -\/\ 0.5d0*cost*gamma\_eig*sinhx/(xbar*kdyn\_eig)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ gni(1,\ 1)\ =\ cost*(coshx\ -\/\ 0.5d0*gamma\_eig/xbar*sinhx)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ gni(1,\ 2)\ =\ -\/cost*kdyn\_eig*sinhx/xbar}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ gni(2,\ 1)\ =\ gn}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ gni(2,\ 2)\ =\ cost*(coshx\ +\ 0.5d0*gamma\_eig/xbar*sinhx)\ -\/\ 1.d0\ \textcolor{comment}{!\ -\/1\ as\ we\ remove\ the\ identity}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ gnih\ =\ costh*(coshxh\ +\ 0.5d0*gamma\_eig/xbar*sinhxh)\ -\/\ 1.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ gn\ =\ cost*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ gnh\ =\ costh*dt/2.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ tn\ =\ (1\ -\/\ cost*coshx)/kdyn\_eig\ -\/\ 0.5d0*cost*gamma\_eig*dt/kdyn\_eig}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ gni(1,\ 1)\ =\ cost*(coshx\ -\/\ 0.5d0*gamma\_eig*dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ gni(1,\ 2)\ =\ -\/cost*kdyn\_eig*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ gni(2,\ 1)\ =\ gn}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ gni(2,\ 2)\ =\ cost*(coshx\ +\ 0.5d0*gamma\_eig*dt)\ -\/\ 1.d0\ \textcolor{comment}{!\ -\/1\ as\ we\ remove\ the\ identity}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ gnih\ =\ costh*(coshxh\ +\ 0.25d0*gamma\_eig*dt)\ -\/\ 1.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Protection\ from\ roundoff}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (xbar*dt\ .le.\ 1d-\/6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ xbar\ =\ 1d-\/6/dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (xbarpos)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ gammag\ =\ mygamma(gamma\_eig,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ gammagx\ =\ mygamma(gamma\_eig\ +\ 2*xbar,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ gammagxm\ =\ mygamma(gamma\_eig\ -\/\ 2*xbar,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ dergamma\ =\ (gammagx\ -\/\ gammagxm)/xbar}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ der2gamma\ =\ (gammagx\ +\ gammagxm\ -\/\ 2*gammag)/xbar**2}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(1,\ 1)\ =\ alphaall*0.25d0*(gammagx\ +\ gammagxm\ +\ 2*gammag)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.0625d0*alphaall*gamma\_eig**2*der2gamma\ +\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.25d0*alphaall*gamma\_eig*dergamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(2,\ 2)\ =\ 0.25d0*alphaall*der2gamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(1,\ 2)\ =\ -\/0.125d0*alphaall*gamma\_eig*der2gamma\ -\/\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.25d0*alphaall*dergamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ gammag\ =\ mygamma(gamma\_eig,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ gammagxc\ =\ mygammac(dcmplx(gamma\_eig,\ 2*xbar),\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ dergamma\ =\ 2*aimag(gammagxc)/xbar}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ der2gamma\ =\ (2*gammagxc\ -\/\ 2*gammag)/xbar**2}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(1,\ 1)\ =\ alphaall*0.25d0*(2*gammagxc\ +\ 2*gammag)\ -\/\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.0625d0*alphaall*gamma\_eig**2*der2gamma\ +\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.25d0*alphaall*gamma\_eig*dergamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(2,\ 2)\ =\ -\/0.25d0*alphaall*der2gamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ mnoise(1,\ 2)\ =\ 0.125d0*alphaall*gamma\_eig*der2gamma\ -\/\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ 0.25d0*alphaall*dergamma}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Now\ the\ bar\ noise\ to\ be\ added\ to\ the\ force\ with\ noise}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ correction}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00113}00113\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ mnoise(1,\ 1)\ =\ mnoise(1,\ 1)/gn**2\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ mnoise(2,\ 2)\ =\ mnoise(2,\ 2)/tn**2\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ mnoise(1,\ 2)\ =\ mnoise(1,\ 2)/tn/gn\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ mnoise(2,\ 1)\ =\ mnoise(1,\ 2)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00119}00119\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00120}00120\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ costh\ =\ exp(-\/dt*gamma\_eig/2.d0)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (costh\ .lt.\ 0.99999d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ costhm1\ =\ costh\ -\/\ 1.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ costhm1\ =\ -\/dt/2.d0*gamma\_eig\ +\ (dt*gamma\_eig/2.d0)**2/2.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00126}00126\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ cost\ =\ exp(-\/dt*gamma\_eig)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ 0.99999d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ costm1\ =\ cost\ -\/\ 1.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ costm1\ =\ -\/dt*gamma\_eig\ +\ (dt*gamma\_eig)**2/2.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ gn\ =\ -\/costm1/gamma\_eig}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ gnh\ =\ -\/costhm1/gamma\_eig}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ gnih\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ tn\ =\ 1.d0/gamma\_eig*(dt\ -\/\ gn)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ gni(1,\ 1)\ =\ cost}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ gni(2,\ 1)\ =\ gn}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ gni(2,\ 2)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ gni(1,\ 2)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Tn=1.d0/gamma\_eig**2*(dt*gamma\_eig+costm1)}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ mnoise(1,\ 1)\ =\ -\/0.5d0*alphaall/gamma\_eig*(1.d0\ +\ cost)*costm1}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ mnoise(1,1)=-\/0.5d0*alphaall*gamma\_eig*(1.d0+cost)/costm1-\/alphaqmc}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ mnoise(2,\ 2)\ =\ alphaall/gamma\_eig**2*\ \&}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(dt\ +\ 1.d0/gamma\_eig*costm1*(2.d0\ -\/\ 0.5d0*(1.d0\ +\ cost)))}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00149}00149\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ mnoise(1,2)=alphaall/gamma\_eig*\&}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&\ (-\/costm1/gamma\_eig*(1.-\/0.5d0*(1+cost)))}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00152}00152\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ mnoise(1,\ 2)\ =\ 0.5d0*alphaall*(costm1/gamma\_eig)**2}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ mnoise(1,\ 1)\ =\ mnoise(1,\ 1)/gn**2\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ mnoise(2,\ 2)\ =\ mnoise(2,\ 2)/tn**2\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ mnoise(1,\ 2)\ =\ mnoise(1,\ 2)/tn/gn\ -\/\ alphaqmc}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ mnoise(2,\ 1)\ =\ mnoise(1,\ 2)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00159}00159\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00161}00161\ }
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00162}00162\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00163}00163\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00164}00164\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00165}00165\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Compute\ gamma\ function\ for\ real\ arguments}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00166}00166\ \textcolor{comment}{!>\ @details\ \ \ \ Computes\ the\ gamma\ function\ (1-\/exp(-\/x*dt))/x\ with\ protection}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00167}00167\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ against\ small\ arguments\ to\ avoid\ numerical\ instabilities.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00168}00168\ \textcolor{comment}{!>\ @param[in]\ \ x\ \ \ \ \ \ \ \ \ \ \ \ \ Real\ argument}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00169}00169\ \textcolor{comment}{!>\ @param[in]\ \ dt\ \ \ \ \ \ \ \ \ \ \ \ Time\ step}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00170}00170\ \textcolor{comment}{!>\ @return\ \ \ \ \ mygamma\ \ \ \ \ \ \ Gamma\ function\ value}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00171}00171\ \textcolor{keyword}{function\ }mygamma(x,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00173}00173\ \ \ \ \ real*8\ x,\ mygamma,\ dt,\ xdt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00174}00174\ \ \ \ \ xdt\ =\ x*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00175}00175\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(xdt)\ .gt.\ 1d-\/6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ mygamma\ =\ (1.d0\ -\/\ exp(-\/xdt))/x}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00177}00177\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ mygamma\ =\ dt\ -\/\ 0.5d0*xdt*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00180}00180\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00181}00181\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00182}00182\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00183}00183\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Compute\ gamma\ function\ for\ complex\ arguments}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00184}00184\ \textcolor{comment}{!>\ @details\ \ \ \ Computes\ the\ gamma\ function\ (1-\/exp(-\/x*dt))/x\ for\ complex\ arguments}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00185}00185\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ with\ protection\ against\ small\ arguments\ to\ avoid\ numerical\ instabilities.}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00186}00186\ \textcolor{comment}{!>\ @param[in]\ \ x\ \ \ \ \ \ \ \ \ \ \ \ \ Complex\ argument}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00187}00187\ \textcolor{comment}{!>\ @param[in]\ \ dt\ \ \ \ \ \ \ \ \ \ \ \ Time\ step}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00188}00188\ \textcolor{comment}{!>\ @return\ \ \ \ \ mygammac\ \ \ \ \ \ Complex\ gamma\ function\ value}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00189}00189\ \textcolor{keyword}{function\ }mygammac(x,\ dt)}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00190}00190\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00191}00191\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ x,\ xdt,\ mygammac}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00192}00192\ \ \ \ \ real*8\ dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00193}00193\ \ \ \ \ xdt\ =\ x*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00194}00194\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(xdt)\ .gt.\ 1d-\/6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ mygammac\ =\ (1.d0\ -\/\ exp(-\/xdt))/x}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00196}00196\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ mygammac\ =\ dt\ -\/\ 0.5d0*xdt*dt}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00198}00198\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00199}00199\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00200}00200\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{set__turboq_8f90_source_l00201}00201\ }
+
+\end{DoxyCode}

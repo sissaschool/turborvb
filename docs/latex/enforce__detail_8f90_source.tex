@@ -1,0 +1,106 @@
+\doxysection{enforce\+\_\+detail.\+f90}
+\hypertarget{enforce__detail_8f90_source}{}\label{enforce__detail_8f90_source}\index{src/a\_turborvb/enforce\_detail.f90@{src/a\_turborvb/enforce\_detail.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Enforce\ detailed\ balance\ in\ wave\ function\ table}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ enforces\ detailed\ balance\ by\ adjusting\ the}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ wave\ function\ table\ entries.\ It\ computes\ normalization\ factors}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ and\ applies\ corrections\ to\ maintain\ consistency\ between}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ positive\ and\ negative\ contributions.}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ \ Number\ of\ time\ steps}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ nel\ \ \ \ \ \ \ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ identity\ \ Identity\ parameter\ for\ normalization}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ gamma\ \ \ \ \ Gamma\ parameter\ for\ detailed\ balance}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in,out]\ tabler\ Wave\ function\ table}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ norm\_tab\ \ Normalization\ factor\ for\ the\ table}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00027}00027\ \textcolor{keyword}{subroutine\ }enforce\_detail(indt,\ nel,\ identity,\ gamma,\ tabler,\ norm\_tab)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ nel,\ indt}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00030}00030\ \ \ \ \ real*8\ gamma,\ veff,\ norm\_tab,\ identity,\ allid,\ newid,\ tabler(nel,\ indt)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00031}00031\ \ \ \ \ allid\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00032}00032\ \ \ \ \ norm\_tab\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00033}00033\ \ \ \ \ veff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ indt\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tabler(i,\ j)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ norm\_tab\ =\ norm\_tab\ +\ tabler(i,\ j)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ norm\_tab\ =\ norm\_tab\ -\/\ gamma*tabler(i,\ j)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ tabler(i,\ j)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00041}00041\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ allid\ =\ allid\ +\ tabler(i,\ j)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00043}00043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00044}00044\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00045}00045\ \ \ \ \ allid\ =\ allid/nel}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00046}00046\ \ \ \ \ veff\ =\ veff/nel}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00047}00047\ \ \ \ \ newid\ =\ max(identity\ -\/\ allid\ +\ (1.d0\ +\ gamma)*veff,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00048}00048\ \ \ \ \ norm\_tab\ =\ norm\_tab\ +\ newid*nel}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00049}00049\ \ \ \ \ tabler(:,\ indt)\ =\ newid}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00051}00051\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00052}00052\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00053}00053\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Apply\ cutoff\ to\ wave\ function\ for\ DMC\ calculations}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ applies\ energy\ cutoffs\ to\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00055}00055\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ for\ diffusion\ Monte\ Carlo\ calculations.\ It\ can\ apply\ either}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00056}00056\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ a\ simple\ energy\ cutoff\ or\ a\ position-\/dependent\ cutoff\ based}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00057}00057\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ on\ electron-\/ion\ distances.}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00058}00058\ \textcolor{comment}{!>\ @param[in]\ \ yesalfe\ \ \ Flag\ for\ simple\ energy\ cutoff}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00059}00059\ \textcolor{comment}{!>\ @param[in]\ \ nel\ \ \ \ \ \ \ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00060}00060\ \textcolor{comment}{!>\ @param[in,out]\ wsto\ \ \ Wave\ function\ value}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00061}00061\ \textcolor{comment}{!>\ @param[in]\ \ lambda\ \ \ \ Lambda\ parameter}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00062}00062\ \textcolor{comment}{!>\ @param[in,out]\ diffkin\ Kinetic\ energy\ difference}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @param[in]\ \ vpotge\ \ \ \ Potential\ energy\ array}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00064}00064\ \textcolor{comment}{!>\ @param[in]\ \ cutreg\ \ \ \ Cutoff\ parameter}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00065}00065\ \textcolor{keyword}{subroutine\ }cutwstodmc(yesalfe,\ nel,\ wsto,\ lambda,\ diffkin,\ vpotge,\ cutreg)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ zetamin,\ distmin}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ j}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesalfe}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00070}00070\ \ \ \ \ real*8\ wsto,\ wstosav,\ diffkin,\ vpotge(nel),\ cutreg,\ cutregu,\ costz\&}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lambda}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (cutreg\ .lt.\ 0.d0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ no\ cutoff}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordflow}{if}\ (yesalfe)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ wstosav\ =\ wsto}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wsto\ -\/\ lambda\ .gt.\ cutreg)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ wsto\ =\ cutreg\ +\ lambda}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (wsto\ -\/\ lambda\ .lt.\ -\/cutreg)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ wsto\ =\ -\/cutreg\ +\ lambda}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00079}00079\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ diffkin\ =\ diffkin\ -\/\ wsto\ +\ wstosav}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00081}00081\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(abs(wsto+sum(vpotge(1:nel))).gt.1d-\/8)\ \&}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&write(6,*)\ '\ ERROR\ wsto\ !\ ',wsto,sum(vpotge(1:nel))}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ cutregu\ =\ -\/cutreg*zetamin(j)**2*(1\ +\ distmin(j)**2)\&}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /(1\ +\ (zetamin(j)*distmin(j))**2)}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vpotge(j)\ .lt.\ cutregu)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wsto\ =\ wsto\ +\ vpotge(j)\ -\/\ cutregu}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diffkin\ =\ diffkin\ -\/\ vpotge(j)\ +\ cutregu}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ elseif(vpotge(j).gt.-\/cutregu)\ then}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ wsto=wsto+vpotge(j)+cutregu}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ diffkin=diffkin-\/vpotge(j)-\/cutregu}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00095}00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00097}00097\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00099}00099\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{enforce__detail_8f90_source_l00100}00100\ }
+
+\end{DoxyCode}

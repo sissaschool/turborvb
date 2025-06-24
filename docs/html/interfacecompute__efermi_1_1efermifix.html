@@ -101,7 +101,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a0609461ffeee2a6375c11450097a7517" id="r_a0609461ffeee2a6375c11450097a7517"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0609461ffeee2a6375c11450097a7517">efermifix_kindependent</a> (eig, occupations, bands, ef)</td></tr>
 <tr class="memdesc:a0609461ffeee2a6375c11450097a7517"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates Fermi energy for fixed occupations without k-point averaging.  <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function/Subroutine Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock">
+<p class="definition">Definition at line <a class="el" href="eval__efermi_8f90_source.html#l00037">37</a> of file <a class="el" href="eval__efermi_8f90_source.html">eval_efermi.f90</a>.</p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="aa3340f7d413a0e79529cd34d8a40acb9" name="aa3340f7d413a0e79529cd34d8a40acb9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa3340f7d413a0e79529cd34d8a40acb9">&#9670;&#160;</a></span>efermifix_kaverage()</h2>
 
@@ -142,6 +145,36 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="eval__efermi_8f90_source.html#l00058">58</a> of file <a class="el" href="eval__efermi_8f90_source.html">eval_efermi.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   59</span>        <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">   60</span>        <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: bands</div>
+<div class="line"><span class="lineno">   61</span><span class="keywordtype">        real</span>(8), <span class="keywordtype">intent(in)</span> :: eig(bands, *), occupations(bands, *)</div>
+<div class="line"><span class="lineno">   62</span><span class="keywordtype">        real</span>(qp), <span class="keywordtype">intent(out)</span> :: ef</div>
+<div class="line"><span class="lineno">   63</span>        <span class="keywordtype">integer</span> :: ibnd, i, ikp</div>
+<div class="line"><span class="lineno">   64</span><span class="keywordtype">        real</span>(qp) :: ef_tmp</div>
+<div class="line"><span class="lineno">   65</span>        <span class="comment">! assuming that each k-point has the same (fixed) occupation</span></div>
+<div class="line"><span class="lineno">   66</span>        ibnd = 0</div>
+<div class="line"><span class="lineno">   67</span>        <span class="keywordflow">do</span> i = 1, bands</div>
+<div class="line"><span class="lineno">   68</span>            <span class="keywordflow">if</span> (occupations(i, 1) .ne. 0.d0) ibnd = ibnd + 1</div>
+<div class="line"><span class="lineno">   69</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">   70</span>        ef = 0.d0</div>
+<div class="line"><span class="lineno">   71</span>        <span class="keywordflow">if</span> (ibnd .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">   72</span>            <span class="keywordflow">if</span> (ibnd + 1 .le. bands) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">   73</span>                <span class="keywordflow">do</span> ikp = 1, nk</div>
+<div class="line"><span class="lineno">   74</span>                    <span class="comment">! take Efermi in the middle of the band gap</span></div>
+<div class="line"><span class="lineno">   75</span>                    ef_tmp = (eig(ibnd, ikp) + eig(ibnd + 1, ikp))/2.d0</div>
+<div class="line"><span class="lineno">   76</span>                    ef = ef + ef_tmp*wkp(ikp)</div>
+<div class="line"><span class="lineno">   77</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno">   78</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">   79</span>                <span class="keywordflow">do</span> ikp = 1, nk</div>
+<div class="line"><span class="lineno">   80</span>                    <span class="comment">! take Efermi just above the HOMO level</span></div>
+<div class="line"><span class="lineno">   81</span>                    ef_tmp = eig(ibnd, ikp) + 1d-6</div>
+<div class="line"><span class="lineno">   82</span>                    ef = ef + ef_tmp*wkp(ikp)</div>
+<div class="line"><span class="lineno">   83</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno">   84</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">   85</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">   86</span>        <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a0609461ffeee2a6375c11450097a7517" name="a0609461ffeee2a6375c11450097a7517"></a>
@@ -184,10 +217,32 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="eval__efermi_8f90_source.html#l00097">97</a> of file <a class="el" href="eval__efermi_8f90_source.html">eval_efermi.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   98</span>        <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">   99</span>        <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: bands</div>
+<div class="line"><span class="lineno">  100</span><span class="keywordtype">        real</span>(8), <span class="keywordtype">intent(in)</span> :: eig(bands), occupations(bands)</div>
+<div class="line"><span class="lineno">  101</span><span class="keywordtype">        real</span>(qp), <span class="keywordtype">intent(out)</span> :: ef</div>
+<div class="line"><span class="lineno">  102</span>        <span class="keywordtype">integer</span> :: ibnd, i, ikp</div>
+<div class="line"><span class="lineno">  103</span><span class="keywordtype">        real</span>(qp) :: ef_tmp</div>
+<div class="line"><span class="lineno">  104</span>        <span class="comment">! assuming that each k-point has the same (fixed) occupation</span></div>
+<div class="line"><span class="lineno">  105</span>        ibnd = 0</div>
+<div class="line"><span class="lineno">  106</span>        ef = 0.d0</div>
+<div class="line"><span class="lineno">  107</span>        <span class="keywordflow">do</span> i = 1, bands</div>
+<div class="line"><span class="lineno">  108</span>            <span class="keywordflow">if</span> (occupations(i) .ne. 0.d0) ibnd = ibnd + 1</div>
+<div class="line"><span class="lineno">  109</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  110</span>        <span class="keywordflow">if</span> (ibnd .gt. 0) <span class="keywordflow">then</span> <span class="comment">! the occupation can be empty</span></div>
+<div class="line"><span class="lineno">  111</span>            <span class="keywordflow">if</span> (ibnd + 1 .le. bands) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  112</span>                ef = (eig(ibnd) + eig(ibnd + 1))/2.d0</div>
+<div class="line"><span class="lineno">  113</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  114</span>                ef = eig(ibnd) + 1d-6</div>
+<div class="line"><span class="lineno">  115</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  116</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  117</span>        <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
-<li>src/a_prep/<b>eval_efermi.f90</b></li>
+<li>src/a_prep/<a class="el" href="eval__efermi_8f90_source.html">eval_efermi.f90</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

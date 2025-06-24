@@ -1,0 +1,287 @@
+\doxysection{lsda.\+f90}
+\hypertarget{lsda_8f90_source}{}\label{lsda_8f90_source}\index{src/a\_prep/lsda.f90@{src/a\_prep/lsda.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Computes\ Perdew-\/Zunger\ correlation\ for\ fully\ polarized\ electron\ gas}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ calculates\ the\ correlation\ energy\ and\ potential\ for}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ a\ fully\ polarized\ (spin-\/up\ only)\ electron\ gas\ using\ the\ Perdew-\/Zunger}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ parameterization.\ Based\ on\ quantum\ Monte\ Carlo\ data.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ rs\ Wigner-\/Seitz\ radius\ parameter}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[out]\ ec\ Correlation\ energy\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[out]\ vc\ Correlation\ potential}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00023}00023\ \textcolor{keyword}{subroutine\ }pz\_polarized(rs,\ ec,\ vc)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00024}00024\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00025}00025\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ J.P.\ Perdew\ and\ A.\ Zunger,\ PRB\ 23,\ 5048\ (1981)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00026}00026\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ spin-\/polarized\ energy\ and\ potential}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00027}00027\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00028}00028\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00030}00030\ \ \ \ \ real*8\ ::\ rs,\ ec,\ vc}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00031}00031\ \ \ \ \ real*8\ ::\ a,\ b,\ c,\ d,\ gc,\ b1,\ b2}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00032}00032\ \ \ \ \ parameter(a=0.01555d0,\ b=-\/0.0269d0,\ c=0.0007d0,\ d=\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/0.0048d0,\ gc=-\/0.0843d0,\ b1=1.3981d0,\ b2=0.2611d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00034}00034\ \ \ \ \ real*8\ ::\ lnrs,\ rs12,\ ox,\ dox}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00035}00035\ \ \ \ \ real*8,\ \textcolor{keywordtype}{parameter}\ ::\ xcprefact\ =\ 0.022575584d0,\ pi34\ =\ 0.6203504908994d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00036}00036\ \ \ \ \ \textcolor{comment}{!\ REAL(DP)\ ::\ betha,\ etha,\ csi,\ prefact}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .lt.\ 1.0d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ high\ density\ formula}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ lnrs\ =\ dlog(rs)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ ec\ =\ a*lnrs\ +\ b\ +\ c*rs*lnrs\ +\ d*rs}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ vc\ =\ a*lnrs\ +\ (b\ -\/\ a/3.d0)\ +\ 2.d0/3.d0*c*rs*lnrs\ +\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ \ (2.d0*d\ -\/\ c)/3.d0*rs}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ interpolation\ formula}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ rs12\ =\ dsqrt(rs)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ ox\ =\ 1.d0\ +\ b1*rs12\ +\ b2*rs}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ dox\ =\ 1.d0\ +\ 7.d0/6.d0*b1*rs12\ +\ 4.d0/3.d0*b2*rs}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ ec\ =\ gc/ox}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ vc\ =\ ec*dox/ox}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00052}00052\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ \ IF\ (\ lxc\_rel\ )\ THEN}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ betha\ =\ prefact\ *\ pi34\ /\ rs}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ etha\ =\ DSQRT(\ 1\ +\ betha**2\ )}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00056}00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ csi\ =\ betha\ +\ etha}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00057}00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ prefact\ =\ 1.0D0\ -\/\ (3.0D0/2.0D0)\ *\ (\ (betha*etha\ -\/\ log(csi))/betha**2\ )**2}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ec\ =\ ec\ *\ prefact}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ vc\ =\ vc\ *\ prefact}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ ENDIF}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00062}00062\ \textcolor{keyword}{end\ subroutine\ }pz\_polarized}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00063}00063\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00064}00064\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00065}00065\ \textcolor{comment}{!>\ @brief\ Computes\ spin-\/polarized\ Perdew-\/Zunger\ correlation\ energy\ and\ potential}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00066}00066\ \textcolor{comment}{!>\ @details\ This\ subroutine\ calculates\ the\ correlation\ energy\ and\ potential\ for}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00067}00067\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ a\ spin-\/polarized\ electron\ gas\ using\ the\ Perdew-\/Wang\ interpolation}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00068}00068\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ between\ unpolarized\ and\ fully\ polarized\ limits.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00069}00069\ \textcolor{comment}{!>\ @param[in]\ rs\ Wigner-\/Seitz\ radius\ parameter}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00070}00070\ \textcolor{comment}{!>\ @param[in]\ zeta\ Spin\ polarization\ parameter\ (0=unpolarized,\ ±1=fully\ polarized)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00071}00071\ \textcolor{comment}{!>\ @param[out]\ ec\ Correlation\ energy\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00072}00072\ \textcolor{comment}{!>\ @param[out]\ vcup\ Correlation\ potential\ for\ spin-\/up\ electrons}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00073}00073\ \textcolor{comment}{!>\ @param[out]\ vcdw\ Correlation\ potential\ for\ spin-\/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00074}00074\ \textcolor{keyword}{subroutine\ }pz\_spin(rs,\ zeta,\ ec,\ vcup,\ vcdw)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ J.P.\ Perdew\ and\ Y.\ Wang,\ PRB\ 45,\ 13244\ (1992)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00080}00080\ \ \ \ \ real*8\ ::\ rs,\ zeta,\ ec,\ vcup,\ vcdw}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00081}00081\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00082}00082\ \ \ \ \ real*8\ ::\ ecu,\ vcu,\ ecp,\ vcp,\ fz,\ dfz}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00083}00083\ \ \ \ \ real*8\ ::\ p43,\ third}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00084}00084\ \ \ \ \ parameter(p43=4.0d0/3.d0,\ third=1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00086}00086\ \ \ \ \ \textcolor{comment}{!\ unpolarized\ part\ (Perdew-\/Zunger\ formula)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00087}00087\ \ \ \ \ \textcolor{keyword}{call\ }pz(rs,\ 1,\ ecu,\ vcu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00088}00088\ \ \ \ \ \textcolor{comment}{!\ polarization\ contribution}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keyword}{call\ }pz\_polarized(rs,\ ecp,\ vcp)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00090}00090\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00091}00091\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(zeta)\ .lt.\ 1.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ fz\ =\ ((1.0d0\ +\ zeta)**p43\ +\ (1.d0\ -\/\ zeta)**p43\ -\/\ 2.d0)/\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ (2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ dfz\ =\ p43*((1.0d0\ +\ zeta)**third\ -\/\ (1.d0\ -\/\ zeta)**third)\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ /(2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00096}00096\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ ec\ =\ ecu\ +\ fz*(ecp\ -\/\ ecu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ vcup\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*(1.d0\ -\/\ zeta)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ vcdw\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*(-\/1.d0\ -\/\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zeta)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00102}00102\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (zeta\ .ge.\ 1.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00103}00103\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ fz\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ dfz\ =\ p43*(2.d0**third)/(2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ ec\ =\ ecu\ +\ fz*(ecp\ -\/\ ecu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ vcup\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ vcdw\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*(-\/2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00110}00110\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00111}00111\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (zeta\ .le.\ -\/1.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ fz\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ dfz\ =\ -\/p43*2.d0**third/(2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00115}00115\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ ec\ =\ ecu\ +\ fz*(ecp\ -\/\ ecu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ vcup\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*2.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ vcdw\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00119}00119\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00121}00121\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00122}00122\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00123}00123\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00124}00124\ \textcolor{keyword}{end\ subroutine\ }pz\_spin}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00125}00125\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00126}00126\ \textcolor{comment}{!>\ @brief\ Computes\ spin-\/polarized\ Perdew-\/Zunger\ correlation\ with\ KZK\ corrections}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00127}00127\ \textcolor{comment}{!>\ @details\ This\ subroutine\ calculates\ the\ spin-\/polarized\ correlation\ energy\ and}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00128}00128\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ potential\ with\ Kwee-\/Zhang-\/Krakauer\ kinetic\ energy\ corrections.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00129}00129\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Includes\ finite-\/size\ effects\ and\ volume-\/dependent\ corrections.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00130}00130\ \textcolor{comment}{!>\ @param[in]\ rs\ Wigner-\/Seitz\ radius\ parameter}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00131}00131\ \textcolor{comment}{!>\ @param[in]\ zeta\ Spin\ polarization\ parameter\ (0=unpolarized,\ ±1=fully\ polarized)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00132}00132\ \textcolor{comment}{!>\ @param[out]\ ec\ Correlation\ energy\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00133}00133\ \textcolor{comment}{!>\ @param[out]\ vcup\ Correlation\ potential\ for\ spin-\/up\ electrons}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00134}00134\ \textcolor{comment}{!>\ @param[out]\ vcdw\ Correlation\ potential\ for\ spin-\/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00135}00135\ \textcolor{comment}{!>\ @param[in]\ vol\ Volume\ of\ the\ system}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00136}00136\ \textcolor{keyword}{subroutine\ }pz\_spinkzk(rs,\ zeta,\ ec,\ vcup,\ vcdw,\ vol)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00137}00137\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00138}00138\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ J.P.\ Perdew\ and\ Y.\ Wang,\ PRB\ 45,\ 13244\ (1992)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00139}00139\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00140}00140\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00141}00141\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00142}00142\ \ \ \ \ real*8\ ::\ rs,\ zeta,\ ec,\ vcup,\ vcdw,\ vol}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00143}00143\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00144}00144\ \ \ \ \ real*8\ ::\ ecu,\ vcu,\ ecp,\ vcp,\ fz,\ dfz,\ mz,\ mz43}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00145}00145\ \ \ \ \ real*8\ ::\ p43,\ third}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00146}00146\ \ \ \ \ parameter(p43=4.0d0/3.d0,\ third=1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00147}00147\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00148}00148\ \ \ \ \ \textcolor{comment}{!\ unpolarized\ part\ (Perdew-\/Zunger\ formula)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keyword}{call\ }pzkzk(rs,\ ecu,\ vcu,\ vol)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00150}00150\ \ \ \ \ \textcolor{comment}{!\ polarization\ contribution}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keyword}{call\ }pzkzk\_polarized(rs,\ ecp,\ vcp,\ vol)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00152}00152\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00153}00153\ \ \ \ \ \textcolor{comment}{!\ workaroud:\ if\ (1.d0-\/zeta)\ is\ negative,\ some\ compilers\ returns}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00154}00154\ \ \ \ \ \textcolor{comment}{!\ NaN\ when\ computing\ (1.d0-\/zeta)**p43}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00155}00155\ \ \ \ \ mz\ =\ 1.d0\ -\/\ zeta}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00156}00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (mz\ .le.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ mz43\ =\ mz**(4.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ mz43\ =\ mz**(1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00159}00159\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ mz43\ =\ mz**p43}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00161}00161\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00162}00162\ \ \ \ \ fz\ =\ ((1.0d0\ +\ zeta)**p43\ +\ mz43\ -\/\ 2.d0)/\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ (2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00164}00164\ \ \ \ \ dfz\ =\ p43*((1.0d0\ +\ zeta)**third\ -\/\ (1.d0\ -\/\ zeta)**third)\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ /(2.d0**p43\ -\/\ 2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00166}00166\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00167}00167\ \ \ \ \ ec\ =\ ecu\ +\ fz*(ecp\ -\/\ ecu)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00168}00168\ \ \ \ \ vcup\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*(1.d0\ -\/\ zeta)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00169}00169\ \ \ \ \ vcdw\ =\ vcu\ +\ fz*(vcp\ -\/\ vcu)\ +\ (ecp\ -\/\ ecu)*dfz*(-\/1.d0\ -\/\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zeta)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00171}00171\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00173}00173\ \textcolor{keyword}{end\ subroutine\ }pz\_spinkzk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00174}00174\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00175}00175\ \textcolor{comment}{!>\ @brief\ Computes\ Perdew-\/Zunger\ correlation\ for\ polarized\ gas\ with\ KZK\ corrections}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00176}00176\ \textcolor{comment}{!>\ @details\ This\ subroutine\ calculates\ the\ correlation\ energy\ and\ potential\ for}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00177}00177\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ a\ fully\ polarized\ electron\ gas\ with\ Kwee-\/Zhang-\/Krakauer\ corrections.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00178}00178\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Assumes\ finite-\/size\ corrections\ are\ the\ same\ for\ polarized\ and}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00179}00179\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ unpolarized\ electron\ gas\ at\ the\ same\ density.}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00180}00180\ \textcolor{comment}{!>\ @param[in]\ rs\ Wigner-\/Seitz\ radius\ parameter}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00181}00181\ \textcolor{comment}{!>\ @param[out]\ ec\ Correlation\ energy\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00182}00182\ \textcolor{comment}{!>\ @param[out]\ vc\ Correlation\ potential}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00183}00183\ \textcolor{comment}{!>\ @param[in]\ vol\ Volume\ of\ the\ system}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00184}00184\ \textcolor{keyword}{subroutine\ }pzkzk\_polarized(rs,\ ec,\ vc,\ vol)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00185}00185\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00186}00186\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ LDA\ parameterization\ form\ Monte\ Carlo\ data}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00187}00187\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=1:\ J.P.\ Perdew\ and\ A.\ Zunger,\ PRB\ 23,\ 5048\ (1981)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00188}00188\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=2:\ G.\ Ortiz\ and\ P.\ Ballone,\ PRB\ 50,\ 1391\ (1994)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00189}00189\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00190}00190\ \ \ \ \ \textcolor{comment}{!\ It\ is\ assumed\ that\ the\ finite\ size\ correction\ of\ the\ correlation\ energy}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00191}00191\ \ \ \ \ \textcolor{comment}{!\ are\ the\ same\ for\ the\ polarized\ and\ unpolarized\ electron\ gas\ at\ the\ same}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00192}00192\ \ \ \ \ \textcolor{comment}{!\ density}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00193}00193\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00194}00194\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00195}00195\ \ \ \ \ real*8\ ::\ rs,\ ec,\ vc,\ ec0(2),\ vc0(2),\ ec0p}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00196}00196\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflag,\ kr}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00197}00197\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00198}00198\ \ \ \ \ real*8\ ::\ a(2),\ b(2),\ c(2),\ d(2),\ gc(2),\ b1(2),\ b2(2)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00199}00199\ \ \ \ \ real*8\ ::\ lnrs,\ rs12,\ ox,\ dox,\ lnrsk,\ rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00200}00200\ \ \ \ \ real*8\ ::\ a1,\ grs,\ g1,\ g2,\ g3,\ g4,\ dl,\ vol,\ gh,\ gl,\ grsp}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00201}00201\ \ \ \ \ real*8\ ::\ f3,\ f2,\ f1,\ f0,\ pi}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00202}00202\ \ \ \ \ real*8\ ::\ d1,\ d2,\ d3,\ p1,\ p2,\ ry2h}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00203}00203\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00204}00204\ \ \ \ \ \textcolor{comment}{!\ real*8\ ::\ a,\ b,\ c,\ d,\ gc,\ b1,\ b2}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00205}00205\ \ \ \ \ \textcolor{comment}{!\ parameter\ (a\ =\ 0.01555d0,\ b\ =\ -\/\ 0.0269d0,\ c\ =\ 0.0007d0,\ d\ =\ \&}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00206}00206\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ -\/\ 0.0048d0,\ gc\ =\ -\/\ 0.0843d0,\ b1\ =\ 1.3981d0,\ b2\ =\ 0.2611d0)}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00207}00207\ \ \ \ \ \textcolor{comment}{!\ real*8\ ::\ lnrs,\ rs12,\ ox,\ dox}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00208}00208\ \ \ \ \ \textcolor{comment}{!\ REAL*8,\ PARAMETER\ ::\ xcprefact\ =\ 0.022575584d0,\ pi34\ =\ 0.6203504908994d0}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00209}00209\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keyword}{data}\ a/0.01555d0,\ 0.031091d0/,\ b/-\/0.0269d0,\ -\/0.046644d0/,\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ c/0.0007d0,\ 0.00419d0/,\ d/-\/0.0048d0,\ -\/0.00983d0/}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00212}00212\ \ \ \ \ \textcolor{keyword}{data}\ gc/-\/0.0843d0,\ -\/0.103756d0/,\ b1/1.3981d0,\ 0.56371d0/,\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ b2/0.2611d0,\ 0.27358d0/}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00214}00214\ \ \ \ \ \textcolor{keyword}{data}\ a1/-\/2.2037d0/,\ g1/0.1182d0/,\ g2/1.1656d0/,\ g3/-\/5.2884d0/,\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ g4/-\/1.1233d0/}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00216}00216\ \ \ \ \ \textcolor{keyword}{data}\ ry2h/0.5d0/}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00217}00217\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00218}00218\ \ \ \ \ iflag\ =\ 1}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00219}00219\ \ \ \ \ pi\ =\ 4.d0*atan(1.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00220}00220\ \ \ \ \ dl\ =\ vol**(1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00221}00221\ \ \ \ \ gh\ =\ 0.5d0*dl/(2.d0*pi)**(1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00222}00222\ \ \ \ \ gl\ =\ dl*(3.d0/2.d0/pi)**(1.d0/3.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00224}00224\ \ \ \ \ rsk\ =\ gh}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00225}00225\ \ \ \ \ \textcolor{keywordflow}{do}\ kr\ =\ 1,\ 2}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ lnrsk\ =\ dlog(rsk)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsk\ .lt.\ 1.0d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ high\ density\ formula}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ ec0(kr)\ =\ a(iflag)*lnrsk\ +\ b(iflag)\ +\ c(iflag)*rsk*lnrsk\ +\ d(\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag)*rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ vc0(kr)\ =\ a(iflag)*lnrsk\ +\ (b(iflag)\ -\/\ a(iflag)/3.d0)\ +\ 2.d0/\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3.d0*c(iflag)*rsk*lnrsk\ +\ (2.d0*d(iflag)\ -\/\ c(iflag))\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ /3.d0*rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ interpolation\ formula}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ rs12\ =\ dsqrt(rsk)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ ox\ =\ 1.d0\ +\ b1(iflag)*rs12\ +\ b2(iflag)*rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ dox\ =\ 1.d0\ +\ 7.d0/6.d0*b1(iflag)*rs12\ +\ 4.d0/3.d0*\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b2(iflag)*rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ ec0(kr)\ =\ gc(iflag)/ox}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ vc0(kr)\ =\ ec0(kr)*dox/ox}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00242}00242\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ grs\ =\ g1*rsk*lnrsk\ +\ g2*rsk\ +\ g3*rsk**1.5d0\ +\ g4*rsk**2.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ grsp\ =\ g1*lnrsk\ +\ g1\ +\ g2\ +\ 1.5d0*g3*rsk**0.5d0\ +\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2.d0*g4*rsk}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ ec0(kr)\ =\ ec0(kr)\ +\ (-\/a1*rsk/dl**2.d0\ +\ grs/dl**3.d0)*ry2h}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ vc0(kr)\ =\ vc0(kr)\ +\ (-\/2.d0*a1*rsk/dl**2.d0/3.d0\ +\ \&}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ grs/dl**3.d0\ -\/\ grsp*rsk/3.d0/dl**3.d0)*ry2h}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ rsk\ =\ rs}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00252}00252\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00254}00254\ \ \ \ \ lnrs\ =\ dlog(rs)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00255}00255\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .le.\ gh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ ec\ =\ ec0(2)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ vc\ =\ vc0(2)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00258}00258\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .le.\ gl)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ \ \ ec0p\ =\ 3.d0*(ec0(1)\ -\/\ vc0(1))/gh}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ p1\ =\ 3.d0*ec0(1)\ -\/\ gh*ec0p}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ p2\ =\ ec0p}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ d1\ =\ gl\ -\/\ gh}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ d2\ =\ gl**2.d0\ -\/\ gh**2.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ d3\ =\ gl**3.d0\ -\/\ gh**3.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ f2\ =\ 2.d0*gl**2.d0*p2*d1\ +\ d2*p1}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ f2\ =\ f2/(-\/(2.d0*gl*d1)**2.d0\ +\ 4.d0*gl*d1*d2\ -\/\ d2**2.d0)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ f3\ =\ -\/(p2\ +\ 2.d0*d1*f2)/(3.d0*d2)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ f1\ =\ -\/(p1\ +\ d2*f2)/(2.d0*d1)}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ f0\ =\ -\/gl*(gl*f2\ +\ 2.d0*f1)/3.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ ec\ =\ f3*rs**3.d0\ +\ f2*rs**2.d0\ +\ f1*rs\ +\ f0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ vc\ =\ f2*rs**2.d0/3.d0\ +\ f1*2.d0*rs/3.d0\ +\ f0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ ec\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ vc\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00277}00277\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00278}00278\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00279}00279\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00280}00280\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{lsda_8f90_source_l00281}00281\ \textcolor{keyword}{end\ subroutine\ }pzkzk\_polarized}
+
+\end{DoxyCode}

@@ -1,0 +1,74 @@
+\doxysection{el\+\_\+ion\+\_\+distance\+\_\+2d.\+f90}
+\hypertarget{el__ion__distance__2d_8f90_source}{}\label{el__ion__distance__2d_8f90_source}\index{src/a\_readforward/el\_ion\_distance\_2d.f90@{src/a\_readforward/el\_ion\_distance\_2d.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Computes\ electron-\/ion\ distances\ in\ 2D\ systems}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ calculates\ the\ distances\ between\ electrons}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ ions\ in\ 2D\ systems.\ It\ projects\ the\ distances\ onto\ the}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ z=0\ plane\ and\ handles\ out-\/of-\/plane\ filtering.\ For\ periodic}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ boundary\ conditions,\ it\ applies\ PBC\ to\ the\ distance\ vectors.}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ For\ non-\/periodic\ systems,\ it\ filters\ out\ electrons\ that\ are}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ too\ close\ to\ the\ z-\/plane.}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[out]\ eliond\ Distance\ matrix\ between\ ions\ and\ electrons\ (nion,\ nel)}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ kel\ Electron\ positions\ (3,\ nel)}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ nel\ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ rion\ Ion\ positions\ (3,\ nion)}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ nion\ Number\ of\ ions}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ iespbc\ Flag\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ outofplane\ Out-\/of-\/plane\ threshold\ distance}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00030}00030\ \textcolor{keyword}{subroutine\ }el\_ion\_distance\_2d(eliond,\ kel,\ nel,\ rion,\ nion,\ iespbc,\ outofplane)}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ nel,\ k,\ j}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00036}00036\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ eliond(nion,\ *),\ rion(3,\ *),\ kel(3,\ *)}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00037}00037\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ dist\_kel(3)}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00038}00038\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ outofplane}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{logical}\ iespbc}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!not\ implemented\ for\ PCB}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_kel(:)\ =\ kel(:,\ j)\ -\/\ rion(:,\ k)}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }applypbc(dist\_kel,\ 1)}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max(sum(dist\_kel(1:2)**2),\ 1d-\/18))}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(eliond(k,j).lt.1d-\/18)\ eliond(k,j)=1d-\/18}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00049}00049\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00050}00050\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(kel(3,\ j)\ -\/\ rion(3,\ k))\ .ge.\ outofplane)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!distance\ between\ k\ and\ j\ projected\ on\ the\ z=0\ plane}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max((kel(1,\ j)\ -\/\ rion(1,\ k))**2\ +\ (kel(2,\ j)\ -\/\ rion(2,\ k))**2,\ 1d-\/18))}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ if(eliond(k,j).lt.1d-\/18)\ eliond(k,j)=1d-\/18}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ 1.d8\ \textcolor{comment}{!\ put\ it\ out-\/of-\/range}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00062}00062\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00063}00063\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00064}00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00066}00066\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{el__ion__distance__2d_8f90_source_l00068}00068\ \textcolor{keyword}{end\ subroutine\ }el\_ion\_distance\_2d}
+
+\end{DoxyCode}

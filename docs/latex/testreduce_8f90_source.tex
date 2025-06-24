@@ -1,0 +1,299 @@
+\doxysection{testreduce.\+f90}
+\hypertarget{testreduce_8f90_source}{}\label{testreduce_8f90_source}\index{src/a\_module\_tests/testreduce.f90@{src/a\_module\_tests/testreduce.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00016}00016\ \textcolor{keyword}{program}\ testdgemm}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00017}00017\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00018}00018\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00021}00021\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00022}00022\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00024}00024\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00025}00025\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{integer}\ status(MPI\_STATUS\_SIZE)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00027}00027\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00028}00028\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ n,\ m,\ i,\ j,\ k,\ iter,\ dimwork}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00029}00029\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ cclock}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00031}00031\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00032}00032\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacsmap(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacsmap\_other(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ blacstmp(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nprow,\ npcol,\ myrow,\ mycol,\ color,\ key}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desch(20)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desc(descla\_siz\_)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ LIWORK,\ ic,\ ir,\ ii,\ jj,\ ip,\ jp,\ nrlx}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00039}00039\ \ \ \ \ real*8\ ::\ pdlamch}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ INDXG2L,\ INDXG2P,\ INDXL2G}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ irc\_ip(:),\ nrc\_ip(:),\ rank\_ip(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00042}00042\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ work(:,\ :),\ work2(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ myid,\ nrr,\ nc,\ ipc,\ ipr,\ root}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00044}00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00045}00045\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00046}00046\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ a(:,\ :),\ b(:,\ :),\ c(:,\ :)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00048}00048\ \ \ \ \ real*8\ nflop,\ ntranf}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00049}00049\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00050}00050\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00051}00051\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_init(ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(mpi\_comm\_world,\ nproc,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(mpi\_comm\_world,\ rank,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00054}00054\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00055}00055\ \textcolor{preprocessor}{}\ \ \ \ rank\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00056}00056\ \ \ \ \ nproc\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00057}00057\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00058}00058\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00059}00059\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00060}00060\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }blacs\_pinfo(me\_blacs,\ np\_blacs)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keyword}{call\ }blacs\_get(-\/1,\ 0,\ world\_cntx)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_dims(\textcolor{stringliteral}{'S'},\ nproc,\ np\_ortho(1),\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00065}00065\ \ \ \ \ np\_ortho1\ =\ np\_ortho(1)*np\_ortho(2)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00067}00067\ \ \ \ \ np\_ortho1\ =\ np\_ortho(1)*np\_ortho(2)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ >=\ 4*np\_ortho1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ here\ we\ choose\ a\ processor\ every\ 4,\ in\ order\ not\ to\ stress\ memory\ BW}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ on\ multi\ core\ procs,\ for\ which\ further\ performance\ enhancements\ are}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ possible\ using\ OpenMP\ BLAS\ inside\ regter/cegter/rdiaghg/cdiaghg}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ (to\ be\ implemented)}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ color\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ <\ 4*np\_ortho1\ .and.\ mod(rank,\ 4)\ ==\ 0)\ color\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ leg\_ortho\ =\ 4}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00081}00081\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (nproc\ >=\ 2*np\_ortho1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ here\ we\ choose\ a\ processor\ every\ 2,\ in\ order\ not\ to\ stress\ memory\ BW}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ color\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ <\ 2*np\_ortho1\ .and.\ mod(rank,\ 2)\ ==\ 0)\ color\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ leg\_ortho\ =\ 2}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00090}00090\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ here\ we\ choose\ the\ first\ processors}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ color\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ <\ np\_ortho1)\ color\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ leg\_ortho\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00100}00100\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00101}00101\ \ \ \ \ key\ =\ rank}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00102}00102\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00103}00103\ \ \ \ \ \textcolor{comment}{!\ \ initialize\ the\ communicator\ for\ the\ new\ group}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00104}00104\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00105}00105\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_split(mpi\_comm\_world,\ color,\ key,\ ortho\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00106}00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ error\ splitting\ communicator\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00108}00108\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00109}00109\ \ \ \ \ \textcolor{comment}{!\ \ Computes\ coordinates\ of\ the\ processors,\ in\ row\ maior\ order}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00110}00110\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00111}00111\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(ortho\_comm,\ np\_ortho1,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00112}00112\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(ortho\_comm,\ me\_ortho1,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00113}00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (color\ ==\ 1\ .and.\ np\_ortho1\ /=\ np\_ortho(1)*np\_ortho(2))\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ number\ of\ proc\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00115}00115\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00116}00116\ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ root\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00117}00117\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00118}00118\ \ \ \ \ \textcolor{keywordflow}{if}\ (color\ ==\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ ortho\_comm\_id\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_coords(\textcolor{stringliteral}{'R'},\ me\_ortho1,\ np\_ortho(1),\ np\_ortho(2),\ me\_ortho(1),\ me\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_rank(\textcolor{stringliteral}{'R'},\ np\_ortho(1),\ np\_ortho(2),\ me\_ortho(1),\ me\_ortho(2),\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ me\_ortho1)\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ coordinates\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho1*leg\_ortho\ /=\ rank)\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{"{}\ init\_ortho\_group\ "{}},\ \textcolor{stringliteral}{"{}\ wrong\ rank\ assignment\ in\ ortho\_comm\ "{}},\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00126}00126\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ ortho\_comm\_id\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ me\_ortho(1)\ =\ me\_ortho1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ me\_ortho(2)\ =\ me\_ortho1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00131}00131\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00132}00132\ \ \ \ \ \textcolor{keywordflow}{if}\ (ortho\_comm\_id\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacsmap(np\_ortho(1),\ np\_ortho(2)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacstmp(np\_ortho(1),\ np\_ortho(2)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ blacsmap\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ blacsmap(me\_ortho(1)\ +\ 1,\ me\_ortho(2)\ +\ 1)\ =\ me\_blacs}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ nprow\ =\ np\_ortho(1)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ npcol\ =\ np\_ortho(2)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00139}00139\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ nprow\ =\ np\_ortho1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ npcol\ =\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacsmap(np\_ortho1,\ 1))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (blacstmp(np\_ortho1,\ 1))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ blacsmap\ =\ 0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ blacsmap(me\_ortho1\ +\ 1,\ 1)\ =\ me\_blacs}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00146}00146\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00147}00147\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00148}00148\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00149}00149\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(blacsmap,\ blacstmp,\ \textcolor{keyword}{size}(blacsmap),\ mpi\_integer,\ mpi\_sum,\ ortho\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00150}00150\ \ \ \ \ blacsmap\ =\ blacstmp}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00151}00151\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00152}00152\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00153}00153\ \ \ \ \ \textcolor{comment}{!\ \ map\ processors\ to\ grid}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00154}00154\ \ \ \ \ ortho\_cntx\ =\ world\_cntx}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00155}00155\ \ \ \ \ \textcolor{keyword}{call\ }blacs\_gridmap(ortho\_cntx,\ blacsmap,\ nprow,\ nprow,\ npcol)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00156}00156\ \ \ \ \ \textcolor{comment}{!\ \ get\ info\ from\ communicator\ ortho\_cntx\ and\ check\ the\ values}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00157}00157\ \ \ \ \ \textcolor{keyword}{call\ }blacs\_gridinfo(ortho\_cntx,\ nprow,\ npcol,\ myrow,\ mycol)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00158}00158\ \ \ \ \ \textcolor{keywordflow}{if}\ (ortho\_comm\_id\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (np\_ortho(1)\ /=\ nprow)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ nprow\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (np\_ortho(2)\ /=\ npcol)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ npcol\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho(1)\ /=\ myrow)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ myrow\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\_ortho(2)\ /=\ mycol)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ init\ '},\ \textcolor{stringliteral}{'\ problem\ with\ SCALAPACK,\ wrong\ mycol\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00163}00163\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00164}00164\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00165}00165\ \ \ \ \ \textcolor{keyword}{deallocate}\ (blacsmap)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00166}00166\ \ \ \ \ \textcolor{keyword}{deallocate}\ (blacstmp)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00167}00167\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00168}00168\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00169}00169\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00170}00170\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{read}\ (5,\ *)\ n,\ nbufd}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00171}00171\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00172}00172\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(n,\ 1,\ mpi\_integer,\ 0,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00173}00173\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(nbufd,\ 1,\ mpi\_integer,\ 0,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00174}00174\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00175}00175\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00176}00176\ \ \ \ \ iter\ =\ 25*8000.d0**2/dble(n)/dble(nbufd)\ \textcolor{comment}{!\ risonable\ time\ for\ 2Gflops\ processors}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00177}00177\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Number\ of\ iterations\ ='},\ iter}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00178}00178\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00179}00179\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00180}00180\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00181}00181\ \ \ \ \ \textcolor{keyword}{call\ }descla\_init(desc,\ n,\ n,\ np\_ortho,\ me\_ortho,\ ortho\_comm,\ ortho\_comm\_id)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00182}00182\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00183}00183\ \ \ \ \ \textcolor{keyword}{allocate}\ (irc\_ip(np\_ortho(1)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00184}00184\ \ \ \ \ \textcolor{keyword}{allocate}\ (nrc\_ip(np\_ortho(1)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keyword}{allocate}\ (rank\_ip(np\_ortho(1),\ np\_ortho(2)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00186}00186\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 0,\ desc(la\_npc\_)\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }descla\_local\_dims(irc\_ip(j\ +\ 1),\ nrc\_ip(j\ +\ 1),\ desc(la\_n\_),\ desc(la\_nx\_),\ np\_ortho(1),\ j)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 0,\ desc(la\_npr\_)\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }grid2d\_rank(\textcolor{stringliteral}{'R'},\ desc(la\_npr\_),\ desc(la\_npc\_),\ i,\ j,\ myid)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ rank\_ip(i\ +\ 1,\ j\ +\ 1)\ =\ myid*leg\_ortho}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00191}00191\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00192}00192\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00193}00193\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00194}00194\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00195}00195\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00196}00196\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(lambda\_node\_)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00197}00197\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (a(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (c(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00200}00200\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }descinit(desch,\ n,\ n,\ desc(nlax\_),\ desc(nlax\_),\ 0,\ 0,\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ ortho\_cntx,\ \textcolor{keyword}{size}(a,\ 1),\ info)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00203}00203\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ a\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00205}00205\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ c\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00207}00207\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00209}00209\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keyword}{allocate}\ (work(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00211}00211\ \ \ \ \ \textcolor{keyword}{allocate}\ (work2(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00213}00213\ \ \ \ \ \textcolor{keyword}{allocate}\ (b(desc(nlax\_),\ nbufd))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00215}00215\ \ \ \ \ ir\ =\ desc(ilar\_)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00216}00216\ \ \ \ \ ic\ =\ desc(ilac\_)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00217}00217\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00218}00218\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbufd}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ dsin(3.d0*dble(i\ +\ ir\ -\/\ 1)**2\ -\/\ 0.13d0*dble(j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00221}00221\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00222}00222\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00224}00224\ \ \ \ \ c(:,\ :)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00225}00225\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Starting\ '}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00226}00226\ \ \ \ \ dimwork\ =\ \textcolor{keyword}{size}(work)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00227}00227\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ dimension\ ='},\ dimwork}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00228}00228\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00229}00229\ \ \ \ \ time\ =\ cclock()}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00230}00230\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ iter}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00231}00231\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ work\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ work2\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00234}00234\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ipc\ =\ 1,\ desc(la\_npc\_)\ \textcolor{comment}{!\ \ loop\ on\ column\ procs}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ nc\ =\ nrc\_ip(ipc)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ ic\ =\ irc\_ip(ipc)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ipr\ =\ 1,\ desc(la\_npr\_)\ \textcolor{comment}{!\ use\ symmetry\ for\ the\ loop\ on\ row\ procs}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nrr\ =\ nrc\_ip(ipr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ir\ =\ irc\_ip(ipr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ rank\ of\ the\ processor\ for\ which\ this\ block\ (ipr,ipc)\ is\ destinated}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ root\ =\ rank\_ip(ipr,\ ipc)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ use\ blas\ subs.\ on\ the\ matrix\ block}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ nrr,\ nc,\ nbufd,\ 1.d0,\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b,\ desc(nlax\_),\ b,\ desc(nlax\_),\ 0.d0,\ work,\ desc(nlax\_))}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ accumulate\ result\ on\ dm\ of\ root\ proc.}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ accumulate\ result\ on\ dm\ of\ root\ proc.}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00248}00248\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00249}00249\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(work,\ work2,\ dimwork,\ mpi\_double\_precision,\ mpi\_sum,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c\ =\ c\ +\ work2}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00252}00252\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00254}00254\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00255}00255\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(work,\ work2,\ dimwork,\ mpi\_double\_precision,\ mpi\_sum,\ root,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00257}00257\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00258}00258\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00259}00259\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00260}00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00261}00261\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00262}00262\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00263}00263\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ nothing}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00264}00264\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00265}00265\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(lambda\_node\_)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ c\ =\ work2\ +\ c}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00267}00267\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00268}00268\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00269}00269\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Iteration\ =\ '},\ i}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00271}00271\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00272}00272\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00273}00273\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00274}00274\ \ \ \ \ time\ =\ cclock()\ -\/\ time}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00275}00275\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00276}00276\ \ \ \ \ nflop\ =\ 2*dble(n)**2*nbufd*iter*dble(nproc)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00277}00277\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00278}00278\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Wall\ time\ ='},\ time}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Speed\ in\ Gflops\ ='},\ nflop/time/1d9}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Speed\ in\ Gflops/\#core\ ='},\ nflop/time/1d9/dble(nproc)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ MBytes\ communications\ ='},\ 8.d0*dble(n)**2*iter/dble(nproc)*\ \&}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&nint(dlog(dble(nproc))/dlog(2.d0)\ +\ 1.d0)/1d6}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00285}00285\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00286}00286\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00287}00287\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00288}00288\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00289}00289\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00290}00290\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00291}00291\ \textcolor{preprocessor}{}\ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00292}00292\ }
+\DoxyCodeLine{\Hypertarget{testreduce_8f90_source_l00293}00293\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

@@ -1,0 +1,197 @@
+\doxysection{compute\+\_\+grid.\+f90}
+\hypertarget{compute__grid_8f90_source}{}\label{compute__grid_8f90_source}\index{src/a\_readforward/compute\_grid.f90@{src/a\_readforward/compute\_grid.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Module\ for\ grid\ generation\ and\ management}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ module\ provides\ functionality\ for\ generating\ and\ managing}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ computational\ grids\ used\ in\ correlation\ function\ calculations.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ It\ supports\ both\ regular\ grid\ generation\ and\ external\ grid}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ reading\ from\ files,\ with\ various\ centering\ options.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00021}\mbox{\hyperlink{namespacegrid__module}{00021}}\ \textcolor{keyword}{module}\ \mbox{\hyperlink{namespacegrid__module}{grid\_module}}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00023}00023\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ out\_grid(:,\ :)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{allocatable}\ ::\ active\_points(:)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00025}00025\ \ \ \ \ real*8\ ::\ grid\_start(3),\ center\_ion(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00026}00026\ \ \ \ \ real*8\ ::\ da(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ grid\_points}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ ext\_grid}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ center}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00031}00031\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00032}00032\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00033}00033\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Computes\ and\ sets\ up\ the\ computational\ grid}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00034}00034\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ generates\ or\ reads\ a\ computational\ grid}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00035}00035\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ for\ correlation\ function\ calculations.\ It\ can\ either\ read}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00036}00036\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ grid\ points\ from\ an\ external\ file\ (turbo\_grid.dat)\ or}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00037}00037\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ generate\ a\ regular\ grid\ with\ various\ centering\ options.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00038}00038\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ The\ grid\ can\ be\ centered\ on\ the\ coordinate\ origin,\ the}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00039}00039\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ barycenter\ of\ atoms,\ or\ a\ specified\ point\ in\ space.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00040}00040\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ngrid\_l\ Local\ grid\ dimensions\ (3)}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00041}00041\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ ell\ System\ dimensions\ (3)}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00042}00042\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ vell\ Grid\ velocity\ vectors\ (3)}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00043}\mbox{\hyperlink{namespacegrid__module_ac5fd49b446eea8860cea8676ad50d255}{00043}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }compute\_grid(ngrid\_l,\ ell,\ vell)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rank,\ nion,\ rion}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00048}00048\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00049}00049\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ierr}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00051}00051\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00052}00052\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ngrid\_l(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ ell(3),\ vell(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ correct}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ e\_k}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ k,\ ii}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (out\_grid(3,\ grid\_points))}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (active\_points(1:grid\_points))}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ correct\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ext\_grid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}.....reading\ grid\ from\ turbo\_grid.dat\ file"{}}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{inquire}\ (file=\textcolor{stringliteral}{'turbo\_grid.dat'},\ exist=correct)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (correct)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=28,\ file=\textcolor{stringliteral}{'turbo\_grid.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 100}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00077}00077\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ grid\_points}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (28,\ *)\ (out\_grid(j,\ i),\ j=1,\ 3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}turbo\_grid.dat\ read\ correctly"{}}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (28)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(:)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ 0}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ vell(:)\ =\ ell(:)/(ngrid\_l(:))}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00094}00094\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Grid\ vectors\ =\ "{}},\ vell}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Grid\ points\ per\ dimension\ ="{}},\ ngrid\_l}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (da(1)\ .eq.\ 0\ .or.\ da(2)\ .eq.\ 0\ .or.\ da(3)\ .eq.\ 0)\ da(:)\ =\ vell(:)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ngrid\_l(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ngrid\_l(2)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ngrid\_l(1)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ ii\ +\ 1}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(1,\ ii)\ =\ (i\ -\/\ 0.5)*vell(1)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(2,\ ii)\ =\ (j\ -\/\ 0.5)*vell(2)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(3,\ ii)\ =\ (k\ -\/\ 0.5)*vell(3)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Center=1\ the\ center\ of\ the\ grid\ is\ the\ center\ of\ the\ axes}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Center=2\ the\ center\ of\ the\ grid\ is\ the\ barycenter\ of\ the\ atoms}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Center=3\ the\ origin\ of\ the\ grid\ is\ a\ point\ in\ space\ given\ externally}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ In\ this\ last\ case\ do\ nothing.}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (center\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ grid\_start(:)\ =\ -\/ell(:)/2.0}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (center\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ center\_ion(:)\ =\ center\_ion(:)\ +\ rion(:,\ i)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ center\_ion\ =\ center\_ion/nion}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ grid\_start(:)\ =\ -\/ell(:)/2.0\ +\ center\_ion(:)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00125}00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vell(1)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ e\_k\ =\ (ell(2)\ +\ grid\_start(2))**2/2.0}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (vell(2)\ .eq.\ 0\ .or.\ vell(3)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ e\_k\ =\ (ell(1)\ +\ grid\_start(1))**2/2.0}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ e\_k}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ allocate(active\_points(1:grid\_points))}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (e\_k\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(:)\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(:)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00140}00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ grid\_points}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(:,\ i)\ =\ out\_grid(:,\ i)\ +\ grid\_start(:)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ i,e\_k,\ out\_grid(1,i),out\_grid(2,i),out\_grid(3,i),\&}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(1,i)**2+out\_grid(2,i)**2+out\_grid(3,i)**2}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (e\_k\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vell(1)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((out\_grid(2,\ i)**2\ +\ out\_grid(3,\ i)**2)\ .le.\ 2*e\_k)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(1,\ i)\ =\ sqrt(2*e\_k\ -\/\ out\_grid(2,\ i)**2\ -\/\ out\_grid(3,\ i)**2)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(i)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00151}00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (vell(2)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((out\_grid(1,\ i)**2\ +\ out\_grid(3,\ i)**2)\ .le.\ 2*e\_k)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(2,\ i)\ =\ sqrt(2*e\_k\ -\/\ out\_grid(1,\ i)**2\ -\/\ out\_grid(3,\ i)**2)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(i)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00156}00156\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (vell(3)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((out\_grid(1,\ i)**2\ +\ out\_grid(2,\ i)**2)\ .le.\ 2*e\_k)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ out\_grid(3,\ i)\ =\ sqrt(2*e\_k\ -\/\ out\_grid(1,\ i)**2\ -\/\ out\_grid(2,\ i)**2)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ active\_points(i)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00161}00161\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00162}00162\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00163}00163\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ active\_points(i)}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00165}00165\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00166}00166\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00167}00167\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00168}00168\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00169}00169\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00170}00170\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(correct,\ 1,\ mpi\_logical,\ 0,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00171}00171\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00172}00172\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00173}00173\ 100\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ correct)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}ERROR!\ Missing\ turbo\_grid.dat\ file"{}}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00175}00175\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00176}00176\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00177}00177\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00178}00178\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ext\_grid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00180}00180\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00181}00181\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(out\_grid,\ 3*grid\_points,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00182}00182\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00183}00183\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00185}00185\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00186}00186\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00187}00187\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00188}00188\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00189}00189\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }compute\_grid}
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00190}00190\ }
+\DoxyCodeLine{\Hypertarget{compute__grid_8f90_source_l00191}00191\ \textcolor{keyword}{end\ module\ }\mbox{\hyperlink{namespacegrid__module}{grid\_module}}}
+
+\end{DoxyCode}

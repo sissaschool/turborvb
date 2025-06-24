@@ -1,0 +1,219 @@
+\doxysection{graham.\+f90}
+\hypertarget{graham_8f90_source}{}\label{graham_8f90_source}\index{src/m\_common/graham.f90@{src/m\_common/graham.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Gram-\/Schmidt\ orthogonalization\ with\ general\ metric}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ module\ provides\ Gram-\/Schmidt\ orthogonalization\ subroutines\ for}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00019}00019\ \textcolor{comment}{!>\ quantum\ Monte\ Carlo\ calculations,\ supporting\ both\ real\ and\ complex}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00020}00020\ \textcolor{comment}{!>\ vectors\ with\ arbitrary\ overlap\ matrices\ as\ metrics.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00022}00022\ \textcolor{comment}{!>\ The\ module\ implements:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00023}00023\ \textcolor{comment}{!>\ -\/\ Real\ Gram-\/Schmidt\ orthogonalization\ with\ general\ metric}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00024}00024\ \textcolor{comment}{!>\ -\/\ Complex\ Gram-\/Schmidt\ orthogonalization\ with\ general\ metric}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00025}00025\ \textcolor{comment}{!>\ -\/\ Proper\ handling\ of\ linear\ dependencies\ and\ numerical\ stability}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00026}00026\ \textcolor{comment}{!>\ -\/\ Normalization\ of\ orthogonalized\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00027}00027\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00031}00031\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @brief\ Real\ Gram-\/Schmidt\ orthogonalization\ with\ general\ metric}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00033}00033\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00034}00034\ \textcolor{comment}{!>\ This\ subroutine\ performs\ Gram-\/Schmidt\ orthogonalization\ of\ real\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00035}00035\ \textcolor{comment}{!>\ using\ a\ general\ overlap\ matrix\ as\ the\ metric.\ The\ output\ vectors\ are}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00036}00036\ \textcolor{comment}{!>\ orthogonal\ in\ the\ sense\ that\ they\ satisfy\ the\ orthogonality\ condition}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00037}00037\ \textcolor{comment}{!>\ with\ respect\ to\ the\ given\ metric.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00038}00038\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[in,out]\ psi\ Matrix\ of\ vectors\ to\ be\ orthogonalized\ (lda,\ *)}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in]\ over\ Overlap\ matrix\ defining\ the\ metric\ (ldo,\ *)}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @param[in]\ ldo\ Leading\ dimension\ of\ overlap\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @param[out]\ rn\ Array\ of\ normalization\ factors\ for\ each\ vector}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ psi\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00044}00044\ \textcolor{comment}{!>\ @param[in]\ ndime\ Number\ of\ components\ to\ consider\ in\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00045}00045\ \textcolor{comment}{!>\ @param[in]\ mh\ Number\ of\ vectors\ to\ orthogonalize}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00046}00046\ \textcolor{comment}{!>\ @param[out]\ info\ Information\ about\ orthogonalization\ success:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00047}00047\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ info\ =\ 0:\ Successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00048}00048\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ info\ >\ 0:\ Number\ of\ linearly\ dependent\ vectors\ found}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00049}00049\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00051}00051\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00052}00052\ \textcolor{comment}{!>\ 1.\ Computes\ the\ metric-\/weighted\ vectors:\ mat\ =\ over\ *\ psi}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00053}00053\ \textcolor{comment}{!>\ 2.\ Normalizes\ the\ first\ vector:\ psi(:,1)\ =\ psi(:,1)\ /\ ||psi(:,1)||\_over}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00054}00054\ \textcolor{comment}{!>\ 3.\ For\ each\ subsequent\ vector\ i\ =\ 2,\ ...,\ mh:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00055}00055\ \textcolor{comment}{!>\ \ \ \ -\/\ Projects\ vector\ i\ onto\ all\ previous\ orthogonalized\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00056}00056\ \textcolor{comment}{!>\ \ \ \ -\/\ Subtracts\ the\ projections\ to\ make\ it\ orthogonal}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00057}00057\ \textcolor{comment}{!>\ \ \ \ -\/\ Normalizes\ the\ resulting\ orthogonal\ vector}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00058}00058\ \textcolor{comment}{!>\ 4.\ Returns\ normalization\ factors\ and\ information\ about\ linear\ dependencies}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00059}00059\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00060}00060\ \textcolor{comment}{!>\ @note\ The\ orthogonality\ condition\ is:\ sum\_kl\ [over(k,l)\ *\ psi(k,i)\ *\ psi(l,j)]\ =\ δ\_ij}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00061}00061\ \textcolor{comment}{!>\ @note\ Components\ of\ psi\ with\ k\ >\ ndime\ are\ not\ modified}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00062}00062\ \textcolor{comment}{!>\ @note\ If\ a\ vector\ becomes\ linearly\ dependent\ (norm\ ≈\ 0),\ it\ is\ set\ to\ zero}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @note\ The\ subroutine\ uses\ BLAS\ operations\ for\ efficiency}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00064}00064\ \textcolor{keyword}{subroutine\ }graham(PSI,\ over,\ ldo,\ rn,\ lda,\ NDIME,\ MH,\ info)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ i,\ lda,\ ldo,\ info}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00068}00068\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ over(ldo,\ *)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00069}00069\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ PSI(lda,\ *),\ RN(*)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00070}00070\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00071}00071\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00074}00074\ \ \ \ \ \textcolor{comment}{!\ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ over}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ The\ output\ psi\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00076}00076\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00080}00080\ \ \ \ \ \textcolor{comment}{!\ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00081}00081\ \ \ \ \ \textcolor{comment}{!\ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00082}00082\ \ \ \ \ \textcolor{comment}{!\ the\ components\ of\ psi\ such\ that\ k>ndime\ are\ not\ touched.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00083}00083\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00084}00084\ \ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ sp(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00087}00087\ \ \ \ \ mat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00088}00088\ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00089}00089\ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00090}00090\ \ \ \ \ sp\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00091}00091\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ mh,\ ndime,\ 1.d0,\ over,\ ldo,\ psi,\ lda,\ 0.d0\&}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ mat,\ ndime)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00095}00095\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00096}00096\ \ \ \ \ rn(1)\ =\ dsqrt(sum(psi(1:ndime,\ 1)*mat(:,\ 1)))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00097}00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00099}00099\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ ndime,\ i\ -\/\ 1,\ 1.d0,\ psi,\ lda,\ mat(1,\ i),\ 1,\ 0.d0,\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ 1.d0,\ psi,\ lda,\ sp,\ 1,\ 0.d0,\ sc1,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ 1.d0,\ over,\ ldo,\ sc1,\ 1,\ 0.d0,\ sc2,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ rn(i)\ =\ dsqrt(sum(sc1(:)*sc2(:)))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00113}00113\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00114}00114\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00115}00115\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ sp,\ mat)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00116}00116\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00117}00117\ \textcolor{keyword}{end\ subroutine\ }graham}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00118}00118\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00119}00119\ \textcolor{comment}{!>\ @brief\ Complex\ Gram-\/Schmidt\ orthogonalization\ with\ general\ metric}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00120}00120\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00121}00121\ \textcolor{comment}{!>\ This\ subroutine\ performs\ Gram-\/Schmidt\ orthogonalization\ of\ complex\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00122}00122\ \textcolor{comment}{!>\ using\ a\ general\ overlap\ matrix\ as\ the\ metric.\ The\ output\ vectors\ are}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00123}00123\ \textcolor{comment}{!>\ orthogonal\ in\ the\ sense\ that\ they\ satisfy\ the\ orthogonality\ condition}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00124}00124\ \textcolor{comment}{!>\ with\ respect\ to\ the\ given\ metric,\ using\ the\ complex\ conjugate\ scalar\ product.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00125}00125\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00126}00126\ \textcolor{comment}{!>\ @param[in,out]\ psi\ Matrix\ of\ complex\ vectors\ to\ be\ orthogonalized\ (lda,\ *)}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00127}00127\ \textcolor{comment}{!>\ @param[in]\ over\ Complex\ overlap\ matrix\ defining\ the\ metric\ (ldo,\ *)}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00128}00128\ \textcolor{comment}{!>\ @param[in]\ ldo\ Leading\ dimension\ of\ overlap\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00129}00129\ \textcolor{comment}{!>\ @param[out]\ rn\ Array\ of\ normalization\ factors\ for\ each\ vector}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00130}00130\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ psi\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00131}00131\ \textcolor{comment}{!>\ @param[in]\ ndime\ Number\ of\ components\ to\ consider\ in\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00132}00132\ \textcolor{comment}{!>\ @param[in]\ mh\ Number\ of\ vectors\ to\ orthogonalize}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00133}00133\ \textcolor{comment}{!>\ @param[out]\ info\ Information\ about\ orthogonalization\ success:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00134}00134\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ info\ =\ 0:\ Successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00135}00135\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ info\ >\ 0:\ Number\ of\ linearly\ dependent\ vectors\ found}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00136}00136\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00137}00137\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00138}00138\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00139}00139\ \textcolor{comment}{!>\ 1.\ Computes\ the\ metric-\/weighted\ vectors:\ mat\ =\ over\ *\ psi}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00140}00140\ \textcolor{comment}{!>\ 2.\ Normalizes\ the\ first\ vector:\ psi(:,1)\ =\ psi(:,1)\ /\ ||psi(:,1)||\_over}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00141}00141\ \textcolor{comment}{!>\ 3.\ For\ each\ subsequent\ vector\ i\ =\ 2,\ ...,\ mh:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00142}00142\ \textcolor{comment}{!>\ \ \ \ -\/\ Projects\ vector\ i\ onto\ all\ previous\ orthogonalized\ vectors\ using}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00143}00143\ \textcolor{comment}{!>\ \ \ \ \ \ complex\ conjugate\ scalar\ product}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00144}00144\ \textcolor{comment}{!>\ \ \ \ -\/\ Subtracts\ the\ projections\ to\ make\ it\ orthogonal}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00145}00145\ \textcolor{comment}{!>\ \ \ \ -\/\ Normalizes\ the\ resulting\ orthogonal\ vector}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00146}00146\ \textcolor{comment}{!>\ 4.\ Returns\ normalization\ factors\ and\ information\ about\ linear\ dependencies}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00147}00147\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00148}00148\ \textcolor{comment}{!>\ @note\ The\ orthogonality\ condition\ is:\ sum\_kl\ [over(k,l)\ *\ psi(k,i)\ *\ conjg(psi(l,j))]\ =\ δ\_ij}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00149}00149\ \textcolor{comment}{!>\ @note\ The\ complex\ scalar\ product\ is\ defined\ as:\ a\ ·\ b\ =\ sum\_i\ a\_i\ *\ conjg(b\_i)}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00150}00150\ \textcolor{comment}{!>\ @note\ Components\ of\ psi\ with\ k\ >\ ndime\ are\ not\ modified}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00151}00151\ \textcolor{comment}{!>\ @note\ If\ a\ vector\ becomes\ linearly\ dependent\ (norm\ ≈\ 0),\ it\ is\ set\ to\ zero}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00152}00152\ \textcolor{comment}{!>\ @note\ The\ subroutine\ uses\ BLAS\ operations\ for\ efficiency}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00153}00153\ \textcolor{keyword}{subroutine\ }graham\_complex(PSI,\ over,\ ldo,\ rn,\ lda,\ NDIME,\ MH,\ info)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00155}00155\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ zzero,\ zone}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00156}00156\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00157}00157\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00158}00158\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ i,\ lda,\ ldo,\ info}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00159}00159\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ over(ldo,\ *),\ PSI(lda,\ *)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00160}00160\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ RN(*)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00161}00161\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00162}00162\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00163}00163\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00164}00164\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00165}00165\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ over}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00166}00166\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ The\ output\ psi\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00167}00167\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00168}00168\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00169}00169\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00170}00170\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00171}00171\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00172}00172\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00173}00173\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ components\ of\ psi\ such\ that\ k>\ ndime\ are\ not\ touched.}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00174}00174\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00175}00175\ \ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00176}00176\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00177}00177\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ sp(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00178}00178\ \ \ \ \ mat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00179}00179\ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00180}00180\ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00181}00181\ \ \ \ \ sp\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00182}00182\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00184}00184\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ mh,\ ndime,\ zone,\ over,\ ldo,\ psi,\ lda,\ zzero\ \&}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ mat,\ ndime)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00186}00186\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00187}00187\ \ \ \ \ rn(1)\ =\ sqrt(sum(conjg(psi(1:ndime,\ 1))*mat(:,\ 1)))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00188}00188\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00190}00190\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ zzero}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00193}00193\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00194}00194\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00195}00195\ \ \ \ \ \textcolor{comment}{!\ NB:\ in\ the\ case\ of\ complex\ vectors\ the\ scalar\ product\ has\ a\ different\ definition}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00196}00196\ \ \ \ \ \textcolor{comment}{!\ in\ order\ to\ keep\ valid\ its\ main\ properties:}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00197}00197\ \ \ \ \ \textcolor{comment}{!\ a\ \(\backslash\)dot\ b\ =\ \(\backslash\)sum\_i\ a\_i\ b\_i\string^*}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00198}00198\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00199}00199\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ ndime,\ i\ -\/\ 1,\ zone,\ psi,\ lda,\ mat(1,\ i),\ 1,\ zzero,\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ zone,\ psi,\ lda,\ sp,\ 1,\ zzero,\ sc1,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ zone,\ over,\ ldo,\ sc1,\ 1,\ zzero,\ sc2,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ rn(i)\ =\ sqrt(sum(conjg(sc1(:))*sc2(:)))}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ zzero}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00209}00209\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00210}00210\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00211}00211\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ sp,\ mat)}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00212}00212\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{graham_8f90_source_l00213}00213\ \textcolor{keyword}{end\ subroutine\ }graham\_complex}
+
+\end{DoxyCode}

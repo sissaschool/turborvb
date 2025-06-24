@@ -1,0 +1,236 @@
+\doxysection{energy.\+f90}
+\hypertarget{energy_8f90_source}{}\label{energy_8f90_source}\index{src/a\_turborvb/energy.f90@{src/a\_turborvb/energy.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Compute\ energy\ components\ for\ real\ wave\ function\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ various\ energy\ components\ from\ matrix\ elements\ table.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00018}00018\ \textcolor{comment}{!>\ It\ calculates\ wtot\ as\ the\ sum\ of\ |G\_x',x|\ where\ G\_x,x\ (diagonal\ part)\ is\ given\ by}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00019}00019\ \textcolor{comment}{!>\ the\ lattice\ FN\ approximation:\ G\_x,x\ =\ diag\ +\ (1+gamma)\ *\ veff.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00020}00020\ \textcolor{comment}{!>\ The\ matrix\ elements\ are\ processed\ differently\ based\ on\ their\ sign\ and\ position}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00021}00021\ \textcolor{comment}{!>\ relative\ to\ the\ effective\ interaction\ range\ defined\ by\ istart\ and\ indtm.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ Lz\ Number\ of\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ table\ Matrix\ elements\ for\ guiding\ function}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ tabler\ Matrix\ elements\ for\ Vsf\ function}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ diag\ Diagonal\ energy\ contribution}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ wtot\ Total\ weight\ sum}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ veff\ Effective\ potential\ for\ negative\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ veffright\ Effective\ potential\ for\ positive\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[out]\ enerdiff\ Energy\ difference\ between\ guiding\ and\ Vsf\ functions}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ itest\ Test\ flag\ for\ different\ calculation\ modes}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ npow\ Power\ parameter\ for\ energy\ calculation}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ gamma\ Gamma\ parameter\ for\ energy\ scaling}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ nel\ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ istart\ Starting\ index\ for\ effective\ interaction}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ indtm\ Array\ defining\ effective\ interaction\ range\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ epscutdmc\ DMC\ energy\ cutoff\ parameter}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00037}00037\ \textcolor{keyword}{subroutine\ }energy(Lz,\ table,\ tabler,\ diag,\ wtot,\ veff,\ veffright,\ enerdiff\&}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \&,\ itest,\ npow,\ gamma,\ nel,\ istart,\ indtm,\ epscutdmc)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ typereg}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ Lz,\ i,\ itest,\ index,\ nel,\ istart,\ ipart,\ indtm(*)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00042}00042\ \ \ \ \ real*8\ tabler(*),\ table(*),\ diag,\ wtot,\ veff,\ gamma,\ npow,\ veffright\&}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ epscutdmc,\ costnpow,\ enerdiff}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ wtot\ is\ the\ sum\ over\ x'\ of\ \ |\ G\_x',x\ |\ where\ it\ is\ assumed\ that}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ G\_x,x\ (the\ diagonal\ part)\ is\ given\ by\ the\ lattice\ FN\ aproximation:}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ G\_x,x=\ diag+\ (1+gamma)\ veff}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Here\ |G\_x',x|\ =table(i)\ \ \ \ \ \ \ \ \ \ if\ \ \ table\ >\ 0\ and\ x'\ ne\ x}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Here\ |G\_x',x|\ =|gamma\ table(i)|\ \ if\ \ \ table\ <\ 0\ and\ x'\ ne\ x}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ veff\ =\ sum\_x'\ G\_\{x'.x\}\ <\ 0\ and\ x'\ ne\ x.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00052}00052\ \ \ \ \ enerdiff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00054}00054\ \textcolor{comment}{!\ \ \ if(itest.eq.1.or.itest.eq.3.or.itest.eq.-\/2.or.itest.eq.-\/3)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00055}00055\ \ \ \ \ wtot\ =\ diag}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00056}00056\ \ \ \ \ veff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00057}00057\ \ \ \ \ veffright\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordflow}{if}\ (epscutdmc\ .eq.\ 0.d0\ .and.\ typereg\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ lz}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/nel\ +\ 1}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*nel}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (table(i)\ .lt.\ 0.)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veffright\ =\ veffright\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (table(i)\ .lt.\ 0.)\ veff\ =\ veff\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00073}00073\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ costnpow\ =\ npow*(1.d0\ +\ gamma)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ The\ Guiding\ function\ ME\ are\ in\ table.\ The\ Vsf\ is\ defined\ in\ term}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ of\ a\ different\ wf\ with\ the\ same\ nodes,\ the\ corresponding\ ME\ are}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ written\ in\ tabler}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ lz}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/nel\ +\ 1}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*nel}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (table(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ gamma)*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ gamma*table(i)\ +\ (1.d0\ +\ gamma)*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veffright\ =\ veffright\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)*(1.d0\ -\/\ costnpow)\ +\ costnpow*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ costnpow*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (table(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ gamma)*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ gamma*table(i)\ +\ (1.d0\ +\ gamma)*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00100}00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00101}00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00103}00103\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00104}00104\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00105}00105\ \textcolor{comment}{!\ \ \ else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00106}00106\ \textcolor{comment}{!\ \ \ \ \ \ \ veff\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00107}00107\ \textcolor{comment}{!\ \ \ \ \ \ \ veffright\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00108}00108\ \textcolor{comment}{!\ \ \ \ \ \ \ wtot\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00109}00109\ \textcolor{comment}{!\ \ \ \ \ \ \ costnpow\ =\ npow\ *\ (1.d0\ +\ gamma)}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00110}00110\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ Lz}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00111}00111\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)\ /\ nel\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00112}00112\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(npow.ne.0.d0.and.table(i).gt.0.d0.and.index.ge.istart)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00113}00113\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)\ *\ (1.d0\ -\/\ costnpow)}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00114}00114\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ elseif(table(i).gt.0.d0)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00115}00115\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00116}00116\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00117}00117\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ table(i)\ *\ gamma}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00118}00118\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00119}00119\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00120}00120\ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00121}00121\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00122}00122\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00123}00123\ \textcolor{keyword}{end\ subroutine\ }energy}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00124}00124\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00125}00125\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00126}00126\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00127}00127\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00128}00128\ \textcolor{comment}{!>\ @brief\ Compute\ energy\ components\ for\ complex\ wave\ function\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00129}00129\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ various\ energy\ components\ from\ complex\ matrix\ elements\ table.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00130}00130\ \textcolor{comment}{!>\ Similar\ to\ the\ real\ version\ but\ handles\ complex\ matrix\ elements.\ It\ calculates\ wtot\ as\ the\ sum}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00131}00131\ \textcolor{comment}{!>\ of\ |G\_x',x|\ where\ G\_x,x\ (diagonal\ part)\ is\ given\ by\ the\ lattice\ FN\ approximation.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00132}00132\ \textcolor{comment}{!>\ The\ matrix\ elements\ are\ processed\ differently\ based\ on\ their\ real\ part\ sign\ and\ position}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00133}00133\ \textcolor{comment}{!>\ relative\ to\ the\ effective\ interaction\ range\ defined\ by\ istart\ and\ indtm.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00134}00134\ \textcolor{comment}{!>\ @param[in]\ Lz\ Number\ of\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00135}00135\ \textcolor{comment}{!>\ @param[in]\ table\ Complex\ matrix\ elements\ for\ guiding\ function}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00136}00136\ \textcolor{comment}{!>\ @param[in]\ tabler\ Real\ matrix\ elements\ for\ Vsf\ function}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00137}00137\ \textcolor{comment}{!>\ @param[in]\ diag\ Diagonal\ energy\ contribution}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00138}00138\ \textcolor{comment}{!>\ @param[out]\ wtot\ Total\ weight\ sum\ (real)}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00139}00139\ \textcolor{comment}{!>\ @param[out]\ veff\ Effective\ potential\ for\ negative\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00140}00140\ \textcolor{comment}{!>\ @param[out]\ veffright\ Effective\ potential\ for\ positive\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00141}00141\ \textcolor{comment}{!>\ @param[out]\ enerdiff\ Energy\ difference\ between\ guiding\ and\ Vsf\ functions}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00142}00142\ \textcolor{comment}{!>\ @param[in]\ itest\ Test\ flag\ for\ different\ calculation\ modes}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00143}00143\ \textcolor{comment}{!>\ @param[in]\ npow\ Power\ parameter\ for\ energy\ calculation}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00144}00144\ \textcolor{comment}{!>\ @param[in]\ gamma\ Gamma\ parameter\ for\ energy\ scaling}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00145}00145\ \textcolor{comment}{!>\ @param[in]\ nel\ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00146}00146\ \textcolor{comment}{!>\ @param[in]\ istart\ Starting\ index\ for\ effective\ interaction}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00147}00147\ \textcolor{comment}{!>\ @param[in]\ indtm\ Array\ defining\ effective\ interaction\ range\ per\ particle}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00148}00148\ \textcolor{comment}{!>\ @param[in]\ epscutdmc\ DMC\ energy\ cutoff\ parameter}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00149}00149\ \textcolor{keyword}{subroutine\ }energy\_complex(Lz,\ table,\ tabler,\ diag,\ wtot,\ veff,\ veffright\ \&}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ enerdiff,\ itest,\ npow,\ gamma,\ nel,\ istart,\ indtm,\ epscutdmc)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00151}00151\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00152}00152\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ typereg}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00154}00154\ \ \ \ \ \textcolor{keywordtype}{integer}\ Lz,\ i,\ itest,\ index,\ nel,\ istart,\ ipart,\ indtm(*)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00155}00155\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ tabler(*),\ diag,\ wtot,\ veff,\ gamma,\ npow,\ veffright\ \&}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ ,\ epscutdmc,\ costnpow,\ enerdiff}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00157}00157\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00158}00158\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ table(*)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00159}00159\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00160}00160\ \ \ \ \ enerdiff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00161}00161\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00162}00162\ \textcolor{comment}{!\ \ \ if(itest.eq.1.or.itest.eq.3.or.itest.eq.-\/2.or.itest.eq.-\/3)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00163}00163\ \ \ \ \ \textcolor{comment}{!\ for\ dmclrdmc}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00164}00164\ \ \ \ \ wtot\ =\ diag}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00165}00165\ \ \ \ \ veff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00166}00166\ \ \ \ \ veffright\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00167}00167\ \ \ \ \ \textcolor{keywordflow}{if}\ (epscutdmc\ .eq.\ 0.d0\ .and.\ typereg\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ lz}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/nel\ +\ 1}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*nel}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dreal(table(i))\ .lt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ dreal(table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veffright\ =\ veffright\ +\ dreal(table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00177}00177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dreal(table(i))\ .lt.\ 0.d0)\ veff\ =\ veff\ +\ dreal(table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00180}00180\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00181}00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00182}00182\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ costnpow\ =\ npow*(1.d0\ +\ gamma)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ lz}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ The\ Guiding\ function\ ME\ are\ in\ table.\ The\ Vsf\ is\ defined\ in\ term}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ of\ a\ different\ wf\ with\ the\ same\ nodes,\ the\ corresponding\ ME\ are}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ written\ in\ tabler}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/nel\ +\ 1}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*nel}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tabler(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ gamma)*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ gamma*table(i)\ +\ (1.d0\ +\ gamma)*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veffright\ =\ veffright\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ costnpow*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)*(1.d0\ -\/\ costnpow)\ +\ costnpow*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00199}00199\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tabler(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ gamma)*(tabler(i)\ -\/\ table(i))}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ veff\ =\ veff\ +\ tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ gamma*table(i)\ +\ (1.d0\ +\ gamma)*tabler(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00207}00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00209}00209\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00210}00210\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00211}00211\ \textcolor{comment}{!\ \ \ else\ !\ itest}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00212}00212\ \textcolor{comment}{!\ \ \ \ \ \ \ !\ vmc\ case}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00213}00213\ \textcolor{comment}{!\ \ \ \ \ \ \ veff\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00214}00214\ \textcolor{comment}{!\ \ \ \ \ \ \ veffright\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00215}00215\ \textcolor{comment}{!\ \ \ \ \ \ \ wtot\ =\ 0.d0}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00216}00216\ \textcolor{comment}{!\ \ \ \ \ \ \ costnpow\ =\ npow\ *\ (1.d0\ +\ gamma)}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00217}00217\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ Lz}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00218}00218\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)\ /\ nel\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00219}00219\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(npow.ne.0.d0.and.dreal(table(i)).gt.0.d0.and.index.ge.istart)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00220}00220\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ dreal(table(i))\ *\ (1.d0\ -\/\ costnpow)\ \ !\ weight\ wtot\ remains\ real\ also\ in\ the\ case\ of\ complex\ w.f.}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00221}00221\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ elseif(dreal(table(i)).gt.0.d0)\ then}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00222}00222\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ dreal(table(i))}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00223}00223\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00224}00224\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ dreal(table(i))\ *\ gamma}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00225}00225\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00226}00226\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00227}00227\ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00228}00228\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{energy_8f90_source_l00230}00230\ \textcolor{keyword}{end\ subroutine\ }energy\_complex}
+
+\end{DoxyCode}

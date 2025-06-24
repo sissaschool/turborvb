@@ -1,0 +1,223 @@
+\doxysection{prep.\+f90}
+\hypertarget{prep_8f90_source}{}\label{prep_8f90_source}\index{src/a\_prep/prep.f90@{src/a\_prep/prep.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Main\ program\ for\ DFT\ preparation\ and\ calculations}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ is\ the\ main\ program\ for\ TurboRVB\ DFT\ calculations.\ It\ initializes}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ the\ parallel\ environment,\ reads\ input\ parameters,\ sets\ up\ the\ calculation}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ environment,\ and\ performs\ either\ self-\/consistent\ or\ non-\/self-\/consistent}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ calculations\ depending\ on\ the\ input\ options.\ Supports\ both\ real\ and}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ complex\ wavefunctions\ with\ k-\/point\ sampling\ and\ LSDA\ calculations.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00022}00022\ \textcolor{keyword}{program}\ main}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00023}00023\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefreeelmod__complex}{freeelmod\_complex}},\ \textcolor{keywordtype}{only}:\ self\_consistent\_run}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{use\ }parallel\_module,\ \textcolor{keywordtype}{only}:\ old\_threads,\ setup\_para}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{external}\ ::\ omp\_get\_max\_threads}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{character(lchlen)}\ ::\ path}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00030}00030\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{external}\ ::\ cclock}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00031}00031\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00032}00032\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00033}00033\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00034}00034\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ status(1)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ str}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ name\_tool}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ open\ documentation\ if\ required}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keyword}{call\ }getarg(1,\ str)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ name\_tool\ =\ \textcolor{stringliteral}{'prep'}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }help\_online(name\_tool)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00046}00046\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00047}00047\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00048}00048\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ Initialize\ MPI}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00051}00051\ \textcolor{preprocessor}{\#if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00052}00052\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_init(ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(mpi\_comm\_world,\ nproc,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(mpi\_comm\_world,\ rank,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Number\ of\ mpi\ proc\ ='},\ nproc}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00057}00057\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00058}00058\ \textcolor{preprocessor}{}\ \ \ \ rank\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00059}00059\ \ \ \ \ nproc\ =\ 1}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00060}00060\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00061}00061\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00062}00062\ \ \ \ \ \textcolor{comment}{!\ Initialize\ OpenMP}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00064}00064\ \textcolor{preprocessor}{\#if\ defined\ \_OPENMP}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00065}00065\ \textcolor{preprocessor}{}\ \ \ \ old\_threads\ =\ omp\_get\_max\_threads()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00066}00066\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00067}00067\ \textcolor{preprocessor}{}\ \ \ \ old\_threads\ =\ 1}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00068}00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00069}00069\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00070}00070\ \ \ \ \ \textcolor{comment}{!\ output\ version\ information}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{call\ }print\_version}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ print\ threads\ and\ mpi\ info.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Number\ of\ threads\ /mpi\ proc\ ='},\ old\_threads}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00075}00075\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00076}00076\ \textcolor{preprocessor}{\#if\ defined\ UNREL\_SMP}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00077}00077\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#if\ defined\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00078}00078\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(old\_threads,\ 1,\ mpi\_integer,\ 0,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00079}00079\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00080}00080\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#if\ defined\ \_OPENMP}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00081}00081\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }omp\_set\_num\_threads(old\_threads)\ \textcolor{comment}{!\ force\ the\ same}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00082}00082\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00083}00083\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00084}00084\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ init.\ value\ of\ threads/mpi\ task'},\ old\_threads}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keyword}{call\ }get\_dir(path)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00087}00087\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Initial\ path\ :\ '},\ path}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00088}00088\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00089}00089\ \ \ \ \ \textcolor{comment}{!\ Initialize\ error\ flags\ needed\ by\ read\_datasmin}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00090}00090\ \ \ \ \ yesdft\ =\ .true.\ \textcolor{comment}{!\ important\ flag\ to\ avoid\ useless\ allocation\ and\ checks}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00091}00091\ \ \ \ \ iflagerrall\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00092}00092\ \ \ \ \ iflagerr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00093}00093\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00094}00094\ \ \ \ \ \textcolor{comment}{!\ reading\ main\ input\ cards\ from\ std\ input,\ in\ common\ with\ QMC\ calculations.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00095}00095\ \ \ \ \ \textcolor{comment}{!\ One\ needs\ to\ do\ it\ at\ first\ in\ order\ to\ gather\ necessary\ information}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00096}00096\ \ \ \ \ \textcolor{comment}{!\ on\ parallelization.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00097}00097\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Cards\ read:\ SIMULATIONS,PARAMETERS,PSEUDO,VMC,K-\/POINTS.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keyword}{call\ }read\_datasmin}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00099}00099\ \ \ \ \ yesfast\ =\ 1}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00100}00100\ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr4\ .eq.\ -\/8)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ prep\ '},\ \textcolor{stringliteral}{'\ Optimization\ of\ Z\ is\ not\ possible\ with\ DFT\ '},\ -\/1,\ rank)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ yeszagp\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ itestr4\ =\ -\/4}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00104}00104\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00105}00105\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00106}00106\ \ \ \ \ \textcolor{comment}{!\ initialize\ parallel\ environment\ at\ various\ levels:}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00107}00107\ \ \ \ \ \textcolor{comment}{!\ 1)\ processors\ pools\ in\ case\ of\ k-\/points\ sampling\ (flag\ kaverage)}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00108}00108\ \ \ \ \ \textcolor{comment}{!\ 2)\ SCALAPACK\ block\ matrices\ within\ the\ pools\ (compiling\ option\ \_\_SCALAPACK)}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00109}00109\ \ \ \ \ \textcolor{keyword}{call\ }setup\_para}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00110}00110\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00111}00111\ \ \ \ \ \textcolor{comment}{!\ Read\ all\ necessary\ files\ to\ setup\ the\ DFT\ calculation:}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00112}00112\ \ \ \ \ \textcolor{comment}{!\ 1)\ read\ pseudopotential\ if\ any.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00113}00113\ \ \ \ \ \textcolor{comment}{!\ 2)\ read\ wave\ function\ fort.10/fort.10\_new}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00114}00114\ \ \ \ \ \textcolor{comment}{!\ 3)\ read\ DFT\ and\ MOLECULAR\ cards\ on\ std\ input.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00115}00115\ \ \ \ \ \textcolor{comment}{!\ 4)\ generate\ scratch\ files\ for\ continuation.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00116}00116\ \ \ \ \ \textcolor{keyword}{call\ }initializeall}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00117}00117\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00118}00118\ \ \ \ \ \textcolor{comment}{!\ deallocate\ useless\ variables\ allocated\ for\ QMC}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00119}00119\ \ \ \ \ \textcolor{comment}{!\ small\ reallocation\ just\ to\ be\ safe}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00120}00120\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00121}00121\ \ \ \ \ \textcolor{keyword}{deallocate}\ (tabpip,\ table,\ tabler,\ ainv,\ winvdo,\ winvup,\ winvj,\ \&}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvbar,\ winvjbar,\ wint,\ diagfn,\ jastrowall\_ee,\ \&}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrowall\_ei,\ jasnew\_ee,\ jasnew\_ei,\ winvjbarsz)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00124}00124\ \ \ \ \ \textcolor{keyword}{allocate}\ (tabpip(1),\ table(1),\ tabler(1),\ ainv(1),\ winvdo(1),\ winvup(1),\ \&}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvj(1),\ winvbar(1),\ winvjbar(1),\ wint(1),\ diagfn(1),\ \&}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrowall\_ee(1,\ 1,\ 1,\ 1),\ jastrowall\_ei(1,\ 1,\ 1),\ jasnew\_ee(1),\ \&}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasnew\_ei(1),\ winvjbarsz(1),\ dup(max(ipc*iesup,\ 1)))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00128}00128\ \ \ \ \ tabpip\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00129}00129\ \ \ \ \ table\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00130}00130\ \ \ \ \ tabler\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00131}00131\ \ \ \ \ ainv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00132}00132\ \ \ \ \ winvdo\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00133}00133\ \ \ \ \ winvup\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00134}00134\ \ \ \ \ winvj\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00135}00135\ \ \ \ \ winvbar\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00136}00136\ \ \ \ \ winvjbar\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00137}00137\ \ \ \ \ wint\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00138}00138\ \ \ \ \ diagfn\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00139}00139\ \ \ \ \ jastrowall\_ee\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00140}00140\ \ \ \ \ jastrowall\_ei\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00141}00141\ \ \ \ \ jasnew\_ee\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00142}00142\ \ \ \ \ jasnew\_ei\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00143}00143\ \ \ \ \ winvjbarsz\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00144}00144\ \ \ \ \ dup\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00145}00145\ \ \ \ \ \textcolor{keyword}{deallocate}\ (detmat,\ nozero,\ nozerodet,\ scale)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00146}00146\ \ \ \ \ \textcolor{keyword}{allocate}\ (detmat(nelorbh),\ nozero(1),\ scale(1),\ nozerodet(1))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00147}00147\ \ \ \ \ detmat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00148}00148\ \ \ \ \ nozero\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00149}00149\ \ \ \ \ scale\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00150}00150\ \ \ \ \ nozerodet\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0\ .and.\ .not.\ contracted\_on)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (mu\_c)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mu\_c(1,\ 1))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ mu\_c\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00156}00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (sum\_q\_cos\_gr,\ sum\_q\_sin\_gr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (sum\_q\_cos\_gr(1,\ 1),\ sum\_q\_sin\_gr(1,\ 1))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ sum\_q\_cos\_gr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ sum\_q\_sin\_gr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00161}00161\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00162}00162\ \ \ \ \ \textcolor{keyword}{deallocate}\ (winv,\ psip,\ ipsip)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00163}00163\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00164}00164\ \ \ \ \ \textcolor{comment}{!\ allocate\ global\ scratch\ vectors\ needed\ by\ DFT}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00165}00165\ \ \ \ \ \textcolor{comment}{!\ winv\ -\/-\/>\ real\ scratch\ vector}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00166}00166\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00167}00167\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ yes\_complex)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (winv(nelorb*(indt\ +\ 5)),\ psip(iscramax),\ ipsip(iscraipsip))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ winv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ psip\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ ipsip\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }error(\textcolor{stringliteral}{'\ prep\ '},\ \textcolor{stringliteral}{'\ Double\ allocation\ for\ complex\ algorithm\ '},\ -\/1,\ rank)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (psip(2*iscramax),\ ipsip(iscraipsip),\ winv(1))}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ psip\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ ipsip\ =\ 0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ winv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00178}00178\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00179}00179\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00180}00180\ \ \ \ \ \textcolor{comment}{!\ initialize\ all\ variables\ needed\ by\ self\ and\ non\ self-\/consistent}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00181}00181\ \ \ \ \ \textcolor{comment}{!\ calculations.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00182}00182\ \ \ \ \ time\_total\ =\ cclock()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00183}00183\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00184}00184\ \ \ \ \ \textcolor{keyword}{call\ }initialize\_environment()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00185}00185\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00186}00186\ \ \ \ \ \textcolor{comment}{!\ update\ molecular\ orbitals\ using\ one-\/body\ Hamiltonian}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00187}00187\ \ \ \ \ \textcolor{comment}{!\ with\ self-\/consistent\ DFT\ cycle\ or\ perform\ a}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00188}00188\ \ \ \ \ \textcolor{comment}{!\ non\ self-\/consistent\ calculation\ to\ compute\ band\ structure}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00189}00189\ \ \ \ \ \textcolor{comment}{!\ and\ other\ electronic\ properties.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00190}00190\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00191}00191\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ compute\_bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }self\_consistent\_run()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00193}00193\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }non\_self\_consistent\_run()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00195}00195\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00196}00196\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00197}00197\ \ \ \ \ \textcolor{comment}{!\ deallocate\ all\ variables\ and\ write\ the\ final}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00198}00198\ \ \ \ \ \textcolor{comment}{!\ outputs\ and\ wave\ functions.}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00199}00199\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00200}00200\ \ \ \ \ time\_total\ =\ cclock()\ -\/\ time\_total}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00201}00201\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00202}00202\ \ \ \ \ \textcolor{keyword}{call\ }write\_output\_and\_finalize()}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00203}00203\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00204}00204\ \textcolor{preprocessor}{\#if\ defined\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00205}00205\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }blacs\_gridexit(ortho\_cntx)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00206}00206\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_free(ortho\_comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00207}00207\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00208}00208\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00209}00209\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (manyfort10\ .and.\ .not.\ compute\_bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_free(commrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_free(commcolrep\_mpi,\ ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00212}00212\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00213}00213\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00214}00214\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00215}00215\ \textcolor{preprocessor}{}\ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00216}00216\ }
+\DoxyCodeLine{\Hypertarget{prep_8f90_source_l00217}00217\ \textcolor{keyword}{end\ program\ }main}
+
+\end{DoxyCode}

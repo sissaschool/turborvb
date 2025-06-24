@@ -96,6 +96,8 @@ $(function(){initNavTree('bconstrbra_8f90.html','',''); });
 
 <p>Module containing constraint handling for Jastrow matrix operations.  
 <a href="#details">More...</a></p>
+
+<p><a href="bconstrbra_8f90_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
@@ -109,6 +111,8 @@ Functions/Subroutines</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>TurboRVB group </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2022 </dd></dl>
 <dl class="section version"><dt>Version</dt><dd>1.0 </dd></dl>
+
+<p class="definition">Definition in file <a class="el" href="bconstrbra_8f90_source.html">bconstrbra.f90</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a6b43ba62b30b18a2729949f0bd353752" name="a6b43ba62b30b18a2729949f0bd353752"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6b43ba62b30b18a2729949f0bd353752">&#9670;&#160;</a></span>bconstrbra()</h2>
@@ -215,6 +219,50 @@ upsim subroutine for matrix update operations </dd></dl>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bconstrbra_8f90_source.html#l00076">76</a> of file <a class="el" href="bconstrbra_8f90_source.html">bconstrbra.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   78</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">   79</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   80</span><span class="comment">    !&gt; @param[in] iesfreer Switch flag for constraint handling (0: no constraints, &gt;0: apply constraints)</span></div>
+<div class="line"><span class="lineno">   81</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: iesfreer</div>
+<div class="line"><span class="lineno">   82</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   83</span><span class="comment">    !&gt; @param[in] n3body Number of 3-body Jastrow parameters</span></div>
+<div class="line"><span class="lineno">   84</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: n3body</div>
+<div class="line"><span class="lineno">   85</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   86</span><span class="comment">    !&gt; @param[in] jbraj Mapping array from constrained to unconstrained Jastrow parameters</span></div>
+<div class="line"><span class="lineno">   87</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: jbraj(*)</div>
+<div class="line"><span class="lineno">   88</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   89</span><span class="comment">    !&gt; @param[in] nozeroj Array of non-zero element indices for Jastrow matrix</span></div>
+<div class="line"><span class="lineno">   90</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: nozeroj(*)</div>
+<div class="line"><span class="lineno">   91</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   92</span><span class="comment">    !&gt; @param[in] nelorbj Number of Jastrow orbitals</span></div>
+<div class="line"><span class="lineno">   93</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: nelorbj</div>
+<div class="line"><span class="lineno">   94</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   95</span><span class="comment">    !&gt; @param[in] ddw Input array of constrained parameter changes</span></div>
+<div class="line"><span class="lineno">   96</span>    real*8, <span class="keywordtype">intent(in)</span> :: ddw(*)</div>
+<div class="line"><span class="lineno">   97</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">   98</span><span class="comment">    !&gt; @param[in,out] derjas Jastrow matrix to be updated</span></div>
+<div class="line"><span class="lineno">   99</span>    real*8, <span class="keywordtype">intent(inout)</span> :: derjas(*)</div>
+<div class="line"><span class="lineno">  100</span>    </div>
+<div class="line"><span class="lineno">  101</span>    <span class="comment">! Local variables</span></div>
+<div class="line"><span class="lineno">  102</span>    <span class="keywordtype">integer</span> :: i, j</div>
+<div class="line"><span class="lineno">  103</span>    </div>
+<div class="line"><span class="lineno">  104</span>    <span class="comment">! Early return if no constraints are applied</span></div>
+<div class="line"><span class="lineno">  105</span>    <span class="keywordflow">if</span> (iesfreer .eq. 0) <span class="keywordflow">return</span></div>
+<div class="line"><span class="lineno">  106</span>    </div>
+<div class="line"><span class="lineno">  107</span>    <span class="comment">! Map constrained Jastrow parameters to matrix elements using upsim</span></div>
+<div class="line"><span class="lineno">  108</span>    <span class="keywordflow">do</span> i = 1, n3body</div>
+<div class="line"><span class="lineno">  109</span>        j = jbraj(i)</div>
+<div class="line"><span class="lineno">  110</span>        <span class="keywordflow">if</span> (j .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  111</span>            <span class="comment">! Direct mapping for positive indices using matrix update</span></div>
+<div class="line"><span class="lineno">  112</span>            <span class="keyword">call </span>upsim(derjas, nelorbj, nozeroj(i), ddw(j), .true., 1)</div>
+<div class="line"><span class="lineno">  113</span>        <span class="keywordflow">elseif</span> (j .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  114</span>            <span class="comment">! Sign-flipped mapping for negative indices using matrix update</span></div>
+<div class="line"><span class="lineno">  115</span>            <span class="keyword">call </span>upsim(derjas, nelorbj, nozeroj(i), -ddw(-j), .true., 1)</div>
+<div class="line"><span class="lineno">  116</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  117</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  118</span>    </div>
+<div class="line"><span class="lineno">  119</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a3603f0cb9abd1da961076a75105ab329" name="a3603f0cb9abd1da961076a75105ab329"></a>
@@ -323,6 +371,52 @@ upsim subroutine for matrix update operations </dd></dl>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="bconstrbra_8f90_source.html#l00178">178</a> of file <a class="el" href="bconstrbra_8f90_source.html">bconstrbra.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  180</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  181</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  182</span><span class="comment">    !&gt; @param[in] iesfreer Switch flag for constraint handling (0: no constraints, &gt;0: apply constraints)</span></div>
+<div class="line"><span class="lineno">  183</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: iesfreer</div>
+<div class="line"><span class="lineno">  184</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  185</span><span class="comment">    !&gt; @param[in] n3body Number of 3-body Jastrow parameters</span></div>
+<div class="line"><span class="lineno">  186</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: n3body</div>
+<div class="line"><span class="lineno">  187</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  188</span><span class="comment">    !&gt; @param[in] jbraj Mapping array from constrained to unconstrained Jastrow parameters</span></div>
+<div class="line"><span class="lineno">  189</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: jbraj(*)</div>
+<div class="line"><span class="lineno">  190</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  191</span><span class="comment">    !&gt; @param[in] nozeroj Array of non-zero element indices for sparse Jastrow matrix</span></div>
+<div class="line"><span class="lineno">  192</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: nozeroj(*)</div>
+<div class="line"><span class="lineno">  193</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  194</span><span class="comment">    !&gt; @param[in] nelorbj Number of Jastrow orbitals</span></div>
+<div class="line"><span class="lineno">  195</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">intent(in)</span> :: nelorbj</div>
+<div class="line"><span class="lineno">  196</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  197</span><span class="comment">    !&gt; @param[in] ddw Input array of constrained parameter changes</span></div>
+<div class="line"><span class="lineno">  198</span>    real*8, <span class="keywordtype">intent(in)</span> :: ddw(*)</div>
+<div class="line"><span class="lineno">  199</span>    <span class="comment"></span></div>
+<div class="line"><span class="lineno">  200</span><span class="comment">    !&gt; @param[out] derjas Sparse Jastrow matrix to be updated</span></div>
+<div class="line"><span class="lineno">  201</span>    real*8, <span class="keywordtype">intent(out)</span> :: derjas(*)</div>
+<div class="line"><span class="lineno">  202</span>    </div>
+<div class="line"><span class="lineno">  203</span>    <span class="comment">! Local variables</span></div>
+<div class="line"><span class="lineno">  204</span>    <span class="keywordtype">integer</span> :: i, j</div>
+<div class="line"><span class="lineno">  205</span>    </div>
+<div class="line"><span class="lineno">  206</span>    <span class="comment">! Early return if no constraints are applied</span></div>
+<div class="line"><span class="lineno">  207</span>    <span class="keywordflow">if</span> (iesfreer .eq. 0) <span class="keywordflow">return</span></div>
+<div class="line"><span class="lineno">  208</span>    </div>
+<div class="line"><span class="lineno">  209</span>    <span class="comment">! Map constrained Jastrow parameters to sparse matrix elements using direct assignment</span></div>
+<div class="line"><span class="lineno">  210</span>    <span class="keywordflow">do</span> i = 1, n3body</div>
+<div class="line"><span class="lineno">  211</span>        j = jbraj(nozeroj(i))</div>
+<div class="line"><span class="lineno">  212</span>        <span class="keywordflow">if</span> (j .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  213</span>            <span class="comment">! Direct mapping for positive indices using sparse indexing</span></div>
+<div class="line"><span class="lineno">  214</span>            derjas(i) = ddw(j)</div>
+<div class="line"><span class="lineno">  215</span><span class="comment">!           call  upsim(derjas, nelorbj, nozeroj(i), ddw(j), .true., 1)</span></div>
+<div class="line"><span class="lineno">  216</span>        <span class="keywordflow">elseif</span> (j .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  217</span>            <span class="comment">! Sign-flipped mapping for negative indices using sparse indexing</span></div>
+<div class="line"><span class="lineno">  218</span>            derjas(i) = -ddw(-j)</div>
+<div class="line"><span class="lineno">  219</span><span class="comment">!           call  upsim(derjas, nelorbj, nozeroj(i), -ddw(-j), .true., 1)</span></div>
+<div class="line"><span class="lineno">  220</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  221</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  222</span>    </div>
+<div class="line"><span class="lineno">  223</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

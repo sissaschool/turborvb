@@ -1,0 +1,105 @@
+\doxysection{constrbr.\+f90}
+\hypertarget{constrbr_8f90_source}{}\label{constrbr_8f90_source}\index{src/m\_common/constrbr.f90@{src/m\_common/constrbr.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Real\ wave\ function\ constraint\ builder\ for\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ constructs\ constraints\ for\ real\ wave\ functions\ in\ quantum}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00019}00019\ \textcolor{comment}{!>\ Monte\ Carlo\ calculations.\ It\ handles\ Jastrow\ factor\ derivatives\ and\ maps}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00020}00020\ \textcolor{comment}{!>\ them\ to\ the\ appropriate\ wave\ function\ parameters\ using\ sign\ conventions.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ iesfreer\ Number\ of\ free\ parameters\ in\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ n3body\ Number\ of\ three-\/body\ terms\ (Jastrow\ factors)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ jbraj\ Array\ mapping\ Jastrow\ terms\ to\ parameter\ indices}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ derjas\ Array\ of\ Jastrow\ derivatives}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in,out]\ econf\ Energy\ configuration\ array\ to\ be\ updated}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ nw\ Number\ of\ walkers}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ iopt\ Operation\ mode\ flag}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00029}00029\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00031}00031\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations\ based\ on\ the\ input\ parameters:}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00032}00032\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00033}00033\ \textcolor{comment}{!>\ **Operation\ Modes\ (iopt):**}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00034}00034\ \textcolor{comment}{!>\ -\/\ iopt\ =\ 0\ or\ 3:\ Accumulate\ derivatives\ (add\ to\ existing\ values)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00035}00035\ \textcolor{comment}{!>\ -\/\ iopt\ ≠\ 0,3:\ Replace\ derivatives\ (set\ new\ values)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00036}00036\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00037}00037\ \textcolor{comment}{!>\ **Parameter\ Mapping\ (jbraj):**}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00038}00038\ \textcolor{comment}{!>\ -\/\ jbraj(i)\ >\ 0:\ Add\ derivative\ to\ parameter\ jbraj(i)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00039}00039\ \textcolor{comment}{!>\ -\/\ jbraj(i)\ <\ 0:\ Subtract\ derivative\ from\ parameter\ |jbraj(i)|}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00040}00040\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00041}00041\ \textcolor{comment}{!>\ **Algorithm:**}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00042}00042\ \textcolor{comment}{!>\ 1.\ Early\ return\ if\ no\ free\ parameters\ (iesfreer\ =\ 0)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00043}00043\ \textcolor{comment}{!>\ 2.\ Initialize\ energy\ configuration\ array\ to\ zero\ for\ non-\/accumulation\ modes}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00044}00044\ \textcolor{comment}{!>\ 3.\ Loop\ through\ all\ three-\/body\ terms\ (Jastrow\ factors)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00045}00045\ \textcolor{comment}{!>\ 4.\ Apply\ parameter\ mapping\ with\ appropriate\ sign\ conventions}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00046}00046\ \textcolor{comment}{!>\ 5.\ Update\ energy\ configuration\ array\ accordingly}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @note\ This\ subroutine\ is\ the\ real\ wave\ function\ version\ of\ constrbr\_complex.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @note\ The\ subroutine\ returns\ early\ if\ iesfreer\ =\ 0\ (no\ free\ parameters).}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @note\ For\ real\ wave\ functions,\ each\ parameter\ requires\ only\ one\ array\ element.}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00051}00051\ \textcolor{keyword}{subroutine\ }constrbr(iesfreer,\ n3body,\ jbraj,\ derjas\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \&,\ econf,\ nw,\ iopt)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesfreer,\ jbraj(*),\ nw,\ i,\ j,\ n3body,\ iopt}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00055}00055\ \ \ \ \ real*8\ econf(nw,\ *),\ derjas(*)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00056}00056\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00057}00057\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Early\ return\ if\ no\ free\ parameters}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesfreer\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00059}00059\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00060}00060\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ energy\ configuration\ array\ for\ non-\/accumulation\ modes}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .ne.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ iesfreer}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00064}00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00065}00065\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00066}00066\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Accumulate\ derivatives\ (iopt\ =\ 0\ or\ 3)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .or.\ iopt\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(*,*)\ '\ j\ =\ ',j,derjas(i)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00074}00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Add\ derivative\ to\ positive\ parameter\ index}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ econf(1,\ j)\ +\ derjas(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00077}00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Subtract\ derivative\ from\ absolute\ parameter\ index}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ econf(1,\ -\/j)\ -\/\ derjas(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00079}00079\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00081}00081\ }
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00082}00082\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00083}00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Replace\ derivatives\ (iopt\ ≠\ 0,3)}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00088}00088\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ derivative\ for\ positive\ parameter\ index}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ derjas(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00091}00091\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ negative\ derivative\ for\ absolute\ parameter\ index}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ -\/derjas(i)}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{constrbr_8f90_source_l00099}00099\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

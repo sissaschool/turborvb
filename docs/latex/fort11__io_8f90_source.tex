@@ -1,0 +1,310 @@
+\doxysection{fort11\+\_\+io.\+f90}
+\hypertarget{fort11__io_8f90_source}{}\label{fort11__io_8f90_source}\index{src/m\_common/fort11\_io.f90@{src/m\_common/fort11\_io.f90}}
+\mbox{\hyperlink{fort11__io_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00016}00016\ \textcolor{comment}{!=======================================================================}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @file\ fort11\_io.f90}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @brief\ Fort.11\ file\ I/O\ operations\ for\ TurboRVB}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00019}00019\ \textcolor{comment}{!>\ @details\ This\ module\ handles\ reading\ and\ writing\ of\ fort.11\ files,}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ which\ contain\ simulation\ state\ information\ for\ restart}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ continuation\ of\ quantum\ Monte\ Carlo\ calculations.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @section\ Features}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00025}00025\ \textcolor{comment}{!>\ -\/\ Write\ simulation\ state\ to\ fort.11\ for\ restart\ capability}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00026}00026\ \textcolor{comment}{!>\ -\/\ Read\ simulation\ state\ from\ fort.11\ for\ continuation}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00027}00027\ \textcolor{comment}{!>\ -\/\ Handle\ various\ simulation\ parameters\ and\ arrays}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00028}00028\ \textcolor{comment}{!>\ -\/\ Support\ for\ different\ simulation\ modes\ (VMC,\ LRDMC,\ etc.)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00029}00029\ \textcolor{comment}{!>\ -\/\ Compatibility\ checking\ between\ read\ and\ current\ parameters}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @section\ Files}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00031}00031\ \textcolor{comment}{!>\ fort.11\ contains:}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00032}00032\ \textcolor{comment}{!>\ -\/\ Simulation\ parameters\ (nw,\ np,\ nmatb,\ etc.)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00033}00033\ \textcolor{comment}{!>\ -\/\ Walker\ configurations\ (wconfn)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00034}00034\ \textcolor{comment}{!>\ -\/\ Correlation\ weights\ (wcorw)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00035}00035\ \textcolor{comment}{!>\ -\/\ Kinetic\ energy\ derivatives\ (dek,\ dekg)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00036}00036\ \textcolor{comment}{!>\ -\/\ Ion\ velocities\ (velion)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00037}00037\ \textcolor{comment}{!>\ -\/\ CG\ optimization\ data\ (reduce)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00038}00038\ \textcolor{comment}{!>\ -\/\ Contraction\ matrices\ (detmat\_proj,\ projmat\_c)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00039}00039\ \textcolor{comment}{!=======================================================================}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00041}00041\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @brief\ Write\ simulation\ header\ information\ to\ fort.11}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @details\ Writes\ the\ beginning\ section\ of\ fort.11\ file\ containing}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ simulation\ parameters,\ dimensions,\ and\ control\ variables.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ This\ includes\ walker\ counts,\ matrix\ dimensions,\ optimization}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ parameters,\ and\ convergence\ criteria.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00047}00047\ \textcolor{comment}{!>\ @note\ Rewinds\ unit\ 11\ before\ writing}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @note\ Updates\ nmatb\ to\ nnozero\_c\ for\ current\ simulation}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @note\ Writes\ rmax\ and\ rmaxj\ for\ scaling\ parameters}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @note\ Conditionally\ writes\ parr\ and\ tpar\ arrays\ if\ change\_parr/change\_tpar\ are\ enabled}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @note\ Handles\ adaptive\ parameter\ adjustment\ for\ optimization}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00052}\mbox{\hyperlink{fort11__io_8f90_a203f59c832cd1e2ed7c9814b0f66eca4}{00052}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a203f59c832cd1e2ed7c9814b0f66eca4}{write\_fort11\_begin}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00055}00055\ \ \ \ \ rewind(11)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Length\ record\ unit\ 12\ \ ='},\ nmatb}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00057}00057\ \ \ \ \ nmatb\ =\ nnozero\_c}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keyword}{write}\ (11)\ ngg,\ nbra,\ npow,\ etryr,\ nrest,\ nw,\ tbra,\ np,\ npbra,\ nmatb\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nnozeroj,\ yesmin,\ membig\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iread,\ nmp,\ nfat,\ np3,\ npsov,\ wcort,\ wcorwt,\ nweight,\ ngn,\ iend\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ indcor,\ parbest,\ iflagerr,\ enermin,\ varmin\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iesconv,\ fmax,\ jmax,\ parcut,\ inext,\ pippoc,\ pippo,\ nproc,\ nbin,\ stepcg\ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ncg,\ tmes,\ tstep,\ iskipdyn,\ epscuttype,\ change\_parr,\ change\_tpar,\ use\_stable\_tpar,\ nbra\_cyrus}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keyword}{write}\ (11)\ rmax,\ rmaxj}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_parr)\ \textcolor{keyword}{write}\ (11)\ parr,\ iesdelay,\ delay\_changeparr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar)\ \textcolor{keyword}{write}\ (11)\ tpar,\ min\_running\_ave,\ min\_running\_ave\_energy,\ min\_running\_std,\ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ min\_running\_std\_energy,\ tpar\_buffer\_filled,\ error\_energy\_list,\ energy\_list,\ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ stop\_increasing\_tpar,\ tpar\_stable\_list}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00070}00070\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a203f59c832cd1e2ed7c9814b0f66eca4}{write\_fort11\_begin}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00072}00072\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00073}00073\ \textcolor{comment}{!>\ @brief\ Write\ simulation\ data\ arrays\ to\ fort.11}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00074}00074\ \textcolor{comment}{!>\ @details\ Writes\ the\ main\ simulation\ data\ arrays\ to\ fort.11\ file,}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00075}00075\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ including\ walker\ configurations,\ correlation\ weights,}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00076}00076\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ kinetic\ energy\ derivatives,\ and\ optimization\ data.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00077}00077\ \textcolor{comment}{!>\ @note\ Writes\ different\ data\ sets\ based\ on\ itestr\ value}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00078}00078\ \textcolor{comment}{!>\ @note\ Handles\ contraction\ matrices\ if\ contraction\ >\ 0}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00079}00079\ \textcolor{comment}{!>\ @note\ Includes\ ion\ velocities\ for\ dynamics\ simulations\ (itestr\ =\ -\/5)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00080}00080\ \textcolor{comment}{!>\ @note\ Writes\ CG\ optimization\ data\ (reduce\ array)\ for\ parameter\ optimization}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00081}00081\ \textcolor{comment}{!>\ @note\ Conditionally\ writes\ detmat\_proj\ and\ projmat\_c\ if\ allocated}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00082}00082\ \textcolor{comment}{!>\ @note\ Writes\ covariance\ matrix\ (cov\_old)\ if\ allocated}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00083}\mbox{\hyperlink{fort11__io_8f90_ad0bf47ee4034f7a8c55954a90877683d}{00083}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fort11__io_8f90_ad0bf47ee4034f7a8c55954a90877683d}{write\_fort11\_end}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00084}00084\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00085}00085\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keywordtype}{integer}\ indtel,\ l,\ i,\ j,\ k}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00087}00087\ \ \ \ \ indtel\ =\ nel*(indt\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(i,\ j),\ j=1,\ np),\ i=1,\ ncgdim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (allowcontr(i,\ 1),\ allowcontr(i,\ 2),\ i=1,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(i,\ j),\ j=1,\ np),\ i=1,\ ncgdim)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11)\ (wconfn(j),\ j=1,\ nw),\ (wcorw(j),\ j=1,\ nfat)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00107}00107\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00108}00108\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(detmat\_proj)\ .and.\ .not.\ kaverage)\ \textcolor{keyword}{write}\ (11)\ detmat\_proj,\ projmat\_c}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00109}00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(cov\_old))\ \textcolor{keyword}{write}\ (11)\ cov\_old}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00110}00110\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fort11__io_8f90_ad0bf47ee4034f7a8c55954a90877683d}{write\_fort11\_end}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00112}00112\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00113}00113\ \textcolor{comment}{!>\ @brief\ Read\ simulation\ header\ information\ from\ fort.11}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00114}00114\ \textcolor{comment}{!>\ @details\ Reads\ the\ beginning\ section\ of\ fort.11\ file\ containing}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00115}00115\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ simulation\ parameters,\ dimensions,\ and\ control\ variables.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00116}00116\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Performs\ compatibility\ checks\ and\ handles\ parameter\ updates.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00117}00117\ \textcolor{comment}{!>\ @note\ Rewinds\ unit\ 11\ before\ reading}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00118}00118\ \textcolor{comment}{!>\ @note\ Reads\ rmax\ and\ rmaxj\ if\ scalermax\ is\ enabled}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00119}00119\ \textcolor{comment}{!>\ @note\ Handles\ adaptive\ parameter\ reading\ (parr,\ tpar)\ based\ on\ flags}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00120}00120\ \textcolor{comment}{!>\ @note\ Updates\ parameters\ only\ if\ iopt\ =\ 0\ (restart\ mode)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00121}00121\ \textcolor{comment}{!>\ @note\ Initializes\ tpar\ buffer\ if\ restarting\ with\ new\ tpar}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00122}00122\ \textcolor{comment}{!>\ @note\ Sets\ error\ flag\ (iflagerr)\ if\ read\ fails}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00123}00123\ \textcolor{comment}{!>\ @note\ Handles\ backward\ compatibility\ for\ parameter\ changes}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00124}\mbox{\hyperlink{fort11__io_8f90_a7050b50c6a8948aefafe60146f47e6cb}{00124}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a7050b50c6a8948aefafe60146f47e6cb}{read\_fort11\_begin}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00125}00125\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00126}00126\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00127}00127\ \ \ \ \ real*8\ tstepr,\ parr\_read,\ tpar\_read,\ min\_running\_ave\_read,\ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\_read,\ min\_running\_std\_read,\ min\_running\_std\_energy\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00129}00129\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(tpar\_buffer\_len)}\ ::\ tpar\_buffer\_filled\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00130}00130\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(tpar\_buffer\_len)}\ ::\ energy\_list\_read,\ error\_energy\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00131}00131\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(size(tpar\_stable\_list))}\ ::\ tpar\_stable\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00132}00132\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesconv\_read,\ iesdelay\_read,\ delay\_changeparr\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00133}00133\ \ \ \ \ \textcolor{keywordtype}{logical}\ change\_parr\_old,\ change\_tpar\_old,\ stop\_increasing\_tpar\_read,\ use\_stable\_tpar\_old}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00134}00134\ \ \ \ \ rewind(11,\ err=100)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00135}00135\ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ ngenc,\ nbrar,\ npow,\ etryr,\ nrest,\ nwr,\ tbrar,\ npr\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ npbrar,\ nmatbr,\ nnozerojr,\ yesminr,\ membigr\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ireadr,\ nmpr,\ nfatr,\ np3r,\ npsovr\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ wcort,\ wcorwt,\ nweightr,\ ngs,\ iendr,\ indcor,\ parbest\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iflagerr,\ enermin,\ varmin,\ iesconv\_read,\ fmax,\ jmax\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ parcutr,\ inext,\ pippoc,\ pippo,\ nprocr,\ nbinread,\ stepcg,\ ncgread\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tmes,\ tstepr,\ iskipdynr,\ epscuttyper,\ change\_parr\_old,\ change\_tpar\_old,\ use\_stable\_tpar\_old,\ nbra\_cyrus\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (scalermax)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ rmax,\ rmaxj}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00146}00146\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00147}00147\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00148}00148\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_parr\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)\ parr\_read,\ iesdelay\_read,\ delay\_changeparr\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .and.\ change\_parr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ parr\ =\ parr\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ iesdelay\ =\ iesdelay\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ delay\_changeparr\ =\ delay\_changeparr\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00154}00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00156}00156\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((iopt\ .eq.\ 2\ .or.\ tpar\ .gt.\ 0)\ .and.\ change\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)\ tpar\_read,\ min\_running\_ave\_read,\ min\_running\_ave\_energy\_read,\ min\_running\_std\_read,\ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\_read,\ tpar\_buffer\_filled\_read,\ error\_energy\_list\_read,\ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\_read,\ stop\_increasing\_tpar\_read,\ tpar\_stable\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00163}00163\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00164}00164\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00165}00165\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .and.\ change\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tpar\ .gt.\ 0\ .and.\ change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ use\_stable\_tpar\ =\ use\_stable\_tpar\_old}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ stop\_increasing\_tpar\ =\ stop\_increasing\_tpar\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\ =\ tpar\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_buffer\_filled\ =\ tpar\_buffer\_filled\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\ =\ min\_running\_ave\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\ =\ min\_running\_ave\_energy\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\ =\ min\_running\_std\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\ =\ min\_running\_std\_energy\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ using\ tpar\ read\ in\ input\ |tpar|\ and\ restarting\ buffer\ '}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ stop\_increasing\_tpar\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\ =\ abs(tpar)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_buffer\_filled(:)\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\ =\ 1.d20}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_ave\_energy\ =\ 1d20}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ min\_running\_std\_energy\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\_read\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\_read\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00186}00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tpar\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\ =\ error\_energy\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\ =\ energy\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ tpar\_stable\_list\ =\ tpar\_stable\_list\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ error\_energy\_list\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ energy\_list\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00194}00194\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00195}00195\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00196}00196\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00197}00197\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0)\ iesconv\ =\ iesconv\_read}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00198}00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (change\_tstep)\ tstep\ =\ tstepr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00199}00199\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00200}00200\ 100\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}From\ allio\ ERROR\ fort.11\ begin"{}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00201}00201\ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00202}00202\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a7050b50c6a8948aefafe60146f47e6cb}{read\_fort11\_begin}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00203}00203\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00204}00204\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00205}00205\ \textcolor{comment}{!>\ @brief\ Read\ the\ end\ section\ of\ fort.11\ file}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00206}00206\ \textcolor{comment}{!>\ @details\ Reads\ the\ final\ section\ of\ the\ fort.11\ file\ containing\ walker\ }}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00207}00207\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ configurations,\ correlation\ weights,\ energy\ derivatives,\ velocities,}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00208}00208\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ optimization\ data.\ Performs\ validation\ of\ walker\ and\ processor\ }}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00209}00209\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ counts\ between\ restart\ and\ current\ run.}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00210}00210\ \textcolor{comment}{!>\ @note\ Handles\ different\ simulation\ modes\ (VMC,\ optimization,\ etc.)}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00211}00211\ \textcolor{comment}{!>\ @note\ Reads\ contraction\ matrices\ if\ allocated\ and\ not\ averaging}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00212}00212\ \textcolor{comment}{!>\ @note\ Sets\ error\ flag\ (iflagerr)\ if\ reading\ fails}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00213}\mbox{\hyperlink{fort11__io_8f90_a16a9970ed409b9a006488f55bdd8794f}{00213}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a16a9970ed409b9a006488f55bdd8794f}{read\_fort11\_end}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00214}00214\ \ \ \ \ \textcolor{keywordtype}{use\ }allio}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00215}00215\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00216}00216\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelnwr,\ i,\ j,\ k,\ l,\ indtel}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00217}00217\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00218}00218\ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw\ .or.\ nprocr\ .ne.\ nproc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00220}00220\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ walkers'},\ nw,\ nwr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nprocr\ .ne.\ nproc)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00222}00222\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ processors\ '},\ nproc,\ nprocr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00224}00224\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00225}00225\ \ \ \ \ nelnwr\ =\ nel*nwr*(indt\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00226}00226\ \ \ \ \ indtel\ =\ nel*(indt\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00227}00227\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00230}00230\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itestr\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nwr\ .ne.\ nw)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ read\_fort11:\ \&}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00234}00234\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ you\ cannot\ continue\ with\ different\ \#\ walkers'},\ nw,\ nwr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00236}00236\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contraction\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npr\ .eq.\ np)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(mod(i\ -\/\ 1,\ ncgdim)\ +\ 1,\ j),\ j=1,\ np),\ i=1,\ ncgread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (allowcontr(i,\ 1),\ allowcontr(i,\ 2),\ i=1,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ allowcontr\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ np\ read\ different\ from\ np\ found\ !!!\ '},\ np,\ npr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncgdim\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ previous\ CG\ steps\ forgotten\ in\ read\ '}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stepcg\ =\ 0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00258}00258\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00260}00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00261}00261\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npr\ .eq.\ np)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((reduce(mod(i\ -\/\ 1,\ ncgdim)\ +\ 1,\ j),\ j=1,\ np),\ i=1,\ ncgread)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ((velion(j,\ i),\ j=1,\ 3),\ i=1,\ ieskindim)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ np\ read\ different\ from\ np\ found\ !!!\ '},\ np,\ npr}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ncgdim\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ previous\ CG\ steps\ forgotten\ in\ read\ '}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stepcg\ =\ 0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reduce\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00282}00282\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00283}00283\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ (wconfn(j),\ j=1,\ nwr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (wcorw(j),\ j=1,\ nfatr)\&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dek(k),\ k=1,\ ieskin)\ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ (dekg(k),\ k=1,\ iesking)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00289}00289\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00290}00290\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00291}00291\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(detmat\_proj)\ .and.\ .not.\ kaverage)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .ne.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ detmat\_proj,\ projmat\_c}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00297}00297\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00298}00298\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(cov\_old))\ \textcolor{keyword}{read}\ (11,\ err=100,\ \textcolor{keyword}{end}=100)\ cov\_old}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00299}00299\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ File\ fort.11\ is\ read\ correctly\ ...'}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00300}00300\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00301}00301\ }
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00302}00302\ 100\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}\ From\ fort11\_io.f90,\ Error\ fort.11\ end"{}}}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00303}00303\ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{\Hypertarget{fort11__io_8f90_source_l00304}00304\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fort11__io_8f90_a16a9970ed409b9a006488f55bdd8794f}{read\_fort11\_end}}}
+
+\end{DoxyCode}

@@ -1,0 +1,180 @@
+\doxysection{upwinv.\+f90}
+\hypertarget{upwinv_8f90_source}{}\label{upwinv_8f90_source}\index{src/m\_common/upwinv.f90@{src/m\_common/upwinv.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Update\ wave\ function\ inverse\ matrix\ for\ real\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ updates\ the\ wave\ function\ inverse\ matrix\ WINV\ when}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00019}00019\ \textcolor{comment}{!>\ a\ single\ electron\ (JEL)\ is\ moved.\ The\ update\ follows\ the\ Sherman-\/Morrison}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00020}00020\ \textcolor{comment}{!>\ formula\ for\ rank-\/1\ updates\ of\ matrix\ inverses.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00022}00022\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00023}00023\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00024}00024\ \textcolor{comment}{!>\ NEL\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ electrons.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00026}00026\ \textcolor{comment}{!>\ JEL\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ Index\ of\ the\ electron\ being\ moved.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00028}00028\ \textcolor{comment}{!>\ INDT\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ basis\ functions\ (dimension\ of\ orbital\ space).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00030}00030\ \textcolor{comment}{!>\ NELORB\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ orbitals\ (unused\ in\ current\ implementation).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00032}00032\ \textcolor{comment}{!>\ WINV\ :\ real*8\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00033}00033\ \textcolor{comment}{!>\ \ \ \ \ Wave\ function\ inverse\ matrix\ (NEL\ ×\ INDT).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ On\ entry:\ current\ inverse\ matrix.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00035}00035\ \textcolor{comment}{!>\ \ \ \ \ On\ exit:\ updated\ inverse\ matrix.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00036}00036\ \textcolor{comment}{!>\ V\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00037}00037\ \textcolor{comment}{!>\ \ \ \ \ Vector\ of\ coefficients\ for\ the\ update\ (NEL).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00038}00038\ \textcolor{comment}{!>\ PSI\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00039}00039\ \textcolor{comment}{!>\ \ \ \ \ Wave\ function\ matrix\ (INDT\ ×\ NEL).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00040}00040\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00041}00041\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00042}00042\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00043}00043\ \textcolor{comment}{!>\ -\/\ Uses\ OpenMP\ offloading\ for\ parallel\ computation\ on\ accelerators.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00044}00044\ \textcolor{comment}{!>\ -\/\ The\ update\ follows\ the\ formula:\ WINV\_new\ =\ WINV\_old\ +\ v\ *\ psi\string^T.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00045}00045\ \textcolor{comment}{!>\ -\/\ Special\ handling\ for\ the\ moved\ electron\ (JEL)\ with\ factor\ (1\ +\ v(JEL)).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00046}00046\ \textcolor{comment}{!>\ -\/\ Optimized\ for\ quantum\ Monte\ Carlo\ applications.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00048}00048\ \textcolor{comment}{!>\ Algorithm}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00049}00049\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00050}00050\ \textcolor{comment}{!>\ 1.\ Update\ all\ electrons\ except\ JEL:\ WINV(j,i)\ +=\ v(j)\ *\ psi(i,j)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00051}00051\ \textcolor{comment}{!>\ 2.\ Update\ electron\ JEL:\ WINV(jel,i)\ =\ psi(i,jel)\ *\ (1\ +\ v(jel))}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00052}00052\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00053}00053\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00054}00054\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00055}00055\ \textcolor{comment}{!>\ Used\ in\ variational\ Monte\ Carlo\ for\ efficient\ wave\ function\ updates.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00056}00056\ \textcolor{keyword}{subroutine\ }upwinv(nel,\ jel,\ indt,\ nelorb,\ winv,\ v,\ psi)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ yes\_ontarget}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt,\ jel,\ nelorb}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00062}00062\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel),\ v(nel)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00063}00063\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00068}00068\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00069}00069\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00070}00070\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00071}00071\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Update\ wave\ function\ inverse\ for\ all\ electrons\ except\ JEL}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ if(j.ne.jel)\ then}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ v(j)*psi(i,\ j)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00076}00076\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ i=1,indt}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,i)=psi(i,j)*(1.d0+v(jel))}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00082}00082\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00083}00083\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00084}00084\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00085}00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00086}00086\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00087}00087\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00088}00088\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00089}00089\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Special\ update\ for\ the\ moved\ electron\ JEL}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00090}00090\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ winv(jel,\ i)\ =\ psi(i,\ jel)*(1.d0\ +\ v(jel))}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00094}00094\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00095}00095\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00096}00096\ \textcolor{comment}{!>\ @brief\ Update\ wave\ function\ inverse\ matrix\ for\ complex\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00097}00097\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00098}00098\ \textcolor{comment}{!>\ This\ subroutine\ updates\ the\ complex\ wave\ function\ inverse\ matrix\ WINV\ when}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00099}00099\ \textcolor{comment}{!>\ a\ single\ electron\ (JEL)\ is\ moved.\ The\ update\ follows\ the\ Sherman-\/Morrison}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00100}00100\ \textcolor{comment}{!>\ formula\ for\ rank-\/1\ updates\ of\ complex\ matrix\ inverses.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00101}00101\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00102}00102\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00103}00103\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00104}00104\ \textcolor{comment}{!>\ NEL\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00105}00105\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ electrons.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00106}00106\ \textcolor{comment}{!>\ JEL\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00107}00107\ \textcolor{comment}{!>\ \ \ \ \ Index\ of\ the\ electron\ being\ moved.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00108}00108\ \textcolor{comment}{!>\ INDT\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00109}00109\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ basis\ functions\ (dimension\ of\ orbital\ space).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00110}00110\ \textcolor{comment}{!>\ NELORB\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00111}00111\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ orbitals\ (unused\ in\ current\ implementation).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00112}00112\ \textcolor{comment}{!>\ WINV\ :\ complex*16\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00113}00113\ \textcolor{comment}{!>\ \ \ \ \ Complex\ wave\ function\ inverse\ matrix\ (NEL\ ×\ INDT).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00114}00114\ \textcolor{comment}{!>\ \ \ \ \ On\ entry:\ current\ inverse\ matrix.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00115}00115\ \textcolor{comment}{!>\ \ \ \ \ On\ exit:\ updated\ inverse\ matrix.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00116}00116\ \textcolor{comment}{!>\ V\ :\ complex*16\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00117}00117\ \textcolor{comment}{!>\ \ \ \ \ Vector\ of\ complex\ coefficients\ for\ the\ update\ (NEL).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00118}00118\ \textcolor{comment}{!>\ PSI\ :\ complex*16\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00119}00119\ \textcolor{comment}{!>\ \ \ \ \ Complex\ wave\ function\ matrix\ (INDT\ ×\ NEL).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00120}00120\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00121}00121\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00122}00122\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00123}00123\ \textcolor{comment}{!>\ -\/\ Uses\ OpenMP\ offloading\ for\ parallel\ computation\ on\ accelerators.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00124}00124\ \textcolor{comment}{!>\ -\/\ The\ update\ follows\ the\ formula:\ WINV\_new\ =\ WINV\_old\ +\ v\ *\ psi\string^T.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00125}00125\ \textcolor{comment}{!>\ -\/\ Special\ handling\ for\ the\ moved\ electron\ (JEL)\ with\ factor\ (1\ +\ v(JEL)).}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00126}00126\ \textcolor{comment}{!>\ -\/\ Complex\ arithmetic\ is\ used\ throughout\ the\ computation.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00127}00127\ \textcolor{comment}{!>\ -\/\ Optimized\ for\ quantum\ Monte\ Carlo\ applications\ with\ complex\ wave\ functions.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00128}00128\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00129}00129\ \textcolor{comment}{!>\ Algorithm}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00130}00130\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00131}00131\ \textcolor{comment}{!>\ 1.\ Update\ all\ electrons\ except\ JEL:\ WINV(j,i)\ +=\ v(j)\ *\ psi(i,j)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00132}00132\ \textcolor{comment}{!>\ 2.\ Update\ electron\ JEL:\ WINV(jel,i)\ =\ psi(i,jel)\ *\ (1\ +\ v(jel))}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00133}00133\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00134}00134\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00135}00135\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00136}00136\ \textcolor{comment}{!>\ Used\ in\ variational\ Monte\ Carlo\ for\ efficient\ complex\ wave\ function\ updates.}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00137}00137\ \textcolor{keyword}{subroutine\ }upwinv\_complex(nel,\ jel,\ indt,\ nelorb,\ winv,\ v,\ psi)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ yes\_ontarget}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00139}00139\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00141}00141\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt,\ jel,\ nelorb}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00143}00143\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel),\ v(nel)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00146}00146\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00148}00148\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00149}00149\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00150}00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00151}00151\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Update\ complex\ wave\ function\ inverse\ for\ all\ electrons\ except\ JEL}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00152}00152\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ if(j.ne.jel)\ then}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ v(j)*psi(i,\ j)}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00156}00156\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ i=1,indt}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,i)=psi(i,j)*(1.d0+v(jel))}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00162}00162\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00163}00163\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00164}00164\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00165}00165\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00166}00166\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00167}00167\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00168}00168\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00169}00169\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Special\ update\ for\ the\ moved\ electron\ JEL}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00170}00170\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ winv(jel,\ i)\ =\ psi(i,\ jel)*(1.d0\ +\ v(jel))}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00172}00172\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00173}00173\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upwinv_8f90_source_l00174}00174\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

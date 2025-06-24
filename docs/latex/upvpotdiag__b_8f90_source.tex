@@ -1,0 +1,321 @@
+\doxysection{upvpotdiag\+\_\+b.\+f90}
+\hypertarget{upvpotdiag__b_8f90_source}{}\label{upvpotdiag__b_8f90_source}\index{src/c\_adjoint\_backward/upvpotdiag\_b.f90@{src/c\_adjoint\_backward/upvpotdiag\_b.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00002}00002\ \textcolor{comment}{!\ \ \ \ \ \ \ \ Generated\ by\ TAPENADE\ \ \ \ \ (INRIA,\ Tropics\ team)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00003}00003\ \textcolor{comment}{!\ \ Tapenade\ 3.2\ (r3024)\ -\/\ 06/17/2009\ 13:03}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00004}00004\ \textcolor{comment}{!\ \ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00005}00005\ \textcolor{comment}{!\ \ Differentiation\ of\ upvpotdiag\ in\ reverse\ (adjoint)\ mode:}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00006}00006\ \textcolor{comment}{!\ \ \ gradient,\ with\ respect\ to\ input\ variables:\ rion\ iond\ rkel\ zeta}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00007}00007\ \textcolor{comment}{!\ \ \ of\ linear\ combination\ of\ output\ variables:\ vpot\ rion\ rkel\ zeta}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00008}00008\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00009}00009\ \textcolor{keyword}{SUBROUTINE\ }upvpotdiag\_b(rkel,\ rkelb,\ nel,\ zeta,\ rion,\ rionb,\ iond,iond\_cart\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00010}00010\ \ \ \ \ \ \ \ \ \&,\ iond\_cartb,\ vpot,\ vpotb,\ nion,\ kappa,\ lbox,\ vpotreg,\ cutreg,\ costz\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00011}00011\ \ \ \ \ \ \ \ \ \&,\ costz3,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00012}00012\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00013}00013\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (28/1/11):\ external\ forces}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00014}00014\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceext__forces}{ext\_forces}},\ \textcolor{keywordtype}{only}\ :\ forcext,\ forcext\_el,\ force\_vdw,\ mm\_f\_theta,\ mm\_f\_dihed,\ mm\_f\_impr}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00015}00015\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceextpot}{extpot}},\ \textcolor{keywordtype}{only}\ :\ ext\_pot,\ link\_atom,\ mm\_restr}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00016}00016\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacevan__der__waals}{van\_der\_waals}},\ \textcolor{keywordtype}{only}\ :\ vdw}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00017}00017\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11):\ MM\ restraint\ forces}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00018}00018\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecl__restr}{cl\_restr}},\ \textcolor{keywordtype}{only}\ :\ restr\_f\_bond,\ restr\_f\_angle,\ restr\_f\_dihe,\ restr\_f\_dimp}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedielectric}{dielectric}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ dist\_shift,distreg\_shift,neigh,x\_neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00021}00021\ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00022}00022\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ nel,\ i,\ j,\ k,ii,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{integer*8}\ maxll,ll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00024}00024\ \ \ \ \ real*8\ ::\ rkel(3,\ nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00025}00025\ \ \ \ \ real*8\ ::\ rkelb(3,\ nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00026}00026\ \ \ \ \ real*8\ ::\ zeta(nion),\ vpot,\ ngivej,\ rion(3,\ nion),\ iond\_cart(3,nion,\ nion),\ cost\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00027}00027\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tmp,\ kappa,\ lbox,\ pot\_ee,\ pot\_ea,\ pot\_aa,\ max,\ costz(*),\ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00028}00028\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ distb,\ vpotreg,\ potreg\_ea,\ costz3(*),\ cutreg,\ distbreg}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00029}00029\ \ \ \ \ real*8\ ::\ vpotb,\ rionb(3,\ nion),iond(nion,nion),\ \ iond\_cartb(3,nion,\ nion)\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00030}00030\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ costb,\ tmpb,\ pot\_eeb,\ pot\_eab,\ pot\_aab,\ distbb,\ cellscaleb(3)\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00031}00031\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ s2rb(3,\ 3)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00032}00032\ \ \ \ \ real*8\ derfc}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ ngivej}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00034}00034\ \ \ \ \ real*8\ ::\ result1,iondb,x\_shift(3),x\_shiftb(3)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00035}00035\ \ \ \ \ real*8\ ::\ result1b}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00036}00036\ \ \ \ \ real*8\ ::\ arg1}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00037}00037\ \ \ \ \ real*8\ ::\ arg1b}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ branch}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from1}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00043}00043\ \ \ \ \ real*8\ ::\ temp0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00044}00044\ \ \ \ \ real*8\ ::\ tempb3}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00045}00045\ \ \ \ \ real*8\ ::\ tempb2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00046}00046\ \ \ \ \ real*8\ ::\ tempb1}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00047}00047\ \ \ \ \ real*8\ ::\ tempb0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00048}00048\ \ \ \ \ real*8\ ::\ temp0b}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00049}00049\ \ \ \ \ real*8\ ::\ tempb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00050}00050\ \ \ \ \ real*8\ ::\ temp}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00051}00051\ \ \ \ \ real*8\ ::\ max1}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00052}00052\ \ \ \ \ pot\_eeb\ =\ vpotb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00053}00053\ \ \ \ \ pot\_eab\ =\ vpotb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00054}00054\ \ \ \ \ pot\_aab\ =\ vpotb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00055}00055\ \ \ \ \ iondb=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{IF}\ (lbox.le.0.d0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00058}00058\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,tempb0,iondb)\ reduction(+:iond\_cartb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00061}00061\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb0\ =\ 2.d0\ *\ pot\_aab\ /\ iond(i,\ j)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00062}00062\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(zeta(i)\ *\ zeta(j).ne.0.d0)\ \ \ \ \ iondb(i,\ j)\ =\ \&}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00063}00063\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&iondb(i,\ j)\ -\/\ zeta(i)\ *\ zeta(j)\ *\ tempb0\ /\ iond(i,\ j)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00064}00064\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00065}00065\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ temp0=veps(iond(i,j))}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00066}00066\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ pot\_aa=pot\_aa+2.d0*zeta(i)*zeta(j)*temp0}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ tempb0=2.d0*pot\_aab*zeta(i)*zeta(j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(tempb0.ne.0.d0)\ \textcolor{keywordflow}{then}\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }veps\_b(iond(i,j),iondb,tempb0)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00070}00070\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ \ of\ iond=sqrt(iond\_cart**2)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+iondb*iond\_cart(:,i,j)/iond(i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ iondb=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00073}00073\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00074}00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00075}00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00076}00076\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00077}00077\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,result1,result1b,tempb0)\ reduction(+:rkelb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ i\ +\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ ngivej(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00081}00081\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ -\/(2.d0\ *\ pot\_eeb\ /\ result1**2)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00082}00082\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00083}00083\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0=veps(result1)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00084}00084\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+2.d0*temp0\ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb0=2.d0*pot\_eeb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }veps\_b(result1,result1b,tempb0)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }ngivej\_b(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ result1b,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00093}00093\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,k,distb,distbb,tempb)\ reduction(+:rkelb,rionb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ ngivej(rion(1,\ k),\ rkel(1,\ i),\ lbox)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00097}00097\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb\ =\ -\/(2.d0\ *\ pot\_eab\ /\ distb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00098}00098\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ -\/(zeta(k)\ *\ tempb\ /\ distb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00099}00099\ \textcolor{comment}{!\ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00100}00100\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp=veps(distb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00101}00101\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)*temp}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb\ =-\/2.d0*pot\_eab*zeta(k)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }veps\_b(distb,distbb,tempb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }ngivej\_b(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i),\ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ distbb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00108}00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00110}00110\ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ distreg\_shift(1:neigh)=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ maxll=nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ maxll=(maxll*(nion-\/1))/2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00114}00114\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(ll,i,j,ii,temp0b,dist\_shift,distreg\_shift,cost)\ reduction(+:iond\_cartb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }find\_j1j2(nion,ll,i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00117}00117\ \textcolor{comment}{!\ \ \ \ \ \ \ DO\ i\ =\ 1,\ nion}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00118}00118\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ DO\ j\ =\ i\ +\ 1,\ nion}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00119}00119\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ of:}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00120}00120\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ temp0=rep\_erfc(iond(i,j),kappa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00121}00121\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ pot\_aa=pot\_aa+2.d0*zeta(i)*zeta(j)*temp0}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ temp0b=2.d0*zeta(i)*zeta(j)*pot\_aab}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(temp0b.ne.0.d0)\ \textcolor{keywordflow}{then}\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00124}00124\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00125}00125\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00126}00126\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00127}00127\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ dist\_shift(ii)=dsqrt((iond\_cart(1,i,j)+x\_neigh(ii,1))**2+(iond\_cart(2,i,j)+x\_neigh(ii,2))**2+(iond\_cart(3,i,j)+x\_neigh(ii,3))**2)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }rep\_erfc\_b(dist\_shift(ii),distreg\_shift(ii),kappa,temp0b)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00131}00131\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reverse\ of\ iond=dsqrt(iond\_cart**2)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00132}00132\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+distreg\_shift(ii)*iond\_cart(:,i,j)/iond(i,j)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00133}00133\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ cost=sum(distreg\_shift(1:neigh))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+cost*iond\_cart(:,i,j)/iond(i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00136}00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00137}00137\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IF(zeta(i)\ *\ zeta(j).ne.0.d0)\ then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00138}00138\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0\ =\ iond(i,\ j)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00139}00139\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ zeta(j)\ /\ temp0}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00140}00140\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0b\ =\ 2.d0\ *\ temp\ *\ pot\_aab}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00141}00141\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ iond(i,\ j)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00142}00142\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00143}00143\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb3\ =\ 2.d0\ *\ zeta(i)\ *\ result1\ *\ pot\_aab\ /\ temp0}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00144}00144\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ zeta(i)\ *\ temp0b}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00145}00145\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00146}00146\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00147}00147\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iondb(i,\ j)\ =\ iondb(i,\ j)\ +\ kappa\ *\ arg1b\ -\/\ temp\ *\ tempb3}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00148}00148\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ENDIF}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00150}00150\ \textcolor{comment}{!\ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ maxll=nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ maxll=(maxll*(nel-\/1))/2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00153}00153\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(ll,i,j,ii,x\_shift,x\_shiftb,result1b,dist\_shift,distreg\_shift)\ reduction(+:rkelb,cellscaleb,s2rb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }find\_j1j2(nel,ll,i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00156}00156\ \textcolor{comment}{!\ \ \ \ \ \ \ DO\ i\ =\ 1,\ nel}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00157}00157\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ DO\ j\ =\ i\ +\ 1,\ nel}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00158}00158\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmp\ =\ NGIVEJ(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgivej(rkel(1,\ i),\ rkel(1,\ j),\ lbox,x\_shift)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00160}00160\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb2\ =\ 2.d0\ *\ pot\_eeb\ /\ tmp}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00161}00161\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ tempb2}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00162}00162\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ tmp}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00163}00163\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00164}00164\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00165}00165\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00166}00166\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmpb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ tempb2\ /\ tmp}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00167}00167\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00168}00168\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmp=NGIVEJ(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00169}00169\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1=rep\_erfc(tmp,kappa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00170}00170\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+2.d0*result1}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b=2.d0*pot\_eeb}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00173}00173\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00174}00174\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00175}00175\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00176}00176\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_shift(ii)\ =\ max(dsqrt((x\_shift(1)+x\_neigh(ii,1))**2+\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00178}00178\ \ \ \ \ \ \ \&\ (x\_shift(2)+x\_neigh(ii,2))**2+(x\_shift(3)+x\_neigh(ii,3))**2),1d-\/9)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }rep\_erfc\_b(dist\_shift(ii),distreg\_shift(ii),kappa,result1b)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00180}00180\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00181}00181\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ tmpb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00182}00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00184}00184\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reverse\ of\ dist\_shift=\ (as\ above)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb(:)=x\_shiftb(:)+distreg\_shift(ii)*(x\_shift(:)+x\_neigh(ii,:))/dist\_shift(ii)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00186}00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgivej\_b(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ x\_shiftb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00189}00189\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00190}00190\ \textcolor{comment}{!\ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00191}00191\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,k,ii,x\_shift,x\_shiftb,costb,dist\_shift,distreg\_shift)\ reduction(+:rkelb,rionb,cellscaleb,s2rb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00193}00193\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ zreg2\ =\ costz(k)\ *\ costz3(k)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00194}00194\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ IF\ (zreg2\ *\ cutreg\ .GT.\ 0)\ THEN}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costb\ =\ -\/(2.d0\ *\ zeta(k)\ *\ pot\_eab)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgivej(rion(1,\ k),\ rkel(1,\ i),\ lbox,x\_shift)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00200}00200\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00201}00201\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00202}00202\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00203}00203\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ costb\ /\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00204}00204\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00205}00205\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00206}00206\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ costb\ /\ distb**2}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00207}00207\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Reverse\ of}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00208}00208\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb=NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00209}00209\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost=rep\_erfc(distb,kappa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00210}00210\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)*cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00211}00211\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00212}00212\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00213}00213\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00214}00214\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_shift(ii)\ =\ max(dsqrt((x\_shift(1)+x\_neigh(ii,1))**2+\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00216}00216\ \ \ \ \ \ \ \&\ (x\_shift(2)+x\_neigh(ii,2))**2+(x\_shift(3)+x\_neigh(ii,3))**2),1d-\/9)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }rep\_erfc\_b(dist\_shift(ii),distreg\_shift(ii),kappa,costb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00218}00218\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb=0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,neigh}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb(:)=x\_shiftb(:)+distreg\_shift(ii)*(x\_shift(:)+x\_neigh(ii,:))/dist\_shift(ii)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00222}00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00224}00224\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00225}00225\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ distbb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgivej\_b(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ x\_shiftb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00228}00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00229}00229\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ELSE}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00230}00230\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DO\ i\ =\ 1,\ nel}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00231}00231\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00232}00232\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb1\ =\ -\/(2.d0\ *\ zeta(k)\ *\ pot\_eab\ /\ distb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00233}00233\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ tempb1}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00234}00234\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00235}00235\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00236}00236\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00237}00237\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00238}00238\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ tempb1\ /\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00239}00239\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00240}00240\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ distbb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00241}00241\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00242}00242\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00243}00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00244}00244\ \textcolor{keywordflow}{\ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00245}00245\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00246}00246\ \ \ \ \ \textcolor{comment}{!\ by.\ E.\ Coccia\ (28/1/11):}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00247}00247\ \ \ \ \ \textcolor{comment}{!\ gradients\ of\ the\ external\ potential}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00248}00248\ \ \ \ \ \textcolor{comment}{!\ with\ respect\ to\ both\ the\ electronic}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00249}00249\ \ \ \ \ \textcolor{comment}{!\ and\ nuclear\ coordinates.}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00250}00250\ \ \ \ \ \textcolor{comment}{!\ Analytic\ differentation\ of\ the\ interpolating}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00251}00251\ \ \ \ \ \textcolor{comment}{!\ polynomial.}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00252}00252\ \ \ \ \ \textcolor{keywordflow}{if}\ (ext\_pot)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ electronic\ and\ nuclear\ gradients}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ae3092366e9710b0b7187a948ad9a1736}{ext\_force}}(nion,\ rion,\ zeta,\ nel,\ rkel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ electrons}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ rkelb(:,\ i)\ =\ rkelb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ forcext\_el(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00258}00258\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00259}00259\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ nuclei}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ forcext(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00263}00263\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00264}00264\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (6/2/11):\ add\ the\ vdw\ forces\ acting\ on\ the\ nuclei}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vdw)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ae039f254237a6a163b9a2aa41ab65ce1}{vdw\_force}}(nion,\ rion)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ force\_vdw(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00270}00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00271}00271\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00272}00272\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (10/5/11):\ forces\ for\ the\ capping\ atom}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (link\_atom)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (17/5/11):\ QM\ forces\ from\ mm\_pot\_theta}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a099bf9f5ef6d9167f1fdc2f352a1c1db}{force\_angle}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ mm\_f\_theta(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00279}00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (18/5/11):\ QM\ forces\ from\ mm\_pot\_dihed\ and\ mm\_pot\_impr}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a842dc59fac71d7ed567f517ffd433e06}{force\_dihed}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ mm\_f\_dihed(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00284}00284\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a0464dd98bb9a7ce3c12458f17de32262}{force\_improper}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ mm\_f\_impr(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00288}00288\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00289}00289\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00290}00290\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00291}00291\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11):\ forces\ for\ the\ MM\ restraints}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00292}00292\ \ \ \ \ \textcolor{keywordflow}{if}\ (mm\_restr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a6e9db2569498583b181fd2394fb4802a}{rf\_bond}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ restr\_f\_bond(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a2ee519a340fd7c57d69e90f760ffbba1}{rf\_angle}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ restr\_f\_angle(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00300}00300\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ac4f26f552c8a7d9c168d4b00f53a3026}{rf\_dihe}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ restr\_f\_dihe(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00304}00304\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a11945950625692fa11d149d770ea9702}{rf\_dimp}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ restr\_f\_dimp(:,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00308}00308\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00309}00309\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00310}00310\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00311}00311\ \ \ \ \ vpotb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00312}00312\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00313}00313\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00314}00314\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag__b_8f90_source_l00315}00315\ \textcolor{keyword}{END\ SUBROUTINE\ }upvpotdiag\_b}
+
+\end{DoxyCode}

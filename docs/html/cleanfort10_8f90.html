@@ -96,6 +96,8 @@ $(function(){initNavTree('cleanfort10_8f90.html','',''); });
 
 <p>Program for cleaning and optimizing TurboRVB fort.10 input files.  
 <a href="#details">More...</a></p>
+
+<p><a href="cleanfort10_8f90_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
@@ -115,6 +117,8 @@ Functions/Subroutines</h2></td></tr>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Program for cleaning and optimizing TurboRVB fort.10 input files. </p>
 <p>This program reads a TurboRVB fort.10 file and produces a cleaned version (fort.10_clean) with optimized orbital parameters, removed redundant constraints, and improved numerical stability. It handles both real and complex wave functions, periodic boundary conditions, and various orbital types including determinants, Jastrow factors, and AGP (antisymmetrized geminal power) wave functions. </p>
+
+<p class="definition">Definition in file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ae1ed168736273667080caa5501cc6393" name="ae1ed168736273667080caa5501cc6393"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae1ed168736273667080caa5501cc6393">&#9670;&#160;</a></span>independent()</h2>
@@ -161,6 +165,60 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l02134">2134</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 2135</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 2136</span>    <span class="keywordtype">integer</span> n, i, ipiv(n), jmax, j, ncoeff</div>
+<div class="line"><span class="lineno"> 2137</span>    real*8 psi_in(ncoeff, n), psi_out(ncoeff, n), cost, maxv</div>
+<div class="line"><span class="lineno"> 2138</span>    ipiv = 0</div>
+<div class="line"><span class="lineno"> 2139</span>    <span class="keywordflow">do</span> i = 1, n</div>
+<div class="line"><span class="lineno"> 2140</span>        <span class="comment">!       first step set to zero all coefficient</span></div>
+<div class="line"><span class="lineno"> 2141</span> </div>
+<div class="line"><span class="lineno"> 2142</span>        psi_out(:, i) = psi_in(:, i)</div>
+<div class="line"><span class="lineno"> 2143</span> </div>
+<div class="line"><span class="lineno"> 2144</span>        <span class="keywordflow">do</span> j = 1, i - 1</div>
+<div class="line"><span class="lineno"> 2145</span>            <span class="keywordflow">if</span> (ipiv(j) .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2146</span>                cost = psi_out(ipiv(j), i)</div>
+<div class="line"><span class="lineno"> 2147</span>                psi_out(:, i) = psi_out(:, i) - cost*psi_out(:, j)</div>
+<div class="line"><span class="lineno"> 2148</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 2149</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno"> 2150</span>        <span class="comment">!         Now find the maximum</span></div>
+<div class="line"><span class="lineno"> 2151</span> </div>
+<div class="line"><span class="lineno"> 2152</span>        maxv = 0.d0</div>
+<div class="line"><span class="lineno"> 2153</span>        jmax = 0</div>
+<div class="line"><span class="lineno"> 2154</span>        <span class="keywordflow">do</span> j = 1, ncoeff</div>
+<div class="line"><span class="lineno"> 2155</span>            cost = abs(psi_out(j, i))</div>
+<div class="line"><span class="lineno"> 2156</span>            <span class="keywordflow">if</span> (cost .gt. maxv) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2157</span>                jmax = j</div>
+<div class="line"><span class="lineno"> 2158</span>                maxv = cost</div>
+<div class="line"><span class="lineno"> 2159</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 2160</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno"> 2161</span> </div>
+<div class="line"><span class="lineno"> 2162</span>        ipiv(i) = jmax</div>
+<div class="line"><span class="lineno"> 2163</span> </div>
+<div class="line"><span class="lineno"> 2164</span>        <span class="keywordflow">if</span> (jmax .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2165</span> </div>
+<div class="line"><span class="lineno"> 2166</span>            cost = psi_out(jmax, i)</div>
+<div class="line"><span class="lineno"> 2167</span> </div>
+<div class="line"><span class="lineno"> 2168</span>            psi_out(:, i) = psi_out(:, i)/cost</div>
+<div class="line"><span class="lineno"> 2169</span>            <span class="comment">! to avoid roundoff</span></div>
+<div class="line"><span class="lineno"> 2170</span>            psi_out(jmax, i) = 1.d0</div>
+<div class="line"><span class="lineno"> 2171</span> </div>
+<div class="line"><span class="lineno"> 2172</span>            <span class="keywordflow">do</span> j = 1, i - 1</div>
+<div class="line"><span class="lineno"> 2173</span>                cost = psi_out(jmax, j)</div>
+<div class="line"><span class="lineno"> 2174</span>                psi_out(:, j) = psi_out(:, j) - cost*psi_out(:, i)</div>
+<div class="line"><span class="lineno"> 2175</span>                <span class="comment">!         cost=psi_out(ipiv(j),j)</span></div>
+<div class="line"><span class="lineno"> 2176</span>                <span class="comment">!         psi_out(:,j)=psi_out(:,j)/cost</span></div>
+<div class="line"><span class="lineno"> 2177</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno"> 2178</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2179</span>            <span class="comment">!         It may happen that the vector is vanishing</span></div>
+<div class="line"><span class="lineno"> 2180</span>            psi_out(:, i) = 0.d0</div>
+<div class="line"><span class="lineno"> 2181</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2182</span> </div>
+<div class="line"><span class="lineno"> 2183</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 2184</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="cleanfort10_8f90_source.html#l00028">join()</a>.</p>
 
 </div>
 </div>
@@ -216,6 +274,66 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l02067">2067</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 2068</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 2069</span>    <span class="keywordtype">integer</span> n, i, ipiv(n), jmax, j, ncoeff</div>
+<div class="line"><span class="lineno"> 2070</span>    <span class="keywordtype">complex*16</span> psi_in(ncoeff, n), psi_out(ncoeff, n), cost</div>
+<div class="line"><span class="lineno"> 2071</span>    real*8 maxv, costr</div>
+<div class="line"><span class="lineno"> 2072</span>    <span class="keywordtype">logical</span> yesfixphase</div>
+<div class="line"><span class="lineno"> 2073</span>    ipiv = 0</div>
+<div class="line"><span class="lineno"> 2074</span>    <span class="keywordflow">do</span> i = 1, n</div>
+<div class="line"><span class="lineno"> 2075</span>        <span class="comment">!       first step set to zero all coefficient</span></div>
+<div class="line"><span class="lineno"> 2076</span> </div>
+<div class="line"><span class="lineno"> 2077</span>        psi_out(:, i) = psi_in(:, i)</div>
+<div class="line"><span class="lineno"> 2078</span> </div>
+<div class="line"><span class="lineno"> 2079</span>        <span class="keywordflow">if</span> (.not. yesfixphase) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2080</span>            <span class="keywordflow">do</span> j = 1, i - 1</div>
+<div class="line"><span class="lineno"> 2081</span>                <span class="keywordflow">if</span> (ipiv(j) .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2082</span>                    cost = psi_out(ipiv(j), i)</div>
+<div class="line"><span class="lineno"> 2083</span>                    psi_out(:, i) = psi_out(:, i) - cost*psi_out(:, j)</div>
+<div class="line"><span class="lineno"> 2084</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno"> 2085</span><span class="keywordflow">            end do</span></div>
+<div class="line"><span class="lineno"> 2086</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2087</span>        <span class="comment">!         Now find the maximum</span></div>
+<div class="line"><span class="lineno"> 2088</span> </div>
+<div class="line"><span class="lineno"> 2089</span>        maxv = 0.d0</div>
+<div class="line"><span class="lineno"> 2090</span>        jmax = 0</div>
+<div class="line"><span class="lineno"> 2091</span>        <span class="keywordflow">do</span> j = 1, ncoeff</div>
+<div class="line"><span class="lineno"> 2092</span>            costr = abs(psi_out(j, i))</div>
+<div class="line"><span class="lineno"> 2093</span>            <span class="keywordflow">if</span> (costr .gt. maxv) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2094</span>                jmax = j</div>
+<div class="line"><span class="lineno"> 2095</span>                maxv = costr</div>
+<div class="line"><span class="lineno"> 2096</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 2097</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno"> 2098</span> </div>
+<div class="line"><span class="lineno"> 2099</span>        ipiv(i) = jmax</div>
+<div class="line"><span class="lineno"> 2100</span> </div>
+<div class="line"><span class="lineno"> 2101</span>        <span class="keywordflow">if</span> (jmax .gt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2102</span> </div>
+<div class="line"><span class="lineno"> 2103</span>            cost = psi_out(jmax, i)</div>
+<div class="line"><span class="lineno"> 2104</span> </div>
+<div class="line"><span class="lineno"> 2105</span>            psi_out(:, i) = psi_out(:, i)/cost</div>
+<div class="line"><span class="lineno"> 2106</span>            <span class="comment">! to avoid roundoff</span></div>
+<div class="line"><span class="lineno"> 2107</span>            psi_out(jmax, i) = (1.d0, 0.d0)</div>
+<div class="line"><span class="lineno"> 2108</span> </div>
+<div class="line"><span class="lineno"> 2109</span>            <span class="keywordflow">if</span> (.not. yesfixphase) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2110</span>                <span class="keywordflow">do</span> j = 1, i - 1</div>
+<div class="line"><span class="lineno"> 2111</span>                    cost = psi_out(jmax, j)</div>
+<div class="line"><span class="lineno"> 2112</span>                    psi_out(:, j) = psi_out(:, j) - cost*psi_out(:, i)</div>
+<div class="line"><span class="lineno"> 2113</span>                    <span class="comment">!         cost=psi_out(ipiv(j),j)</span></div>
+<div class="line"><span class="lineno"> 2114</span>                    <span class="comment">!         psi_out(:,j)=psi_out(:,j)/cost</span></div>
+<div class="line"><span class="lineno"> 2115</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno"> 2116</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno"> 2117</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2118</span>            <span class="comment">!         It may happen that the vector is vanishing</span></div>
+<div class="line"><span class="lineno"> 2119</span>            psi_out(:, i) = (0.d0, 0.d0)</div>
+<div class="line"><span class="lineno"> 2120</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2121</span> </div>
+<div class="line"><span class="lineno"> 2122</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 2123</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="cleanfort10_8f90_source.html#l00028">join()</a>.</p>
+
 </div>
 </div>
 <a id="a6dc47fd7551240c3c88ff23c4ee8ad3b" name="a6dc47fd7551240c3c88ff23c4ee8ad3b"></a>
@@ -232,6 +350,10 @@ Functions/Subroutines</h2></td></tr>
 
 <p>Main program for cleaning TurboRVB input files. </p>
 <p>Reads fort.10 file, processes orbital parameters, removes redundant constraints, optimizes numerical representation, and outputs cleaned fort.10_clean file. Supports various command line options for constraint removal and different wave function types. </p>
+
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l00028">28</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+
+<p class="reference">References <a class="el" href="cleanfort10_8f90_source.html#l02135">independent()</a>, <a class="el" href="cleanfort10_8f90_source.html#l02068">independent_complex()</a>, <a class="el" href="cleanfort10_8f90_source.html#l02273">lambda_transf()</a>, <a class="el" href="cleanfort10_8f90_source.html#l02198">makeumat()</a>, and <a class="el" href="cleanfort10_8f90_source.html#l02320">search()</a>.</p>
 
 </div>
 </div>
@@ -280,6 +402,48 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l02272">2272</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 2273</span> </div>
+<div class="line"><span class="lineno"> 2274</span>    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespaceconstants.html">constants</a>, <span class="keywordtype">only</span>: zone, zzero</div>
+<div class="line"><span class="lineno"> 2275</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 2276</span> </div>
+<div class="line"><span class="lineno"> 2277</span>    <span class="keywordtype">integer</span> n, m, neldiff, i, j, ipc</div>
+<div class="line"><span class="lineno"> 2278</span>    real*8 lambda(ipc*n, m), umat(ipc*n, n)</div>
+<div class="line"><span class="lineno"> 2279</span>    real*8, <span class="keywordtype">dimension(:, :)</span>, <span class="keywordtype">allocatable</span> :: psip</div>
+<div class="line"><span class="lineno"> 2280</span>    <span class="keyword">allocate</span> (psip(ipc*n, m))</div>
+<div class="line"><span class="lineno"> 2281</span> </div>
+<div class="line"><span class="lineno"> 2282</span>    psip = 0.d0 <span class="comment">! to avoid NaN</span></div>
+<div class="line"><span class="lineno"> 2283</span> </div>
+<div class="line"><span class="lineno"> 2284</span>    <span class="comment">!          New  lambda = emme lambda emme^{T}</span></div>
+<div class="line"><span class="lineno"> 2285</span> </div>
+<div class="line"><span class="lineno"> 2286</span>    <span class="keywordflow">if</span> (m .gt. n) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2287</span>        neldiff = m - n</div>
+<div class="line"><span class="lineno"> 2288</span>        <span class="keyword">call </span>dcopy(ipc*neldiff*n, lambda(1, n + 1), 1, psip(1, n + 1), 1)</div>
+<div class="line"><span class="lineno"> 2289</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno"> 2290</span> </div>
+<div class="line"><span class="lineno"> 2291</span>    <span class="keywordflow">if</span> (ipc .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2292</span> </div>
+<div class="line"><span class="lineno"> 2293</span>        <span class="keyword">call </span>dgemm(<span class="stringliteral">&#39;N&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, n, 1.d0, lambda, n, &amp;</div>
+<div class="line"><span class="lineno"> 2294</span>                &amp;    umat, n, 0.d0, psip, n)</div>
+<div class="line"><span class="lineno"> 2295</span> </div>
+<div class="line"><span class="lineno"> 2296</span>        <span class="keyword">call </span>dgemm(<span class="stringliteral">&#39;T&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, m, n, 1.d0, umat, n, &amp;</div>
+<div class="line"><span class="lineno"> 2297</span>                &amp;    psip, n, 0.d0, lambda, n)</div>
+<div class="line"><span class="lineno"> 2298</span> </div>
+<div class="line"><span class="lineno"> 2299</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2300</span> </div>
+<div class="line"><span class="lineno"> 2301</span>        <span class="keyword">call </span>zgemm(<span class="stringliteral">&#39;N&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, n, zone, lambda, n, &amp;</div>
+<div class="line"><span class="lineno"> 2302</span>                &amp;    umat, n, zzero, psip, n)</div>
+<div class="line"><span class="lineno"> 2303</span> </div>
+<div class="line"><span class="lineno"> 2304</span>        <span class="keyword">call </span>zgemm(<span class="stringliteral">&#39;T&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, m, n, zone, umat, n, &amp;</div>
+<div class="line"><span class="lineno"> 2305</span>                &amp;     psip, n, zzero, lambda, n)</div>
+<div class="line"><span class="lineno"> 2306</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno"> 2307</span> </div>
+<div class="line"><span class="lineno"> 2308</span>    <span class="keyword">deallocate</span> (psip)</div>
+<div class="line"><span class="lineno"> 2309</span>    <span class="keywordflow">return</span></div>
+<div class="ttc" id="anamespaceconstants_html"><div class="ttname"><a href="namespaceconstants.html">constants</a></div><div class="ttdoc">Physical and mathematical constants for quantum Monte Carlo calculations.</div><div class="ttdef"><b>Definition</b> <a href="constants_8f90_source.html#l00040">constants.f90:40</a></div></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="cleanfort10_8f90_source.html#l00028">join()</a>.</p>
 
 </div>
 </div>
@@ -335,6 +499,74 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l02197">2197</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 2198</span>    <span class="keywordtype">use </span><a class="code hl_namespace" href="namespaceconstants.html">constants</a>, <span class="keywordtype">only</span>: zone, zzero</div>
+<div class="line"><span class="lineno"> 2199</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 2200</span>    <span class="keywordtype">integer</span> n, i, j, ncoeff, info, lwork, ipc</div>
+<div class="line"><span class="lineno"> 2201</span>    real*8 psi_in(ncoeff*ipc, n), psi_out(ncoeff*ipc, n), umat(ipc*n, n)</div>
+<div class="line"><span class="lineno"> 2202</span>    real*8, <span class="keywordtype">dimension(:, :)</span>, <span class="keywordtype">allocatable</span> :: smat, psip</div>
+<div class="line"><span class="lineno"> 2203</span>    <span class="keywordtype">integer</span>, <span class="keywordtype">dimension(:)</span>, <span class="keywordtype">allocatable</span> :: ipsip</div>
+<div class="line"><span class="lineno"> 2204</span> </div>
+<div class="line"><span class="lineno"> 2205</span>    <span class="keywordflow">if</span> (ncoeff .le. 0 .or. n .le. 0) <span class="keywordflow">return</span></div>
+<div class="line"><span class="lineno"> 2206</span> </div>
+<div class="line"><span class="lineno"> 2207</span>    <span class="keyword">allocate</span> (smat(ipc*n, n), psip(ipc*n, n), ipsip(n))</div>
+<div class="line"><span class="lineno"> 2208</span> </div>
+<div class="line"><span class="lineno"> 2209</span>    <span class="comment">!      The matrix psip has to have n^2 elemnts</span></div>
+<div class="line"><span class="lineno"> 2210</span>    <span class="comment">!      the psi_out due to roundoff are likely to be independent</span></div>
+<div class="line"><span class="lineno"> 2211</span>    <span class="comment">!      even when psi_in are dependent</span></div>
+<div class="line"><span class="lineno"> 2212</span> </div>
+<div class="line"><span class="lineno"> 2213</span>    <span class="keywordflow">if</span> (ipc .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2214</span>        <span class="keyword">call </span>dgemm(<span class="stringliteral">&#39;T&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, ncoeff, 1.d0, psi_out, ncoeff, psi_out, ncoeff&amp;</div>
+<div class="line"><span class="lineno"> 2215</span>                &amp;, 0.d0, smat, n)</div>
+<div class="line"><span class="lineno"> 2216</span>        <span class="keyword">call </span>dgetrf(n, n, smat, n, ipsip, info)</div>
+<div class="line"><span class="lineno"> 2217</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2218</span>        <span class="keyword">call </span>zgemm(<span class="stringliteral">&#39;C&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, ncoeff, zone, psi_out, ncoeff, psi_out, ncoeff&amp;</div>
+<div class="line"><span class="lineno"> 2219</span>                &amp;, zzero, smat, n)</div>
+<div class="line"><span class="lineno"> 2220</span>        <span class="keyword">call </span>zgetrf(n, n, smat, n, ipsip, info)</div>
+<div class="line"><span class="lineno"> 2221</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno"> 2222</span> </div>
+<div class="line"><span class="lineno"> 2223</span>    <span class="comment">!       write(6,*) &#39; Output dgetrf &#39;</span></div>
+<div class="line"><span class="lineno"> 2224</span> </div>
+<div class="line"><span class="lineno"> 2225</span>    <span class="comment">!       do i=1,n</span></div>
+<div class="line"><span class="lineno"> 2226</span>    <span class="comment">!       write(6,*) i,smat(i,i)</span></div>
+<div class="line"><span class="lineno"> 2227</span>    <span class="comment">!       enddo</span></div>
+<div class="line"><span class="lineno"> 2228</span> </div>
+<div class="line"><span class="lineno"> 2229</span>    <span class="keywordflow">if</span> (info .eq. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2230</span>        lwork = n*n</div>
+<div class="line"><span class="lineno"> 2231</span>        <span class="keywordflow">if</span> (ipc .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2232</span> </div>
+<div class="line"><span class="lineno"> 2233</span>            <span class="keyword">call </span>dgetri(n, smat, n, ipsip, psip, lwork, info)</div>
+<div class="line"><span class="lineno"> 2234</span> </div>
+<div class="line"><span class="lineno"> 2235</span>            <span class="keyword">call </span>dgemm(<span class="stringliteral">&#39;T&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, ncoeff, 1.d0, psi_out, ncoeff, psi_in, ncoeff &amp;</div>
+<div class="line"><span class="lineno"> 2236</span>                    &amp;, 0.d0, psip, n)</div>
+<div class="line"><span class="lineno"> 2237</span> </div>
+<div class="line"><span class="lineno"> 2238</span>            <span class="keyword">call </span>dgemm(<span class="stringliteral">&#39;T&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, n, 1.d0, psip, n, smat, n                     &amp;</div>
+<div class="line"><span class="lineno"> 2239</span>                    &amp;, 0.d0, umat, n)</div>
+<div class="line"><span class="lineno"> 2240</span> </div>
+<div class="line"><span class="lineno"> 2241</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2242</span>            <span class="keyword">call </span>zgetri(n, smat, n, ipsip, psip, lwork, info)</div>
+<div class="line"><span class="lineno"> 2243</span> </div>
+<div class="line"><span class="lineno"> 2244</span>            <span class="keyword">call </span>zgemm(<span class="stringliteral">&#39;C&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, ncoeff, zone, psi_out, ncoeff, psi_in, ncoeff &amp;</div>
+<div class="line"><span class="lineno"> 2245</span>                    &amp;, zzero, psip, n)</div>
+<div class="line"><span class="lineno"> 2246</span> </div>
+<div class="line"><span class="lineno"> 2247</span>            <span class="keyword">call </span>zgemm(<span class="stringliteral">&#39;C&#39;</span>, <span class="stringliteral">&#39;N&#39;</span>, n, n, n, zone, psip, n, smat, n                     &amp;</div>
+<div class="line"><span class="lineno"> 2248</span>                    &amp;, zzero, umat, n)</div>
+<div class="line"><span class="lineno"> 2249</span>            <span class="keyword">call </span>conjmat(n, n, umat, n)</div>
+<div class="line"><span class="lineno"> 2250</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2251</span> </div>
+<div class="line"><span class="lineno"> 2252</span>    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2253</span>        <span class="keyword">write</span> (6, *) <span class="stringliteral">&#39; Orbitals are not independent, ERROR in dgetrf !!!! &#39;</span>, info</div>
+<div class="line"><span class="lineno"> 2254</span>        <span class="keywordflow">do</span> i = 1, n</div>
+<div class="line"><span class="lineno"> 2255</span>            <span class="keyword">write</span> (6, *) i, smat(ipc*(i - 1) + 1, ipc*(i - 1) + 1)</div>
+<div class="line"><span class="lineno"> 2256</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno"> 2257</span>        <span class="comment">!       stop</span></div>
+<div class="line"><span class="lineno"> 2258</span><span class="keywordflow">    end if</span></div>
+<div class="line"><span class="lineno"> 2259</span> </div>
+<div class="line"><span class="lineno"> 2260</span>    <span class="keyword">deallocate</span> (smat, psip, ipsip)</div>
+<div class="line"><span class="lineno"> 2261</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="cleanfort10_8f90_source.html#l00028">join()</a>.</p>
+
 </div>
 </div>
 <a id="ae5bed6fb93b41c2ed9a6dc3fdb6dae18" name="ae5bed6fb93b41c2ed9a6dc3fdb6dae18"></a>
@@ -376,6 +608,28 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="cleanfort10_8f90_source.html#l02319">2319</a> of file <a class="el" href="cleanfort10_8f90_source.html">cleanfort10.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno"> 2320</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno"> 2321</span>    real*8 <span class="keywordtype">target</span>, sortvect(*)</div>
+<div class="line"><span class="lineno"> 2322</span>    <span class="keywordtype">integer</span> n, index, i, k</div>
+<div class="line"><span class="lineno"> 2323</span>    i = 1</div>
+<div class="line"><span class="lineno"> 2324</span>    index = n</div>
+<div class="line"><span class="lineno"> 2325</span>    <span class="keywordflow">do</span></div>
+<div class="line"><span class="lineno"> 2326</span>        k = (i + index)/2</div>
+<div class="line"><span class="lineno"> 2327</span>        <span class="keywordflow">if</span> (<span class="keywordtype">target</span> .lt. sortvect(k)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2328</span>            index = k</div>
+<div class="line"><span class="lineno"> 2329</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno"> 2330</span>            i = k</div>
+<div class="line"><span class="lineno"> 2331</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2332</span>        <span class="keywordflow">if</span> (i + 1 .ge. index) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno"> 2333</span>            <span class="keywordflow">if</span> (sortvect(index) .ne. <span class="keywordtype">target</span>) index = i</div>
+<div class="line"><span class="lineno"> 2334</span>            <span class="keywordflow">return</span></div>
+<div class="line"><span class="lineno"> 2335</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno"> 2336</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno"> 2337</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="cleanfort10_8f90_source.html#l00028">join()</a>.</p>
 
 </div>
 </div>

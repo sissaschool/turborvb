@@ -179,6 +179,56 @@ The subroutine handles both parallel and serial execution modes </dd>
 <dd>
 Used for creating specialized communication groups in parallel QMC </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="sub__comm_8f90_source.html#l00076">76</a> of file <a class="el" href="sub__comm_8f90_source.html">sub_comm.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   77</span>        <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">   78</span><span class="preprocessor">#ifdef PARALLEL</span></div>
+<div class="line"><span class="lineno">   79</span><span class="preprocessor"></span>        include <span class="stringliteral">&#39;mpif.h&#39;</span></div>
+<div class="line"><span class="lineno">   80</span><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="lineno">   81</span><span class="preprocessor"></span>        <span class="keywordtype">integer</span> parent_comm, new_size, ierror</div>
+<div class="line"><span class="lineno">   82</span>        <span class="keywordtype">type</span>(mpi_sub_comm) :: child</div>
+<div class="line"><span class="lineno">   83</span> </div>
+<div class="line"><span class="lineno">   84</span>        <span class="keywordtype">integer</span> orig_group, sub_group, i</div>
+<div class="line"><span class="lineno">   85</span>        <span class="keywordtype">integer</span>, <span class="keywordtype">dimension(:)</span>, <span class="keywordtype">allocatable</span> :: ranks</div>
+<div class="line"><span class="lineno">   86</span>#ifdef PARALLEL</div>
+<div class="line"><span class="lineno">   87</span>        <span class="keyword">allocate</span> (ranks(new_size))</div>
+<div class="line"><span class="lineno">   88</span><span class="preprocessor">#else</span></div>
+<div class="line"><span class="lineno">   89</span><span class="preprocessor"></span>        <span class="keywordflow">if</span> (new_size .ne. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">   90</span>            <span class="keyword">write</span> (6, *) <span class="stringliteral">&#39; Warning changing number of processors to 1 in serial &#39;</span></div>
+<div class="line"><span class="lineno">   91</span>            new_size = 1</div>
+<div class="line"><span class="lineno">   92</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">   93</span>        <span class="keyword">allocate</span> (ranks(new_size))</div>
+<div class="line"><span class="lineno">   94</span><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="lineno">   95</span><span class="preprocessor"></span>        <span class="keywordflow">do</span> i = 1, new_size</div>
+<div class="line"><span class="lineno">   96</span>            ranks(i) = i - 1</div>
+<div class="line"><span class="lineno">   97</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">   98</span> </div>
+<div class="line"><span class="lineno">   99</span>        child%parent = parent_comm</div>
+<div class="line"><span class="lineno">  100</span><span class="preprocessor">#ifdef PARALLEL</span></div>
+<div class="line"><span class="lineno">  101</span><span class="preprocessor"></span>        <span class="keyword">call </span>mpi_comm_group(parent_comm, orig_group, ierror)</div>
+<div class="line"><span class="lineno">  102</span>        <span class="keyword">call </span>mpi_group_incl(orig_group, new_size, ranks, sub_group, ierror<span class="comment">)</span></div>
+<div class="line"><span class="lineno">  103</span><span class="comment"></span>        <span class="keyword">call </span>mpi_comm_create(parent_comm, sub_group, child%comm, ierror)</div>
+<div class="line"><span class="lineno">  104</span>        <span class="keyword">call </span>mpi_group_rank(sub_group, child%rank, ierror)</div>
+<div class="line"><span class="lineno">  105</span>        child%nproc = new_size</div>
+<div class="line"><span class="lineno">  106</span>        <span class="keywordflow">if</span> (child%rank .eq. mpi_undefined) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  107</span>            child%yesin = .false.</div>
+<div class="line"><span class="lineno">  108</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  109</span>            child%yesin = .true.</div>
+<div class="line"><span class="lineno">  110</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  111</span><span class="preprocessor">#else</span></div>
+<div class="line"><span class="lineno">  112</span><span class="preprocessor"></span>        child%nproc = new_size</div>
+<div class="line"><span class="lineno">  113</span>        child%yesin = .true.</div>
+<div class="line"><span class="lineno">  114</span><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="lineno">  115</span><span class="preprocessor"></span> </div>
+<div class="line"><span class="lineno">  116</span>        <span class="comment">!    write(6,*) child%rank,&quot;xx&quot;,new_size</span></div>
+<div class="line"><span class="lineno">  117</span> </div>
+<div class="line"><span class="lineno">  118</span><span class="preprocessor">#ifdef PARALLEL</span></div>
+<div class="line"><span class="lineno">  119</span><span class="preprocessor"></span>        <span class="keyword">call </span>mpi_group_free(orig_group, ierror)</div>
+<div class="line"><span class="lineno">  120</span>        <span class="keyword">call </span>mpi_group_free(sub_group, ierror)</div>
+<div class="line"><span class="lineno">  121</span><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="lineno">  122</span><span class="preprocessor"></span>        <span class="keyword">deallocate</span> (ranks)</div>
+<div class="line"><span class="lineno">  123</span> </div>
+<div class="line"><span class="lineno">  124</span>        <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a68f756638020505901020b6055e639a6" name="a68f756638020505901020b6055e639a6"></a>
@@ -220,6 +270,17 @@ The subroutine is safe to call even if the communicator was not properly created
 <dd>
 Used for cleanup after parallel operations are complete </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="sub__comm_8f90_source.html#l00147">147</a> of file <a class="el" href="sub__comm_8f90_source.html">sub_comm.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  148</span>        <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  149</span>        <span class="keywordtype">integer</span> ierror</div>
+<div class="line"><span class="lineno">  150</span>        <span class="keywordtype">type</span>(mpi_sub_comm) :: child</div>
+<div class="line"><span class="lineno">  151</span>#ifdef PARALLEL</div>
+<div class="line"><span class="lineno">  152</span>        include <span class="stringliteral">&#39;mpif.h&#39;</span></div>
+<div class="line"><span class="lineno">  153</span> </div>
+<div class="line"><span class="lineno">  154</span>        <span class="keywordflow">if</span> (child%yesin) <span class="keyword">call </span>mpi_comm_free(child%comm, ierror)</div>
+<div class="line"><span class="lineno">  155</span><span class="preprocessor">#endif</span></div>
+<div class="line"><span class="lineno">  156</span><span class="preprocessor"></span>        <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

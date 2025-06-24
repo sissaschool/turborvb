@@ -1,0 +1,153 @@
+\doxysection{save\+\_\+jall\+\_\+fn.\+f90}
+\hypertarget{save__jall__fn_8f90_source}{}\label{save__jall__fn_8f90_source}\index{src/m\_common/save\_jall\_fn.f90@{src/m\_common/save\_jall\_fn.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Jastrow\ factor\ support\ vector\ update\ for\ DMC\ and\ LR-\/DMC}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ updates\ the\ support\ vector\ jastrowall\_ee\ used\ in}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00019}00019\ \textcolor{comment}{!>\ Diffusion\ Monte\ Carlo\ (DMC)\ and\ Lattice\ Regularized\ DMC\ (LR-\/DMC)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00020}00020\ \textcolor{comment}{!>\ calculations.\ The\ updated\ vector\ is\ used\ by\ the\ fast\ update\ routine}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00021}00021\ \textcolor{comment}{!>\ "{}uptabtot\_new.f90"{}\ to\ speed\ up\ Jastrow\ factor\ calculations.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00023}00023\ \textcolor{comment}{!>\ The\ subroutine\ handles\ both\ 3/4-\/body\ Jastrow\ factors\ and\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00024}00024\ \textcolor{comment}{!>\ components,\ with\ support\ for\ spin-\/dependent\ calculations\ and\ OpenMP}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00025}00025\ \textcolor{comment}{!>\ offloading\ for\ GPU\ acceleration.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00026}00026\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ yesfn\ Flag\ indicating\ whether\ to\ update\ gradients\ and\ Laplacians}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in,out]\ jastrowall\_ee\ Support\ vector\ for\ Jastrow\ factor\ calculations}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ winvjbar\ Jastrow\ factor\ basis\ coefficients\ for\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ winvjbarsz\ Jastrow\ factor\ basis\ coefficients\ for\ spin-\/dependent\ terms}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ winvj\ Jastrow\ factor\ basis\ vectors}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in,out]\ psip\ Working\ array\ for\ matrix\ operations}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00033}00033\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00035}00035\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00036}00036\ \textcolor{comment}{!>\ 1.\ Initializes\ working\ array\ psip\ to\ zero}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00037}00037\ \textcolor{comment}{!>\ 2.\ If\ yesfn\ is\ true,\ updates\ gradients\ and\ Laplacians:}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \ \ \ -\/\ Processes\ 3/4-\/body\ terms\ (k\ =\ 1\ to\ ip4)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00039}00039\ \textcolor{comment}{!>\ \ \ \ -\/\ Processes\ lattice\ terms\ (k\ =\ 1\ to\ indt)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ -\/\ Uses\ matrix\ multiplication\ to\ compute\ Jastrow\ contributions}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00041}00041\ \textcolor{comment}{!>\ \ \ \ -\/\ Handles\ both\ up\ and\ down\ electron\ components}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ -\/\ Updates\ spin-\/dependent\ terms\ if\ iessz\ is\ true}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00043}00043\ \textcolor{comment}{!>\ 3.\ Updates\ wave\ function\ components:}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ -\/\ Computes\ Jastrow\ factor\ contributions\ to\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ -\/\ Handles\ both\ up\ and\ down\ electron\ components}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ -\/\ Updates\ spin-\/dependent\ terms\ if\ iessz\ is\ true}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @note\ The\ 2-\/body\ part\ of\ jastrowall\_ee\ is\ computed\ in\ "{}compute\_fast.f90"{}}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @note\ The\ subroutine\ supports\ OpenMP\ offloading\ for\ GPU\ acceleration}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @note\ Handles\ both\ paired\ (ipj=1)\ and\ unpaired\ (ipj=2)\ electron\ configurations}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @note\ Spin-\/dependent\ calculations\ are\ performed\ when\ iessz\ is\ true}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @note\ Used\ in\ DMC\ and\ LR-\/DMC\ calculations\ for\ efficient\ Jastrow\ updates}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00053}00053\ \textcolor{keyword}{subroutine\ }save\_jall(yesfn,\ jastrowall\_ee,\ winvjbar,\ winvjbarsz,\ winvj,\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ ip4,\ ipj}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ nel,\ nelup,\ neldo,\ indt,\ indt4j,\ nelorbj,\ nelorbjh,\ iessz}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00060}00060\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ jastrowall\_ee(nelup\ +\ neldo,\ nelup\ +\ neldo,\ 0:indt4j),\ psip(nel,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00061}00061\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ winvj(max(nelorbjh,\ 1),\ 0:indt4j,\ *),\ winvjbar(*),\ winvjbarsz(*)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00062}00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelused}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ k,\ nelorbj5}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesfn}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelorbj\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00069}00069\ \ \ \ \ nelorbj5\ =\ nelorbj*(indt4j\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00070}00070\ \ \ \ \ nelused\ =\ nelup\ +\ mod(ipj,\ 2)*neldo}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00071}00071\ \ \ \ \ \textcolor{comment}{!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00072}00072\ \ \ \ \ \textcolor{comment}{!\ 3/4body}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ in\ the\ following\ I\ assume\ that\ indt4j.ge.indt+ip4,}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ therefore\ the\ basis\ vector\ winvj\ must\ be\ already}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ completely\ filled.}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ clearing\ working\ space}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00080}00080\ \ \ \ \ psip\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00081}00081\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00082}00082\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ to\ (psip)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00083}00083\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00084}00084\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (yesfn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ update\ gradients\ and\ laplacians}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ip4}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nelused,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ indt\ +\ k,\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbar,\ ipj*nelorbjh,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ neldo,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ indt\ +\ k,\ 1\ +\ nelup)\ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbar(1\ +\ nelorbjh),\ 2*nelorbjh,\ 0.d0,\ psip(1\ +\ nelup,\ 1),\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00093}00093\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00094}00094\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00095}00095\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00096}00096\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }upjastrowall(nel,\ jastrowall\_ee(1,\ 1,\ indt\ +\ k),\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nel,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ indt\ +\ k,\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbarsz,\ nelorbjh,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }upjastrowall\_sz(nel,\ nelup,\ jastrowall\_ee(1,\ 1,\ indt\ +\ k),\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00101}00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ finally\ the\ 1:indt\ positions\ in\ the\ LRDMC\ lattice}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nelused,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ k,\ 1)\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbar,\ ipj*nelorbjh,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ neldo,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ k,\ 1\ +\ nelup)\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbar(1\ +\ nelorbjh),\ 2*nelorbjh,\ 0.d0,\ psip(1\ +\ nelup,\ 1),\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00112}00112\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00113}00113\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00114}00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00115}00115\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }upjastrowallfat(nel,\ jastrowall\_ee(1,\ 1,\ k),\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nel,\ nel,\ nelorbjh,\ 1.d0,\ winvj(1,\ k,\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ winvjbarsz,\ nelorbjh,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }upjastrowallfat\_sz(nel,\ nelup,\ jastrowall\_ee(1,\ 1,\ k),\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00124}00124\ \ \ \ \ \textcolor{comment}{!\ then\ update\ jastrowall\_ee\ for\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00125}00125\ \ \ \ \ \textcolor{comment}{!call\ dgemm('T','N',nel,nelused,ipj*nelorbjh,1.d0,winvjbar\ \ \ \&}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00126}00126\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&,ipj*nelorbjh,winvj,nelorbj5,0.d0,psip,nel)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00127}00127\ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nel,\ nelused,\ nelorbjh,\ 1.d0,\ winvjbar\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ipj*nelorbjh,\ winvj,\ nelorbj5,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00129}00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm\_(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nel,\ neldo,\ nelorbjh,\ 1.d0,\ winvjbar(1\ +\ nelorbjh)\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 2*nelorbjh,\ winvj(1,\ 0,\ 1\ +\ nelup),\ nelorbj5,\ 0.d0,\ psip(1,\ 1\ +\ nelup),\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00134}00134\ \ \ \ \ \textcolor{comment}{!\ \ write(*,*)\ "{}\ psip\ in\ save\_jastrowall:"{},\ psip(1:nel,1:nel)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00135}00135\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00136}00136\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00137}00137\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00138}00138\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }upjastrowallpsi(nel,\ jastrowall\_ee,\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00139}00139\ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nel,\ nel,\ nelorbjh,\ 1.d0,\ winvjbarsz\ \&}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbjh,\ winvj,\ nelorbj5,\ 0.d0,\ psip,\ nel)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }upjastrowallpsi\_sz(nel,\ nelup,\ jastrowall\_ee,\ psip)}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00143}00143\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00145}00145\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{save__jall__fn_8f90_source_l00147}00147\ \textcolor{keyword}{end\ subroutine\ }save\_jall}
+
+\end{DoxyCode}

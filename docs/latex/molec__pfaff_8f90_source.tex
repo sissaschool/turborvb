@@ -1,0 +1,840 @@
+\doxysection{molec\+\_\+pfaff.\+f90}
+\hypertarget{molec__pfaff_8f90_source}{}\label{molec__pfaff_8f90_source}\index{src/m\_common/molec\_pfaff.f90@{src/m\_common/molec\_pfaff.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00016}00016\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00017}00017\ \ *\ @file\ molec\_pfaff.f90}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00018}00018\ \ *\ @brief\ pfaffian\ molecular\ orbital\ calculations\ for\ quantum\ monte\ carlo}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00019}00019\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00020}00020\ \ *\ this\ file\ \textcolor{keyword}{contains}\ subroutines\ for\ calculating\ pfaffian\ molecular\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00021}00021\ \ *\ in\ turborvb.\ pfaffians\ are\ used\ to\ represent\ antisymmetric\ wave\ functions}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00022}00022\ \ *\ for\ systems\ with\ odd\ numbers\ of\ electrons\ or\ for\ certain\ \mbox{\hyperlink{namespacetypes}{types}}\ of}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00023}00023\ \ *\ correlated\ wave\ functions.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00024}00024\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00025}00025\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00026}00026\ \ *\ the\ main\ algorithm\ involves:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00027}00027\ \ *\ 1.\ tridiagonalization\ of\ the\ skew-\/symmetric\ matrix\ using\ pfaffian\ decomposition}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00028}00028\ \ *\ 2.\ transformation\ to\ real\ symmetric\ form\ for\ eigenvalue\ calculation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00029}00029\ \ *\ 3.\ diagonalization\ to\ obtain\ eigenvalues\ and\ eigenvectors}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00030}00030\ \ *\ 4.\ back-\/transformation\ to\ obtain\ the\ final\ pfaffian\ molecular\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00031}00031\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00032}00032\ \ *\ key\ subroutines:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00033}00033\ \ *\ -\/\ pfaffian\_mo:\ main\ driver\ for\ pfaffian\ molecular\ orbital\ calculation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00034}00034\ \ *\ -\/\ pfatriag:\ tridiagonalization\ using\ pfaffian\ decomposition}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00035}00035\ \ *\ -\/\ symmtriang:\ transformation\ to\ real\ symmetric\ form}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00036}00036\ \ *\ -\/\ finalize\_mopfaff:\ back-\/transformation\ to\ final\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00037}00037\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00038}00038\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00039}00039\ \ *\ -\/\ supports\ both\ real\ and\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=1,2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00040}00040\ \ *\ -\/\ uses\ lapack\ routines\ for\ eigenvalue\ calculations}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00041}00041\ \ *\ -\/\ includes\ debug\ options\ for\ verification}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00042}00042\ \ *\ -\/\ handles\ both\ even\ and\ odd\ numbers\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00043}00043\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00044}00044\ \ *\ @author\ turborvb\ group}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00045}00045\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00046}00046\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00048}00048\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00049}00049\ \textcolor{comment}{!Subroutines\ for\ the\ calculation\ of\ the\ pfaffians}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00050}00050\ \textcolor{comment}{!molecular\ orbitals\ \ \ \ \ \ \ \ \ \ \ \ C.G.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00051}00051\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00052}00052\ \textcolor{comment}{!Output:\ outvl\ (nelorb\_c/2)\ eigenvalues\ sorted\ by\ the}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00053}00053\ \textcolor{comment}{!\ \ \ \ \ \ \ \ value\ (only\ the\ real\ part)}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00054}00054\ \textcolor{comment}{!Output:\ outvct(ipc*nelorb\_c,nelorb\_c)\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00055}00055\ \textcolor{comment}{!\ \ \ \ \ \ \ \ ordered\ as\ egvl}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00056}00056\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00058}00058\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00059}00059\ \ *\ @brief\ calculate\ pfaffian\ molecular\ orbitals\ from\ a\ skew-\/symmetric\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00060}00060\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00061}00061\ \ *\ this\ \textcolor{keyword}{subroutine\ }computes\ the\ pfaffian\ molecular\ orbitals\ by\ diagonalizing}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00062}00062\ \ *\ a\ skew-\/symmetric\ matrix.\ the\ algorithm\ involves\ tridiagonalization,}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00063}00063\ \ *\ transformation\ to\ real\ symmetric\ form,\ eigenvalue\ calculation,\ and}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00064}00064\ \ *\ back-\/transformation\ to\ obtain\ the\ final\ orbitals.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00065}00065\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00066}00066\ \ *\ @param[in]\ lda\ leading\ dimension\ of\ the\ input\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00067}00067\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00068}00068\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00069}00069\ \ *\ @param[in]\ detmat\_c\ input\ skew-\/symmetric\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00070}00070\ \ *\ @param[out]\ outvl\ eigenvalues\ of\ the\ pfaffian(nelorb\_c/2\ values)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00071}00071\ \ *\ @param[out]\ outvct\ eigenvectors/molecular\ orbitals(ipc*lda\ x\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00072}00072\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00073}00073\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00074}00074\ \ *\ the\ algorithm\ proceeds\ as\ follows:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00075}00075\ \ *\ 1.\ copy\ input\ matrix\ to\ u1\ for\ tridiagonalization}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00076}00076\ \ *\ 2.\ apply\ pfaffian\ tridiagonalization(pfatriag)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00077}00077\ \ *\ 3.\ transform\ to\ real\ symmetric\ form(symmtriang)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00078}00078\ \ *\ 4.\ diagonalize\ using\ dstevx(lapack)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00079}00079\ \ *\ 5.\ apply\ gauge\ fixing\ to\ eigenvectors}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00080}00080\ \ *\ 6.\ back-\/transform\ to\ final\ orbitals(finalize\_mopfaff)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00081}00081\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00082}00082\ \ *\ the\ eigenvalues\ are\ sorted\ by\ magnitude\ and\ only\ the\ positive}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00083}00083\ \ *\ eigenvalues\ are\ returned(skew-\/symmetric\ matrices\ have\ paired}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00084}00084\ \ *\ eigenvalues\ ±λ).}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00085}00085\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00086}00086\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00087}00087\ \ *\ -\/\ uses\ lapack\ dstevx\ for\ eigenvalue\ calculation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00088}00088\ \ *\ -\/\ includes\ gauge\ fixing\ for\ consistent\ eigenvector\ signs}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00089}00089\ \ *\ -\/\ supports\ both\ real\ and\ \textcolor{keywordtype}{complex}\ matrices}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00090}00090\ \ *\ -\/\ memory\ is\ \textcolor{keyword}{allocated}\ and\ deallocated\ within\ the\ subroutine}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00091}00091\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00092}00092\ \ *\ @see\ pfatriag(),\ symmtriang(),\ finalize\_mopfaff(),\ orb\_max()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00093}00093\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00094}00094\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00095}00095\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00096}00096\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00097}00097\ \textcolor{keyword}{subroutine\ }pfaffian\_mo(lda,\ nelorb\_c,\ ipc,\ detmat\_c,\ outvl,\ outvct)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00099}00099\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc,\ lda}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00100}00100\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ ierr\ \textcolor{comment}{!\ auxiliary\ variables}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00101}00101\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ detmat\_c(ipc*lda,\ nelorb\_c),\ outvl(nelorb\_c),\ outvct(ipc*lda,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00102}00102\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ auxr,\ orbmax}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00103}00103\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{external}\ ::\ dlamch,\ orb\_max}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00104}00104\ \ \ \ \ \textcolor{comment}{!U2\ matrix\ is\ no\ more\ necessary\ (ZSKTRD\ gives\ a\ real\ matrix\ as\ output)}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00105}00105\ \ \ \ \ \textcolor{comment}{!U1,\ U2,\ and\ U3\ are\ the\ operations\ required\ to\ convert\ the}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00106}00106\ \ \ \ \ \textcolor{comment}{!detmat\_c\ in\ the\ real\ symmetric\ \ matrix\ whose\ elements\ are}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00107}00107\ \ \ \ \ \textcolor{comment}{!stored\ in\ lambdars\ (the\ first\ nelorb\_c\ values\ are\ 0.d0\ and}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00108}00108\ \ \ \ \ \textcolor{comment}{!correspond\ to\ the\ diagonal\ elements,\ the\ second\ nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00109}00109\ \ \ \ \ \textcolor{comment}{!values\ are\ the\ off-\/diagonal\ ones)(it\ has}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00110}00110\ \ \ \ \ \textcolor{comment}{!to\ be\ used\ in\ the\ DSTEVX\ routine)}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00111}00111\ \ \ \ \ \textcolor{comment}{!vector\ with\ information\ necessary\ for\ the\ DSTEVX\ routine}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00112}00112\ \ \ \ \ \textcolor{comment}{!work,\ iwork,\ ifail\ are\ vectors\ for\ the\ dstevx\ routine,}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00113}00113\ \ \ \ \ \textcolor{comment}{!detmattr\ is\ the\ tridiagonal\ matrix\ needed\ during\ the\ calculations}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00114}00114\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ U1(:,\ :),\ U3(:,\ :),\ work(:),\ lambdars(:),\ eigvalues(:),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvect(:,\ :),\ detmattr(:,\ :),\ auxmat(:,\ :),\ auxmat2(:,\ :),\ auxmat1(:,\ :)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00116}00116\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ iwork(:),\ ifail(:)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00117}00117\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ zzero,\ zone}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00119}00119\ \ \ \ \ zzero\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00120}00120\ \ \ \ \ zone\ =\ (1.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00121}00121\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00122}00122\ \ \ \ \ \textcolor{keyword}{allocate}\ (u3(2*nelorb\_c,\ nelorb\_c),\ lambdars(2*nelorb\_c\ -\/\ 1),\ eigvalues(nelorb\_c),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvect(nelorb\_c,\ nelorb\_c),\ work(5*nelorb\_c),\ iwork(5*nelorb\_c),\ ifail(nelorb\_c),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(ipc*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00125}00125\ \ \ \ \ \textcolor{keyword}{allocate}\ (u1(ipc*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00126}00126\ \ \ \ \ u1(1:ipc*nelorb\_c,\ 1:nelorb\_c)\ =\ detmat\_c(1:ipc*nelorb\_c,\ 1:nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00128}00128\ \ \ \ \ \textcolor{keyword}{call\ }pfatriag(nelorb\_c,\ ipc,\ detmattr,\ u1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00130}00130\ \ \ \ \ \textcolor{comment}{!The\ U3\ matrix\ and\ lambdars\ are\ calculated}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00131}00131\ \ \ \ \ \textcolor{keyword}{call\ }symmtriang(nelorb\_c,\ ipc,\ detmattr,\ lambdars,\ u3)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00133}00133\ \ \ \ \ \textcolor{comment}{!Double\ precision\ symmetric\ triangular\ matrix\ diagonalization}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keyword}{call\ }dstevx(\textcolor{stringliteral}{"{}V"{}},\ \textcolor{stringliteral}{"{}A"{}},\ nelorb\_c,\ lambdars,\ lambdars(nelorb\_c\ +\ 1),\ auxr,\ auxr,\ j,\ j,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2*dlamch(\textcolor{stringliteral}{'S'}),\ i,\ eigvalues,\ eigvect,\ nelorb\_c,\ work,\ iwork,\ ifail,\ ierr)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00136}00136\ \ \ \ \ \textcolor{comment}{!\ \ choose\ a\ gauge}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00137}00137\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ orbmax\ =\ orb\_max(nelorb\_c,\ eigvect(1,\ i))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orbmax\ .lt.\ 0.d0)\ eigvect(:,\ i)\ =\ -\/eigvect(:,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00140}00140\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}ERROR\ DSTEVX:\ the\ eigenvectors:"{}},\ ifail(1:ierr),\ \textcolor{stringliteral}{"{}did\ not\ converged!"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ierr\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}ERROR\ DSTEVX:\ the\ parameter:"{}},\ ierr,\ \textcolor{stringliteral}{"{}has\ an\ illegal\ value!"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00146}00146\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00147}00147\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00148}00148\ \ \ \ \ \textcolor{keyword}{call\ }finalize\_mopfaff(lda,\ nelorb\_c,\ ipc,\ u1,\ u3,\ eigvalues,\ eigvect,\ outvl,\ outvct,\ detmat\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00149}00149\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keyword}{deallocate}\ (u1,\ u3,\ lambdars,\ eigvalues,\ eigvect,\ work,\ iwork,\ ifail,\ detmattr)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00151}00151\ \textcolor{keyword}{end\ subroutine\ }pfaffian\_mo}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00152}00152\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00153}00153\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00154}00154\ \ *\ @brief\ find\ the\ maximum\ element\ in\ a\ \mbox{\hyperlink{namespacevector}{vector}}\ for\ gauge\ fixing}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00155}00155\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00156}00156\ \ *\ this\ \textcolor{keyword}{function\ }finds\ the\ first\ element\ in\ a\ \mbox{\hyperlink{namespacevector}{vector}}\ that\ exceeds\ a\ threshold}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00157}00157\ \ *\ \textcolor{keywordtype}{value},\ used\ for\ gauge\ fixing\ of\ eigenvectors\ in\ pfaffian\ calculations.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00158}00158\ \ *\ the\ threshold\ is\ set\ to\ avoid\ numerical\ issues\ with\ very\ small\ elements.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00159}00159\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00160}00160\ \ *\ @param[in]\ n\ \textcolor{keyword}{Size}\ of\ the\ \mbox{\hyperlink{namespacevector}{vector}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00161}00161\ \ *\ @param[in]\ vect\ input\ \mbox{\hyperlink{namespacevector}{vector}}\ of\ real\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00162}00162\ \ *\ @\textcolor{keywordflow}{return}\ real\ \textcolor{keywordtype}{value}\ of\ the\ first\ element\ above\ threshold,\ or\ error\ \textcolor{keywordflow}{if}\ none\ found}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00163}00163\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00164}00164\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00165}00165\ \ *\ the\ \textcolor{keyword}{function\ }searches\ for\ the\ first\ element\ in\ vect\ that\ satisfies}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00166}00166\ \ *\ vect(i)\string^2\ >\ safemin,\ \textcolor{keywordflow}{where}\ safemin\ =\ 0.5773576451/n.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00167}00167\ \ *\ this\ threshold\ is\ chosen\ to\ avoid\ numerical\ issues\ with\ poorly}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00168}00168\ \ *\ normalized\ eigenvectors.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00169}00169\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00170}00170\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00171}00171\ \ *\ -\/\ used\ for\ gauge\ fixing\ in\ pfaffian\_mo}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00172}00172\ \ *\ -\/\ returns\ error\ message\ \textcolor{keywordflow}{if}\ no\ suitable\ element\ is\ found}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00173}00173\ \ *\ -\/\ threshold\ depends\ on\ \mbox{\hyperlink{namespacevector}{vector}}\ \textcolor{keyword}{size}\ n}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00174}00174\ \ *\ -\/\ assumes\ \mbox{\hyperlink{namespacevector}{vector}}\ should\ be\ properly\ normalized}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00175}00175\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00176}00176\ \ *\ @see\ pfaffian\_mo()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00177}00177\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00178}00178\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00179}00179\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00180}00180\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00181}00181\ \textcolor{keyword}{function\ }orb\_max(n,\ vect)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00182}00182\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00183}00183\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ orb\_max,\ safemin}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00184}00184\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ vect(n)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00185}00185\ \ \ \ \ safemin\ =\ 0.5773576451d0/n\ \textcolor{comment}{!\ To\ avoid\ particular\ cases.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00186}00186\ \ \ \ \ \textcolor{comment}{!\ \ The\ gauge\ is\ defined\ by\ \ using\ the\ first\ element\ >\ threshold\ in\ \ the\ chosen\ space}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00187}00187\ \ \ \ \ i\ =\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00188}00188\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (i\ .le.\ n\ .and.\ vect(i)**2\ .le.\ safemin)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00190}00190\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00191}00191\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .le.\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ orb\_max\ =\ vect(i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00193}00193\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ if\ all\ the\ elements\ satisfies\ the\ dowhile\ ineq.\ the\ normalization\ of\ vect\ <\ 0.57..\ not\ possible}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ check\ normalization\ dstevx\ in\ molec\_pfaff\ '}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00196}00196\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00197}00197\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00198}00198\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00199}00199\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00200}00200\ \textcolor{comment}{!\ It\ cretes\ the\ operator\ U\_3\ and\ if\ \#debug\ also\ the}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00201}00201\ \textcolor{comment}{!\ checks\ the\ calculation\ maps\ the\ hermitian}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00202}00202\ \textcolor{comment}{!\ matrix\ \(\backslash\)lambda\_\{iH\}\ in\ \(\backslash\)lambda\_R}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00203}00203\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00204}00204\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00205}00205\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00206}00206\ \ *\ @brief\ transform\ skew-\/symmetric\ matrix\ to\ real\ symmetric\ form}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00207}00207\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00208}00208\ \ *\ this\ \textcolor{keyword}{subroutine\ }creates\ the\ transformation\ operator\ u3\ and\ transforms}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00209}00209\ \ *\ the\ skew-\/symmetric\ tridiagonal\ matrix\ to\ real\ symmetric\ form\ for}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00210}00210\ \ *\ eigenvalue\ calculation.\ the\ transformation\ maps\ the\ hermitian\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00211}00211\ \ *\ λ\_\{ih\}\ to\ the\ real\ symmetric\ matrix\ λ\_r.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00212}00212\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00213}00213\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00214}00214\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00215}00215\ \ *\ @param[in]\ detmattr\ tridiagonal\ skew-\/symmetric\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00216}00216\ \ *\ @param[out]\ lambdars\ real\ symmetric\ matrix\ in\ packed\ storage\ \textcolor{keyword}{format}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00217}00217\ \ *\ @param[out]\ u3\ transformation\ matrix\ for\ the\ conversion}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00218}00218\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00219}00219\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00220}00220\ \ *\ the\ \textcolor{keyword}{subroutine\ }performs\ the\ following\ operations:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00221}00221\ \ *\ 1.\ constructs\ the\ u3\ transformation\ matrix\ with\ alternating\ signs}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00222}00222\ \ *\ 2.\ extracts\ off-\/diagonal\ elements\ from\ detmattr\ to\ form\ lambdars}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00223}00223\ \ *\ 3.\ for\ real\ matrices(ipc=1):\ copies\ upper\ diagonal\ elements}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00224}00224\ \ *\ 4.\ for\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=2):\ copies\ real\ parts\ of\ upper\ diagonal}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00225}00225\ \ *\ 5.\ in\ debug\ mode:\ verifies\ the\ transformation\ is\ correct}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00226}00226\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00227}00227\ \ *\ the\ u3\ matrix\ has\ a\ specific\ pattern:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00228}00228\ \ *\ -\/\ elements(2i-\/1,i)\ =\ 1\ for\ i\ mod\ 4\ =\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00229}00229\ \ *\ -\/\ elements(2i,i)\ =\ 1\ for\ i\ mod\ 4\ =\ 2\ \ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00230}00230\ \ *\ -\/\ elements(2i-\/1,i)\ =\ -\/1\ for\ i\ mod\ 4\ =\ 3}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00231}00231\ \ *\ -\/\ elements(2i,i)\ =\ -\/1\ for\ i\ mod\ 4\ =\ 0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00232}00232\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00233}00233\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00234}00234\ \ *\ -\/\ lambdars\ is\ stored\ in\ packed\ \textcolor{keyword}{format}\ for\ lapack\ dstevx}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00235}00235\ \ *\ -\/\ debug\ mode\ includes\ verification\ of\ the\ transformation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00236}00236\ \ *\ -\/\ supports\ both\ real\ and\ \textcolor{keywordtype}{complex}\ input\ matrices}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00237}00237\ \ *\ -\/\ u3\ matrix\ is\ used\ in\ the\ final\ back-\/transformation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00238}00238\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00239}00239\ \ *\ @see\ pfatriag(),\ finalize\_mopfaff()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00240}00240\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00241}00241\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00242}00242\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00243}00243\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00244}00244\ \textcolor{keyword}{subroutine\ }symmtriang(nelorb\_c,\ ipc,\ detmattr,\ lambdars,\ U3)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00245}00245\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00246}00246\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00247}00247\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j\ \textcolor{comment}{!\ auxiliary\ variables}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00248}00248\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ detmattr(ipc*nelorb\_c,\ nelorb\_c),\ lambdars(2*nelorb\_c\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00249}00249\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ U3(2*nelorb\_c,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00250}00250\ \ \ \ \ \textcolor{comment}{!the\ lambda*\_test\ are\ matrices\ for\ the\ debug\ version\ of\ the\ code}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00251}00251\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ lambdars\_test(:,\ :),\ lambdaih\_test(:,\ :),\ auxmat(:,\ :)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00252}00252\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ zzero,\ zone}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00254}00254\ \ \ \ \ zzero\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00255}00255\ \ \ \ \ zone\ =\ (1.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00256}00256\ \ \ \ \ \textcolor{comment}{!building\ U3}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00257}00257\ \ \ \ \ u3\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00258}00258\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(i,\ 4)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ \ \ u3(2*i\ -\/\ 1,\ i)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (mod(i,\ 4)\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ u3(2*i,\ i)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (mod(i,\ 4)\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ u3(2*i\ -\/\ 1,\ i)\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ u3(2*i,\ i)\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00267}00267\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00268}00268\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00269}00269\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00270}00270\ \ \ \ \ lambdars\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00271}00271\ \ \ \ \ \textcolor{comment}{!building\ lambdars\ ipc.eq.1}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00272}00272\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ lambdars(nelorb\_c\ +\ i)\ =\ detmattr(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00275}00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00276}00276\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!building\ lambdars\ ipc.eq.2}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ lambdars(nelorb\_c\ +\ i)\ =\ detmattr(2*i\ -\/\ 1,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00279}00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00281}00281\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00282}00282\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00283}00283\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{allocate}\ (lambdars\_test(2*nelorb\_c,\ nelorb\_c),\ lambdaih\_test(2*nelorb\_c,\ nelorb\_c),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00285}00285\ \ \ \ \ lambdars\_test\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00286}00286\ \ \ \ \ lambdaih\_test\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00287}00287\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ lambdars\_test(2*i\ -\/\ 1,\ i\ +\ 1)\ =\ lambdars(i\ +\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ lambdars\_test(2*i\ +\ 1,\ i)\ =\ lambdars(i\ +\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ lambdaih\_test(2*i,\ i\ +\ 1)\ =\ lambdars(i\ +\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ lambdaih\_test(2*(i\ +\ 1),\ i)\ =\ -\/lambdars(i\ +\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00292}00292\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00293}00293\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00294}00294\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}C"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ u3,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lambdars\_test,\ nelorb\_c,\ zzero,\ auxmat,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00296}00296\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ auxmat,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ u3,\ nelorb\_c,\ zzero,\ lambdars\_test,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00298}00298\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00299}00299\ \ \ \ \ \textcolor{comment}{!call\ print\_matrix(nelorb\_c,\ 2,\ lambdars\_test)}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00301}00301\ \ \ \ \ lambdaih\_test\ =\ lambdaih\_test\ -\/\ lambdars\_test}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00302}00302\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}If\ everything\ is\ correct\ no\ output\ before\ <Check\ U3\ Completed>"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00303}00303\ \ \ \ \ \textcolor{keyword}{call\ }print\_matrix(nelorb\_c,\ nelorb\_c,\ 2,\ lambdaih\_test)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00304}00304\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Check\ U3\ Completed"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00305}00305\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00306}00306\ \ \ \ \ \textcolor{keyword}{deallocate}\ (lambdars\_test,\ lambdaih\_test,\ auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00307}00307\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00308}00308\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00309}00309\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00310}00310\ \textcolor{keyword}{end\ subroutine\ }symmtriang}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00311}00311\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00312}00312\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00313}00313\ \textcolor{comment}{!Using\ the\ pfapack\ library\ to\ tridiagonalize\ the}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00314}00314\ \textcolor{comment}{!matrix\ detmattr\ and\ to\ calculate\ U1}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00315}00315\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00316}00316\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00317}00317\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00318}00318\ \ *\ @brief\ tridiagonalize\ skew-\/symmetric\ matrix\ using\ pfaffian\ decomposition}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00319}00319\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00320}00320\ \ *\ this\ \textcolor{keyword}{subroutine\ }uses\ the\ pfaffian\ decomposition\ algorithm\ to\ tridiagonalize}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00321}00321\ \ *\ a\ skew-\/symmetric\ matrix.\ it\ employs\ the\ pfaffian\ library\ routines(dsktrd/zsktrd)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00322}00322\ \ *\ to\ reduce\ the\ matrix\ to\ tridiagonal\ form\ and\ compute\ the\ transformation\ matrix\ u1.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00323}00323\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00324}00324\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00325}00325\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00326}00326\ \ *\ @param[out]\ detmattr\ tridiagonal\ skew-\/symmetric\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00327}00327\ \ *\ @param[in,out]\ u1\ transformation\ matrix(input:\ original\ matrix,\ output:\ orthogonal\ matrix)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00328}00328\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00329}00329\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00330}00330\ \ *\ the\ \textcolor{keyword}{subroutine\ }performs\ the\ following\ steps:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00331}00331\ \ *\ 1.\ allocates\ work\ arrays\ for\ the\ tridiagonalization}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00332}00332\ \ *\ 2.\ for\ real\ matrices(ipc=1):}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00333}00333\ \ *\ \ \ \ -\/\ calls\ dsktrd\ to\ tridiagonalize\ the\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00334}00334\ \ *\ \ \ \ -\/\ extracts\ off-\/diagonal\ elements\ to\ detmattr}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00335}00335\ \ *\ \ \ \ -\/\ calls\ dorgtr\ to\ compute\ the\ orthogonal\ transformation\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00336}00336\ \ *\ 3.\ for\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=2):}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00337}00337\ \ *\ \ \ \ -\/\ calls\ zsktrd\ to\ tridiagonalize\ the\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00338}00338\ \ *\ \ \ \ -\/\ extracts\ real\ and\ imaginary\ parts\ of\ off-\/diagonal\ elements}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00339}00339\ \ *\ \ \ \ -\/\ calls\ zungtr\ to\ compute\ the\ unitary\ transformation\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00340}00340\ \ *\ 4.\ in\ debug\ mode:\ verifies\ the\ tridiagonalization\ is\ correct}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00341}00341\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00342}00342\ \ *\ the\ tridiagonal\ matrix\ detmattr\ has\ the\ form:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00343}00343\ \ *\ -\/\ diagonal\ elements\ are\ zero(skew-\/symmetric\ property)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00344}00344\ \ *\ -\/\ off-\/diagonal\ elements\ contain\ the\ tridiagonal\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00345}00345\ \ *\ -\/\ for\ \textcolor{keywordtype}{complex}\ matrices,\ \textcolor{keywordtype}{real}\ and\ imaginary\ parts\ are\ stored\ separately}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00346}00346\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00347}00347\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00348}00348\ \ *\ -\/\ uses\ pfaffian\ library\ routines(dsktrd/zsktrd,\ dorgtr/zungtr)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00349}00349\ \ *\ -\/\ work\ array\ \textcolor{keyword}{size}\ is\ determined\ by\ workspace\ query}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00350}00350\ \ *\ -\/\ debug\ mode\ includes\ verification\ of\ the\ decomposition}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00351}00351\ \ *\ -\/\ u1\ matrix\ is\ used\ in\ the\ final\ back-\/transformation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00352}00352\ \ *\ -\/\ supports\ both\ real\ and\ \textcolor{keywordtype}{complex}\ matrices}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00353}00353\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00354}00354\ \ *\ @see\ symmtriang(),\ finalize\_mopfaff()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00355}00355\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00356}00356\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00357}00357\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00358}00358\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00359}00359\ \textcolor{keyword}{subroutine\ }pfatriag(nelorb\_c,\ ipc,\ detmattr,\ U1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00360}00360\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00361}00361\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00362}00362\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ detmattr(ipc*nelorb\_c,\ nelorb\_c),\ U1(ipc*nelorb\_c,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00363}00363\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ lwork,\ info}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00364}00364\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ testr}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00365}00365\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ testc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00366}00366\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ aux(:),\ tau(:),\ work(:),\ auxmat(:,\ :)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00367}00367\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ zzero,\ zone}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00368}00368\ \ \ \ \ zzero\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00369}00369\ \ \ \ \ zone\ =\ (1.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00370}00370\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00371}00371\ \ \ \ \ \textcolor{keyword}{allocate}\ (aux(ipc*(nelorb\_c\ -\/\ 1)),\ tau(ipc*(nelorb\_c\ -\/\ 1)))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00372}00372\ \ \ \ \ detmattr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00373}00373\ \ \ \ \ lwork\ =\ -\/1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00374}00374\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00375}00375\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00376}00376\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{allocate}\ (auxmat(ipc*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00377}00377\ \ \ \ \ auxmat\ =\ u1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00378}00378\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00379}00379\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00380}00380\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Look\ for\ the\ documentation,\ this\ thing\ is\ a\ real\ mess}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsktrd(\textcolor{stringliteral}{"{}U"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ aux,\ tau,\ testr,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ lwork\ =\ idnint(testr)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (work(lwork))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsktrd(\textcolor{stringliteral}{"{}U"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ aux,\ tau,\ work,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Parameter\ n"{}},\ info,\ \textcolor{stringliteral}{"{}of\ dsktrd\ is\ incorrect"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00387}00387\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(i,\ i\ +\ 1)\ =\ u1(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(i\ +\ 1,\ i)\ =\ -\/u1(i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ u1(i,\ i\ +\ 1)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00392}00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dorgtr(\textcolor{stringliteral}{"{}U"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ tau,\ work,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Parameter\ n"{}},\ info,\ \textcolor{stringliteral}{"{}of\ dorgtr\ is\ incorrect"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00395}00395\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \textcolor{comment}{!Look\ for\ the\ documentation,\ this\ thing\ is\ a\ real\ mess}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zsktrd(\textcolor{stringliteral}{"{}U"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ aux,\ tau,\ testc,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ lwork\ =\ idnint(dreal(testc))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (work(lwork*ipc))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zsktrd(\textcolor{stringliteral}{"{}U"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ aux,\ tau,\ work,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Parameter\ n"{}},\ info,\ \textcolor{stringliteral}{"{}of\ dsktrd\ is\ incorrect"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00402}00402\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ stop}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(2*i\ -\/\ 1,\ i\ +\ 1)\ =\ u1(2*i\ -\/\ 1,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(2*i,\ i\ +\ 1)\ =\ u1(2*i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(2*(i\ +\ 1)\ -\/\ 1,\ i)\ =\ -\/u1(2*i\ -\/\ 1,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(2*(i\ +\ 1),\ i)\ =\ -\/u1(2*i,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ u1(2*i\ -\/\ 1,\ i\ +\ 1)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ u1(2*i,\ i\ +\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00411}00411\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00412}00412\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zungtr(\textcolor{stringliteral}{"{}U"{}},\ nelorb\_c,\ u1,\ nelorb\_c,\ tau,\ work,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Parameter\ n"{}},\ info,\ \textcolor{stringliteral}{"{}of\ dorgtr\ is\ incorrect"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ call\ print\_matrix(nelorb\_c,2,U1)}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00416}00416\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00417}00417\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00418}00418\ \textcolor{preprocessor}{\#ifdef\ \ DEBUG}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00419}00419\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{deallocate}\ (aux)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00420}00420\ \ \ \ \ \textcolor{keyword}{allocate}\ (aux(ipc*nelorb\_c*nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00421}00421\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ 1.d0,\ u1,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00423}00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmattr,\ nelorb\_c,\ 0.d0,\ aux,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}T"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ -\/1.d0,\ aux,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00425}00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ u1,\ nelorb\_c,\ 1.d0,\ auxmat,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00426}00426\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ u1,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmattr,\ nelorb\_c,\ zzero,\ aux,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}T"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ -\/zone,\ aux,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ u1,\ nelorb\_c,\ zone,\ auxmat,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00431}00431\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00432}00432\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}If\ everything\ is\ correct\ no\ output\ before\ <Check\ U1\ Completed>"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00433}00433\ \ \ \ \ \textcolor{keyword}{call\ }print\_matrix(nelorb\_c,\ nelorb\_c,\ ipc,\ auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00434}00434\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Check\ U1\ Completed"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00435}00435\ \ \ \ \ \textcolor{keyword}{deallocate}\ (auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00436}00436\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00437}00437\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{deallocate}\ (aux,\ tau,\ work)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00438}00438\ \textcolor{keyword}{end\ subroutine\ }pfatriag}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00439}00439\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00440}00440\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00441}00441\ \textcolor{comment}{!Applying\ the\ transformations\ to\ prepare\ the\ output}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00442}00442\ \textcolor{comment}{!eigenvectors\ and\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00443}00443\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00444}00444\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00445}00445\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00446}00446\ \ *\ @brief\ apply\ final\ transformations\ to\ obtain\ pfaffian\ molecular\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00447}00447\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00448}00448\ \ *\ this\ \textcolor{keyword}{subroutine\ }applies\ the\ final\ transformations\ to\ convert\ the\ diagonalized}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00449}00449\ \ *\ eigenvectors\ back\ to\ the\ original\ basis,\ producing\ the\ final\ pfaffian\ molecular}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00450}00450\ \ *\ orbitals.\ it\ handles\ the\ pairing\ of\ eigenvalues\ and\ the\ construction\ of}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00451}00451\ \ *\ proper\ molecular\ orbitals\ from\ the\ transformed\ eigenvectors.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00452}00452\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00453}00453\ \ *\ @param[in]\ lda\ leading\ dimension\ of\ the\ output\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00454}00454\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00455}00455\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00456}00456\ \ *\ @param[in]\ u1\ orthogonal\ transformation\ matrix\ from\ tridiagonalization}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00457}00457\ \ *\ @param[in]\ u3\ transformation\ matrix\ for\ real\ symmetric\ form}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00458}00458\ \ *\ @param[in]\ eigvalues\ eigenvalues\ from\ diagonalization}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00459}00459\ \ *\ @param[in]\ eigvect\ eigenvectors\ from\ diagonalization}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00460}00460\ \ *\ @param[out]\ outvl\ final\ eigenvalues(nelorb\_c/2\ values)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00461}00461\ \ *\ @param[out]\ outvct\ final\ molecular\ orbitals(ipc*lda\ x\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00462}00462\ \ *\ @param[in]\ detmat\_c\ original\ skew-\/symmetric\ matrix(for\ debug\ verification)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00463}00463\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00464}00464\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00465}00465\ \ *\ the\ \textcolor{keyword}{subroutine\ }performs\ the\ following\ transformations:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00466}00466\ \ *\ 1.\ applies\ u3\string^dagger\ to\ the\ eigenvectors\ to\ convert\ back\ from\ real\ symmetric\ form}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00467}00467\ \ *\ 2.\ handles\ eigenvalue\ pairing\ and\ selection:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00468}00468\ \ *\ \ \ \ -\/\ skew-\/symmetric\ matrices\ have\ paired\ eigenvalues\ ±λ}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00469}00469\ \ *\ \ \ \ -\/\ only\ positive\ eigenvalues\ are\ returned\ in\ outvl}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00470}00470\ \ *\ \ \ \ -\/\ eigenvectors\ are\ paired\ accordingly}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00471}00471\ \ *\ 3.\ applies\ u1\ transformation\ to\ convert\ back\ to\ original\ basis}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00472}00472\ \ *\ 4.\ handles\ special\ cases\ for\ odd\ numbers\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00473}00473\ \ *\ 5.\ in\ debug\ mode:\ verifies\ the\ final\ result\ matches\ the\ original\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00474}00474\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00475}00475\ \ *\ the\ eigenvalue\ pairing\ logic:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00476}00476\ \ *\ -\/\ normal\ pairs:\ eigenvalues\ with\ significant\ magnitude\ difference}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00477}00477\ \ *\ -\/\ singular\ pairs:\ eigenvalues\ corresponding\ to\ zero\ eigenvalues}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00478}00478\ \ *\ -\/\ single\ orbital:\ for\ odd\ numbers\ of\ orbitals,\ one\ unpaired\ orbital}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00479}00479\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00480}00480\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00481}00481\ \ *\ -\/\ uses\ lapack\ blas\ routines(dgemm/zgemm)\ for\ matrix\ multiplications}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00482}00482\ \ *\ -\/\ handles\ both\ real\ and\ \textcolor{keywordtype}{complex}\ matrices}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00483}00483\ \ *\ -\/\ includes\ numerical\ stability\ checks\ for\ eigenvalue\ pairing}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00484}00484\ \ *\ -\/\ debug\ mode\ verifies\ the\ complete\ transformation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00485}00485\ \ *\ -\/\ supports\ both\ even\ and\ odd\ numbers\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00486}00486\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00487}00487\ \ *\ @see\ pfaffian\_mo(),\ pfatriag(),\ symmtriang()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00488}00488\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00489}00489\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00490}00490\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00491}00491\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00492}00492\ \textcolor{keyword}{subroutine\ }finalize\_mopfaff(lda,\ nelorb\_c,\ ipc,\ U1,\ U3,\ eigvalues,\ eigvect,\ outvl,\ outvct,\ detmat\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00493}00493\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00494}00494\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc,\ lda}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00495}00495\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ ind\_even}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00496}00496\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ U1(ipc*nelorb\_c,\ nelorb\_c),\ U3(2*nelorb\_c,\ nelorb\_c),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00497}00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvect(nelorb\_c,\ nelorb\_c),\ eigvalues(nelorb\_c),\ outvct(ipc*lda,\ nelorb\_c),\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00498}00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ outvl(nelorb\_c),\ detmat\_c(ipc*lda,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00499}00499\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ auxvect(:,\ :),\ auxmat(:,\ :),\ auxvect2(:,\ :)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00500}00500\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ zzero,\ zone}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00501}00501\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ sqrt2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00502}00502\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00503}00503\ \ \ \ \ zzero\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00504}00504\ \ \ \ \ zone\ =\ (1.d0,\ 0.d0)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00505}00505\ \ \ \ \ \textcolor{keyword}{allocate}\ (auxvect(2*nelorb\_c,\ nelorb\_c),\ auxmat(2*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00506}00506\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00507}00507\ \ \ \ \ outvl\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00508}00508\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00509}00509\ \ \ \ \ auxvect(1:2*nelorb\_c\ -\/\ 1:2,\ 1:nelorb\_c)\ =\ eigvect(1:nelorb\_c,\ 1:nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00510}00510\ \ \ \ \ auxvect(2:2*nelorb\_c:2,\ 1:nelorb\_c)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00511}00511\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00512}00512\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}C"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ u3,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect,\ nelorb\_c,\ zzero,\ auxmat,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00514}00514\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00515}00515\ \ \ \ \ \textcolor{comment}{!Creating\ the\ vector\ needed\ for\ the\ tridiagonal\ rapresentation}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00516}00516\ \ \ \ \ outvct\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00517}00517\ \ \ \ \ sqrt2\ =\ 2.d0**0.5d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00518}00518\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00519}00519\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (auxvect2(nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00520}00520\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00521}00521\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ (nelorb\_c\ +\ 1)/2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ ind\_even\ =\ 2*(i\ -\/\ mod(nelorb\_c,\ 2))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00523}00523\ \ \ \ \ \ \ \ \ \ \ \ \ outvl(i)\ =\ eigvalues(nelorb\_c/2\ +\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00524}00524\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(outvl(i))\ .gt.\ dlamch(\textcolor{stringliteral}{'S'})*1000000\ .and.\ .not.\ (i\ .eq.\ 1\ .and.\ mod(nelorb\_c,\ 2)\ .ne.\ 0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00525}00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if\ it\ \ is\ not\ \ zero\ within\ the\ max\ cond\ number\ it\ should\ be\ condidered.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00526}00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ It\ is\ only\ a\ poorly\ converged\ non\ zero\ eigenvalue.\ Hopefully\ never\ happens}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00527}00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(abs((eigvalues(nelorb\_c/2\ +\ i)\ -\/\ eigvalues((nelorb\_c\ +\ 1)/2\ -\/\ i\ +\ 1))/\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00528}00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (2*eigvalues(nelorb\_c/2\ +\ i)))\ -\/\ 1.d0)\ .lt.\ dlamch(\textcolor{stringliteral}{'eps'})*1000000\ .or.\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00529}00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&abs(eigvalues(nelorb\_c/2\ +\ i)/eigvalues(nelorb\_c))\ .gt.\ dlamch(\textcolor{stringliteral}{'eps'}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00530}00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(1:nelorb\_c,\ 2*i\ -\/\ 1)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ i\ +\ nelorb\_c/2)*sqrt2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00531}00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(1:nelorb\_c,\ ind\_even)\ =\ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)*sqrt2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00532}00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Normal\ pair\ \ put\ in/from\ =\ ',2*i-\/1,ind\_even,i+nelorb\_c/2}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00533}00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00534}00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ consider\ this\ pair\ \ singular\ eigenvectors\ corresponding\ to\ zero\ eigenvalue}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00535}00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(:,\ 2*i\ -\/\ 1)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ i\ +\ nelorb\_c/2)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00536}00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00537}00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(:,\ ind\_even)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00538}00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00539}00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Singular\ pair\ put\ in/from\ =\ ',2*i-\/1,ind\_even,i+nelorb\_c/2,1-\/i+(nelorb\_c+1)/2}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00540}00540\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00541}00541\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00542}00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ 1\ .and.\ mod(nelorb\_c,\ 2)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00543}00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(:,\ 2*i\ -\/\ 1)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ i\ +\ nelorb\_c/2)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00544}00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00545}00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Singular\ single\ put\ in/from\ =\ ',2*i-\/1,i+nelorb\_c/2}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00546}00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00547}00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(:,\ 2*i\ -\/\ 1)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ i\ +\ nelorb\_c/2)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00548}00548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00549}00549\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2(:,\ ind\_even)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)\ +\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00550}00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00551}00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Singular\ pair\ II\ put\ in/from\ =\ ',2*i-\/1,ind\_even,i+nelorb\_c/2,1-\/i+(nelorb\_c+1)/2}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00552}00552\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00553}00553\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00554}00554\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00555}00555\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00556}00556\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ 1.d0,\ u1,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00557}00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect2,\ nelorb\_c,\ 0.d0,\ outvct,\ lda)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00558}00558\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (auxvect2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00559}00559\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00560}00560\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ (nelorb\_c\ +\ 1)/2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00561}00561\ \ \ \ \ \ \ \ \ \ \ \ \ ind\_even\ =\ 2*(i\ -\/\ mod(nelorb\_c,\ 2))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00562}00562\ \ \ \ \ \ \ \ \ \ \ \ \ outvl(i)\ =\ eigvalues(nelorb\_c/2\ +\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00563}00563\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(outvl(i))\ .gt.\ dlamch(\textcolor{stringliteral}{'S'})*1000000\ .and.\ .not.\ (i\ .eq.\ 1\ .and.\ mod(nelorb\_c,\ 2)\ .ne.\ 0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00564}00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if\ it\ \ is\ not\ \ zero\ within\ the\ max\ cond\ number\ it\ should\ be\ condidered.}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00565}00565\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ It\ \ is\ only\ a\ poorly\ converged\ non\ zero\ eigenvalue.\ Hopefully\ never\ happens}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00566}00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(abs((eigvalues(nelorb\_c/2\ +\ i)\ -\/\ eigvalues((nelorb\_c\ +\ 1)/2\ -\/\ i\ +\ 1))/\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (2*eigvalues(nelorb\_c/2\ +\ i)))\ -\/\ 1.d0)\ .lt.\ dlamch(\textcolor{stringliteral}{'eps'})*1000000\ .or.\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00568}00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&abs(eigvalues(nelorb\_c/2\ +\ i)/eigvalues(nelorb\_c))\ .gt.\ dlamch(\textcolor{stringliteral}{'eps'}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00569}00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c\ -\/\ 1:2,\ 2*i\ -\/\ 1)\ =\ auxmat(1:2*nelorb\_c\ -\/\ 1:2,\ i\ +\ nelorb\_c/2)*sqrt2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00570}00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c\ -\/\ 1:2,\ ind\_even)\ =\ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)*sqrt2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00571}00571\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00572}00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00573}00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c:2,\ 2*i\ -\/\ 1)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00574}00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ =\ auxmat(1:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00575}00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00576}00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c:2,\ ind\_even)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00577}00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ =\ auxmat(1:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00578}00578\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ auxmat(2:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00579}00579\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00580}00580\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00581}00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ 1\ .and.\ mod(nelorb\_c,\ 2)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00582}00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c:2,\ 2*i\ -\/\ 1)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00583}00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ =\ auxmat(1:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00584}00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00585}00585\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00586}00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c:2,\ 2*i\ -\/\ 1)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00587}00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ =\ auxmat(1:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00588}00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ auxmat(2:2*nelorb\_c:2,\ i\ +\ nelorb\_c/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00589}00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect(1:2*nelorb\_c:2,\ ind\_even)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00590}00590\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ =\ auxmat(1:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)\&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00591}00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ auxmat(2:2*nelorb\_c:2,\ 1\ -\/\ i\ +\ (nelorb\_c\ +\ 1)/2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00592}00592\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00593}00593\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00594}00594\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00595}00595\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00596}00596\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ u1,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00597}00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxvect,\ nelorb\_c,\ zzero,\ outvct,\ lda)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00598}00598\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00599}00599\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00600}00600\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00601}00601\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00602}00602\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{allocate}\ (auxvect2(ipc*nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00603}00603\ \ \ \ \ \textcolor{comment}{!Testing\ if\ the\ matrix\ has\ been\ built\ correctly}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00604}00604\ \ \ \ \ \textcolor{keyword}{deallocate}\ (auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00605}00605\ \ \ \ \ \textcolor{keyword}{allocate}\ (auxmat(ipc*lda,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00606}00606\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00607}00607\ \ \ \ \ \ \ \ \ auxmat(:,\ :)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00608}00608\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c/2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00609}00609\ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2*i\ -\/\ 1,\ 2*i)\ =\ -\/outvl(i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00610}00610\ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2*i,\ 2*i\ -\/\ 1)\ =\ outvl(i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00611}00611\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00612}00612\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ 1.d0,\ outvct,\ lda,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00613}00613\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat,\ lda,\ 0.d0,\ auxvect2,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00614}00614\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}T"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ 1.d0,\ auxvect2,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00615}00615\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ outvct,\ lda,\ 0.d0,\ auxmat,\ lda)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00616}00616\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00617}00617\ \ \ \ \ \ \ \ \ auxmat(:,\ :)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00618}00618\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c/2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00619}00619\ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2*(2*i\ -\/\ 1)\ -\/\ 1,\ 2*i)\ =\ -\/outvl(i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00620}00620\ \ \ \ \ \ \ \ \ \ \ \ \ auxmat(2*(2*i)\ -\/\ 1,\ 2*i\ -\/\ 1)\ =\ outvl(i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00621}00621\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00622}00622\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}N"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ outvct,\ lda,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00623}00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ auxmat,\ lda,\ zzero,\ auxvect2,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00624}00624\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{"{}N"{}},\ \textcolor{stringliteral}{"{}T"{}},\ nelorb\_c,\ nelorb\_c,\ nelorb\_c,\ zone,\ auxvect2,\ nelorb\_c,\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00625}00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ outvct,\ lda,\ zzero,\ auxmat,\ lda)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00626}00626\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00627}00627\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00628}00628\ \ \ \ \ auxmat\ =\ auxmat\ -\/\ detmat\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00629}00629\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00630}00630\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}If\ everything\ is\ correct\ no\ output\ before\ <Choice\ Completed>"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00631}00631\ \ \ \ \ \textcolor{keyword}{call\ }print\_matrix(lda,\ nelorb\_c,\ ipc,\ auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00632}00632\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}<Choice\ Completed>"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00633}00633\ \ \ \ \ \textcolor{keyword}{deallocate}\ (auxvect2)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00634}00634\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00635}00635\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00636}00636\ \ \ \ \ \textcolor{keyword}{deallocate}\ (auxvect,\ auxmat)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00637}00637\ \textcolor{keyword}{end\ subroutine\ }finalize\_mopfaff}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00638}00638\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00639}00639\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00640}00640\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00641}00641\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00642}00642\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ Auxiliary\ subroutines}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00643}00643\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00644}00644\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00645}00645\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00646}00646\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00647}00647\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00648}00648\ \textcolor{comment}{!Filling\ a\ skew\ symmetric\ tridiagonal\ matrix\ for\ tests}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00649}00649\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00650}00650\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00651}00651\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00652}00652\ \ *\ @brief\ fill\ a\ matrix\ with\ random\ skew-\/symmetric\ values\ for\ testing}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00653}00653\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00654}00654\ \ *\ this\ \textcolor{keyword}{subroutine\ }fills\ a\ matrix\ with\ random\ skew-\/symmetric\ values\ for}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00655}00655\ \ *\ testing\ and\ debugging\ purposes.\ it\ generates\ random\ numbers\ and}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00656}00656\ \ *\ constructs\ a\ skew-\/symmetric\ matrix\ with\ the\ property\ a(i,j)\ =\ -\/a(j,i).}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00657}00657\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00658}00658\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00659}00659\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00660}00660\ \ *\ @param[out]\ detmat\_c\ skew-\/symmetric\ matrix\ filled\ with\ random\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00661}00661\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00662}00662\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00663}00663\ \ *\ the\ \textcolor{keyword}{subroutine\ }generates\ random\ values\ in\ the\ range\ [-\/1,\ 1]\ and}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00664}00664\ \ *\ constructs\ a\ skew-\/symmetric\ matrix:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00665}00665\ \ *\ -\/\ for\ real\ matrices(ipc=1):\ a(i,j)\ =\ random\ \textcolor{keywordtype}{value},\ a(j,i)\ =\ -\/a(i,j)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00666}00666\ \ *\ -\/\ for\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=2):\ real\ and\ imaginary\ parts\ are\ generated\ separately}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00667}00667\ \ *\ -\/\ upper\ triangular\ elements\ are\ filled\ with\ random\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00668}00668\ \ *\ -\/\ lower\ triangular\ elements\ are\ set\ to\ negative\ of\ corresponding\ upper\ elements}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00669}00669\ \ *\ -\/\ diagonal\ elements\ remain\ zero(skew-\/symmetric\ property)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00670}00670\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00671}00671\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00672}00672\ \ *\ -\/\ uses\ fortran\ random\_number()\ for\ random\ \textcolor{keywordtype}{value}\ generation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00673}00673\ \ *\ -\/\ sets\ seed\ to\ 4\ for\ reproducible\ results}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00674}00674\ \ *\ -\/\ only\ fills\ elements\ \textcolor{keywordflow}{where}\ i+j\ >\ nelorb\_c\ for\ tridiagonal-\/like\ structure}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00675}00675\ \ *\ -\/\ used\ primarily\ for\ testing\ and\ debugging}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00676}00676\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00677}00677\ \ *\ @see\ fill\_tridiag(),\ print\_matrix()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00678}00678\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00679}00679\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00680}00680\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00681}00681\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00682}00682\ \textcolor{keyword}{subroutine\ }fill\_skw(nelorb\_c,\ ipc,\ detmat\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00683}00683\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00684}00684\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00685}00685\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ seed\ \textcolor{comment}{!Auxiliary\ variables}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00686}00686\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ x,\ detmat\_c(ipc*nelorb\_c,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00687}00687\ \ \ \ \ seed\ =\ 4}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00688}00688\ \ \ \ \ \textcolor{keyword}{call\ }random\_seed(seed)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00689}00689\ \ \ \ \ detmat\_c\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00690}00690\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00691}00691\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00692}00692\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00693}00693\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(x)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00694}00694\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ +\ j\ .gt.\ nelorb\_c)\ x\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00695}00695\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(j,\ i)\ =\ (x\ -\/\ 0.5)*2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00696}00696\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(i,\ j)\ =\ -\/detmat\_c(j,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00697}00697\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00698}00698\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00699}00699\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00700}00700\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00701}00701\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00702}00702\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(x)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00703}00703\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ +\ j\ .gt.\ nelorb\_c)\ x\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00704}00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*j\ -\/\ 1,\ i)\ =\ (x\ -\/\ 0.5)*2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00705}00705\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*i\ -\/\ 1,\ j)\ =\ -\/detmat\_c(2*j\ -\/\ 1,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00706}00706\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(x)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00707}00707\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ +\ j\ .gt.\ nelorb\_c)\ x\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00708}00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*j,\ i)\ =\ (x\ -\/\ 0.5)*2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00709}00709\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_c(2*i,\ j)\ =\ -\/detmat\_c(2*j,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00710}00710\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00711}00711\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00712}00712\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00713}00713\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00714}00714\ \textcolor{keyword}{end\ subroutine\ }fill\_skw}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00715}00715\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00716}00716\ \textcolor{comment}{!Filling\ a\ skew\ symmetric\ tridiagonal\ matrix\ for\ tests}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00717}00717\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00718}00718\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00719}00719\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00720}00720\ \ *\ @brief\ fill\ a\ matrix\ with\ random\ tridiagonal\ skew-\/symmetric\ values\ for\ testing}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00721}00721\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00722}00722\ \ *\ this\ \textcolor{keyword}{subroutine\ }fills\ a\ matrix\ with\ random\ tridiagonal\ skew-\/symmetric\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00723}00723\ \ *\ for\ testing\ and\ debugging\ purposes.\ it\ generates\ a\ matrix\ with\ non-\/zero}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00724}00724\ \ *\ elements\ only\ on\ the\ first\ superdiagonal\ and\ subdiagonal.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00725}00725\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00726}00726\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00727}00727\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00728}00728\ \ *\ @param[out]\ detmattr\ tridiagonal\ skew-\/symmetric\ matrix\ filled\ with\ random\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00729}00729\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00730}00730\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00731}00731\ \ *\ the\ \textcolor{keyword}{subroutine\ }constructs\ a\ tridiagonal\ skew-\/symmetric\ matrix:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00732}00732\ \ *\ -\/\ diagonal\ elements\ are\ zero(skew-\/symmetric\ property)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00733}00733\ \ *\ -\/\ superdiagonal\ elements(i,\ i+1)\ are\ filled\ with\ random\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00734}00734\ \ *\ -\/\ subdiagonal\ elements(i+1,\ i)\ are\ set\ to\ negative\ of\ corresponding\ superdiagonal}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00735}00735\ \ *\ -\/\ for\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=2):\ real\ and\ imaginary\ parts\ are\ generated\ separately}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00736}00736\ \ *\ -\/\ all\ other\ elements\ remain\ zero}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00737}00737\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00738}00738\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00739}00739\ \ *\ -\/\ uses\ fortran\ random\_number()\ for\ random\ \textcolor{keywordtype}{value}\ generation}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00740}00740\ \ *\ -\/\ sets\ seed\ to\ 4\ for\ reproducible\ results}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00741}00741\ \ *\ -\/\ creates\ a\ proper\ tridiagonal\ structure}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00742}00742\ \ *\ -\/\ used\ primarily\ for\ testing\ tridiagonalization\ algorithms}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00743}00743\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00744}00744\ \ *\ @see\ fill\_skw(),\ print\_matrix()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00745}00745\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00746}00746\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00747}00747\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00748}00748\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00749}00749\ \textcolor{keyword}{subroutine\ }fill\_tridiag(nelorb\_c,\ ipc,\ detmattr)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00750}00750\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00751}00751\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ ipc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00752}00752\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ seed\ \textcolor{comment}{!Auxiliary\ variables}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00753}00753\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ x,\ detmattr(ipc*nelorb\_c,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00754}00754\ \ \ \ \ seed\ =\ 4}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00755}00755\ \ \ \ \ \textcolor{keyword}{call\ }random\_seed(seed)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00756}00756\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00757}00757\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00758}00758\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ipc*nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00759}00759\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00760}00760\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00761}00761\ \ \ \ \ \ \ \ \ j\ =\ i\ +\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00762}00762\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ nelorb\_c)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00763}00763\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00764}00764\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(x)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00765}00765\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(2*j\ -\/\ 1,\ i)\ =\ (x\ -\/\ 0.5)*2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00766}00766\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00767}00767\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(x)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00768}00768\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(ipc*j,\ i)\ =\ (x\ -\/\ 0.5)*2}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00769}00769\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00770}00770\ \ \ \ \ \ \ \ \ j\ =\ i\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00771}00771\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00772}00772\ \ \ \ \ \ \ \ \ \ \ \ \ detmattr(ipc*j,\ i)\ =\ -\/detmattr(ipc*i,\ j)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00773}00773\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ detmattr(ipc*j\ -\/\ 1,\ i)\ =\ -\/detmattr(ipc*i\ -\/\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00774}00774\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00775}00775\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00776}00776\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00777}00777\ \textcolor{keyword}{end\ subroutine\ }fill\_tridiag}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00778}00778\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00779}00779\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00780}00780\ \textcolor{comment}{!Subroutine\ that\ \ matrices}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00781}00781\ \textcolor{comment}{!!!!!!!!!!!!!!!!!!!!!!!!!!!!}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00782}00782\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00783}00783\ /**}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00784}00784\ \ *\ @brief\ print\ matrix\ elements\ above\ a\ threshold\ for\ debugging}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00785}00785\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00786}00786\ \ *\ this\ \textcolor{keyword}{subroutine\ }prints\ matrix\ elements\ that\ exceed\ a\ specified\ threshold}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00787}00787\ \ *\ \textcolor{keywordtype}{value},\ useful\ for\ debugging\ and\ verification\ of\ matrix\ operations.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00788}00788\ \ *\ only\ elements\ with\ magnitude\ greater\ than\ the\ threshold\ are\ printed.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00789}00789\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00790}00790\ \ *\ @param[in]\ lda\ leading\ dimension\ of\ the\ matrix}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00791}00791\ \ *\ @param[in]\ nelorb\_c\ number\ of\ orbitals(columns)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00792}00792\ \ *\ @param[in]\ ipc\ \textcolor{keywordtype}{Complex}\ flag\ (1=real,\ 2=\mbox{\hyperlink{structcomplex}{complex}})}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00793}00793\ \ *\ @param[in]\ detmat\_c\ matrix\ to\ be\ printed}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00794}00794\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00795}00795\ \ *\ @details}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00796}00796\ \ *\ the\ \textcolor{keyword}{subroutine\ }prints\ matrix\ elements\ in\ the\ format:}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00797}00797\ \ *\ -\/\ for\ real\ matrices(ipc=1):\ \textcolor{stringliteral}{"{}j\ i\ value"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00798}00798\ \ *\ -\/\ for\ \textcolor{keywordtype}{complex}\ matrices\ (ipc=2):\ \textcolor{stringliteral}{"{}j\ i\ real\_part\ imaginary\_part"{}}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00799}00799\ \ *\ -\/\ only\ elements\ with\ magnitude\ >\ prec\ are\ printed}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00800}00800\ \ *\ -\/\ default\ precision\ threshold\ is\ 1e-\/7}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00801}00801\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00802}00802\ \ *\ @note}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00803}00803\ \ *\ -\/\ used\ primarily\ for\ debugging\ matrix\ operations}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00804}00804\ \ *\ -\/\ helps\ verify\ matrix\ structure\ and\ values}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00805}00805\ \ *\ -\/\ suppresses\ printing\ of\ very\ small\ elements}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00806}00806\ \ *\ -\/\ output\ \textcolor{keyword}{format}\ is\ suitable\ for\ manual\ inspection}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00807}00807\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00808}00808\ \ *\ @see\ fill\_skw(),\ fill\_tridiag()}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00809}00809\ \ *}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00810}00810\ \ *\ @author\ c.g.}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00811}00811\ \ *\ @date\ 2022}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00812}00812\ \ */}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00813}00813\ \textcolor{keyword}{subroutine\ }print\_matrix(lda,\ nelorb\_c,\ ipc,\ detmat\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00814}00814\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00815}00815\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelorb\_c,\ lda,\ ipc}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00816}00816\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j\ \textcolor{comment}{!Auxiliary\ variables}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00817}00817\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ detmat\_c(ipc*lda,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00818}00818\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ prec}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00819}00819\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00820}00820\ \ \ \ \ prec\ =\ 1d-\/7}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00821}00821\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00822}00822\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00823}00823\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00824}00824\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00825}00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(detmat\_c(2*j,\ i))\ +\ abs(detmat\_c(2*j\ -\/\ 1,\ i))\ .gt.\ prec)\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00826}00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ j,\ i,\ detmat\_c(2*j\ -\/\ 1,\ i),\ detmat\_c(2*j,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00827}00827\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00828}00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(detmat\_c(j,\ i))\ .gt.\ prec)\ \&}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00829}00829\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ j,\ i,\ detmat\_c(j,\ i)}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00830}00830\ }
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00831}00831\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00832}00832\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00833}00833\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{molec__pfaff_8f90_source_l00834}00834\ \textcolor{keyword}{end\ subroutine\ }print\_matrix}
+
+\end{DoxyCode}

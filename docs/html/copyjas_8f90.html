@@ -96,6 +96,8 @@ $(function(){initNavTree('copyjas_8f90.html','',''); });
 
 <p>Program for copying and transferring Jastrow parameters between TurboRVB wave functions.  
 <a href="#details">More...</a></p>
+
+<p><a href="copyjas_8f90_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
@@ -115,6 +117,8 @@ Functions/Subroutines</h2></td></tr>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Program for copying and transferring Jastrow parameters between TurboRVB wave functions. </p>
 <p>This program reads two TurboRVB wave functions (fort.10 and fort.10_new) and copies Jastrow parameters from one to the other. It handles orbital mapping, parameter scaling, and supports various modes including k-points calculations, ion position copying, and contracted orbital parameter transfer. </p>
+
+<p class="definition">Definition in file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a0f32e8dbd919391f631d4737f90f4855" name="a0f32e8dbd919391f631d4737f90f4855"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0f32e8dbd919391f631d4737f90f4855">&#9670;&#160;</a></span>copyin()</h2>
@@ -179,6 +183,43 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00855">855</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  858</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  859</span>    <span class="keywordtype">integer</span> nelorbj_old, nelorbj_new, i, j, nel_new, nel_old, nelorbu</div>
+<div class="line"><span class="lineno">  860</span>    real*8 jastrow_old(nelorbj_old, *), jastrow_new(nelorbj_new, nelorbj_new)</div>
+<div class="line"><span class="lineno">  861</span>    real*8 cost</div>
+<div class="line"><span class="lineno">  862</span>    <span class="keywordtype">integer</span> mapj(*)</div>
+<div class="line"><span class="lineno">  863</span>    <span class="keywordtype">logical</span> nomul, yescost</div>
+<div class="line"><span class="lineno">  864</span>    nelorbu = nelorbj_old</div>
+<div class="line"><span class="lineno">  865</span>    yescost = .false.</div>
+<div class="line"><span class="lineno">  866</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  867</span>        <span class="keywordflow">if</span> (mapj(i) .lt. 0) yescost = .true.</div>
+<div class="line"><span class="lineno">  868</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  869</span>    <span class="keywordflow">if</span> (yescost) nelorbu = nelorbu - 1</div>
+<div class="line"><span class="lineno">  870</span>    cost = dble(nel_old - 1)/dble(nel_new - 1)</div>
+<div class="line"><span class="lineno">  871</span>    jastrow_new = 0.d0</div>
+<div class="line"><span class="lineno">  872</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  873</span>        <span class="keywordflow">do</span> j = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  874</span>            <span class="keywordflow">if</span> (mapj(i) .ne. 0 .and. mapj(j) .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  875</span>                <span class="keywordflow">if</span> (mapj(i) .lt. 0 .or. mapj(j) .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  876</span>                    jastrow_new(i, j) = jastrow_new(i, j) + jastrow_old(abs(mapj(i)), abs(mapj(j)))*cost</div>
+<div class="line"><span class="lineno">  877</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  878</span><span class="comment">!                if i and j refer to the same subsystem</span></div>
+<div class="line"><span class="lineno">  879</span>                    <span class="keywordflow">if</span> ((i - 1)/nelorbu .eq. (j - 1)/nelorbu .or. nomul) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  880</span>                        jastrow_new(i, j) = jastrow_old(abs(mapj(i)), abs(mapj(j)))</div>
+<div class="line"><span class="lineno">  881</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  882</span>                        jastrow_new(i, j) = 0.d0</div>
+<div class="line"><span class="lineno">  883</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  884</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  885</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  886</span>                jastrow_new(i, j) = 0.d0</div>
+<div class="line"><span class="lineno">  887</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  888</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  889</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  890</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="copyjas_8f90_source.html#l00027">copyjas()</a>.</p>
 
 </div>
 </div>
@@ -246,6 +287,54 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00903">903</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  904</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  905</span>    <span class="keywordtype">integer</span> nelorbj_old, nelorbj_new, i, j, nelup, neldo, nelorbh, nelorbu</div>
+<div class="line"><span class="lineno">  906</span>    real*8 jastrow_old(nelorbj_old, *), jastrow_new(nelorbj_new, *)</div>
+<div class="line"><span class="lineno">  907</span>    <span class="keywordtype">integer</span> mapj(*)</div>
+<div class="line"><span class="lineno">  908</span>    real*8 cost(2, 2)</div>
+<div class="line"><span class="lineno">  909</span>    <span class="keywordtype">logical</span> nomul, yescost</div>
+<div class="line"><span class="lineno">  910</span>    nelorbu = nelorbj_old</div>
+<div class="line"><span class="lineno">  911</span>    yescost = .false.</div>
+<div class="line"><span class="lineno">  912</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  913</span>        <span class="keywordflow">if</span> (mapj(i) .lt. 0) yescost = .true.</div>
+<div class="line"><span class="lineno">  914</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  915</span>    <span class="keywordflow">if</span> (yescost) nelorbu = nelorbu - 1</div>
+<div class="line"><span class="lineno">  916</span> </div>
+<div class="line"><span class="lineno">  917</span>    cost = 0.d0</div>
+<div class="line"><span class="lineno">  918</span>    cost(1, 2) = dble(nelup + neldo - 1)/dble(nelup)</div>
+<div class="line"><span class="lineno">  919</span>    <span class="keywordflow">if</span> (nelup .gt. 1) cost(1, 1) = dble(nelup + neldo - 1)/dble(nelup - 1)</div>
+<div class="line"><span class="lineno">  920</span>    <span class="keywordflow">if</span> (neldo .gt. 1) cost(2, 2) = dble(nelup + neldo - 1)/dble(neldo - 1)</div>
+<div class="line"><span class="lineno">  921</span>    <span class="keywordflow">if</span> (neldo .gt. 0) cost(2, 1) = dble(nelup + neldo - 1)/dble(neldo)</div>
+<div class="line"><span class="lineno">  922</span>    nelorbh = nelorbj_new/2</div>
+<div class="line"><span class="lineno">  923</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  924</span>        <span class="keywordflow">do</span> j = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  925</span><span class="comment">!                if i and j refer to the same subsystem</span></div>
+<div class="line"><span class="lineno">  926</span>            <span class="keywordflow">if</span> (mapj(i) .ne. 0 .and. mapj(j) .ne. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  927</span>                <span class="keywordflow">if</span> (mapj(i) .lt. 0 .or. mapj(j) .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  928</span>                    jastrow_new(i, j) = jastrow_old(abs(mapj(i)), abs(mapj(j)))</div>
+<div class="line"><span class="lineno">  929</span>                    <span class="keywordflow">if</span> (mapj(i) .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  930</span>                        jastrow_new(i, j) = jastrow_new(i, j)*cost((i - 1)/nelorbh + 1, (j - 1)/nelorbh + 1)</div>
+<div class="line"><span class="lineno">  931</span>                    <span class="keywordflow">elseif</span> (mapj(j) .lt. 0) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  932</span>                        jastrow_new(i, j) = jastrow_new(i, j)*cost((j - 1)/nelorbh + 1, (i - 1)/nelorbh + 1)</div>
+<div class="line"><span class="lineno">  933</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  934</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  935</span><span class="comment">!                if i and j refer to the same subsystem</span></div>
+<div class="line"><span class="lineno">  936</span>                    <span class="keywordflow">if</span> ((i - 1)/nelorbu .eq. (j - 1)/nelorbu .or. nomul) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  937</span>                        jastrow_new(i, j) = jastrow_old(abs(mapj(i)), abs(mapj(j)))</div>
+<div class="line"><span class="lineno">  938</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  939</span>                        jastrow_new(i, j) = 0.d0</div>
+<div class="line"><span class="lineno">  940</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  941</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  942</span>            <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  943</span>                jastrow_new(i, j) = 0.d0</div>
+<div class="line"><span class="lineno">  944</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  945</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  946</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  947</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="copyjas_8f90_source.html#l00027">copyjas()</a>.</p>
+
 </div>
 </div>
 <a id="a433052fc2e0b63d9139a9787007cd706" name="a433052fc2e0b63d9139a9787007cd706"></a>
@@ -300,6 +389,38 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00959">959</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  960</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  961</span>    <span class="keywordtype">integer</span> nelorbj_old, nelorbj_new, i, j, nelorbjh, nelorbu</div>
+<div class="line"><span class="lineno">  962</span>    real*8 jastrow_old(nelorbj_old, *), jastrow_new(nelorbj_new, *)</div>
+<div class="line"><span class="lineno">  963</span>    <span class="keywordtype">integer</span> mapj(*)</div>
+<div class="line"><span class="lineno">  964</span>    <span class="keywordtype">logical</span> nomul, yescost</div>
+<div class="line"><span class="lineno">  965</span>    nelorbu = nelorbj_old</div>
+<div class="line"><span class="lineno">  966</span>    yescost = .false.</div>
+<div class="line"><span class="lineno">  967</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  968</span>        <span class="keywordflow">if</span> (mapj(i) .lt. 0) yescost = .true.</div>
+<div class="line"><span class="lineno">  969</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  970</span>    <span class="keywordflow">if</span> (yescost) nelorbu = nelorbu - 1</div>
+<div class="line"><span class="lineno">  971</span> </div>
+<div class="line"><span class="lineno">  972</span>    nelorbjh = nelorbj_new/2</div>
+<div class="line"><span class="lineno">  973</span>    <span class="keywordflow">do</span> i = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  974</span>        <span class="keywordflow">do</span> j = 1, nelorbj_new</div>
+<div class="line"><span class="lineno">  975</span>            <span class="keywordflow">if</span> (mapj(i) .ne. 0 .and. mapj(j) .ne. 0 .and. ((i - 1)/nelorbu .eq. (j - 1)/nelorbu .or. nomul)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  976</span>                <span class="keywordflow">if</span> (i .gt. nelorbjh .and. j .le. nelorbjh .or.&amp;</div>
+<div class="line"><span class="lineno">  977</span>                        &amp;   i .le. nelorbjh .and. j .gt. nelorbjh) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  978</span>                    jastrow_new(i, j) = jastrow_new(i, j) - jastrow_old(abs(mapj(i)), abs(mapj(j)))</div>
+<div class="line"><span class="lineno">  979</span>                <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  980</span>                    jastrow_new(i, j) = jastrow_new(i, j) + jastrow_old(abs(mapj(i)), abs(mapj(j)))</div>
+<div class="line"><span class="lineno">  981</span><span class="keywordflow">                end if</span></div>
+<div class="line"><span class="lineno">  982</span>                <span class="comment">!            else</span></div>
+<div class="line"><span class="lineno">  983</span>                <span class="comment">!             jastrow_new(i,j)=0.d0</span></div>
+<div class="line"><span class="lineno">  984</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  985</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  986</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  987</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="copyjas_8f90_source.html#l00027">copyjas()</a>.</p>
+
 </div>
 </div>
 <a id="a09432fd9942265e11aa06f4ac41dce1d" name="a09432fd9942265e11aa06f4ac41dce1d"></a>
@@ -316,6 +437,10 @@ Functions/Subroutines</h2></td></tr>
 
 <p>Main program for copying Jastrow parameters between wave functions. </p>
 <p>Reads source and target wave functions, maps orbitals between different bases, copies Jastrow parameters with appropriate scaling, and supports multiple operation modes including k-points, ion position copying, and parameter transfer. </p>
+
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00027">27</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+
+<p class="reference">References <a class="el" href="copyjas_8f90_source.html#l00858">copyin()</a>, <a class="el" href="copyjas_8f90_source.html#l00904">copyin2to1()</a>, <a class="el" href="copyjas_8f90_source.html#l00960">copyinsz()</a>, <a class="el" href="copyjas_8f90_source.html#l00780">mapping()</a>, and <a class="el" href="copyjas_8f90_source.html#l00710">mappingu()</a>.</p>
 
 </div>
 </div>
@@ -412,6 +537,72 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00779">779</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  780</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  781</span>    <span class="keywordtype">integer</span> nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew, adr, adrnew&amp;</div>
+<div class="line"><span class="lineno">  782</span>            &amp;, nion_c, nion</div>
+<div class="line"><span class="lineno">  783</span>    <span class="keywordtype">integer</span> mult_c(*), ioccup_c(*), kion_c(*), mult(*), ioccup(*), kion(*), map(*), ioptorb_c(*), ioptorb(*)</div>
+<div class="line"><span class="lineno">  784</span>    indorbnew = 0</div>
+<div class="line"><span class="lineno">  785</span>    indnew = 0</div>
+<div class="line"><span class="lineno">  786</span>    <span class="keywordflow">do</span> k = 1, nshell</div>
+<div class="line"><span class="lineno">  787</span>        <span class="keywordflow">if</span> (k .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  788</span>            adr = 0</div>
+<div class="line"><span class="lineno">  789</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  790</span>            <span class="keywordflow">if</span> (kion(k - 1) .ne. kion(k) .or. ioptorb(k - 1) .ne. ioptorb(k)) adr = 0</div>
+<div class="line"><span class="lineno">  791</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  792</span>        <span class="keywordflow">do</span> l = 1, mult(k)</div>
+<div class="line"><span class="lineno">  793</span>            indnew = indnew + 1</div>
+<div class="line"><span class="lineno">  794</span>            <span class="keywordflow">if</span> (ioccup(indnew) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  795</span>                adr = adr + 1</div>
+<div class="line"><span class="lineno">  796</span>                indorbnew = indorbnew + 1</div>
+<div class="line"><span class="lineno">  797</span>                map(indorbnew) = 0</div>
+<div class="line"><span class="lineno">  798</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  799</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  800</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  801</span>    <span class="keyword">write</span> (6, *) <span class="stringliteral">&#39; New basis inside =&#39;</span>, indorbnew</div>
+<div class="line"><span class="lineno">  802</span>    indorb = 0</div>
+<div class="line"><span class="lineno">  803</span>    ind = 0</div>
+<div class="line"><span class="lineno">  804</span>    <span class="keywordflow">do</span> i = 1, nshell_c</div>
+<div class="line"><span class="lineno">  805</span>        <span class="keywordflow">if</span> (i .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  806</span>            adr = 0</div>
+<div class="line"><span class="lineno">  807</span>        <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  808</span><span class="comment">!    if i-term points to different atom or orbital compared to the previous one</span></div>
+<div class="line"><span class="lineno">  809</span>            <span class="keywordflow">if</span> (kion_c(i - 1) .ne. kion_c(i) .or. ioptorb_c(i - 1) .ne. ioptorb_c(i)) adr = 0</div>
+<div class="line"><span class="lineno">  810</span><span class="keywordflow">        end if</span></div>
+<div class="line"><span class="lineno">  811</span>        <span class="keywordflow">do</span> j = 1, mult_c(i)</div>
+<div class="line"><span class="lineno">  812</span>            ind = ind + 1</div>
+<div class="line"><span class="lineno">  813</span>            <span class="keywordflow">if</span> (ioccup_c(ind) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  814</span>                indorb = indorb + 1</div>
+<div class="line"><span class="lineno">  815</span>                adr = adr + 1</div>
+<div class="line"><span class="lineno">  816</span>                indorbnew = 0</div>
+<div class="line"><span class="lineno">  817</span>                indnew = 0</div>
+<div class="line"><span class="lineno">  818</span>                <span class="keywordflow">do</span> k = 1, nshell</div>
+<div class="line"><span class="lineno">  819</span>                    <span class="keywordflow">if</span> (k .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  820</span>                        adrnew = 0</div>
+<div class="line"><span class="lineno">  821</span>                    <span class="keywordflow">else</span></div>
+<div class="line"><span class="lineno">  822</span>                        <span class="keywordflow">if</span> (kion(k) .ne. kion(k - 1) .or. ioptorb(k) .ne. ioptorb(k - 1)) adrnew = 0</div>
+<div class="line"><span class="lineno">  823</span><span class="keywordflow">                    end if</span></div>
+<div class="line"><span class="lineno">  824</span>                    <span class="keywordflow">do</span> l = 1, mult(k)</div>
+<div class="line"><span class="lineno">  825</span>                        indnew = indnew + 1</div>
+<div class="line"><span class="lineno">  826</span>                        <span class="keywordflow">if</span> (ioccup(indnew) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  827</span>                            adrnew = adrnew + 1</div>
+<div class="line"><span class="lineno">  828</span>                            indorbnew = indorbnew + 1</div>
+<div class="line"><span class="lineno">  829</span>                            <span class="keywordflow">if</span> ((kion(k) .eq. kion_c(i) .and. (adrnew .eq. adr .and. ioptorb(k) .eq. ioptorb_c(i))) &amp;</div>
+<div class="line"><span class="lineno">  830</span>                                .or. (ioptorb(k) .eq. 200 .and. ioptorb_c(i) .eq. 200)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  831</span>                                map(indorbnew) = indorb</div>
+<div class="line"><span class="lineno">  832</span>                                <span class="keywordflow">if</span> (ioptorb(k) .eq. 200) map(indorbnew) = -map(indorbnew)</div>
+<div class="line"><span class="lineno">  833</span><span class="comment">!                                                write(6,*) &#39; Match found =&#39;,kion(k),kion_c(i),indorb,indorbnew,adr,adrnew</span></div>
+<div class="line"><span class="lineno">  834</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  835</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  836</span><span class="keywordflow">                    end do</span></div>
+<div class="line"><span class="lineno">  837</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno">  838</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  839</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  840</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  841</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="copyjas_8f90_source.html#l00027">copyjas()</a>.</p>
 
 </div>
 </div>
@@ -518,6 +709,61 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+<p class="definition">Definition at line <a class="el" href="copyjas_8f90_source.html#l00707">707</a> of file <a class="el" href="copyjas_8f90_source.html">copyjas.f90</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  710</span>    <span class="keywordtype">implicit none</span></div>
+<div class="line"><span class="lineno">  711</span>    <span class="keywordtype">integer</span> nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew&amp;</div>
+<div class="line"><span class="lineno">  712</span>            &amp;, nion_c, nion</div>
+<div class="line"><span class="lineno">  713</span>    <span class="keywordtype">integer</span> mult_c(*), ioccup_c(*), kion_c(*), mult(*), ioccup(*), kion(*), map(*), ioptorb_c(*), ioptorb(*)</div>
+<div class="line"><span class="lineno">  714</span>    real*8 vju_c(*), vju(*)</div>
+<div class="line"><span class="lineno">  715</span>    <span class="keywordtype">integer</span> indp, indp_c, indpu, indpu_c</div>
+<div class="line"><span class="lineno">  716</span>    indorbnew = 0</div>
+<div class="line"><span class="lineno">  717</span>    indnew = 0</div>
+<div class="line"><span class="lineno">  718</span>    <span class="keywordflow">do</span> k = 1, nshell</div>
+<div class="line"><span class="lineno">  719</span>        <span class="keywordflow">do</span> l = 1, mult(k)</div>
+<div class="line"><span class="lineno">  720</span>            indnew = indnew + 1</div>
+<div class="line"><span class="lineno">  721</span>            <span class="keywordflow">if</span> (ioccup(indnew) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  722</span>                indorbnew = indorbnew + 1</div>
+<div class="line"><span class="lineno">  723</span>                map(indorbnew) = 0</div>
+<div class="line"><span class="lineno">  724</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  725</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  726</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  727</span>    indorb = 0</div>
+<div class="line"><span class="lineno">  728</span>    ind = 0</div>
+<div class="line"><span class="lineno">  729</span>    indp_c = 0</div>
+<div class="line"><span class="lineno">  730</span>    <span class="keywordflow">do</span> i = 1, nshell_c</div>
+<div class="line"><span class="lineno">  731</span>        <span class="keywordflow">if</span> (ioptorb_c(i) .ne. 200) indp_c = indp_c + 1</div>
+<div class="line"><span class="lineno">  732</span>        indpu_c = max(indp_c, 1) <span class="comment">! to avoid the first orbital is 200</span></div>
+<div class="line"><span class="lineno">  733</span>        <span class="keywordflow">do</span> j = 1, mult_c(i)</div>
+<div class="line"><span class="lineno">  734</span>            ind = ind + 1</div>
+<div class="line"><span class="lineno">  735</span>            <span class="keywordflow">if</span> (ioccup_c(ind) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  736</span>                indorb = indorb + 1</div>
+<div class="line"><span class="lineno">  737</span>                indorbnew = 0</div>
+<div class="line"><span class="lineno">  738</span>                indnew = 0</div>
+<div class="line"><span class="lineno">  739</span>                indp = 0</div>
+<div class="line"><span class="lineno">  740</span>                <span class="keywordflow">do</span> k = 1, nshell</div>
+<div class="line"><span class="lineno">  741</span>                    <span class="keywordflow">if</span> (ioptorb(k) .ne. 200) indp = indp + 1</div>
+<div class="line"><span class="lineno">  742</span>                    indpu = max(indp, 1) <span class="comment">! to avoid the first orbital is 200</span></div>
+<div class="line"><span class="lineno">  743</span>                    <span class="keywordflow">do</span> l = 1, mult(k)</div>
+<div class="line"><span class="lineno">  744</span>                        indnew = indnew + 1</div>
+<div class="line"><span class="lineno">  745</span>                        <span class="keywordflow">if</span> (ioccup(indnew) .eq. 1) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  746</span>                            indorbnew = indorbnew + 1</div>
+<div class="line"><span class="lineno">  747</span>                            <span class="keywordflow">if</span> ((l .eq. j .and. kion(k) .eq. kion_c(i) .and.&amp;</div>
+<div class="line"><span class="lineno">  748</span>                           &amp;(ioptorb(k) .eq. ioptorb_c(i)) .and. abs(vju(indpu) - vju_c(indpu_c)) .le. 1d-4)&amp;</div>
+<div class="line"><span class="lineno">  749</span>                           &amp;.or. (ioptorb(k) .eq. 200 .and. ioptorb_c(i) .eq. 200)) <span class="keywordflow">then</span></div>
+<div class="line"><span class="lineno">  750</span>                                map(indorbnew) = indorb</div>
+<div class="line"><span class="lineno">  751</span>                                <span class="keywordflow">if</span> (ioptorb(k) .eq. 200) map(indorbnew) = -map(indorbnew)</div>
+<div class="line"><span class="lineno">  752</span><span class="comment">!                                                write(6,*) &#39; Match found =&#39;,kion(k),kion_c(i),indorb,indorbnew,adr,adrnew</span></div>
+<div class="line"><span class="lineno">  753</span><span class="keywordflow">                            end if</span></div>
+<div class="line"><span class="lineno">  754</span><span class="keywordflow">                        end if</span></div>
+<div class="line"><span class="lineno">  755</span><span class="keywordflow">                    end do</span></div>
+<div class="line"><span class="lineno">  756</span><span class="keywordflow">                end do</span></div>
+<div class="line"><span class="lineno">  757</span><span class="keywordflow">            end if</span></div>
+<div class="line"><span class="lineno">  758</span><span class="keywordflow">        end do</span></div>
+<div class="line"><span class="lineno">  759</span><span class="keywordflow">    end do</span></div>
+<div class="line"><span class="lineno">  760</span>    <span class="keywordflow">return</span></div>
+</div><!-- fragment -->
+<p class="reference">Referenced by <a class="el" href="copyjas_8f90_source.html#l00027">copyjas()</a>.</p>
 
 </div>
 </div>

@@ -1,0 +1,140 @@
+\doxysection{uptable.\+f90}
+\hypertarget{uptable_8f90_source}{}\label{uptable_8f90_source}\index{src/a\_turborvb/uptable.f90@{src/a\_turborvb/uptable.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Update\ table\ and\ tabler\ for\ real\ wave\ function\ ratios}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ Updates\ the\ table\ and\ tabler\ arrays\ for\ real\ wave\ function\ ratios.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ The\ bosonic\ regularizing\ wfb\ is\ Sqrt(Det\string^2+exp(2\ epscut))\ and\ the\ guiding}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ is\ the\ fermionic\ one\ wf\ =\ Sign\ Det\ x\ Sqrt(Det\string^2+exp(2\ epscut)).}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ abs(table)\ are\ the\ ratio\ of\ the\ bosonic\ wf.\ Handles\ real\ matrices}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ for\ up\ and\ down\ electrons\ with\ regularization\ options.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ nelup\ \ \ \ \ Number\ of\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ neldo\ \ \ \ \ Number\ of\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ \ Index\ offset\ for\ derivatives}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[out]\ table\ \ \ \ \ Real\ table\ of\ wave\ function\ values}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ tabler\ \ \ \ Real\ table\ of\ regularized\ values}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ \ winvup\ \ \ \ Real\ inverse\ matrix\ for\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ winvdo\ \ \ \ Real\ inverse\ matrix\ for\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ \ tabpip\ \ \ \ Table\ of\ pip\ values}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ \ tmu\ \ \ \ \ \ \ Table\ of\ tmu\ values}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ \ epscut\ \ \ \ Cutoff\ parameter\ for\ regularization}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ \ psiln\ \ \ \ \ Psi\ log\ value}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ \ psidetln\ \ Psi\ determinant\ log\ value}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ \ costa\ \ \ \ \ Cost\ parameter\ (plat(2)/alat**2)}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ \ parcutg\ \ \ Cutoff\ parameter}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ \ istart\ \ \ \ Start\ index\ for\ calculation}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[in]\ \ typereg\ \ \ Regularization\ type}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00038}00038\ \textcolor{keyword}{subroutine\ }uptable(nelup,\ neldo,\ indt,\ table,\ tabler,\ winvup\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \&,\ winvdo,\ tabpip,\ tmu,\ epscut,\ psiln,\ psidetln,\ costa,\ parcutg,\ istart,\ typereg)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelup,\ neldo,\ i,\ jel,\ indt,\ jel2,\ istart,\ parcutg,\ typereg}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00042}00042\ \ \ \ \ real*8\ winvup(nelup,\ *),\ winvdo(neldo,\ *),\ tabpip(nelup\ +\ neldo,\ *)\&}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ table(nelup\ +\ neldo,\ indt),\ tabler(nelup\ +\ neldo,\ indt)\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tmu(nelup\ +\ neldo,\ *),\ epscut,\ psidetln,\ psiln,\ ratio,\ costa}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{logical}\ flagsign}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Here\ the\ bosonic\ regularizing\ wfb\ is\ Sqrt(\ Det\string^2+exp(2\ epscut))}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ The\ guiding\ is\ the\ fermionic\ one\ wf\ =\ Sign\ Det\ x\ Sqrt(\ Det\string^2+exp(2\ epscut))}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ abs(table)\ are\ the\ ratio\ of\ the\ bosonic\ wf.}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ costa\ on\ input=plat(2)/alat**2}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ is\ biased}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordflow}{if}\ (indt\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (epscut\ .eq.\ 0.d0\ .and.\ typereg\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*tabpip(jel,\ i)*winvup(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00060}00060\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*tabpip(jel2,\ i)*winvdo(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00064}00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00065}00065\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ tabler\ =\ table}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(typereg,\ 2)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvup(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*tabpip(jel,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ istart)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ tmu(jel,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ table(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }ratiofn\_psi(epscut,\ psidetln,\ ratio,\ tabler(jel,\ i),\ typereg)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00083}00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvdo(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*tabpip(jel2,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ istart)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel2,\ i)\ =\ tmu(jel2,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel2,\ i)\ =\ table(jel2,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }ratiofn\_psi(epscut,\ psidetln,\ ratio,\ tabler(jel2,\ i),\ typereg)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00097}00097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvup(jel,\ i)*tabpip(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }ratiofn\_psi(epscut,\ psiln,\ ratio,\ tabler(jel,\ i),\ typereg)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00108}00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvdo(jel,\ i)*tabpip(jel2,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*ratio}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }ratiofn\_psi(epscut,\ psiln,\ ratio,\ tabler(jel2,\ i),\ typereg)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00114}00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00115}00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ table\ remains\ untouched,\ tabler\ is\ the\ w.f.\ with\ the\ guiding}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .ne.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup\ +\ neldo}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tabler(jel,\ i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ table(jel,\ i)/tabler(jel,\ i)}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00125}00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00126}00126\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00128}00128\ \textcolor{comment}{!\ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00129}00129\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ table=tabler}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00133}00133\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{uptable_8f90_source_l00134}00134\ \textcolor{keyword}{end\ subroutine\ }uptable}
+
+\end{DoxyCode}

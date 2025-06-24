@@ -1,0 +1,693 @@
+\doxysection{eval\+\_\+hamilt.\+f90}
+\hypertarget{eval__hamilt_8f90_source}{}\label{eval__hamilt_8f90_source}\index{src/a\_prep/eval\_hamilt.f90@{src/a\_prep/eval\_hamilt.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Evaluates\ Hamiltonian\ eigenvalues\ and\ eigenvectors\ in\ non-\/orthogonal\ basis}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ first\ bands\ eigenvectors\ of\ a\ Hamiltonian}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ defined\ in\ a\ non-\/orthogonal\ basis.\ It\ handles\ ill-\/conditioned\ overlap}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ matrices\ by\ applying\ a\ stable\ diagonalization\ algorithm\ that\ removes}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ singular\ eigenvalues\ and\ reorthogonalizes\ eigenvectors.\ Supports\ both}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ serial\ and\ parallel\ (SCALAPACK)\ execution\ with\ different\ algorithms}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ for\ each\ case.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ nelorb\_c\ Number\ of\ basis\ functions}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ oversav\ Overlap\ matrix\ (not\ destroyed\ on\ output)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ matsav\ Hamiltonian\ matrix\ (not\ destroyed\ on\ output)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ molecorb\ Eigenvectors\ in\ original\ basis}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ eig\ Eigenvalues}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ arrays}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ epsr\ Tolerance\ for\ eigenvalue\ filtering}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ eps\_mach\ Machine\ precision}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ rank\ Rank\ of\ current\ process}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ optprint\ Print\ option\ flag}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ lworkr\ Work\ array\ size}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ iopt\ Option\ flag\ (1:\ initialization,\ 0:\ iteration)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ premat\ Preconditioning\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[out]\ eigmat\ Eigenvalue\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[out]\ info\ Status\ flag}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @param[in]\ bands\ Number\ of\ bands\ to\ compute}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[in]\ nlax\ Leading\ dimension\ for\ SCALAPACK\ arrays}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in]\ mincond\ Minimum\ condition\ number}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00041}00041\ \textcolor{keyword}{subroutine\ }eval\_hamilt(nelorb\_c,\ oversav,\ matsav\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \&,\ molecorb,\ eig,\ lda,\ epsr,\ eps\_mach,\ rank,\ optprint,\ lworkr,\ iopt\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \&,\ premat,\ eigmat,\ info,\ bands,\ nlax,\ mincond)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ This\ subroutine\ was\ written\ by\ Sandro\ Sorella\ and\ Carlo\ Cavazzoni}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 14\ November\ 2008.\ Revised\ 20\ January\ 2008}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ task\ of\ this\ subroutine\ is\ to\ compute\ in\ a\ stable\ way\ the\ first}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ bands=\ (\string~\#\ electrons/2)\ \ eigenvectors\ of\ an\ Hamiltonian\ defined\ in}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ a\ non\ orthogonal\ basis\ of\ linear\ dimension\ nelorb\_c>>bands.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ overlap\ matrix\ input\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00052}00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ being\ oversav\ and\ the\ corresponding\ hamiltonian\ matrix\ elements\ matsav.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ These\ matrices\ are\ not\ destroyed\ on\ output.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ problem\ is\ that\ the\ matrix\ oversav\ may\ have\ a\ very\ small\ condition}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ number\ and\ straighforward\ diagonalization\ using\ scalapack\ \ PDSYGVX}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00056}00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ leads\ to\ inaccurate\ and\ often\ garbage\ eigenvectors.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00057}00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ In\ parallel\ computation\ there\ is\ also\ the\ further\ complication\ that}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ it\ is\ difficult\ to\ preserve\ orthogonality\ (and\ accuracy)\ of\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ without\ having\ a\ huge\ buffer\ memory\ \ \ at\ disposal,\ as\ no\ memory}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ distribution\ \ is\ possible\ in\ order\ to\ orthogonalize.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00061}00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ parallel\ code\ is\ therefore\ slightly\ different\ from\ the\ scalar\ one.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00062}00062\ \ \ \ \ \textcolor{comment}{!\ \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Scalar\ algorithm:}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 1)\ \ \ \ Diagonalize\ the\ full\ overlap\ matrix\ with\ maximum\ accuracy}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!\ \ \ (ABSTOL=2.*dlamch('S')),\ compute\ eigenvalies\ eig(i)\ and\ eigenvectors\ umat).}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00066}00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ After\ removing\ the\ singular\ eigenvalues\ recompute\ and\ reorthoganilize}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00067}00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ them\ exactly\ as\ is\ done\ in\ the\ parallel\ algorithm.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00068}00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 2)\ \ Recompute\ the\ matrix\ elements\ of\ the\ Hamiltonian\ in\ the\ new}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00069}00069\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ orthogonal\ basis\ by\ taking\ only\ the\ vectors\ \{i\}\ \ with\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00070}00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ eig(i)/eig\_max\ <\ epsr\ (input).\ So\ that\ the\ new\ overlap\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00071}00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ has\ by\ definition\ condition\ number\ >\ eps.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00072}00072\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 3)\ Now\ the\ diagonalization\ of\ the\ matrix\ in\ the\ new\ basis\ can\ be\ done}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ because\ it\ is\ a\ well\ conditioned\ \ matrix\ as}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00074}00074\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ the\ eigenvalues\ are\ the\ physical\ \ eigenvalues\ of\ the\ Hamiltonian.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 4)\ \ Go\ back\ in\ the\ original\ basis\ for\ the\ eigenvectors\ computed.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ PARALLEL\ \ algorithm\ (Using\ SCALAPACK\ version...):}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 1)\ Apply\ Cavazzoni's\ diagonalization\ \ to\ the\ overlap\ matrix.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ Disregard\ eigenvalues\ \ of\ the\ overlap\ matrix\ with}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00080}00080\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ eig(i)/eig\_max\ <\ eps.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00081}00081\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ This\ is\ justified\ from\ the\ fact\ that\ an\ eigenvector\ of\ the}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00082}00082\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ overlap\ matrix\ with\ nearly\ zero\ eigenvalue\ corresponds\ \ to}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00083}00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ a\ linear\ combination\ of\ states\ in\ the\ original\ basis\ with}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00084}00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ vanishing\ norm,\ i.e.\ the\ non\ orthogonal\ basis\ is\ redundant\ and}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ this\ direction\ can\ be\ eliminated\ within\ numerical\ accuracy<sqrt(eps).}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00086}00086\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ In\ this\ step\ we\ do\ not\ require\ neither\ orthogonality\ between}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00087}00087\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ selected\ eigenvectors\ nor\ maximum\ accuracy.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00088}00088\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ However\ the\ accuracy\ has\ to\ be\ sufficient\ to\ guarantee\ that}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00089}00089\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ eigenvectors\ are\ at\ least\ linearly\ independent.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00090}00090\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ In\ a\ second\ step\ we\ diagonalize\ again\ the\ overlap\ matrix\ in}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00091}00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ this\ basis\ without\ the\ singular\ vectors\ corresponding\ to\ the}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00092}00092\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ disregarded\ eigenvalues.\ Since\ in\ this\ basis}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00093}00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ matrix\ has\ very\ good\ condition\ number,\ we\ can\ assume\ that}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00094}00094\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ Cavazzoni's\ diagonalization\ routine\ provides\ a\ very\ accurate}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00095}00095\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ orthonormal\ basis\ set.\ Then\ we\ store\ in\ umatl\ the\ transformation}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00096}00096\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ between\ the\ original\ basis\ and\ the\ orthogonal\ one.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00097}00097\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ step\ is\ done\ only\ at\ the\ inizialization\ (iopt=1)\ and\ umatl\ is}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00098}00098\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ saved,\ and\ used\ \ for\ all\ further\ iterations\ (iopt=0).}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00099}00099\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 2)\ \ At\ each\ iteration\ recompute\ the\ hamiltonian\ matrix\ H}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00100}00100\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ this\ new\ basis.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00101}00101\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 3)\ \ Then\ \ apply\ again\ the\ Cavazzoni's\ diagonalization\ routine.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00102}00102\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Computation\ and\ memory\ requirements\ are\ minimal.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00103}00103\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 4)\ \ Go\ back\ to\ \ the\ original\ basis\ for\ the\ eigenvectors\ computed\ at}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00104}00104\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ each\ iteration.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00106}00106\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00107}00107\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ ortho\_cntx,\ me\_blacs,\ np\_ortho,\ me\_ortho,\ ortho\_comm,\ ortho\_comm\_id,\ commrep\_mpi}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00108}00108\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00109}00109\ \ \ \ \ \textcolor{keywordtype}{use\ }dspev\_module}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00110}00110\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00111}00111\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ rankrep,\ commrep\_mpi}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00112}00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00113}00113\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00114}00114\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nlax}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00115}00115\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorb\_c,\ i,\ j,\ rank,\ info,\ n,\ lda,\ mine,\ dimo,\ neig,\ lwork,\ optprint\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lworkr,\ iopt,\ countexc,\ bands,\ dimorb,\ ierr,\ mincond}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00117}00117\ \ \ \ \ \textcolor{keywordtype}{real*8}\ eig(nelorb\_c),\ premat(nelorb\_c)\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ eigmat(*),\ abstol,\ eps,\ epsr,\ orbmax,\ dlamch,\ minover\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ condnumber,\ cost,\ maxeig,\ eps\_mach}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00120}00120\ \ \ \ \ \textcolor{keywordtype}{real(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat\_in,\ overs}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00121}00121\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ work}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00122}00122\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ iwork,\ ifail}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00123}00123\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00124}00124\ \textcolor{preprocessor}{}\ \ \ \ real*8\ molecorb(nlax,\ nlax),\ oversav(nlax,\ nlax),\ matsav(nlax,\ nlax)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00125}00125\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00126}00126\ \textcolor{preprocessor}{}\ \ \ \ real*8\ molecorb(lda,\ nelorb\_c),\ oversav(lda,\ nelorb\_c),\ matsav(lda,\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00127}00127\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00128}00128\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00129}00129\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00130}00130\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00131}00131\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00132}00132\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00133}00133\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00134}00134\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desch(20)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00135}00135\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desc(descla\_siz\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ LIWORK,\ ic,\ ir,\ mm,\ nz,\ ii,\ jj,\ ip,\ jp,\ nrlx}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00137}00137\ \ \ \ \ real*8\ ::\ pdlamch}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ INDXG2L,\ INDXG2P,\ INDXL2G}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00139}00139\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00140}00140\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00141}00141\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{save}\ ::\ umatl(:,\ :)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00142}00142\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ diag(:,\ :),\ vv(:,\ :),\ overlap(:,\ :)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00143}00143\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00144}00144\ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00146}00146\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00147}00147\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00148}00148\ \ \ \ \ n\ =\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00149}00149\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keyword}{call\ }descla\_init(desc,\ n,\ n,\ np\_ortho,\ me\_ortho,\ ortho\_comm,\ ortho\_comm\_id)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00152}00152\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(lambda\_node\_)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mat\_in(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ mat\_in\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \textcolor{keyword}{allocated}(umatl))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (umatl(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ umatl\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overs(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00163}00163\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ ir\ =\ desc(ilar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ ic\ =\ desc(ilac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00166}00166\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00167}00167\ \textcolor{comment}{!\ \ \ \ if(rank.eq.0)\ write(6,*)\ '\ abstol\ =',abstol}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00168}00168\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ eps\ =\ epsr}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00170}00170\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ abs(eps\_mach)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00172}00172\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00173}00173\ \textcolor{comment}{!\ \ \ \ For\ the\ first\ part\ we\ do\ not\ assume\ to\ have\ accurate\ eigenvectors.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00174}00174\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }descinit(desch,\ n,\ n,\ desc(nlax\_),\ desc(nlax\_),\ 0,\ 0,\ ortho\_cntx,\ \textcolor{keyword}{size}(umatl,\ 1),\ info)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00176}00176\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }errore(\textcolor{stringliteral}{'\ cdiaghg\ '},\ \textcolor{stringliteral}{'\ descinit\ '},\ abs(info))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00178}00178\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00179}00179\ \textcolor{comment}{!\ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00180}00180\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00181}00181\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ overs(i,j)=oversav(i+ir-\/1,j+ic-\/1)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00182}00182\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00183}00183\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00184}00184\ \textcolor{comment}{!\ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00185}00185\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00186}00186\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ mat\_in(i,j)=matsav(i+ir-\/1,j+ic-\/1)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00187}00187\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00188}00188\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00189}00189\ \textcolor{comment}{!\ \ \ \ To\ be\ sure\ there\ is\ no\ garbage.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ overs\ =\ oversav}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ mat\_in\ =\ matsav}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00192}00192\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00193}00193\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,oversav,1,1,desch,0.d0,overs,1,1,desch\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00194}00194\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,matsav,1,1,desch,0.d0,mat\_in,1,1,desch\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00195}00195\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ ==\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00197}00197\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overlap(desc(nlax\_),\ desc(nlax\_)))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ overlap\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00200}00200\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ overs(i,\ j)*premat(i\ +\ ir\ -\/\ 1)*premat(j\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00204}00204\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ nrlx\ =\ desc(la\_nrlx\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00208}00208\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (diag(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00210}00210\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ \ \ \ \ diag\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blk2cyc\_redist(n,\ diag,\ nrlx,\ overs,\ \textcolor{keyword}{size}(overs,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00216}00216\ \textcolor{comment}{!\ \ \ \ iopt=0,\ the\ standard\ one}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ diag,\ nrlx,\ eig,\ vv,\ nrlx,\ desc(la\_nrl\_),\ n,\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \&desc(la\_npr\_)*desc(la\_npc\_),\ desc(la\_me\_),\ desc(la\_comm\_),\ eps\_mach,\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cyc2blk\_redist(n,\ vv,\ nrlx,\ umatl,\ \textcolor{keyword}{size}(umatl,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (diag,\ vv)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00227}00227\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ ==\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Lowest/Max\ \ eigenvalue\ overlap\ mat\ ='},\ eig(n),\ eig(1)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ condnumber\ =\ abs(eig(n)/eig(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(1)\ .lt.\ 0.d0)\ condnumber\ =\ condnumber/100.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ 1,\ eig(1),\ 1.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs(eig(i)/eig(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .lt.\ 0.d0)\ cost\ =\ cost/100.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ eig(i),\ cost}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ condnumber)\ condnumber\ =\ cost}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00238}00238\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Inverse\ Condition\ Number\ basis\ set\ ='},\ condnumber}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00240}00240\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00241}00241\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((eig(i)/eig(1)\ .gt.\ abs(eps)\ .or.\ (eig(i)\ .lt.\ 0\ .and.\ -\/eig(i)/eig(1)\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.gt.\ abs(eps*100.d0)))\ .and.\ i\ .le.\ n\ -\/\ mincond\ +\ 1)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/abs(eig(i)))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00249}00249\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00250}00250\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00251}00251\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00254}00254\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ rank\ .eq.\ 0\ .and.\ optprint\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ disregarded\ coll.\ ='},\ mine\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00259}00259\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00260}00260\ \textcolor{comment}{!\ \ \ \ \ \ \ \ rescale\ umatl}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00261}00261\ \textcolor{comment}{!\ \ \ \ the\ matrix\ used\ \ for\ the\ transformation\ in\ the\ new\ basis}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ umatl(i,\ j)\ =\ umatl(i,\ j)*premat(i\ +\ ir\ -\/\ 1)*eigmat(j\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00265}00265\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00266}00266\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00267}00267\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ oversav,\ 1,\ 1,\ desch\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ umatl(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ overs,\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00270}00270\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1,\ desch\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ overlap(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00273}00273\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00274}00274\ \textcolor{comment}{!\ \ \ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00275}00275\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00276}00276\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ overlap(i,j)=overlap(i,j)*eigmat(i+ir-\/1)*eigmat(j+ic-\/1)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00277}00277\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00278}00278\ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ maxeig\ =\ 100}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00281}00281\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00282}00282\ \textcolor{comment}{!\ \ \ \ diagonalize\ again\ overlap}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00283}00283\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indxg2l(i,\ desc(nlax\_),\ me\_ortho(1),\ 0,\ np\_ortho(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indxg2l(i,\ desc(nlax\_),\ me\_ortho(2),\ 0,\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ indxg2p(i,\ desc(nlax\_),\ me\_ortho(1),\ 0,\ np\_ortho(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jp\ =\ indxg2p(i,\ desc(nlax\_),\ me\_ortho(2),\ 0,\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ip\ ==\ me\_ortho(1)\ .and.\ jp\ ==\ me\_ortho(2)\ .and.\ eigmat(i)\ ==\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overlap(ii,\ jj)\ =\ maxeig\ +\ dble(i)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00291}00291\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00292}00292\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00293}00293\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00294}00294\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00295}00295\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Output\ matrix\ overlap\ '}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00296}00296\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00297}00297\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ i,overlap(i,i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00298}00298\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00299}00299\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00302}00302\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ nrlx\ =\ desc(la\_nrlx\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00304}00304\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (diag(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ diag\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blk2cyc\_redist(n,\ diag,\ nrlx,\ overlap,\ \textcolor{keyword}{size}(overlap,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00311}00311\ \textcolor{comment}{!!\ maxeig\ should\ be\ calculated\ here\ as\ max\_i\ \ \ sum\_j\ |mat\_ij|\ and\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00312}00312\ \textcolor{comment}{!\ \ \ \ \ \ \ \ replaced\ in\ the\ diagonal\ elements\ with\ eigmat=0.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00313}00313\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00314}00314\ \textcolor{comment}{!\ \ \ \ \ Here\ iopt=0\ \ the\ standard\ one.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00315}00315\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ diag,\ nrlx,\ eig,\ vv,\ nrlx,\ desc(la\_nrl\_),\ n,\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \&\ desc(la\_npr\_)*desc(la\_npc\_),\ desc(la\_me\_),\ desc(la\_comm\_),\ eps\_mach,\ 0)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00320}00320\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cyc2blk\_redist(n,\ vv,\ nrlx,\ molecorb,\ \textcolor{keyword}{size}(molecorb,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00324}00324\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (diag,\ vv,\ overlap)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00326}00326\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00327}00327\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00328}00328\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Eigenvalues\ new\ overlap\ matrix\ \string~\ 1\ \ '}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00329}00329\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00330}00330\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00331}00331\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00332}00332\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00333}00333\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .le.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ eig(i)\ .gt.\ -\/1.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Further\ singular\ eigenvalue\ '},\ i}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00338}00338\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00339}00339\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00340}00340\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ the\ matrix\ used\ \ to\ go\ back\ to\ the\ original\ representation}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00343}00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ umatl(i,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00345}00345\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00346}00346\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00347}00347\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(j\ +\ ic\ -\/\ 1)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb(i,\ j)\ =\ molecorb(i,\ j)/dsqrt(eig(j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00352}00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00356}00356\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00357}00357\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00358}00358\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00359}00359\ \textcolor{comment}{!\ \ \ \ FINAL\ \ PDGEMM}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ overs(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ molecorb(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ umatl(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00362}00362\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00364}00364\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00365}00365\ \textcolor{comment}{!\ \ \ Calculation\ new\ lwork\ for\ next\ iterations}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0.d0)\ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00368}00368\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ \ \ \ \ dimo\ =\ n\ -\/\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00370}00370\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00371}00371\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00372}00372\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ destroy\ overs\ mat\_in}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ mat\_in(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ umatl(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00380}00380\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(nlac\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(nlar\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i\ +\ ir\ -\/\ 1)\ .eq.\ 0.d0\ .or.\ eigmat(j\ +\ ic\ -\/\ 1)\ .eq.\ 0.d0)\ mat\_in(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00384}00384\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00385}00385\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00386}00386\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ maxeig\ =\ max(1000.d0,\ 10.d0*n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00388}00388\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indxg2l(i,\ desc(nlax\_),\ me\_ortho(1),\ 0,\ np\_ortho(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indxg2l(i,\ desc(nlax\_),\ me\_ortho(2),\ 0,\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ indxg2p(i,\ desc(nlax\_),\ me\_ortho(1),\ 0,\ np\_ortho(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ \ \ \ \ jp\ =\ indxg2p(i,\ desc(nlax\_),\ me\_ortho(2),\ 0,\ np\_ortho(2))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ip\ ==\ me\_ortho(1)\ .and.\ jp\ ==\ me\_ortho(2)\ .and.\ eigmat(i)\ ==\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(ii,\ jj)\ =\ maxeig\ +\ dble(10*i)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00396}00396\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00397}00397\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00398}00398\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00400}00400\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ nrlx\ =\ desc(la\_nrlx\_)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00402}00402\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (diag(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ diag\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }blk2cyc\_redist(n,\ diag,\ nrlx,\ mat\_in,\ \textcolor{keyword}{size}(mat\_in,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00409}00409\ \textcolor{comment}{!!\ \ \ maxeig\ should\ be\ calculated\ here\ as\ max\_i\ \ \ sum\_j\ |mat\_ij|\ and\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00410}00410\ \textcolor{comment}{!\ \ \ \ \ \ \ \ replaced\ in\ the\ diagonal\ elements\ with\ eigmat=0.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00411}00411\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00412}00412\ \textcolor{comment}{!\ \ \ \ Here\ the\ standard\ one.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ diag,\ nrlx,\ eig,\ vv,\ nrlx,\ desc(la\_nrl\_),\ n,\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \&desc(la\_npr\_)*desc(la\_npc\_),\ desc(la\_me\_),\ desc(la\_comm\_),\ eps\_mach,\ 0)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00419}00419\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00420}00420\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cyc2blk\_redist(n,\ vv,\ nrlx,\ molecorb,\ \textcolor{keyword}{size}(molecorb,\ 1),\ desc(1))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00421}00421\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (diag,\ vv)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00423}00423\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ overs\ =\ molecorb}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00425}00425\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00426}00426\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,molecorb,1,1,desch,0.d0,overs,1,1,desch\ )}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00427}00427\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ molecorb(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00430}00430\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ if(rank.eq.0.and.optprint.ne.0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ do\ i=1,bands}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00436}00436\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (overs,\ mat\_in)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00438}00438\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00439}00439\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00440}00440\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00441}00441\ \textcolor{comment}{!\ In\ case\ not\ all\ processors\ are\ involved\ in\ the\ diagonalization}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00442}00442\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00443}00443\ \textcolor{preprocessor}{}\textcolor{comment}{!\ call\ mpi\_bcast(eig,nelorb\_c,MPI\_DOUBLE\_PRECISION,0,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00444}00444\ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(eig,\ nelorb\_c,\ 0,\ commrep\_mpi)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00445}00445\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00446}00446\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00447}00447\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00448}00448\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00449}00449\ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00450}00450\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \textcolor{keyword}{allocated}(umatl))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (umatl(nelorb\_c,\ nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ umatl\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00454}00454\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00455}00455\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00456}00456\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mat\_in(nelorb\_c,\ nelorb\_c)\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(max(30*nelorb\_c,\ lworkr)),\ overs(lda,\ nelorb\_c)\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00458}00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iwork(5*nelorb\_c),\ ifail(nelorb\_c))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00459}00459\ \ \ \ \ \ \ \ \ mat\_in\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00460}00460\ \ \ \ \ \ \ \ \ work\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00461}00461\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00462}00462\ \ \ \ \ \ \ \ \ iwork\ =\ 0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ ifail\ =\ 0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ destroy\ invo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00465}00465\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ calculation\ overlap\ old}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00466}00466\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ calculation\ normalized\ orbitals\ and\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ maximum\ accuracy}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00468}00468\ \ \ \ \ \ \ \ \ abstol\ =\ 2.d0*dlamch(\textcolor{stringliteral}{'S'})}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00469}00469\ \ \ \ \ \ \ \ \ eps\ =\ epsr}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00470}00470\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00471}00471\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ eps\_mach}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00472}00472\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ n\ =\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ lwork\ =\ 30*n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00475}00475\ \ \ \ \ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00476}00476\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ This\ code\ compute\ the\ generalized\ eigenvalue\ equation:}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00478}00478\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ mat\_in\ x\ \ \ y\ =\ over\_s\ lambda\ y}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00479}00479\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ by\ stable\ preconditioning\ and\ pre-\/diagonalization\ of\ the\ matrix\ over\_s}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00480}00480\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00481}00481\ \ \ \ \ \ \ \ \ overs\ =\ oversav}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00482}00482\ \ \ \ \ \ \ \ \ minover\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00483}00483\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00484}00484\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00485}00485\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00487}00487\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(overs(i,i).gt.0.d0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00488}00488\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(overs(i,i).lt.minover.or.minover.eq.-\/1.d0)\ minover=overs(i,i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ premat(i)=1.d0/dsqrt(overs(i,i))}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00490}00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00491}00491\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ '\ Singular\ norm\ for\ orbital\ ',i,overs(i,i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00492}00492\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ premat(i)=-\/1.d0}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00493}00493\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00494}00494\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00495}00495\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00496}00496\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(premat(i).eq.-\/1.d0)\ premat(i)=1.d0/dsqrt(minover)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00497}00497\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00498}00498\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00499}00499\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ There\ is\ numerical\ instability\ to\ use\ premat\ ne\ 1}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00500}00500\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ the\ orthogonality\ of\ the\ eigenvectors}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00501}00501\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ with\ respect\ to\ the\ metric\ given\ by\ overs\ \ is\ poorly\ satisfied}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00502}00502\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if\ premat\ ne\ 1\ is\ used.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00503}00503\ \ \ \ \ \ \ \ \ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00504}00504\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reduced\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00507}00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00508}00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ overs(i,\ j)*premat(i)*premat(j)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00509}00509\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00510}00510\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00511}00511\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00512}00512\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ n,\ overs,\ lda,\ 0.d0,\ 0.d0,\ 1,\ 1,\ abstol\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ neig,\ eig,\ umatl,\ nelorb\_c,\ work,\ lwork,\ iwork,\ ifail,\ info)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00514}00514\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00515}00515\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00516}00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Lowest/Max\ \ eigenvalue\ overlap\ mat\ ='},\ eig(1),\ eig(n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00517}00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ condnumber\ =\ abs(eig(1)/eig(n))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00518}00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(1)\ .lt.\ 0)\ condnumber\ =\ condnumber/100.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00519}00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00520}00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs(eig(i)/eig(n))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00521}00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .lt.\ 0.d0)\ cost\ =\ cost/100.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ condnumber)\ condnumber\ =\ cost}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00523}00523\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00524}00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Condition\ number\ basis\ set\ ='},\ condnumber}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00525}00525\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00526}00526\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00527}00527\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00528}00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((eig(i)/eig(n)\ .gt.\ abs(eps)\ .or.\ (eig(i)\ .lt.\ 0\ .and.\ -\/eig(i)/eig(n)\&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00529}00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.gt.\ abs(eps*100.d0)))\ .and.\ i\ .ge.\ mincond)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00530}00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/eig(i))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00531}00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00532}00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00533}00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00534}00534\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00535}00535\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00536}00536\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00537}00537\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .gt.\ 0\ .and.\ rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00538}00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{stringliteral}{'\ info\ >\ 0\ in\ dsyevx\ !!!\ '},\ info}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00539}00539\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00540}00540\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00541}00541\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00542}00542\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ info}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00543}00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(ifail(i))\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00544}00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ifail(i)\ .ge.\ mine)\ mine\ =\ ifail(i)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00545}00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(1:ifail(i))\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00546}00546\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00547}00547\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00548}00548\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00549}00549\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ rank\ .eq.\ 0\ .and.\ optprint\ .ne.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00550}00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ disregarded\ coll.\ ='},\ mine\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00551}00551\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00552}00552\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ first\ transformation\ \ umatl}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00553}00553\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00554}00554\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00555}00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ umatl(:,\ i)\ =\ umatl(:,\ i)*eigmat(i)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00556}00556\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00557}00557\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00558}00558\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ compute\ the\ overlap\ matrix\ in\ the\ new\ basis}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00559}00559\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ oversav,\ lda,\ umatl,\ n,\ 0.d0,\ mat\_in,\ n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00560}00560\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ umatl,\ n,\ mat\_in,\ lda,\ 0.d0,\ overs,\ lda)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00561}00561\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00562}00562\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00563}00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0)\ overs(i,\ i)\ =\ -\/1000.d0\ -\/\ dble(i)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00564}00564\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00565}00565\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00566}00566\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ n,\ overs,\ lda,\ 0.d0,\ 0.d0,\ 1,\ 1,\ abstol\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ neig,\ eig,\ mat\_in,\ n,\ work,\ lwork,\ iwork,\ ifail,\ info)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00568}00568\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00569}00569\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00570}00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00571}00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(:,\ i)\ =\ mat\_in(:,\ i)/dsqrt(eig(i))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00572}00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00573}00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rankrep\ .eq.\ 0\ .and.\ eig(i)\ .gt.\ -\/1.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Further\ singular\ eigenvalue\ '},\ i}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00574}00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00575}00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(:,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00576}00576\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00577}00577\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00578}00578\ \ \ \ \ \ \ \ \ \ \ \ \ overs(1:n,\ 1:n)\ =\ umatl(1:n,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00579}00579\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00580}00580\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Final\ dgemm}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00581}00581\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ overs,\ lda,\ mat\_in,\ n,\ 0.d0,\ umatl,\ n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00582}00582\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00583}00583\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00584}00584\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00585}00585\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00586}00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0.d0)\ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00587}00587\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00588}00588\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00589}00589\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00590}00590\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00591}00591\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Now\ modifying\ the\ matrix\ detmat\_c\ (and\ forgetting\ it)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00592}00592\ \ \ \ \ \ \ \ \ mat\_in(1:n,\ 1:n)\ =\ matsav(1:n,\ 1:n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00593}00593\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00594}00594\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00595}00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(i,\ j)\ =\ mat\_in(i,\ j)*premat(i)*premat(j)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00596}00596\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00597}00597\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00598}00598\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00599}00599\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ destroy\ overs\ mat\_in}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00600}00600\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ mat\_in,\ n,\ umatl,\ n,\ 0.d0,\ overs,\ lda)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00601}00601\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ umatl,\ n,\ overs,\ lda,\ 0.d0,\ mat\_in,\ n)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00602}00602\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00603}00603\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00604}00604\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ j=1,n}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00605}00605\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ mat\_in(i,j)=mat\_in(i,j)*eigmat(i)*eigmat(j)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00606}00606\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00607}00607\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00608}00608\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00609}00609\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lworkr\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00610}00610\ \ \ \ \ \ \ \ \ \ \ \ \ lwork\ =\ 30*n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00611}00611\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00612}00612\ \ \ \ \ \ \ \ \ \ \ \ \ lwork\ =\ lworkr}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00613}00613\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00614}00614\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00615}00615\ \ \ \ \ \ \ \ \ dimo\ =\ n\ -\/\ mine\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00616}00616\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00617}00617\ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00618}00618\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ avoid\ to\ include\ the\ garbage\ matrix\ elements.}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00619}00619\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00620}00620\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bands\ .lt.\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00621}00621\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00622}00622\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'I'},\ \textcolor{stringliteral}{'L'},\ dimo,\ mat\_in(mine,\ mine),\ n,\ 0.d0,\ 0.d0,\ 1,\ bands\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00623}00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ abstol,\ neig,\ eig,\ molecorb(mine,\ 1),\ lda,\ work,\ lwork,\ iwork\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00624}00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ifail,\ info)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00625}00625\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00626}00626\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00627}00627\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00628}00628\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ dimo,\ mat\_in(mine,\ mine),\ n,\ 0.d0,\ 0.d0,\ 1,\ 1\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00629}00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ abstol,\ neig,\ eig,\ molecorb(mine,\ 1),\ lda,\ work,\ lwork,\ iwork\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00630}00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ifail,\ info)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00631}00631\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00632}00632\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00633}00633\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00634}00634\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lworkr\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00635}00635\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00636}00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lworkr\ =\ work(1)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00637}00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Optimal\ lwork\ \ found\ ='},\ lworkr}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00638}00638\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00639}00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lworkr\ =\ 30*n}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00640}00640\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00641}00641\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00642}00642\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ info\ .ne.\ 0)\ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00643}00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ info\ ne\ 0\ in\ dsyevx\ '},\ info}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00644}00644\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00645}00645\ \ \ \ \ \ \ \ \ overs\ =\ molecorb}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00646}00646\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00647}00647\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ bands,\ n,\ 1.d0,\ umatl,\ n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00648}00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ overs,\ lda,\ 0.d0,\ molecorb,\ lda)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00649}00649\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00650}00650\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ choose\ a\ gauge}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00651}00651\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ bands}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00652}00652\ \ \ \ \ \ \ \ \ \ \ \ \ orbmax\ =\ sum(molecorb(1:nelorb\_c,\ i))}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00653}00653\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ j=2,nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00654}00654\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(abs(molecorb(j,i)).gt.abs(orbmax))\ orbmax=molecorb(j,i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00655}00655\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00656}00656\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orbmax\ .lt.\ 0)\ molecorb(:,\ i)\ =\ -\/molecorb(:,\ i)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00657}00657\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00658}00658\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00659}00659\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(info.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00660}00660\ \ \ \ \ \ \ \ \ \textcolor{comment}{!if(rank.eq.0.and.optprint.ne.0)\ then}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00661}00661\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ do\ i=1,bands}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00662}00662\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00663}00663\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00664}00664\ \ \ \ \ \ \ \ \ \textcolor{comment}{!endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00665}00665\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00666}00666\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Eigenvectors\ \ '}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00667}00667\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00668}00668\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,(molecorb(j,i),j=1,nelorb\_c)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00669}00669\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00670}00670\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00671}00671\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (mat\_in,\ work,\ iwork,\ ifail,\ overs)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00672}00672\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00673}00673\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00674}00674\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00675}00675\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ \ \ \ \ \ bcast\ just\ the\ relevant\ info\ to\ the\ nodes}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00676}00676\ \ \ \ \ dimorb\ =\ lda*(nelorb\_c\ -\/\ 1)\ +\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00677}00677\ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(molecorb,\ dimorb,\ 0,\ commrep\_mpi)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00678}00678\ \ \ \ \ \textcolor{keyword}{call\ }bcast\_real(eig,\ nelorb\_c,\ 0,\ commrep\_mpi)}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00679}00679\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00680}00680\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00681}00681\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00682}00682\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00683}00683\ \ \ \ \ \textcolor{comment}{!call\ mpi\_finalize(ierr)}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00684}00684\ \ \ \ \ \textcolor{comment}{!stop}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00685}00685\ }
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00686}00686\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{eval__hamilt_8f90_source_l00687}00687\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

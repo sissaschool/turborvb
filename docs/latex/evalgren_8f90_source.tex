@@ -1,0 +1,87 @@
+\doxysection{evalgren.\+f90}
+\hypertarget{evalgren_8f90_source}{}\label{evalgren_8f90_source}\index{src/a\_turborvb/evalgren.f90@{src/a\_turborvb/evalgren.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Find\ zero\ crossings\ of\ Green's\ function\ using\ bisection\ method}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ implements\ a\ bisection\ algorithm\ to\ find\ the\ zero\ crossings}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00018}00018\ \textcolor{comment}{!>\ of\ the\ Green's\ function.\ It\ iteratively\ refines\ the\ interval\ [eig\_min,\ eig\_max]\ by}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00019}00019\ \textcolor{comment}{!>\ evaluating\ the\ Green's\ function\ at\ the\ midpoint\ and\ updating\ the\ interval\ bounds}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00020}00020\ \textcolor{comment}{!>\ based\ on\ the\ sign\ of\ the\ function\ value.\ The\ algorithm\ uses\ a\ maximum\ of\ 50\ iterations}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00021}00021\ \textcolor{comment}{!>\ to\ ensure\ convergence.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ eig\_min\ Minimum\ eigenvalue\ bound}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ eig\_max\ Maximum\ eigenvalue\ bound}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ npm\ Leading\ dimension\ of\ matrix\ psi}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ ndim\ Dimension\ of\ the\ problem}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ psi\ Eigenvector\ matrix}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ eig\ Eigenvalue\ array}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in,out]\ emin\ Array\ of\ minimum\ bounds\ for\ each\ dimension}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in,out]\ emax\ Array\ of\ maximum\ bounds\ for\ each\ dimension}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in,out]\ green\ Green's\ function\ values}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in,out]\ e\ Energy\ values\ for\ Green's\ function\ evaluation}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00032}00032\ \textcolor{keyword}{subroutine\ }findzero(eig\_min,\ eig\_max,\ npm,\ ndim,\ psi,\ eig\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \&,\ emin,\ emax,\ green,\ e)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{integer}\ npm,\ ndim,\ k,\ i,\ maxit}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00035}00035\ \ \ \ \ real*8\ psi(npm,\ *),\ eig(*),\ green(*)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ eig\_min,\ eig\_max,\ emin(*),\ emax(*),\ e(*)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00037}00037\ \ \ \ \ maxit\ =\ 50}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keyword}{call\ }dscalzero(ndim,\ eig\_min,\ emin,\ 1)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keyword}{call\ }dscalzero(ndim,\ eig\_max,\ emax,\ 1)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxit}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ e(k)\ =\ (emin(k)\ +\ emax(k))*0.5d0}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00043}00043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }evalgreen(npm,\ ndim,\ psi,\ eig,\ e,\ green)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (green(k)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ emax(k)\ =\ e(k)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ emin(k)\ =\ e(k)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00050}00050\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00052}00052\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00055}00055\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00056}00056\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00057}00057\ \textcolor{comment}{!>\ @brief\ Evaluate\ Green's\ function\ for\ given\ energy\ values}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00058}00058\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ Green's\ function\ values\ for\ given\ energy\ points\ e.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00059}00059\ \textcolor{comment}{!>\ The\ Green's\ function\ is\ calculated\ as\ a\ sum\ over\ eigenstates\ using\ the\ formula:}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00060}00060\ \textcolor{comment}{!>\ G(e)\ =\ sum\_l\ |psi(k,l)|\string^2\ /\ (eig(l)\ -\/\ e(k)),\ where\ psi(k,l)\ are\ the\ eigenvector}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00061}00061\ \textcolor{comment}{!>\ components\ and\ eig(l)\ are\ the\ eigenvalues.}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00062}00062\ \textcolor{comment}{!>\ @param[in]\ npm\ Leading\ dimension\ of\ matrix\ psi}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @param[in]\ ndim\ Dimension\ of\ the\ problem}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00064}00064\ \textcolor{comment}{!>\ @param[in]\ psi\ Eigenvector\ matrix}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00065}00065\ \textcolor{comment}{!>\ @param[in]\ eig\ Eigenvalue\ array}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00066}00066\ \textcolor{comment}{!>\ @param[in]\ e\ Energy\ values\ for\ evaluation}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00067}00067\ \textcolor{comment}{!>\ @param[out]\ green\ Green's\ function\ values}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00068}00068\ \textcolor{keyword}{subroutine\ }evalgreen(npm,\ ndim,\ psi,\ eig,\ e,\ green)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{integer}\ npm,\ ndim,\ k\_no,\ i,\ j,\ k,\ l}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00071}00071\ \ \ \ \ real*8\ psi(npm,\ *),\ eig(*),\ green(*),\ e(*)}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ green(k)\ =\ psi(k,\ 1)**2/(eig(1)\ -\/\ e(k))}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00074}00074\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 2,\ ndim}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ green(k)\ =\ green(k)\ +\ psi(k,\ l)**2/(eig(l)\ -\/\ e(k))}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00078}00078\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00079}00079\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{evalgren_8f90_source_l00081}00081\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

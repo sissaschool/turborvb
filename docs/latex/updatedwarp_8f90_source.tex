@@ -1,0 +1,321 @@
+\doxysection{updatedwarp.\+f90}
+\hypertarget{updatedwarp_8f90_source}{}\label{updatedwarp_8f90_source}\index{src/m\_common/updatedwarp.f90@{src/m\_common/updatedwarp.f90}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00002}00002\ \textcolor{comment}{!>\ @brief\ Update\ coordinate\ warping\ and\ calculate\ forces\ for\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00003}00003\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00004}00004\ \textcolor{comment}{!>\ This\ subroutine\ performs\ coordinate\ warping\ calculations\ and\ updates\ forces}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00005}00005\ \textcolor{comment}{!>\ for\ quantum\ Monte\ Carlo\ simulations.\ It\ handles\ both\ isolated\ and\ periodic}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00006}00006\ \textcolor{comment}{!>\ boundary\ conditions,\ with\ special\ treatment\ for\ electron-\/ion\ and\ ion-\/ion}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00007}00007\ \textcolor{comment}{!>\ interactions\ using\ warping\ functions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00008}00008\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00009}00009\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00010}00010\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00011}00011\ \textcolor{comment}{!>\ NEL\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00012}00012\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ electrons.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00013}00013\ \textcolor{comment}{!>\ NION\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00014}00014\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ ions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00015}00015\ \textcolor{comment}{!>\ KEL\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00016}00016\ \textcolor{comment}{!>\ \ \ \ \ Electron\ positions\ (3\ ×\ NEL).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00017}00017\ \textcolor{comment}{!>\ RION\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ Ion\ positions\ (3\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00019}00019\ \textcolor{comment}{!>\ RMU\ :\ real*8\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ Relative\ position\ vectors\ and\ their\ derivatives.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00021}00021\ \textcolor{comment}{!>\ R\ :\ real*8\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ Distances\ between\ electrons\ and\ ions\ (NEL\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00023}00023\ \textcolor{comment}{!>\ KELELOCB\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ Electron\ local\ forces\ (3\ ×\ NEL).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00025}00025\ \textcolor{comment}{!>\ KELLOGB\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ Electron\ log\ derivatives\ (3\ ×\ NEL).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00027}00027\ \textcolor{comment}{!>\ RIONELOCB\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ Ion\ local\ forces\ (3\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00029}00029\ \textcolor{comment}{!>\ RIONLOGB\ :\ real*8\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00030}00030\ \textcolor{comment}{!>\ \ \ \ \ Ion\ log\ derivatives\ (3\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00031}00031\ \textcolor{comment}{!>\ CELLB\ :\ real*8\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ \ Cell\ forces\ for\ pressure\ calculation.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00033}00033\ \textcolor{comment}{!>\ CELLLB\ :\ real*8\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ Cell\ log\ derivatives\ for\ pressure\ calculation.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00035}00035\ \textcolor{comment}{!>\ FORCE\ :\ real*8\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \ \ \ \ Total\ forces\ on\ ions\ (3\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00037}00037\ \textcolor{comment}{!>\ PULAY\ :\ real*8\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \ \ \ \ Pulay\ forces\ on\ ions\ (3\ ×\ NION).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00039}00039\ \textcolor{comment}{!>\ IESPBC\ :\ logical,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ \ Flag\ for\ periodic\ boundary\ conditions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00041}00041\ \textcolor{comment}{!>\ WARP\ :\ logical,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ \ Flag\ for\ coordinate\ warping.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00043}00043\ \textcolor{comment}{!>\ POWER\ :\ real*8,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ Power\ in\ warping\ function\ (1/r\string^power).}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00045}00045\ \textcolor{comment}{!>\ ATOM\_NUMBER\ :\ integer\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ Atomic\ numbers\ of\ ions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00047}00047\ \textcolor{comment}{!>\ WARPMAT\ :\ real*8\ array,\ out}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00048}00048\ \textcolor{comment}{!>\ \ \ \ \ Warping\ matrix\ for\ ghost\ atoms.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00049}00049\ \textcolor{comment}{!>\ NIONG\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00050}00050\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ ghost\ ions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00051}00051\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00052}00052\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00053}00053\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00054}00054\ \textcolor{comment}{!>\ -\/\ Handles\ both\ isolated\ and\ periodic\ boundary\ conditions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00055}00055\ \textcolor{comment}{!>\ -\/\ Uses\ coordinate\ warping\ for\ improved\ sampling\ efficiency.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00056}00056\ \textcolor{comment}{!>\ -\/\ Calculates\ forces\ including\ Pulay\ corrections.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00057}00057\ \textcolor{comment}{!>\ -\/\ Supports\ pressure\ calculations\ for\ periodic\ systems.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00058}00058\ \textcolor{comment}{!>\ -\/\ Distinguishes\ between\ real\ atoms\ (ATOM\_NUMBER\ >\ 0)\ and\ ghost\ atoms.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00059}00059\ \textcolor{comment}{!>\ -\/\ Uses\ metric\ tensor\ for\ periodic\ boundary\ conditions.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00060}00060\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00061}00061\ \textcolor{comment}{!>\ Algorithm}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00062}00062\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00063}00063\ \textcolor{comment}{!>\ 1.\ Calculate\ relative\ positions\ (electron-\/ion\ and\ ion-\/ion)}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00064}00064\ \textcolor{comment}{!>\ 2.\ Apply\ periodic\ boundary\ conditions\ if\ needed}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00065}00065\ \textcolor{comment}{!>\ 3.\ Calculate\ distances\ using\ appropriate\ metric}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00066}00066\ \textcolor{comment}{!>\ 4.\ Compute\ warping\ functions\ and\ derivatives}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00067}00067\ \textcolor{comment}{!>\ 5.\ Update\ forces\ with\ warping\ contributions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00068}00068\ \textcolor{comment}{!>\ 6.\ Calculate\ pressure\ contributions\ for\ periodic\ systems}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00069}00069\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00070}00070\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00071}00071\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00072}00072\ \textcolor{comment}{!>\ Used\ in\ variational\ Monte\ Carlo\ for\ force\ calculations\ and\ coordinate\ warping.}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00073}00073\ \textcolor{keyword}{subroutine\ }updatedwarp(nel,\ nion,\ kel,\ rion,\ rmu,\ r,\ kelelocb,\ kellogb\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \&,\ rionelocb,\ rionlogb,\ cellb,\ celllb,\ force,\ pulay\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \&,\ iespbc,\ warp,\ power,\ atom\_number,\ warpmat,\ niong)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordtype}{use\ }allio,\ \textcolor{keywordtype}{only}:\ norm\_metric}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordtype}{logical}\ iespbc,\ warp}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ nion,\ i,\ j,\ k,\ n,\ niong,\ irefg,\ ireft}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00081}00081\ \ \ \ \ real*8\ kel(3,\ nel),rion(3,\ nion),rmu(3,max(nel,nion),nion),\ r(nel,nion)\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ kelelocb(3,\ nel),\ kellogb(3,\ nel),\ rionelocb(3,\ nion),\ rionlogb(3,\ nion)\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ force(3,\ nion),\ pulay(3,\ nion),\ sumw,\ sumdw,\ wfunc,\ wderiv,\ cellb(3),\ celllb(3)\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ derpul,\ wder,\ xmu(3),\ atom\_number(*),\ warpmat(nion\ -\/\ niong,\ *)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00085}00085\ \ \ \ \ real*8\ power,\ rc}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00086}00086\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00087}00087\ \textcolor{comment}{!>\ @brief\ Calculate\ relative\ positions\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{if}(iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00091}00091\ \textcolor{comment}{!>\ @brief\ Electron-\/ion\ relative\ positions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ kel(1,\ i)\ -\/\ rion(1,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ kel(2,\ i)\ -\/\ rion(2,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ kel(3,\ i)\ -\/\ rion(3,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu(1,\ 1,\ k),\ nel)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ map(rmu(1,\ i,\ k),\ cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ map(rmu(2,\ i,\ k),\ cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ map(rmu(3,\ i,\ k),\ cellscale(3))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00104}00104\ \textcolor{comment}{!>\ @brief\ Ion-\/ion\ relative\ positions\ for\ ghost\ atoms}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ rion(1,\ k)\ -\/\ rion(1,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ rion(2,\ k)\ -\/\ rion(2,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ rion(3,\ k)\ -\/\ rion(3,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu(1,\ 1,\ k),\ nion)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ map(rmu(1,\ i,\ k),\ cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ map(rmu(2,\ i,\ k),\ cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ map(rmu(3,\ i,\ k),\ cellscale(3))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00115}00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00118}00118\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00119}00119\ \textcolor{comment}{!>\ @brief\ Calculate\ relative\ positions\ for\ isolated\ systems}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ kel(1,\ i)\ -\/\ rion(1,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ kel(2,\ i)\ -\/\ rion(2,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ kel(3,\ i)\ -\/\ rion(3,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00126}00126\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ rion(1,\ k)\ -\/\ rion(1,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ rion(2,\ k)\ -\/\ rion(2,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ rion(3,\ k)\ -\/\ rion(3,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00133}00133\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00134}00134\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00135}00135\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00136}00136\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00137}00137\ \textcolor{comment}{!>\ @brief\ Calculate\ distances\ using\ appropriate\ metric}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordflow}{if}(iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r(i,\ k)\ =\ max(norm\_metric(rmu(1,\ i,\ k),\ metric),\ 1d-\/9)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00142}00142\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00143}00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r(i,\ k)\ =\ max(dsqrt(sum(rmu(:,\ i,\ k)**2)),\ 1d-\/9)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00148}00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00151}00151\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00152}00152\ \textcolor{comment}{!>\ @brief\ Calculate\ derivatives\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordflow}{if}(iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ kel(1,\ i)\ -\/\ rion(1,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ kel(2,\ i)\ -\/\ rion(2,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ kel(3,\ i)\ -\/\ rion(3,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu(1,\ 1,\ k),\ nel)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(1)=map(rmu(1,i,k),cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(2)=map(rmu(2,i,k),cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(3)=map(rmu(3,i,k),cellscale(3))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00166}00166\ \ \ \ rmu(1,\ i,\ k)=(metric(1,1)*xmu(1)+metric(1,2)*xmu(2)+metric(1,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00167}00167\ \ \ \&*dmap(rmu(1,\ i,\ k),\ cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00168}00168\ \ \ \ rmu(2,\ i,\ k)\ =(metric(2,1)*xmu(1)+metric(2,2)*xmu(2)+metric(2,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00169}00169\ \ \ \&*dmap(rmu(2,\ i,\ k),\ cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00170}00170\ \ \ \ rmu(3,\ i,\ k)\ =(metric(3,1)*xmu(1)+metric(3,2)*xmu(2)+metric(3,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00171}00171\ \ \ \&*dmap(rmu(3,\ i,\ k),\ cellscale(3))\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00172}00172\ \textcolor{comment}{!>\ @brief\ Apply\ chain\ rule\ for\ coordinate\ transformation}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00173}00173\ \ \ xmu(:)=rmu(:,i,k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00174}00174\ \ \ rmu(1,i,k)=xmu(1)*car2cry(1,1)+xmu(2)*car2cry(2,1)+xmu(3)*car2cry(3,1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00175}00175\ \ \ rmu(2,i,k)=xmu(1)*car2cry(1,2)+xmu(2)*car2cry(2,2)+xmu(3)*car2cry(3,2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00176}00176\ \ \ rmu(3,i,k)=xmu(1)*car2cry(1,3)+xmu(2)*car2cry(2,3)+xmu(3)*car2cry(3,3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00177}00177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(1,\ i,\ k)\ =\ rion(1,\ k)\ -\/\ rion(1,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(2,\ i,\ k)\ =\ rion(2,\ k)\ -\/\ rion(2,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rmu(3,\ i,\ k)\ =\ rion(3,\ k)\ -\/\ rion(3,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu(1,\ 1,\ k),\ nion)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(1)=map(rmu(1,i,k),cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(2)=map(rmu(2,i,k),cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmu(3)=map(rmu(3,i,k),cellscale(3))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00189}00189\ \ \ \ rmu(1,\ i,\ k)=(metric(1,1)*xmu(1)+metric(1,2)*xmu(2)+metric(1,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00190}00190\ \ \ \&*dmap(rmu(1,\ i,\ k),\ cellscale(1))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00191}00191\ \ \ \ rmu(2,\ i,\ k)\ =(metric(2,1)*xmu(1)+metric(2,2)*xmu(2)+metric(2,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00192}00192\ \ \ \&*dmap(rmu(2,\ i,\ k),\ cellscale(2))}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00193}00193\ \ \ \ rmu(3,\ i,\ k)\ =(metric(3,1)*xmu(1)+metric(3,2)*xmu(2)+metric(3,3)*xmu(3))\&}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00194}00194\ \ \ \&*dmap(rmu(3,\ i,\ k),\ cellscale(3))\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00195}00195\ \textcolor{comment}{!>\ @brief\ Apply\ chain\ rule\ for\ coordinate\ transformation}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00196}00196\ \ \ xmu(:)=rmu(:,i,k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00197}00197\ \ \ rmu(1,i,k)=xmu(1)*car2cry(1,1)+xmu(2)*car2cry(2,1)+xmu(3)*car2cry(3,1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00198}00198\ \ \ rmu(2,i,k)=xmu(1)*car2cry(1,2)+xmu(2)*car2cry(2,2)+xmu(3)*car2cry(3,2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00199}00199\ \ \ rmu(3,i,k)=xmu(1)*car2cry(1,3)+xmu(2)*car2cry(2,3)+xmu(3)*car2cry(3,3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00200}00200\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00201}00201\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00203}00203\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00204}00204\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00205}00205\ \textcolor{comment}{!>\ @brief\ Initialize\ forces\ from\ local\ contributions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00206}00206\ \ \ \ \ force\ =\ rionelocb}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00207}00207\ \ \ \ \ pulay\ =\ rionlogb}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00208}00208\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00209}00209\ \textcolor{comment}{!>\ @brief\ Apply\ coordinate\ warping\ if\ enabled}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keywordflow}{if}(warp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ sumw\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(power.ne.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wfunc\ =\ 1.d0\ /\ r(n,\ k)**power}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sumw\ =\ sumw\ +\ wfunc}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00218}00218\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00219}00219\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00220}00220\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sumdw\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(power.ne.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wderiv\ =\ -\/power\ /\ 2.d0\ /\ r(n,\ k)**(power\ +\ 2)\ *\ rmu(j,\ n,\ k)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sumdw\ =\ sumdw\ +\ wderiv}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00228}00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00229}00229\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00230}00230\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(i).gt.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(power.eq.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wder\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derpul\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wderiv\ =\ -\/(power\ /\ 2.d0)\ /\ r(n,\ i)**(power\ +\ 2)\ *\ rmu(j,\ n,\ i)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wfunc\ =\ 1.d0\ /\ r(n,\ i)**power}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ derpul\ =\ wderiv\ /\ sumw\ -\/\ wfunc\ /\ sumw**2\ *\ sumdw}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wder\ =\ wfunc\ /\ sumw}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00241}00241\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00242}00242\ \textcolor{comment}{!>\ @brief\ Update\ forces\ with\ warping\ contributions}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pulay(j,\ i)\ =\ pulay(j,\ i)\ +\ wder\ *\ kellogb(j,\ n)\ +\ derpul}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ force(j,\ i)\ =\ force(j,\ i)\ +\ wder\ *\ kelelocb(j,\ n)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00245}00245\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00246}00246\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00247}00247\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00248}00248\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00249}00249\ \textcolor{comment}{!>\ @brief\ Handle\ ghost\ atoms\ for\ warping}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ irefg\ =\ 0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(n).le.0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ irefg\ =\ irefg\ +\ 1}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sumw\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(power.ne.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(k).gt.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wfunc\ =\ 1.d0\ /\ r(k,\ n)**power}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00259}00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sumw\ =\ sumw\ +\ wfunc}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00260}00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00261}00261\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00262}00262\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ireft\ =\ 0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(atom\_number(i).gt.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ireft\ =\ ireft\ +\ 1}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(power.ne.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wfunc\ =\ 1.d0\ /\ r(i,\ n)**power}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wder\ =\ wfunc\ /\ sumw}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wder\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00273}00273\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00274}00274\ \textcolor{comment}{!>\ @brief\ Update\ forces\ for\ ghost\ atoms}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pulay(j,\ i)\ =\ pulay(j,\ i)\ +\ wder\ *\ rionlogb(j,\ n)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ force(j,\ i)\ =\ force(j,\ i)\ +\ wder\ *\ rionelocb(j,\ n)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ warpmat(ireft,\ irefg)\ =\ wder}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00278}00278\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00279}00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00281}00281\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00282}00282\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00283}00283\ \textcolor{keywordflow}{\ \ \ \ endif}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00284}00284\ \textcolor{comment}{!>\ @brief\ Calculate\ pressure\ contributions\ for\ periodic\ systems}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00285}00285\ \ \ \ \ \textcolor{keywordflow}{if}(iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ rmu(:,1:nion,1)=rion(:,1:nion)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu,nion)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00288}00288\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(1)\ =\ cellb(1)\ +\ rionelocb(1,\ k)\ *\ rmu(1,\ k,1)\ /\ cellscale(1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(1)\ =\ celllb(1)\ +\ rionlogb(1,\ k)\ *\ rmu(1,\ k,1)\ /\ cellscale(1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00292}00292\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(2)\ =\ cellb(2)\ +\ rionelocb(2,\ k)\ *\ rmu(2,\ k,1)\ /\ cellscale(2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(2)\ =\ celllb(2)\ +\ rionlogb(2,\ k)\ *\ rmu(2,\ k,1)\ /\ cellscale(2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00295}00295\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(3)\ =\ cellb(3)\ +\ rionelocb(3,\ k)\ *\ rmu(3,\ k,1)\ /\ cellscale(3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(3)\ =\ celllb(3)\ +\ rionlogb(3,\ k)\ *\ rmu(3,\ k,1)\ /\ cellscale(3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00298}00298\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ rmu(:,1:nel,1)=kel(:,1:nel)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cartesiantocrystal(rmu,nel)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00301}00301\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(1)\ =\ cellb(1)\ +\ kelelocb(1,\ k)\ *\ rmu(1,\ k,1)\ /\ cellscale(1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(1)\ =\ celllb(1)\ +\ kellogb(1,\ k)\ *\ rmu(1,\ k,1)\ /\ cellscale(1)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00305}00305\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(2)\ =\ cellb(2)\ +\ kelelocb(2,\ k)\ *\ rmu(2,\ k,1)\ /\ cellscale(2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(2)\ =\ celllb(2)\ +\ kellogb(2,\ k)\ *\ rmu(2,\ k,1)\ /\ cellscale(2)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00308}00308\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ cellb(3)\ =\ cellb(3)\ +\ kelelocb(3,\ k)\ *\ rmu(3,\ k,1)\ /\ cellscale(3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ celllb(3)\ =\ celllb(3)\ +\ kellogb(3,\ k)\ *\ rmu(3,\ k,1)\ /\ cellscale(3)}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00311}00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00312}00312\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00313}00313\ }
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00314}00314\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{updatedwarp_8f90_source_l00315}00315\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

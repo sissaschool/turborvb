@@ -89,6 +89,62 @@ The subroutine handles both parallel and serial execution modes
 
 Used for creating specialized communication groups in parallel QMC 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{sub__comm_8f90_source_l00076}{76}} of file \mbox{\hyperlink{sub__comm_8f90_source}{sub\+\_\+comm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ parent\_comm,\ new\_size,\ ierror}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(mpi\_sub\_comm)\ ::\ child}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ orig\_group,\ sub\_group,\ i}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ranks}
+\DoxyCodeLine{00086\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_size\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ changing\ number\ of\ processors\ to\ 1\ in\ serial\ '}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ new\_size\ =\ 1}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ new\_size}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ ranks(i)\ =\ i\ -\/\ 1}
+\DoxyCodeLine{00097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ child\%parent\ =\ parent\_comm}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_group(parent\_comm,\ orig\_group,\ ierror)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_incl(orig\_group,\ new\_size,\ ranks,\ sub\_group,\ ierror\textcolor{comment}{)}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_create(parent\_comm,\ sub\_group,\ child\%comm,\ ierror)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_rank(sub\_group,\ child\%rank,\ ierror)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%rank\ .eq.\ mpi\_undefined)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .false.}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ write(6,*)\ child\%rank,"{}xx"{},new\_size}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(orig\_group,\ ierror)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(sub\_group,\ ierror)}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ranks)}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
 \Hypertarget{namespacesub__comm_a68f756638020505901020b6055e639a6}\index{sub\_comm@{sub\_comm}!mpi\_sub\_comm\_free@{mpi\_sub\_comm\_free}}
 \index{mpi\_sub\_comm\_free@{mpi\_sub\_comm\_free}!sub\_comm@{sub\_comm}}
 \doxysubsubsection{\texorpdfstring{mpi\_sub\_comm\_free()}{mpi\_sub\_comm\_free()}}
@@ -122,3 +178,20 @@ The subroutine is safe to call even if the communicator was not properly created
 
 Used for cleanup after parallel operations are complete 
 \end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{sub__comm_8f90_source_l00147}{147}} of file \mbox{\hyperlink{sub__comm_8f90_source}{sub\+\_\+comm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ierror}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(mpi\_sub\_comm)\ ::\ child}
+\DoxyCodeLine{00151\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%yesin)\ \textcolor{keyword}{call\ }mpi\_comm\_free(child\%comm,\ ierror)}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
