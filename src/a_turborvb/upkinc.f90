@@ -23,6 +23,19 @@
 !                enercont = total kinetic energy
 !--------------------------------------------------------------------------!
 
+!> @brief      Compute kinetic energy contribution for real wave function
+!> @details    This subroutine computes the kinetic energy contribution from
+!>             the Laplacian and gradient terms for both up and down electrons.
+!>             It stores individual contributions in kinc array and sums them
+!>             in enercont.
+!> @param[in]  indt      Index offset for derivatives
+!> @param[in]  nelup     Number of up electrons
+!> @param[in]  neldo     Number of down electrons
+!> @param[in]  winvup    Inverse matrix for up electrons
+!> @param[in]  winvdo    Inverse matrix for down electrons
+!> @param[in]  tabpip    Wave function derivatives table
+!> @param[out] enercont  Total kinetic energy contribution
+!> @param[out] kinc      Individual kinetic energy contributions per electron
 subroutine upkinc(indt, nelup, neldo, winvup, winvdo, tabpip, enercont, kinc)
     implicit none
     integer i, j, jj, indt, nelup, neldo
@@ -62,6 +75,19 @@ end subroutine upkinc
 !--------------------------------------------------------------------------!
 !--------------------------------------------------------------------------!
 
+!> @brief      Compute kinetic energy contribution for complex wave function
+!> @details    This subroutine computes the kinetic energy contribution from
+!>             the Laplacian and gradient terms for complex wave functions.
+!>             Similar to upkinc but handles complex matrices and returns
+!>             complex energy contributions.
+!> @param[in]  indt      Index offset for derivatives
+!> @param[in]  nelup     Number of up electrons
+!> @param[in]  neldo     Number of down electrons
+!> @param[in]  winvup    Complex inverse matrix for up electrons
+!> @param[in]  winvdo    Complex inverse matrix for down electrons
+!> @param[in]  tabpip    Wave function derivatives table
+!> @param[out] enercont  Total complex kinetic energy contribution
+!> @param[out] kinc      Individual complex kinetic energy contributions per electron
 subroutine upkinc_complex(indt, nelup, neldo, winvup, winvdo, tabpip, enercont, kinc)
 
     implicit none

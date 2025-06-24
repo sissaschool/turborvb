@@ -15,6 +15,21 @@
 !
 ! Sandro Sorella created on 27th Nov. 2007.
 
+!> @brief      Add sine and cosine contributions to sumImgReal array
+!> @details    This subroutine computes and adds sine and cosine contributions
+!>             to the sumImgReal array for wave vector summations.
+!>             It was created by Sandro Sorella on 27th Nov. 2007.
+!>             The subroutine loops over kx, ky, kz wave vectors and accumulates
+!>             the contributions to the real and imaginary parts of the sum.
+!> @param[in]  zeta         Scaling factor
+!> @param[in,out] sumImgReal Array containing real and imaginary parts of the sum
+!> @param[in]  kSq          Square of wave vector cutoff
+!> @param[in]  Vk           Wave vector dependent coefficients
+!> @param[in]  kxbnd        Upper bound for kx
+!> @param[in]  kybnd        Upper bound for ky
+!> @param[in]  kzbnd        Upper bound for kz
+!> @param[in]  vsin         Sine values for wave vector increments
+!> @param[in]  vcos         Cosine values for wave vector increments
 subroutine add_sincos(zeta, sumImgReal, kSq, Vk                      &
         &, kxbnd, kybnd, kzbnd, vsin, vcos)
     implicit none

@@ -13,6 +13,45 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update tabpip array for electron-electron and electron-ion interactions
+!> @details    Updates the tabpip array containing off-diagonal pseudopotential terms
+!>             for electron-electron and electron-ion interactions. Computes Jastrow
+!>             factors, gradients, and updates winvjbar arrays. Handles both spin-dependent
+!>             and spin-independent cases with support for periodic boundary conditions.
+!> @param[in]  indt           Index offset for derivatives
+!> @param[in]  nel            Number of electrons
+!> @param[in]  nelup          Number of up electrons
+!> @param[in]  jel            Index of moving electron
+!> @param[in]  rkel           Electron positions array
+!> @param[in]  rkeln          New electron position
+!> @param[in,out] tabpip      Table of pip values to update
+!> @param[in]  tcost          Cost array
+!> @param[in]  iesdr          Jastrow parameter type
+!> @param[in]  vj             Jastrow parameters array
+!> @param[in,out] winvsj      Winv array for Jastrow
+!> @param[in,out] winvj       Winv array for Jastrow
+!> @param[in]  nelorbj        Number of Jastrow orbitals
+!> @param[in,out] psip        Work array
+!> @param[in,out] psip_store  Storage array for psip
+!> @param[in,out] winvjbar    Winv bar array for Jastrow
+!> @param[in,out] winvjbarsz  Winv bar array for sz
+!> @param[in,out] winvjbarn   Winv bar array new
+!> @param[in,out] winvjbarszn Winv bar array sz new
+!> @param[in]  rion           Ion positions
+!> @param[in]  nion           Number of ions
+!> @param[in]  costz          Cost array for ions
+!> @param[in]  costz3         Cost array for ions
+!> @param[in]  iessz          Spin-dependent flag
+!> @param[in]  LBox           Box length for periodic boundary conditions
+!> @param[in]  n_body_on      N-body interaction flag
+!> @param[in,out] jastrowall_ee Electron-electron Jastrow array
+!> @param[in,out] jasnew_ei   New electron-ion Jastrow array
+!> @param[in]  rmu            Rmu array
+!> @param[in]  niesd          Number of Jastrow parameters
+!> @param[in]  indtm          Index array
+!> @param[in]  nelorbjh       Number of Jastrow orbitals
+!> @param[in]  psiln          Psi log value
+!> @param[in]  no_dgemv       Flag to disable dgemv
 subroutine uptabpip(indt, nel, nelup, jel                           &
         &, rkel, rkeln, tabpip, tcost, iesdr, vj, winvsj, winvj, nelorbj            &
         &, psip, psip_store, winvjbar, winvjbarsz, winvjbarn, winvjbarszn, rion, nion         &
@@ -665,7 +704,18 @@ subroutine uptabpip(indt, nel, nelup, jel                           &
     end do
 
     return
-end
+end subroutine uptabpip
+
+!> @brief      Copy matrix with optional OpenMP offload support
+!> @details    Copies a matrix from mat to mat_tra with optional OpenMP offload
+!>             support for GPU acceleration. Handles different matrix dimensions
+!>             and provides parallel execution when offload is enabled.
+!> @param[in]  n             Number of rows in source matrix
+!> @param[in]  n_tra         Number of rows in target matrix
+!> @param[in]  m             Number of columns
+!> @param[in]  mat           Source matrix
+!> @param[out] mat_tra       Target matrix
+!> @param[in]  yes_ontarget  Flag to enable OpenMP offload
 subroutine copy_simple(n, n_tra, m, mat, mat_tra, yes_ontarget)
     implicit none
     integer n, n_tra, m, i, j

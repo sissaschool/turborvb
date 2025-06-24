@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Apply energy cutoff using hyperbolic tangent or linear function
+!> @details    This function applies an energy cutoff using either a hyperbolic
+!>             tangent function (if costcut≠0) or a linear cutoff (if costcut=0).
+!>             The hyperbolic tangent form provides a smooth cutoff around etry.
+!> @param[in]  etry      Reference energy for cutoff
+!> @param[in]  srpar     Linear cutoff parameter
+!> @param[in]  costcut   Hyperbolic tangent cutoff parameter
+!> @param[in]  ener      Input energy value
+!> @return     enercutoff Energy value after cutoff transformation
 function enercutoff(etry, srpar, costcut, ener)
     implicit none
     real*8 etry, costcut, ener, srpar, enercutoff

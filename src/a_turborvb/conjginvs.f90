@@ -13,6 +13,30 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Conjugate gradient solver for linear system with stochastic reconfiguration matrix
+!> @details This subroutine solves the linear system S*x = forza using conjugate gradient method,
+!> where S is the reduced stochastic reconfiguration (SR) matrix. The matrix S is regularized
+!> by adding epsdgel to diagonal elements to avoid numerical instabilities in QMC calculations.
+!> The algorithm uses preconditioning and supports parallel execution with MPI.
+!> @param[in] np Number of parameters
+!> @param[in] npp Leading dimension of matrix mat
+!> @param[in] nbin Number of parameters per processor block
+!> @param[in] rank_out Output rank for printing
+!> @param[in] rank Current processor rank
+!> @param[in] comm_mpi MPI communicator
+!> @param[in,out] mat Reduced SR matrix (input), preconditioned matrix (output)
+!> @param[in] forza Force vector acting on parameters
+!> @param[in,out] g Gradient vector (input), updated gradient (output)
+!> @param[in,out] h Search direction vector
+!> @param[in,out] psip Work array for temporary storage
+!> @param[in] maxit Maximum number of iterations
+!> @param[in] eps Convergence tolerance
+!> @param[in] epsdgel Regularization parameter for diagonal elements
+!> @param[in,out] fkav Diagonal elements of SR matrix (input), preconditioning factors (output)
+!> @param[out] x Solution vector of the linear system
+!> @param[in] parcut Parameter cutoff threshold for elimination
+!> @param[in] nproc Number of processors
+!> @param[in] eps_umrigar Umrigar regularization parameter
 subroutine conjginvs(np, npp, nbin, rank_out, rank, comm_mpi, mat, forza&
         &, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, nproc, eps_umrigar)
     implicit none

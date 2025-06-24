@@ -13,6 +13,28 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Bootstrap method to evaluate forces and their covariance matrix
+!> @details    This subroutine implements the bootstrap method to evaluate forces
+!>             and their error bars for each bin. It calculates energy derivatives,
+!>             log derivatives of the wave function, and energy times log derivatives.
+!>             The method uses jackknife resampling to estimate statistical errors
+!>             and covariance matrices for force calculations.
+!> @param[in]  nbin        Number of bins
+!> @param[in]  efenergy    Energy and weight arrays
+!> @param[in]  ndimp       Number of variational parameters
+!> @param[in]  ef          Force arrays
+!> @param[in]  ieskin      Number of kinetic energy parameters
+!> @param[out] eta         Average forces
+!> @param[out] derr        Force errors
+!> @param[out] eall        Energy averages
+!> @param[out] fk          Bootstrap force samples
+!> @param[in]  dimfk       Dimension of fk
+!> @param[out] okav        Normalization for preconditioning
+!> @param[in]  rank        Process rank
+!> @param[in]  comm_f      Force communicator
+!> @param[in]  nproc_f     Number of force processes
+!> @param[in]  comm_c      Correlation communicator
+!> @param[in]  nproc_c     Number of correlation processes
 subroutine bootforcecov(nbin, efenergy, ndimp, ef, ieskin, eta       &
         &, derr, eall, fk, dimfk, okav, rank, comm_f, nproc_f, comm_c, nproc_c)
     !     use allio, only: col_id

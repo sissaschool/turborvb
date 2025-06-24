@@ -17,6 +17,18 @@
 ! to adust tpar automatically
 !
 
+!> @brief      Adam optimizer for automatic parameter adjustment
+!> @details    This subroutine implements the Adam (Adaptive Moment Estimation)
+!>             optimization algorithm for automatic parameter adjustment.
+!>             It was implemented by K.Nakano in Sep. 2019 to adjust tpar automatically.
+!>             The algorithm uses exponential moving averages of gradients and squared gradients
+!>             to adaptively adjust learning rates for each parameter.
+!> @param[in]  i_main        Main iteration counter
+!> @param[in]  nweight       Number of weights
+!> @param[in]  ndimp         Number of dimensions/parameters
+!> @param[in,out] first_moment First moment (exponential moving average of gradients)
+!> @param[in,out] second_moment Second moment (exponential moving average of squared gradients)
+!> @param[in,out] alphab     Parameters to be optimized (input: gradients, output: updated parameters)
 subroutine adam_opt(i_main, nweight, ndimp, first_moment, second_moment, alphab)
 
     implicit none

@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Calculate energy contribution from wave function derivatives
+!> @details    This function computes the energy contribution from the Laplacian
+!>             and gradient terms of the wave function for both up and down electrons.
+!>             It combines terms from winv (inverse matrix) and tabpip (derivatives).
+!> @param[in]  indt     Index offset for derivatives
+!> @param[in]  nelup    Number of up electrons
+!> @param[in]  neldo    Number of down electrons
+!> @param[in]  winvup   Inverse matrix for up electrons
+!> @param[in]  winvdo   Inverse matrix for down electrons
+!> @param[in]  tabpip   Wave function derivatives table
+!> @return     enercont Energy contribution from derivatives
 function enercont(indt, nelup, neldo, winvup, winvdo, tabpip)
     implicit none
     integer i, j, jj, indt, nelup, neldo

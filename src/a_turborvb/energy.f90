@@ -13,6 +13,27 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Compute energy components for real wave function matrix elements
+!> @details This subroutine computes various energy components from matrix elements table.
+!> It calculates wtot as the sum of |G_x',x| where G_x,x (diagonal part) is given by
+!> the lattice FN approximation: G_x,x = diag + (1+gamma) * veff.
+!> The matrix elements are processed differently based on their sign and position
+!> relative to the effective interaction range defined by istart and indtm.
+!> @param[in] Lz Number of matrix elements
+!> @param[in] table Matrix elements for guiding function
+!> @param[in] tabler Matrix elements for Vsf function
+!> @param[in] diag Diagonal energy contribution
+!> @param[out] wtot Total weight sum
+!> @param[out] veff Effective potential for negative matrix elements
+!> @param[out] veffright Effective potential for positive matrix elements
+!> @param[out] enerdiff Energy difference between guiding and Vsf functions
+!> @param[in] itest Test flag for different calculation modes
+!> @param[in] npow Power parameter for energy calculation
+!> @param[in] gamma Gamma parameter for energy scaling
+!> @param[in] nel Number of electrons
+!> @param[in] istart Starting index for effective interaction
+!> @param[in] indtm Array defining effective interaction range per particle
+!> @param[in] epscutdmc DMC energy cutoff parameter
 subroutine energy(Lz, table, tabler, diag, wtot, veff, veffright, enerdiff&
         &, itest, npow, gamma, nel, istart, indtm, epscutdmc)
     use allio, only: typereg
@@ -104,6 +125,27 @@ end subroutine energy
 !--------------------------------------------------------------------------!
 !--------------------------------------------------------------------------!
 
+!> @brief Compute energy components for complex wave function matrix elements
+!> @details This subroutine computes various energy components from complex matrix elements table.
+!> Similar to the real version but handles complex matrix elements. It calculates wtot as the sum
+!> of |G_x',x| where G_x,x (diagonal part) is given by the lattice FN approximation.
+!> The matrix elements are processed differently based on their real part sign and position
+!> relative to the effective interaction range defined by istart and indtm.
+!> @param[in] Lz Number of matrix elements
+!> @param[in] table Complex matrix elements for guiding function
+!> @param[in] tabler Real matrix elements for Vsf function
+!> @param[in] diag Diagonal energy contribution
+!> @param[out] wtot Total weight sum (real)
+!> @param[out] veff Effective potential for negative matrix elements
+!> @param[out] veffright Effective potential for positive matrix elements
+!> @param[out] enerdiff Energy difference between guiding and Vsf functions
+!> @param[in] itest Test flag for different calculation modes
+!> @param[in] npow Power parameter for energy calculation
+!> @param[in] gamma Gamma parameter for energy scaling
+!> @param[in] nel Number of electrons
+!> @param[in] istart Starting index for effective interaction
+!> @param[in] indtm Array defining effective interaction range per particle
+!> @param[in] epscutdmc DMC energy cutoff parameter
 subroutine energy_complex(Lz, table, tabler, diag, wtot, veff, veffright &
                           , enerdiff, itest, npow, gamma, nel, istart, indtm, epscutdmc)
 

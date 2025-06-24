@@ -13,6 +13,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Scale electron and ion positions by cell scale factors
+!> @details    Multiplies electron positions (kel) and ion positions (rion) by
+!>             the cell scale factors (scalecell). This is used for cell scaling
+!>             operations in periodic boundary conditions or unit cell transformations.
+!> @param[in]  nion        Number of ions
+!> @param[in]  nel         Number of electrons
+!> @param[in]  indt        Index offset for derivatives
+!> @param[in]  scalecell   Cell scale factors (3 components)
+!> @param[in,out] kel      Electron positions array
+!> @param[in,out] rion     Ion positions array
 subroutine upcellkel(nion, nel, indt, scalecell, kel, rion)
     implicit none
     integer nion, nel, i, indt

@@ -13,6 +13,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Apply complex constraints for AGP and Pfaffian wave functions
+!> @details    This subroutine applies complex constraints for AGP (Antisymmetrized
+!>             Geminal Power) and Pfaffian wave functions. It handles both real and
+!>             complex parameters with proper Hermitian relations and Cauchy relations.
+!>             The subroutine manages symmetry constraints for AGP matrices and
+!>             handles ghost variables for Pfaffian calculations.
+!> @param[in]  iessw       Number of constraints
+!> @param[in]  derl        Derivatives array
+!> @param[in]  n           Number of parameters
+!> @param[in]  nozero      Non-zero indices
+!> @param[in,out] psip     Work array
+!> @param[in,out] econf    Configuration energy array
+!> @param[in]  nw          Number of walkers
+!> @param[in]  jbradet     Branching determinant array
 subroutine constraint_complex(iessw, derl, n, nozero&
         &, psip, econf, nw, jbradet)
     use constants, only: ipc, ipf, deps

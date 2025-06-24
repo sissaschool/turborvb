@@ -13,6 +13,21 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Eigenvalue decomposition for singular matrix with constraint sum_j cov(i,j) = 0
+!> @details This subroutine computes eigenvalues and eigenvectors of a matrix cov that satisfies
+!> the constraint sum_j cov(i,j) = 0 for all i, which implies the existence of a singular
+!> eigenvector that is constant. The algorithm constructs a transformation matrix using
+!> trigonometric functions to handle the singularity and computes the eigendecomposition
+!> of the transformed matrix, then transforms the results back to the original space.
+!> @param[in] nbin Dimension of the matrix
+!> @param[in,out] cov Covariance matrix (input), eigenvectors (output)
+!> @param[out] eig Eigenvalues of the matrix
+!> @param[in,out] tcin Transformation matrix for handling singularity
+!> @param[in,out] psip Work array for matrix operations
+!> @param[in] lwork Size of work array for eigenvalue solver
+!> @param[in,out] iwork Integer work array for eigenvalue solver
+!> @param[in] ilwork Size of integer work array
+!> @param[out] info Information flag from eigenvalue solver
 subroutine dsyev_sing(nbin, cov, eig, tcin, psip, lwork           &
         &, iwork, ilwork, info)
     implicit none

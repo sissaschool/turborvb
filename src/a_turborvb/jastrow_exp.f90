@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Calculate Jastrow factor for electron-electron correlation
+!> @details    This function computes the Jastrow factor for electron-electron
+!>             correlation based on the distance between electrons. It supports
+!>             multiple functional forms including exponential, polynomial, and
+!>             spin-dependent forms. The function handles different parameterizations
+!>             specified by the iesd parameter.
+!> @param[in]  rc       Relative coordinates between electrons (3D vector)
+!> @param[in]  vj       Jastrow parameters array
+!> @param[in]  iesd     Jastrow functional form type
+!> @param[in]  ispin    Spin indicator (positive for parallel spins, negative for opposite)
+!> @return     jastrow  Jastrow factor value
 function jastrow(rc, vj, iesd, ispin)
     implicit none
     real*8 r, rc(*), rz, jastrow, vj(*)

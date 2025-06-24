@@ -13,6 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Optimized branching algorithm for DMC walker management
+!> @details    This subroutine implements an optimized branching algorithm for
+!>             DMC walker management. It performs branching within each pool
+!>             containing nw/nk walkers for decoupled VMC/DMC calculations.
+!>             The algorithm uses optimized branching with or without sorting
+!>             to efficiently redistribute walkers based on their weights.
+!> @param[in]  nw          Number of walkers
+!> @param[in,out] wconfn   Walker configuration weights
+!> @param[out] weight      Total weight
+!> @param[in,out] zeta     Branching parameters
+!> @param[out] icdiff      Number of different configurations
+!> @param[in,out] ipip     Integer work array
+!> @param[out] jbra        Branching table
 subroutine branchingo(nw, wconfn, weight, zeta, icdiff, ipip, jbra)
 
     implicit none

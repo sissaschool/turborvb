@@ -13,6 +13,35 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Bootstrap method to evaluate parameters and their covariance matrix
+!> @details    This subroutine implements the bootstrap method to evaluate parameters
+!>             and their error bars for each bin. It calculates energy derivatives,
+!>             log derivatives of the wave function, and energy times log derivatives
+!>             for variational parameters. The method uses jackknife resampling to
+!>             estimate statistical errors and covariance matrices for parameter
+!>             optimization in VMC/DMC calculations.
+!> @param[in]  nbin        Number of bins
+!> @param[in]  efenergy    Energy and weight arrays
+!> @param[in]  e           Parameter arrays
+!> @param[in]  ndimj       Dimension of Jastrow parameters
+!> @param[in]  ndimp       Number of variational parameters
+!> @param[out] eta         Average parameters
+!> @param[out] derr        Parameter errors
+!> @param[out] eall        Energy averages
+!> @param[out] esav        Energy standard deviations
+!> @param[out] efall       Energy averages
+!> @param[out] fk          Bootstrap parameter samples
+!> @param[in]  dimfk       Dimension of fk
+!> @param[out] okav        Average observables
+!> @param[out] weightall_c Total weights for correlation
+!> @param[in]  min_par     Minimum parameter index
+!> @param[in]  max_par     Maximum parameter index
+!> @param[in]  rank        Process rank
+!> @param[in]  comm_c      Correlation communicator
+!> @param[in]  nproc_c     Number of correlation processes
+!> @param[in]  comm_f      Force communicator
+!> @param[in]  nproc_f     Number of force processes
+!> @param[in]  nproc       Total number of processes
 subroutine bootparameter(nbin, efenergy, e, ndimj, ndimp, eta       &
         &, derr, eall, esav, efall, fk, dimfk, okav, weightall_c         &
         &, min_par, max_par, rank, comm_c, nproc_c, comm_f, nproc_f, nproc)

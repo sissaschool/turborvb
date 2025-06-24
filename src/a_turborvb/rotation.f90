@@ -13,6 +13,12 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Apply 3x3 rotation matrix to a 3D vector
+!> @details    This subroutine applies a 3x3 rotation matrix to a 3D vector,
+!>             performing the matrix-vector multiplication rotvec = rotmatrix * vec.
+!> @param[in]  rotmatrix  3x3 rotation matrix
+!> @param[in]  vec        3D input vector
+!> @param[out] rotvec     3D rotated output vector
 subroutine rotation(rotmatrix, vec, rotvec)
 
     real*8 rotmatrix(3, 3), vec(3), rotvec(3)

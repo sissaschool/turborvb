@@ -13,6 +13,13 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Determine the sign of a wave function value
+!> @details    This function determines the sign of a wave function value based on
+!>             the precision mode (ipc). For real wave functions (ipc=1), it returns
+!>             the value directly. For complex wave functions (ipc=2), it determines
+!>             the sign based on the phase modulo pi.
+!> @param[in]  psisn    Wave function value to determine sign for
+!> @return     wf_sign  Sign of the wave function value (1 or -1 for complex, actual value for real)
 integer function wf_sign(psisn)
     use constants, only: ipc, pi
     implicit none

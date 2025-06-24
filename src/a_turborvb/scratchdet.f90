@@ -13,6 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Recompute inverse matrix from scratch to avoid deterioration
+!> @details    Recomputes the inverse matrix ainv from scratch to avoid deterioration
+!>             that can occur with many rank-1 updates. Handles both real and complex
+!>             matrices, and supports Pfaffian calculations for paired wave functions.
+!>             Uses matrix multiplication and factorization to rebuild the inverse.
+!> @param[in]  winv           Winv array
+!> @param[in]  winvbar        Winvbar array
+!> @param[out] ainv           Inverse matrix to be recomputed
+!> @param[out] psidetln       Psi determinant log value
+!> @param[in,out] psip        Work array for matrix operations
+!> @param[in]  scratch_getri  Scratch array for GETRI operations
+!> @param[out] ipsip          Integer work array for factorization
+!> @param[out] info           Information flag for factorization
 subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip, info)
     use constants, only: ipc, ipf, zone, zzero, nbdgetri, yes_ontarget
     use allio, only: nelorbh, nelorb, nelup, nel, indt4, neldo, nelup_mat, nel_mat, ndiff, npar_eagp, eagp_pfaff, agpn, epscuttype

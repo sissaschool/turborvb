@@ -13,6 +13,13 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Get atomic weight for a given atomic number
+!> @details    This function returns the atomic weight (in atomic mass units)
+!>             for elements with atomic numbers 1-103. The weights are based
+!>             on standard atomic mass data. An error is raised for invalid
+!>             atomic numbers.
+!> @param[in]  atomic_number  Atomic number (1-103)
+!> @return     atom_weight    Atomic weight in atomic mass units
 function atom_weight(atomic_number)
     ! ------------------------------------------------------------------
     !

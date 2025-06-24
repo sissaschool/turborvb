@@ -12,7 +12,108 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
-
+!> @brief Main reweighting routine for TurboRVB quantum Monte Carlo calculations
+!>
+!> This subroutine performs reweighting calculations for quantum Monte Carlo simulations.
+!> It handles both electronic and ionic degrees of freedom, including dynamics.
+!>
+!> @param[in] nw Number of walkers
+!> @param[in] in1 Input dimension parameter
+!> @param[in] npr Number of parameters
+!> @param[in] npm Matrix dimension parameter
+!> @param[in] factorsr Scaling factors array
+!> @param[in,out] ipip Integer parameter array
+!> @param[in,out] psip Wave function parameters
+!> @param[in,out] alpha Alpha parameters
+!> @param[in,out] sov Overlap matrix
+!> @param[in] econf Electronic configuration array
+!> @param[in] econfh Helper electronic configuration array
+!> @param[in] econfion Ionic configuration array
+!> @param[in] ieskin Number of ionic degrees of freedom
+!> @param[in] ncg Number of conjugate gradient steps
+!> @param[in] epst Electronic convergence threshold
+!> @param[in] epstion Ionic convergence threshold
+!> @param[in] iweight Weight flag
+!> @param[in] wcort Weight correlation time
+!> @param[in] itest Test flag
+!> @param[in,out] enert Energy array
+!> @param[in] scalpar Scaling parameters
+!> @param[in] parcutr Parameter cutoff for reweighting
+!> @param[out] iflagerr Error flag
+!> @param[in,out] forza Forces array
+!> @param[out] err Error array
+!> @param[in,out] iesconv Convergence flag
+!> @param[in] itouch Parameter touch flags
+!> @param[in] parcutmin Minimum parameter cutoff
+!> @param[in] parcutpar Parameter cutoff
+!> @param[in] numparmin Minimum number of parameters
+!> @param[in] klr Linear response parameter
+!> @param[in] etry Trial energy
+!> @param[in] epsi Energy convergence parameter
+!> @param[in] tjas Jastrow parameter
+!> @param[in] beta Beta parameter for temperature
+!> @param[in] ist Start index
+!> @param[in] ien End index
+!> @param[in] rank MPI rank
+!> @param[out] ierr Error code
+!> @param[in] parr Parameter array
+!> @param[in] parcute Parameter cutoff
+!> @param[in] nbin Number of bins
+!> @param[in,out] fk Force constant array
+!> @param[in] dimfk Dimension of fk array
+!> @param[in,out] fkav Average force constants
+!> @param[in,out] okav Average overlap
+!> @param[in,out] skdiag Diagonal elements
+!> @param[in] weightall Total weight
+!> @param[in,out] reduce Reduction array
+!> @param[in] nbinmax Maximum number of bins
+!> @param[in] nweight Number of weights
+!> @param[in] ibinit Initial bin
+!> @param[in] indopen3 Open index 3
+!> @param[in,out] stepcg CG step counter
+!> @param[in] lwork Work array size
+!> @param[in] idyn Dynamics flag
+!> @param[in] temp Temperature
+!> @param[in] weight_vir Virial weight
+!> @param[in] friction Friction coefficient
+!> @param[in] scalecov Covariance scaling
+!> @param[in] delta0 Delta parameter
+!> @param[in] delta0q Quantum delta parameter
+!> @param[in] delta0k Kinetic delta parameter
+!> @param[in] dtr Time step
+!> @param[in,out] velion Ion velocities
+!> @param[in,out] ris Results array
+!> @param[in,out] tmes Measured temperature
+!> @param[in,out] cov Covariance matrix
+!> @param[in] rpar Real parameters
+!> @param[in] npar Number of parameters
+!> @param[in] initpar Initial parameter
+!> @param[in] nparsw Parameter switch
+!> @param[in] initparsw Initial parameter switch
+!> @param[in] nparinv Number of inverse parameters
+!> @param[in] initpowerinv Initial power inverse
+!> @param[in] endinv End inverse
+!> @param[in] iond Ion indices
+!> @param[in] nion Number of ions
+!> @param[in] adrlambda Lambda addresses
+!> @param[in] rmax Maximum radius
+!> @param[in] indopen4 Open index 4
+!> @param[in] writescratch Write scratch flag
+!> @param[in] countscra Scratch counter
+!> @param[in,out] bufscra Scratch buffer
+!> @param[in] jas_invariant Jastrow invariants
+!> @param[in] tolcg CG tolerance
+!> @param[in] ieskinion Ion skin parameter
+!> @param[in] rion Ion positions
+!> @param[in] iespbc PBC flag
+!> @param[in] atom_number Atomic numbers
+!> @param[in] eps_dyn5 Dynamics epsilon 5
+!> @param[in] maxdev_dyn Maximum dynamics deviation
+!> @param[in,out] acc_dyn Dynamics acceptance
+!> @param[in] normcorr Correlation norm
+!> @param[in] row_comm Row communicator
+!> @param[in] row_id Row ID
+!> @param[in] yescomm Communication flag
 subroutine reweight0(nw, in1, npr, npm, factorsr                 &
         &, ipip, psip, alpha, sov, econf, econfh, econfion                  &
         &, ieskin, ncg, epst, epstion, iweight, wcort, itest, enert          &
@@ -2421,6 +2522,15 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
 contains
 
+    !> @brief Updates indices for complex parameters in quantum Monte Carlo calculations
+    !>
+    !> This subroutine handles the indexing of complex parameters, including:
+    !> - Setting up arrays for tracking complex parameters
+    !> - Handling real and imaginary parts of parameters
+    !> - Managing symmetry-related parameters
+    !> - Updating indices for modulus one parameters
+    !>
+    !> @note The subroutine uses global variables and arrays defined in the module scope
     subroutine update_index
         implicit none
         kp_complex = 0
@@ -2609,6 +2719,18 @@ contains
 #endif
     end subroutine update_index
 
+    !> @brief Handles ion dynamics calculations and updates
+    !>
+    !> This subroutine performs ion dynamics calculations including:
+    !> - Rescaling solutions and calculating dynamics ratios
+    !> - Allocating and initializing work arrays (sov4, sov5)
+    !> - Handling ion movement based on dynamics mode (idyn)
+    !> - Managing quantum and classical dynamics
+    !> - Updating ion positions and velocities
+    !>
+    !> @note Uses global variables and arrays defined in module scope
+    !> @note Requires temperature (temp) and time step (dtr) to be set
+    !> @note Handles both classical and quantum dynamics modes
     subroutine ion_dynamics
 
         ! by E. Coccia (18/1/11)
@@ -4739,6 +4861,16 @@ contains
                                                     if (allocated(sov5)) deallocate (sov5)
                                                     end subroutine ion_dynamics
 
+                                                    !> @brief Purifies the covariance matrix by removing translations and rotations
+                                                    !>
+                                                    !> This subroutine cleans the covariance matrix by:
+                                                    !> - Removing translations and rotations of the center of mass when not using PBC
+                                                    !> - Handling cases for number of ions >= 3 and < 3 differently
+                                                    !> - Allocating workspace arrays for calculations
+                                                    !> - Computing center of mass coordinates
+                                                    !> - Setting up rotation vectors
+                                                    !>
+                                                    !> @note Only applies when not using periodic boundary conditions and ieskin equals 3*niont
                                                     subroutine cleancov
                                                         implicit none
                                                         integer indx, indy, indr

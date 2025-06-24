@@ -13,6 +13,28 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update gradient with cutoff for DMC calculations
+!> @details    Computes and updates gradients with cutoff for each electron.
+!>             Implements the gradient cutoff scheme based on proximity to nuclei
+!>             and applies scaling factors for DMC calculations. Uses Eq.36 from
+!>             Umrigar J.Chem.Phys. vol.99 p.2866 for cutoff calculations.
+!> @param[out] gradpsibar   Gradient with cutoff for each electron
+!> @param[out] gradpsi      Raw gradient for each electron
+!> @param[in]  indt         Index offset for derivatives
+!> @param[in]  nelup        Number of up electrons
+!> @param[in]  neldo        Number of down electrons
+!> @param[in]  winvup       Winv array for up electrons
+!> @param[in]  winvdo       Winv array for down electrons
+!> @param[in]  tabpip       Table of pip values
+!> @param[in]  ttry         Trial parameter for scaling
+!> @param[out] gradtotbar   Total gradient with cutoff
+!> @param[out] gradtot      Total raw gradient
+!> @param[in]  rcart        Cartesian coordinates
+!> @param[in]  dist         Distance array
+!> @param[in]  rion         Ion positions
+!> @param[in]  nion         Number of ions
+!> @param[in]  zeta         Zeta array
+!> @param[in]  LBox         Box length for periodic boundary conditions
 subroutine upgradcont(gradpsibar, gradpsi, indt, nelup, neldo         &
         &, winvup, winvdo, tabpip, ttry, gradtotbar, gradtot, rcart, dist          &
         &, rion, nion, zeta, LBox)

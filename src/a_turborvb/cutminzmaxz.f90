@@ -13,6 +13,28 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Cut and rescale parameters to maintain Z values within bounds
+!> @details    This subroutine rescales alphab if the Z values are outside the interval
+!>             minz < Z < maxz. It does not modify any other input parameters.
+!>             If the previous Z values (alphavar) are already outside the interval,
+!>             they are not changed. The subroutine handles both contracted and
+!>             non-contracted cases for parameter optimization.
+!> @param[in]  ipc          Number of components per parameter
+!> @param[in]  contractionj Contraction flag
+!> @param[in]  iesm         Number of parameters to check
+!> @param[in]  npar3bodyr_c Number of 3-body real parameters
+!> @param[in]  iesuptransbj Super transformation array
+!> @param[in]  jbraiesm     Branching array for iesm
+!> @param[in]  minz         Minimum Z value
+!> @param[in]  maxz         Maximum Z value
+!> @param[in]  indc         Index offset
+!> @param[in,out] alphavar  Current parameter values
+!> @param[in,out] alphab    Parameter updates
+!> @param[in,out] scalpar   Parameter scaling factors
+!> @param[in]  fixpar       Flag to fix parameters permanently
+!> @param[in]  tpar         Learning rate
+!> @param[in]  nmat         Total number of parameters
+!> @param[in]  rank         Process rank
 subroutine cutminzmaxz(ipc, contractionj, iesm, npar3bodyr_c, iesuptransbj&
         &, jbraiesm, minz, maxz, indc, alphavar, alphab, scalpar, fixpar, tpar, nmat, rank)
     implicit none

@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update Jastrow branching array for walker redistribution
+!> @details    This subroutine updates the Jastrow branching array (jbra) to
+!>             redistribute walkers after branching. It identifies killed walkers
+!>             and replaces them with replicated walkers to maintain the total
+!>             number of walkers.
+!> @param[in]  nw      Number of walkers
+!> @param[in,out] jbra Jastrow branching array
+!> @param[out]   ipip  Temporary array for counting walkers
+!> @param[out]   indz  Array storing positions of killed walkers
 subroutine upjbra(nw, jbra, ipip, indz)
     implicit none
     integer jbra(*), ipip(*), indz(*), j, i, nw, ind
