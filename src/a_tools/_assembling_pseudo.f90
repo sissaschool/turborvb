@@ -1,3 +1,28 @@
+! Copyright (C) 2022 TurboRVB group
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+!> @file _assembling_pseudo.f90
+!> @brief Program for assembling pseudopotential files for TurboRVB calculations
+!> @details This program reads atomic information from fort.10 file and assembles
+!> pseudopotential files for atoms that require pseudopotentials (when zetar != atom_number).
+!> It can also calculate distances between atoms when using the 'distance' extension.
+
+!> @brief Main program for assembling pseudopotential files
+!> @details Reads atomic configuration from fort.10, processes pseudopotential files
+!> for atoms requiring them, and outputs assembled pseudopotential data to pseudo.dat.
+!> Supports distance calculation mode when extension is 'distance'.
 program assembling_pseudo
     use allio
     implicit none
@@ -111,6 +136,13 @@ program assembling_pseudo
 
 end program assembling_pseudo
 
+!> @brief Generates pseudopotential filename based on atomic number and extension
+!> @details Constructs a filename in the format 'Z{atomic_number}_atomnumber{atom_number}.{extension}'
+!> where atomic numbers are formatted with appropriate leading zeros.
+!> @param[in] z Atomic number (charge) of the element
+!> @param[in] atom Atom number identifier
+!> @param[in] extension File extension for the pseudopotential file
+!> @param[out] file_pseudo Generated filename for the pseudopotential file
 subroutine open_file_pseudo(z, atom, extension, file_pseudo)
     implicit none
     integer z, atom

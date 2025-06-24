@@ -13,6 +13,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file cleanfort10.f90
+!> @brief Program for cleaning and optimizing TurboRVB fort.10 input files
+!> @details This program reads a TurboRVB fort.10 file and produces a cleaned version
+!> (fort.10_clean) with optimized orbital parameters, removed redundant constraints,
+!> and improved numerical stability. It handles both real and complex wave functions,
+!> periodic boundary conditions, and various orbital types including determinants,
+!> Jastrow factors, and AGP (antisymmetrized geminal power) wave functions.
+
+!> @brief Main program for cleaning TurboRVB input files
+!> @details Reads fort.10 file, processes orbital parameters, removes redundant constraints,
+!> optimizes numerical representation, and outputs cleaned fort.10_clean file.
+!> Supports various command line options for constraint removal and different wave function types.
 program join
 
     implicit none
@@ -2042,6 +2054,16 @@ program join
     stop
 
 end
+
+!> @brief Makes complex orbitals independent using Gram-Schmidt orthogonalization
+!> @details Performs Gram-Schmidt orthogonalization on complex orbital coefficients
+!> to ensure linear independence. Handles phase fixing and numerical stability.
+!> @param[in] n Number of orbitals to process
+!> @param[in] ncoeff Number of coefficients per orbital
+!> @param[in] psi_in Input orbital coefficients (complex)
+!> @param[out] psi_out Output orthogonalized orbital coefficients
+!> @param[out] ipiv Pivot indices for maximum elements
+!> @param[in] yesfixphase Logical flag for phase fixing
 subroutine independent_complex(n, ncoeff, psi_in, psi_out, ipiv, yesfixphase)
     implicit none
     integer n, i, ipiv(n), jmax, j, ncoeff
@@ -2101,6 +2123,14 @@ subroutine independent_complex(n, ncoeff, psi_in, psi_out, ipiv, yesfixphase)
     return
 end
 !
+!> @brief Makes real orbitals independent using Gram-Schmidt orthogonalization
+!> @details Performs Gram-Schmidt orthogonalization on real orbital coefficients
+!> to ensure linear independence. Normalizes orbitals and removes linear dependencies.
+!> @param[in] n Number of orbitals to process
+!> @param[in] ncoeff Number of coefficients per orbital
+!> @param[in] psi_in Input orbital coefficients (real)
+!> @param[out] psi_out Output orthogonalized orbital coefficients
+!> @param[out] ipiv Pivot indices for maximum elements
 subroutine independent(n, ncoeff, psi_in, psi_out, ipiv)
     implicit none
     integer n, i, ipiv(n), jmax, j, ncoeff
@@ -2154,6 +2184,16 @@ subroutine independent(n, ncoeff, psi_in, psi_out, ipiv)
     return
 end
 !================
+!> @brief Constructs transformation matrix for orbital basis change
+!> @details Computes the transformation matrix U that relates input and output
+!> orbital bases. Uses matrix operations to ensure proper transformation
+!> for both real and complex orbitals.
+!> @param[in] ipc Complex flag (1=real, 2=complex)
+!> @param[in] n Number of orbitals
+!> @param[in] ncoeff Number of coefficients per orbital
+!> @param[in] psi_in Input orbital coefficients
+!> @param[in] psi_out Output orbital coefficients
+!> @param[out] umat Transformation matrix U
 subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
     use constants, only: zone, zzero
     implicit none
@@ -2221,6 +2261,14 @@ subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
     return
 end
 !...................
+!> @brief Transforms lambda matrix using orbital transformation matrix
+!> @details Applies the transformation U to the lambda matrix: lambda_new = U * lambda * U^T
+!> Handles both real and complex matrices and preserves the structure for m > n.
+!> @param[in] ipc Complex flag (1=real, 2=complex)
+!> @param[in] n Number of orbitals
+!> @param[in] m Number of columns in lambda matrix
+!> @param[in,out] lambda Lambda matrix to be transformed
+!> @param[in] umat Transformation matrix U
 subroutine lambda_transf(ipc, n, m, lambda, umat)
 
     use constants, only: zone, zzero
@@ -2261,6 +2309,13 @@ subroutine lambda_transf(ipc, n, m, lambda, umat)
     return
 end
 
+!> @brief Binary search for target value in sorted vector
+!> @details Performs binary search to find the index of target value in a sorted vector.
+!> Returns the index of the closest value if exact match is not found.
+!> @param[in] target Target value to search for
+!> @param[in] sortvect Sorted vector to search in
+!> @param[in] n Length of the vector
+!> @param[out] index Index of the found value
 subroutine search(target, sortvect, n, index)
     implicit none
     real*8 target, sortvect(*)

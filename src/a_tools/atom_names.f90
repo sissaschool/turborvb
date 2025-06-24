@@ -13,12 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for handling atomic element names and symbols
+!>
+!> This module provides functionality for working with atomic element names and symbols.
+!> It includes a lookup table of element symbols and functions to convert between
+!> atomic numbers and symbols.
 module atom_names
     implicit none
+    !> Array containing atomic element symbols indexed by atomic number
     character(2), dimension(:), allocatable :: AtomsNames
 
 contains
 
+    !> @brief Initialize the array of atomic element symbols
+    !>
+    !> Allocates and populates the AtomsNames array with chemical symbols
+    !> for elements from atomic number 1 (H) to 103 (Lr)
     subroutine load_names
         implicit none
         allocate (AtomsNames(103))
@@ -127,6 +137,10 @@ contains
         AtomsNames(103) = "Lr"
     end subroutine load_names
 
+    !> @brief Get atomic number from element symbol
+    !>
+    !> @param symbol Chemical symbol of the element (2 characters)
+    !> @return Atomic number if found, -1 if not found
     function get_number(symbol)
         implicit none
         character(2), intent(in) :: symbol

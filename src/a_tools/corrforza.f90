@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file corrforza.f90
+!> @brief Program for computing force correlation functions using bootstrap analysis
+!> @details This program reads energy and derivative data from fort.21 files and computes
+!> force correlation functions using bootstrap resampling. It calculates various correlation
+!> terms including energy derivatives, log derivatives of wave functions, and their products.
+!> The program implements the Pulay correction for force calculations in quantum Monte Carlo.
+
+!> @brief Main program for force correlation analysis
+!> @details Reads energy and derivative data from multiple fort.21 files, performs bootstrap
+!> resampling to estimate statistical errors, and computes force correlation functions with
+!> Pulay corrections. Outputs correlation values and their statistical uncertainties.
 program bootback
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel

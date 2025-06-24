@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Pseudopotential analysis and conversion program for TurboRVB
+!> @details This program reads pseudopotential data from pseudo.dat and
+!> analyzes the pseudopotential functions. It can suggest appropriate
+!> cutoff radii and convert pseudopotential data to different formats.
+!> The program outputs plotting data and can rewrite the pseudopotential
+!> file with optimized parameters.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program pseudo
     implicit none
     integer npsa, ion, i, j, npseudopar, npseudoparn, lmax, indmax
@@ -145,6 +154,16 @@ program pseudo
     stop
 end
 
+!> @brief Calculate pseudopotential function value
+!> @details This function evaluates the pseudopotential at a given distance
+!> using the provided parameters. The function uses a sum of exponential
+!> terms with polynomial prefactors.
+!>
+!> @param nmax Number of terms in the pseudopotential expansion
+!> @param r Distance at which to evaluate the pseudopotential
+!> @param param Array of pseudopotential parameters
+!> @param psip Work array for intermediate calculations
+!> @return The value of the pseudopotential at distance r
 function pseudofun(nmax, r, param, psip)
     !
     implicit none

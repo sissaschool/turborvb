@@ -13,10 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-! Given in input the block averages of energy and variance, this program
-! computes the global average and standard deviation of these quantities
-! using bootstrap resampling technique.
+!> @file corrvar.f90
+!> @brief Program for computing energy variance and correlation analysis using bootstrap resampling
+!> @details This program reads block averages of energy and variance from fort.21 and fort.22 files
+!> and computes global averages and standard deviations using bootstrap resampling technique.
+!> It estimates energy error bars, correlation times, and variance statistics for quantum Monte Carlo
+!> calculations.
 
+!> @brief Main program for energy variance and correlation analysis
+!> @details Reads energy and variance block averages, performs bootstrap resampling to estimate
+!> statistical errors, computes energy variance, error bars, and correlation times. Supports
+!> k-points calculations and provides comprehensive statistical analysis of Monte Carlo data.
 program bootback
 
     implicit none

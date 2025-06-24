@@ -13,10 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Convert integer to character string
+!> @details This function converts an integer to a 6-character string.
+!> The function handles integers from -99999 to 999999. For values
+!> outside this range, it returns "******".
+!>
+!> @param i The integer to convert
+!> @return A 6-character string representation of the integer
+!> @author TurboRVB group
+!> @date 2022
 character(6) function intc(i)
     !
-    character(6) temp
-    integer, intent(in) :: i
+    character(6) temp    !< Temporary character variable for formatting
+    integer, intent(in) :: i  !< Input integer to convert
     !
     if (i .lt. 10 .and. i .ge. 0) then
         write (temp, '(i1)') i

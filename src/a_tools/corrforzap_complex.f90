@@ -13,6 +13,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file corrforzap_complex.f90
+!> @brief Program for computing complex force correlation functions using bootstrap analysis
+!> @details This program reads complex energy and derivative data from fort.21 files and computes
+!> complex force correlation functions using bootstrap resampling. It calculates both real and
+!> imaginary parts of the Pulay correction term for complex wave functions in quantum Monte Carlo.
+
+!> @brief Main program for complex force correlation analysis
+!> @details Reads complex energy and derivative data from fort.21 files, performs bootstrap
+!> resampling to estimate statistical errors, and computes complex force correlation functions.
+!> Outputs both real and imaginary parts of the force with their statistical uncertainties.
 program bootback
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel

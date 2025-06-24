@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file copyjas.f90
+!> @brief Program for copying and transferring Jastrow parameters between TurboRVB wave functions
+!> @details This program reads two TurboRVB wave functions (fort.10 and fort.10_new) and copies
+!> Jastrow parameters from one to the other. It handles orbital mapping, parameter scaling,
+!> and supports various modes including k-points calculations, ion position copying, and
+!> contracted orbital parameter transfer.
+
+!> @brief Main program for copying Jastrow parameters between wave functions
+!> @details Reads source and target wave functions, maps orbitals between different bases,
+!> copies Jastrow parameters with appropriate scaling, and supports multiple operation modes
+!> including k-points, ion position copying, and parameter transfer.
 program copyjas
 
     use allio
@@ -676,6 +687,23 @@ program copyjas
     stop
 
 end program copyjas
+!> @brief Maps orbitals between different basis sets for complex wave functions
+!> @details Creates a mapping between orbitals in different basis sets, handling
+!> complex wave functions and orbital type matching. Maps orbitals based on atom type,
+!> orbital type, and parameter values.
+!> @param[in] nshell_c Number of shells in the source basis
+!> @param[in] mult_c Multiplicity array for source basis
+!> @param[in] ioccup_c Occupation array for source basis
+!> @param[in] kion_c Ion type array for source basis
+!> @param[in] ioptorb_c Orbital type array for source basis
+!> @param[in] nion_c Number of ions in source basis
+!> @param[in] nshell Number of shells in target basis
+!> @param[in] mult Multiplicity array for target basis
+!> @param[in] ioccup Occupation array for target basis
+!> @param[in] kion Ion type array for target basis
+!> @param[in] ioptorb Orbital type array for target basis
+!> @param[in] nion Number of ions in target basis
+!> @param[out] map Mapping array between orbitals
 subroutine mappingu(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c &
                     , vju_c, nshell, mult, ioccup, kion, ioptorb, nion, vju &
                     , map)
@@ -731,6 +759,23 @@ subroutine mappingu(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c &
     end do
     return
 end
+!> @brief Maps orbitals between different basis sets for real wave functions
+!> @details Creates a mapping between orbitals in different basis sets, handling
+!> real wave functions and orbital type matching. Maps orbitals based on atom type,
+!> orbital type, and parameter values.
+!> @param[in] nshell_c Number of shells in the source basis
+!> @param[in] mult_c Multiplicity array for source basis
+!> @param[in] ioccup_c Occupation array for source basis
+!> @param[in] kion_c Ion type array for source basis
+!> @param[in] ioptorb_c Orbital type array for source basis
+!> @param[in] nion_c Number of ions in source basis
+!> @param[in] nshell Number of shells in target basis
+!> @param[in] mult Multiplicity array for target basis
+!> @param[in] ioccup Occupation array for target basis
+!> @param[in] kion Ion type array for target basis
+!> @param[in] ioptorb Orbital type array for target basis
+!> @param[in] nion Number of ions in target basis
+!> @param[out] map Mapping array between orbitals
 subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c, nshell, mult, ioccup, kion, ioptorb, nion, map)
     implicit none
     integer nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew, adr, adrnew&
@@ -795,6 +840,18 @@ subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c, nshell
     end do
     return
 end
+!> @brief Copies Jastrow parameters between wave functions with scaling
+!> @details Copies Jastrow matrix elements from old to new wave function with
+!> appropriate scaling for different electron numbers. Handles subsystem mapping
+!> and parameter scaling for contracted orbitals.
+!> @param[in] jastrow_old Source Jastrow matrix
+!> @param[in] nelorbj_old Number of Jastrow orbitals in source
+!> @param[in] nel_old Number of electrons in source
+!> @param[out] jastrow_new Target Jastrow matrix
+!> @param[in] nelorbj_new Number of Jastrow orbitals in target
+!> @param[in] nel_new Number of electrons in target
+!> @param[in] mapj Orbital mapping array
+!> @param[in] nomul Logical flag for multiple subsystems
 subroutine copyin(jastrow_old, nelorbj_old, nel_old &
                   , jastrow_new, nelorbj_new, nel_new &
                   , mapj, nomul)
@@ -832,6 +889,17 @@ subroutine copyin(jastrow_old, nelorbj_old, nel_old &
     end do
     return
 end
+!> @brief Copies Jastrow parameters from 2-component to 1-component wave function
+!> @details Handles copying of Jastrow parameters when converting from a 2-component
+!> (spin-up/spin-down) wave function to a 1-component wave function with appropriate scaling.
+!> @param[in] jastrow_old Source Jastrow matrix (2-component)
+!> @param[in] nelorbj_old Number of Jastrow orbitals in source
+!> @param[out] jastrow_new Target Jastrow matrix (1-component)
+!> @param[in] nelorbj_new Number of Jastrow orbitals in target
+!> @param[in] mapj Orbital mapping array
+!> @param[in] nelup Number of spin-up electrons
+!> @param[in] neldo Number of spin-down electrons
+!> @param[in] nomul Logical flag for multiple subsystems
 subroutine copyin2to1(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj, nelup, neldo, nomul)
     implicit none
     integer nelorbj_old, nelorbj_new, i, j, nelup, neldo, nelorbh, nelorbu
@@ -879,6 +947,15 @@ subroutine copyin2to1(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj, 
     return
 end
 
+!> @brief Copies Jastrow parameters with spin-z component handling
+!> @details Copies Jastrow matrix elements with special handling for spin-z components.
+!> Applies different signs for cross-spin terms and handles subsystem mapping.
+!> @param[in] jastrow_old Source Jastrow matrix
+!> @param[in] nelorbj_old Number of Jastrow orbitals in source
+!> @param[out] jastrow_new Target Jastrow matrix
+!> @param[in] nelorbj_new Number of Jastrow orbitals in target
+!> @param[in] mapj Orbital mapping array
+!> @param[in] nomul Logical flag for multiple subsystems
 subroutine copyinsz(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj, nomul)
     implicit none
     integer nelorbj_old, nelorbj_new, i, j, nelorbjh, nelorbu

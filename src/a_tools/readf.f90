@@ -361,6 +361,11 @@ program erread
 
 contains
 
+    !> @brief Performs jackknife error analysis
+    !> @details This subroutine computes jackknife error estimates for
+    !>          energy measurements. It calculates averages by leaving
+    !>          out one bin at a time and estimates statistical errors
+    !>          from the variance of these jackknife estimates.
     subroutine jack
         implicit none
         integer i, k

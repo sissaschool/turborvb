@@ -285,6 +285,12 @@ program real_to_complex
 
 contains
 
+    !> @brief Sets up new determinant matrix for complex wavefunction conversion
+    !> @details This subroutine prepares the determinant matrix for conversion
+    !>          from real to complex wavefunctions. It allocates new arrays
+    !>          with double the size to accommodate complex numbers and
+    !>          handles both contracted and uncontracted cases.
+    !> @param[in] contraction Flag indicating if contraction is used
     subroutine set_new_detmat(contraction)
         implicit none
         integer, intent(in) :: contraction

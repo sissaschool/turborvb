@@ -13,54 +13,63 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for handling atomic orbital parameters and configurations
+!>
+!> This module defines data structures and parameters for representing atomic orbitals,
+!> their configurations, and related properties in quantum chemistry calculations.
 module atomsorb
     implicit none
 
-    !!**  Max number of orbitals for atom
+    !> Maximum number of orbitals per atom
     integer, parameter :: maxorb = 20
-    !
-    !!**  Max total number of parameters for each orbitals
+    
+    !> Maximum number of parameters for each orbital
     integer, parameter :: maxpar = 10
-    !
-    !!*** Max number of shell for atoms
+    
+    !> Maximum number of shells per atom
     integer, parameter :: max_shell = 5
 
+    !> Dimension for lambda arrays (maxorb * max_shell)
     integer, parameter :: lambda_dim = maxorb*max_shell
 
+    !> @brief Type definition for orbital parameters and properties
+    !>
+    !> Contains optimization flags, number of parameters, multiplicity and parameter values
     type orbital
-        integer ioptorb
-        integer npar
-        integer mult
-        double precision parm(maxpar)
-        ! *** logical flag for parameter that has no to be optimized
-        logical fixparm(maxpar)
+        integer ioptorb                    !< Orbital optimization flag
+        integer npar                       !< Number of parameters
+        integer mult                       !< Multiplicity
+        double precision parm(maxpar)      !< Array of orbital parameters
+        logical fixparm(maxpar)            !< Flags for fixed (non-optimizable) parameters
     end type orbital
 
+    !> @brief Type definition for atomic configuration and orbitals
+    !>
+    !> Contains atomic properties, orbital configurations, and interaction parameters
     type single_atom
-        integer kion
-        !*** number of configuration for an atom
-        integer nconf
-        !*** number of pairing orbitals for a given configuration and atom
-        integer :: norb
-        !*** number of threebody orbitals for a given configuration and atom
-        integer norbj
+        integer kion                       !< Ion index
+        integer nconf                      !< Number of configurations
+        integer norb                       !< Number of pairing orbitals
+        integer norbj                      !< Number of three-body orbitals
 
-        !***** Position of the orbital in the shell
-        integer shell_pos(maxorb)
-        integer jshell_pos(maxorb)
-        integer nlambda, njlambda
+        integer shell_pos(maxorb)          !< Orbital positions in shell
+        integer jshell_pos(maxorb)         !< J-orbital positions in shell
+        integer nlambda, njlambda          !< Lambda and J-lambda dimensions
 
-        integer map_lambda(lambda_dim), map_jlambda(lambda_dim)
+        integer map_lambda(lambda_dim)      !< Lambda mapping array
+        integer map_jlambda(lambda_dim)     !< J-lambda mapping array
 
-        double precision :: jonebody(lambda_dim)
+        double precision jonebody(lambda_dim) !< One-body J parameters
 
-        double precision :: onsite_lambda(lambda_dim, lambda_dim)
-        double precision :: onsite_jlambda(lambda_dim, lambda_dim)
-        !****** Pairing orbitals for each configuration
-        type(orbital) :: orb_list(maxorb)
-        !****** Three-body orbitals for each configuration
-        type(orbital) :: jorb_list(maxorb)
+        !> Onsite interaction parameters for lambda orbitals
+        double precision onsite_lambda(lambda_dim, lambda_dim)
+        !> Onsite interaction parameters for j-lambda orbitals
+        double precision onsite_jlambda(lambda_dim, lambda_dim)
+        
+        type(orbital) orb_list(maxorb)     !< List of pairing orbitals
+        type(orbital) jorb_list(maxorb)    !< List of three-body orbitals
     end type single_atom
 
+    !> Array of atomic configurations
     type(single_atom), allocatable :: atom_list(:)
 end module atomsorb

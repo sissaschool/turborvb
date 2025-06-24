@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief K-points finder program for TurboRVB
+!> @details This program determines the total number of k-points and their
+!> coordinates given a wave function file (fort.10) and input parameters.
+!> It requires a complex wave function and periodic boundary conditions.
+!> The program reads the k-points card from standard input and prints
+!> all k-points associated with the calculation.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program find_kpoints
 
     ! This tool is useful to determine the total number of k-points
@@ -25,11 +34,13 @@ program find_kpoints
     use cell
 
     implicit none
-    integer, parameter :: ufort10 = 10
-    integer :: i, j
+    integer, parameter :: ufort10 = 10  !< Unit number for fort.10 file
+    integer :: i, j                     !< Loop indices
     !
-    character(100) name_tool
-    character(20) str
+    character(100) name_tool            !< Tool name for help system
+    character(20) str                   !< Command line argument
+    
+    ! Check for help request
     call getarg(1, str)
     if (str .eq. "--help" .or. str .eq. "-help" .or. str .eq. "help") then
         ! input the name of the file exactly as it is in /doc

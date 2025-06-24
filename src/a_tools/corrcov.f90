@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file corrcov.f90
+!> @brief Program for computing force correlation functions with covariance analysis
+!> @details This program reads energy and derivative data from fort.21 files and computes
+!> force correlation functions using jackknife resampling. It constructs covariance matrices
+!> for force parameters, diagonalizes them to find optimal directions, and applies
+!> signal-to-noise optimization for force calculations in quantum Monte Carlo.
+
+!> @brief Main program for force correlation analysis with covariance optimization
+!> @details Reads energy and derivative data from multiple fort.21 files, performs jackknife
+!> resampling to estimate statistical errors, constructs covariance matrices for force parameters,
+!> diagonalizes to find optimal directions, and applies signal-to-noise optimization.
 program bootback
     implicit none
     integer nh, npar, nm, nmis, n, nbin, iseed, i, j, jj, kk, k, kmain, nel&

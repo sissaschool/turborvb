@@ -13,12 +13,21 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Orbital plotting program for TurboRVB
+!> @details This program generates 3D plots of molecular orbitals, charge
+!> density, and spin density from TurboRVB wave functions. It reads a
+!> fort.10 file and outputs data files suitable for visualization
+!> software like XCrySDen. The program supports both open and periodic
+!> boundary conditions and can handle complex wave functions.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program plot_orbitals
     use allio
     ! use constants, only: pi,ipc,ipf
 
     implicit none
-    integer, parameter :: ufort10 = 10
+    integer, parameter :: ufort10 = 10  !< Unit number for fort.10 file
     integer :: iorb, nfil, ntot, indorb, imu
     integer :: i1, i, kk, ii, iii, mesh(3), ind, j, imol, lq, lq2, ind_mol, chosen_mol, k, up_down
     real(8) :: rpoint(3), step(3), origin(3), center(3), cell_loc(3)
@@ -43,8 +52,8 @@ program plot_orbitals
     complex(8), external :: zdotu
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    character(60) :: name_tool
-    character(20) :: str
+    character(60) :: name_tool  !< Tool name for help system
+    character(20) :: str        !< Command line argument
     call getarg(1, str)
     if (str .eq. "--help" .or. str .eq. "-help" .or. str .eq. "help") then
 
