@@ -1,0 +1,80 @@
+\doxysection{src/a\+\_\+turborvb/adam\+\_\+opt.f90 File Reference}
+\hypertarget{adam__opt_8f90}{}\label{adam__opt_8f90}\index{src/a\_turborvb/adam\_opt.f90@{src/a\_turborvb/adam\_opt.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08}{adam\+\_\+opt}} (i\+\_\+main, nweight, ndimp, first\+\_\+moment, second\+\_\+moment, alphab)
+\begin{DoxyCompactList}\small\item\em Adam optimizer for automatic parameter adjustment. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{adam__opt_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08}\index{adam\_opt.f90@{adam\_opt.f90}!adam\_opt@{adam\_opt}}
+\index{adam\_opt@{adam\_opt}!adam\_opt.f90@{adam\_opt.f90}}
+\doxysubsubsection{\texorpdfstring{adam\_opt()}{adam\_opt()}}
+{\footnotesize\ttfamily \label{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08} 
+subroutine adam\+\_\+opt (\begin{DoxyParamCaption}\item[{integer}]{i\+\_\+main}{, }\item[{integer}]{nweight}{, }\item[{integer}]{ndimp}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ndimp)}]{first\+\_\+moment}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ndimp)}]{second\+\_\+moment}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ndimp)}]{alphab}{}\end{DoxyParamCaption})}
+
+
+
+Adam optimizer for automatic parameter adjustment. 
+
+This subroutine implements the Adam (Adaptive Moment Estimation) optimization algorithm for automatic parameter adjustment. It was implemented by K.\+Nakano in Sep. 2019 to adjust tpar automatically. The algorithm uses exponential moving averages of gradients and squared gradients to adaptively adjust learning rates for each parameter. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em i\+\_\+main} & Main iteration counter \\
+\hline
+\mbox{\texttt{in}}  & {\em nweight} & Number of weights \\
+\hline
+\mbox{\texttt{in}}  & {\em ndimp} & Number of dimensions/parameters \\
+\hline
+\mbox{\texttt{in,out}}  & {\em first\+\_\+moment} & First moment (exponential moving average of gradients) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em second\+\_\+moment} & Second moment (exponential moving average of squared gradients) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em alphab} & Parameters to be optimized (input\+: gradients, output\+: updated parameters) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{adam__opt_8f90_source_l00032}{32}} of file \mbox{\hyperlink{adam__opt_8f90_source}{adam\+\_\+opt.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndimp,\ ierr,\ rank,\ i,\ i\_main,\ nweight,\ iteration}
+\DoxyCodeLine{00037\ \ \ \ \ real*8\ square\_force(ndimp),\ alphab(ndimp),\ first\_moment(ndimp),\ \&}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ second\_moment(ndimp),\ adam\_beta1,\ adam\_beta2,\ adam\_eps}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(mpi\_comm\_world,\ rank,\ ierr)}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{}\ \ \ \ rank\ =\ 0}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00047\ \ \ \ \ adam\_beta1\ =\ 0.9d0}
+\DoxyCodeLine{00048\ \ \ \ \ adam\_beta2\ =\ 0.999d0}
+\DoxyCodeLine{00049\ \ \ \ \ adam\_eps\ =\ 0.00000001d0}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ first\_moment\ =\ adam\_beta1*first\_moment\ +\ (1\ -\/\ adam\_beta1)*alphab}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ndimp}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ square\_force(i)\ =\ alphab(i)**2}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ second\_moment\ =\ adam\_beta2*second\_moment\ +\ (1\ -\/\ adam\_beta2)*square\_force}
+\DoxyCodeLine{00058\ \ \ \ \ iteration\ =\ i\_main/nweight}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ndimp}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ alphab(i)\ =\ (first\_moment(i)*sqrt(1\ -\/\ adam\_beta2**iteration))/\ \&}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((1\ -\/\ adam\_beta1**iteration)*(sqrt(second\_moment(i))\ +\ adam\_eps))}
+\DoxyCodeLine{00062\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00063\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

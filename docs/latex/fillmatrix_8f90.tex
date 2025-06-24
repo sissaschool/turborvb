@@ -1,0 +1,275 @@
+\doxysection{src/m\+\_\+common/fillmatrix.f90 File Reference}
+\hypertarget{fillmatrix_8f90}{}\label{fillmatrix_8f90}\index{src/m\_common/fillmatrix.f90@{src/m\_common/fillmatrix.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{fillmatrix_8f90_a4a3d0b33ecedabd26ff05f6d8499d08e}{fillmatrix\+\_\+vec}} (rotmatrix, vecr)
+\begin{DoxyCompactList}\small\item\em Matrix generation utilities for rotation matrices. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{fillmatrix_8f90_aa121e8c53b2d2c2923bbe4011e10cb8b}{fillmatrix}} (rotmatrix)
+\begin{DoxyCompactList}\small\item\em Generate random 3D rotation matrix with uniform distribution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{fillmatrix_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{fillmatrix_8f90_aa121e8c53b2d2c2923bbe4011e10cb8b}\index{fillmatrix.f90@{fillmatrix.f90}!fillmatrix@{fillmatrix}}
+\index{fillmatrix@{fillmatrix}!fillmatrix.f90@{fillmatrix.f90}}
+\doxysubsubsection{\texorpdfstring{fillmatrix()}{fillmatrix()}}
+{\footnotesize\ttfamily \label{fillmatrix_8f90_aa121e8c53b2d2c2923bbe4011e10cb8b} 
+subroutine fillmatrix (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, 3)}]{rotmatrix}{}\end{DoxyParamCaption})}
+
+
+
+Generate random 3D rotation matrix with uniform distribution. 
+
+This subroutine creates a random 3x3 rotation matrix with uniform distribution over the SO(3) group. The algorithm generates three orthonormal vectors to form the rotation matrix columns.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{out}}  & {\em rotmatrix} & 3x3 rotation matrix to be filled\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Generates a random unit vector x using spherical coordinates\+:
+\begin{DoxyItemize}
+\item Random cos(theta) from \mbox{[}-\/1, 1\mbox{]}
+\item Random phi from \mbox{[}0, 2π\mbox{]}
+\end{DoxyItemize}
+\item Finds a stable orthogonal vector y to x by choosing the component with maximum magnitude and setting others appropriately
+\item Applies a random rotation around the x-\/axis to y
+\item Computes the third vector z as the cross product x × y
+\item Normalizes all vectors and assembles the rotation matrix
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The algorithm ensures numerical stability by choosing the largest component for orthogonalization 
+
+The resulting matrix is guaranteed to be orthogonal with determinant +1 (proper rotation) 
+
+The distribution is uniform over the SO(3) group 
+
+The subroutine includes error checking for orthogonality 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fillmatrix_8f90_source_l00137}{137}} of file \mbox{\hyperlink{fillmatrix_8f90_source}{fillmatrix.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Written\ by\ Sorella,\ Mazzola\ and\ Y.\ Luo\ on\ 25/7/2013.\ Mitas}}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ routine\ was\ wrong\ unfortunately.\ All\ previous\ calculation\ are}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ correct\ only\ in\ the\ limit\ a-\/-\/>0}}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ real*8\ x1,\ x2,\ x3,\ xsum,\ theta,\ phi,\ alpha\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ y1,\ y2,\ y3,\ z1,\ z2,\ z3,\ drand1,\ rotmatrix(3,\ 3),\ yval(3),\ yvalo(3)}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ x3\ =\ 1.d0\ -\/\ 2.d0*drand1()}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ phi\ =\ 2.d0*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}*drand1()}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ theta\ =\ dacos(x3)}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ x1\ =\ cos(phi)*sin(theta)}
+\DoxyCodeLine{00155\ \ \ \ \ x2\ =\ sin(phi)*sin(theta)}
+\DoxyCodeLine{00156\ \ \ \ \ x3\ =\ cos(theta)}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{!\ \ \ \ Find\ an\ arbitrary\ solution\ y2\ orthogonal\ to\ x\ in\ a\ stable\ way}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(x1)\ .lt.\ abs(x2))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(x2)\ .lt.\ abs(x3))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ x3\ is\ the\ maximum}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ y1\ =\ 1.d0}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ y2\ =\ 0.d0}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ y3\ =\ -\/x1/x3}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ x2\ is\ the\ maximum}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ y1\ =\ 1.d0}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ y3\ =\ 0.d0}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ y2\ =\ -\/x1/x2}
+\DoxyCodeLine{00169\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(x1)\ .lt.\ abs(x3))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ x3\ is\ the\ maximum}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ y1\ =\ 1.d0}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ y2\ =\ 0.d0}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ y3\ =\ -\/x1/x3}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ x1\ is\ the\ maximum}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ y2\ =\ 1.d0}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ y3\ =\ 0.d0}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ y1\ =\ -\/x2/x1}
+\DoxyCodeLine{00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00182\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Now\ rotate\ by\ an\ angle\ 0<\ phi1\ <\ 2\ Pi\ around\ x1}}
+\DoxyCodeLine{00184\ \ \ \ \ alpha\ =\ 2.d0*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}*drand1()}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{makeu_8f90_ab4d0cf4b7b93a86e1bfa2eda2ceb3721}{make\_u}}(alpha,\ x1,\ x2,\ x3,\ rotmatrix)}
+\DoxyCodeLine{00186\ \ \ \ \ yval(1)\ =\ y1}
+\DoxyCodeLine{00187\ \ \ \ \ yval(2)\ =\ y2}
+\DoxyCodeLine{00188\ \ \ \ \ yval(3)\ =\ y3}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ 3,\ 3,\ 1.d0,\ rotmatrix,\ 3,\ yval,\ 1,\ 0.d0,\ yvalo,\ 1)}
+\DoxyCodeLine{00190\ \ \ \ \ xsum\ =\ dsqrt(sum(yvalo(:)**2))}
+\DoxyCodeLine{00191\ \ \ \ \ y1\ =\ yvalo(1)/xsum}
+\DoxyCodeLine{00192\ \ \ \ \ y2\ =\ yvalo(2)/xsum}
+\DoxyCodeLine{00193\ \ \ \ \ y3\ =\ yvalo(3)/xsum}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ vector\ product}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ z1\ =\ x2*y3\ -\/\ y2*x3}
+\DoxyCodeLine{00198\ \ \ \ \ z2\ =\ -\/(x1*y3\ -\/\ x3*y1)}
+\DoxyCodeLine{00199\ \ \ \ \ z3\ =\ x1*y2\ -\/\ x2*y1}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ xsum\ =\ z1**2\ +\ z2**2\ +\ z3**2}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(1\ -\/\ xsum)\ .gt.\ 1d-\/6)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ in\ fillmatrix\ '}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ rotmatrix(1,\ 1)\ =\ x1}
+\DoxyCodeLine{00205\ \ \ \ \ rotmatrix(2,\ 1)\ =\ x2}
+\DoxyCodeLine{00206\ \ \ \ \ rotmatrix(3,\ 1)\ =\ x3}
+\DoxyCodeLine{00207\ \ \ \ \ rotmatrix(1,\ 2)\ =\ y1}
+\DoxyCodeLine{00208\ \ \ \ \ rotmatrix(2,\ 2)\ =\ y2}
+\DoxyCodeLine{00209\ \ \ \ \ rotmatrix(3,\ 2)\ =\ y3}
+\DoxyCodeLine{00210\ \ \ \ \ rotmatrix(1,\ 3)\ =\ z1}
+\DoxyCodeLine{00211\ \ \ \ \ rotmatrix(2,\ 3)\ =\ z2}
+\DoxyCodeLine{00212\ \ \ \ \ rotmatrix(3,\ 3)\ =\ z3}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{makeu_8f90_source_l00026}{make\+\_\+u()}}, and \mbox{\hyperlink{constants_8f90_source_l00047}{constants\+::pi}}.
+
+
+
+Referenced by \mbox{\hyperlink{pseudoset_8f90_source_l00019}{pseudoset()}}, \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}, \mbox{\hyperlink{initialize__matrices_8f90_source_l00763}{upload\+\_\+mat()}}, and \mbox{\hyperlink{uptabtot__new_8f90_source_l00166}{uptabtot()}}.
+
+\Hypertarget{fillmatrix_8f90_a4a3d0b33ecedabd26ff05f6d8499d08e}\index{fillmatrix.f90@{fillmatrix.f90}!fillmatrix\_vec@{fillmatrix\_vec}}
+\index{fillmatrix\_vec@{fillmatrix\_vec}!fillmatrix.f90@{fillmatrix.f90}}
+\doxysubsubsection{\texorpdfstring{fillmatrix\_vec()}{fillmatrix\_vec()}}
+{\footnotesize\ttfamily \label{fillmatrix_8f90_a4a3d0b33ecedabd26ff05f6d8499d08e} 
+subroutine fillmatrix\+\_\+vec (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, 3)}]{rotmatrix}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3)}]{vecr}{}\end{DoxyParamCaption})}
+
+
+
+Matrix generation utilities for rotation matrices. 
+
+This module provides subroutines for generating rotation matrices used in quantum Monte Carlo calculations. It includes functions for creating random rotation matrices and rotation matrices around specific axes.
+
+The module implements algorithms for\+:
+\begin{DoxyItemize}
+\item Generating random 3D rotation matrices with uniform distribution
+\item Creating rotation matrices that preserve a given axis direction
+\item Ensuring orthogonality and proper normalization of rotation matrices
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group (Sorella, Mazzola, Y. Luo) 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Generate rotation matrix preserving a given axis direction
+
+This subroutine creates a unitary rotation matrix that leaves unchanged the axis defined by the input vector vecr. The rotation is performed around this axis with a random angle.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em rotmatrix} & 3x3 rotation matrix to be filled \\
+\hline
+\mbox{\texttt{in}}  & {\em vecr} & 3D vector defining the rotation axis\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Normalizes the input vector vecr to unit length
+\item Constructs a complex anti-\/\+Hermitian matrix A from the normalized vector
+\item Diagonalizes A to find eigenvalues and eigenvectors
+\item Applies a random phase factor to the eigenvalues
+\item Reconstructs the rotation matrix using the formula R = exp(i\texorpdfstring{$\ast$}{*}\+A)
+\item Multiplies the result with the existing rotation matrix
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The algorithm uses complex matrix diagonalization to ensure proper rotation matrix properties 
+
+The rotation angle is randomly chosen from \mbox{[}0, 2π\mbox{]} 
+
+The input vector is automatically normalized if non-\/zero 
+
+If the input vector is zero, the result is undefined 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{fillmatrix_8f90_source_l00054}{54}} of file \mbox{\hyperlink{fillmatrix_8f90_source}{fillmatrix.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Written\ by\ Sorella,\ define\ a\ unitary\ matrix\ of\ a\ rotation\ (rotmatrix)}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ leaving\ unchanged\ the\ axis\ defined\ by\ vecr,\ that\ is\ not\ changed.}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}},\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_a1dee90f2d9ef7585b54977e41633d2ba}{zimg}}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ real*8\ x3,\ drand1,\ cost,\ rotmatrix(3,\ 3)}
+\DoxyCodeLine{00062\ \ \ \ \ real*8\ vecr(3),\ vec(3),\ rwork(7),\ w(3)}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ amat(3,\ 3),\ work(5),\ ascra(3,\ 3),\ aexp(3,\ 3),\ wc(3)}
+\DoxyCodeLine{00064\ \ \ \ \ real*8\ rotmat\_vec(3,\ 3),\ rotmat\_scra(3,\ 3)}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{integer}\ info,\ i,\ j}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ cost\ =\ sum(vecr(:)**2)}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ vec(:)\ =\ vecr(:)/sqrt(cost)}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ vec\ =\ 0.d0}
+\DoxyCodeLine{00073\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ amat\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00076\ \ \ \ \ ascra\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00077\ \ \ \ \ aexp\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ amat(2,\ 3)\ =\ -\/vec(1)*\mbox{\hyperlink{namespaceconstants_a1dee90f2d9ef7585b54977e41633d2ba}{zimg}}}
+\DoxyCodeLine{00080\ \ \ \ \ amat(1,\ 3)\ =\ vec(2)*\mbox{\hyperlink{namespaceconstants_a1dee90f2d9ef7585b54977e41633d2ba}{zimg}}}
+\DoxyCodeLine{00081\ \ \ \ \ amat(1,\ 2)\ =\ -\/vec(3)*\mbox{\hyperlink{namespaceconstants_a1dee90f2d9ef7585b54977e41633d2ba}{zimg}}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ amat(3,\ 2)\ =\ dconjg(amat(2,\ 3))}
+\DoxyCodeLine{00084\ \ \ \ \ amat(3,\ 1)\ =\ dconjg(amat(1,\ 3))}
+\DoxyCodeLine{00085\ \ \ \ \ amat(2,\ 1)\ =\ dconjg(amat(1,\ 2))}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{call\ }zheev(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'U'},\ 3,\ amat,\ 3,\ w,\ work,\ 5,\ rwork,\ info)}
+\DoxyCodeLine{00088\ \ \ \ \ x3\ =\ (drand1()\ -\/\ 0.5d0)*2.d0*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ wc(i)\ =\ dcmplx(dcos(x3*w(i)),\ dsin(x3*w(i)))}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ ascra(i,\ j)\ =\ amat(i,\ j)*wc(j)}
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00097\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'C'},\ 3,\ 3,\ 3,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ ascra,\ 3,\ amat,\ 3,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ aexp,\ 3)}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ rotmat\_vec(i,\ j)\ =\ aexp(i,\ j)}
+\DoxyCodeLine{00104\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00106\ \ \ \ \ rotmat\_scra\ =\ rotmatrix}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ 3,\ 3,\ 3,\ 1.d0,\ rotmat\_vec,\ 3,\ rotmat\_scra,\ 3,\ 0.d0,\ rotmatrix,\ 3)}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00047}{constants\+::pi}}, \mbox{\hyperlink{constants_8f90_source_l00251}{constants\+::zimg}}, \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}, and \mbox{\hyperlink{constants_8f90_source_l00248}{constants\+::zzero}}.
+
+
+
+Referenced by \mbox{\hyperlink{pseudoset_8f90_source_l00019}{pseudoset()}}, and \mbox{\hyperlink{uptabtot__new_8f90_source_l00166}{uptabtot()}}.
+

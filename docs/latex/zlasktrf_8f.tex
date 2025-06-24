@@ -1,0 +1,410 @@
+\doxysection{src/m\+\_\+pfapack/zlasktrf.f File Reference}
+\hypertarget{zlasktrf_8f}{}\label{zlasktrf_8f}\index{src/m\_pfapack/zlasktrf.f@{src/m\_pfapack/zlasktrf.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zlasktrf_8f_a03ddfe9d02ee41424301384faa94f064}{zlasktrf}} (uplo, mode, n, nb, a, lda, ipiv, w, ldw, info)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zlasktrf_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zlasktrf_8f_a03ddfe9d02ee41424301384faa94f064}\index{zlasktrf.f@{zlasktrf.f}!zlasktrf@{zlasktrf}}
+\index{zlasktrf@{zlasktrf}!zlasktrf.f@{zlasktrf.f}}
+\doxysubsubsection{\texorpdfstring{zlasktrf()}{zlasktrf()}}
+{\footnotesize\ttfamily \label{zlasktrf_8f_a03ddfe9d02ee41424301384faa94f064} 
+subroutine zlasktrf (\begin{DoxyParamCaption}\item[{character}]{uplo}{, }\item[{character}]{mode}{, }\item[{integer}]{n}{, }\item[{integer}]{nb}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}, dimension( lda, \texorpdfstring{$\ast$}{*} )}]{a}{, }\item[{integer}]{lda}{, }\item[{integer, dimension( \texorpdfstring{$\ast$}{*} )}]{ipiv}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}, dimension( ldw, \texorpdfstring{$\ast$}{*} )}]{w}{, }\item[{integer}]{ldw}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zlasktrf_8f_source_l00029}{29}} of file \mbox{\hyperlink{zlasktrf_8f_source}{zlasktrf.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00031\ \textcolor{comment}{*}}
+\DoxyCodeLine{00032\ \textcolor{comment}{*\ \ \ \ \ ..\ Scalar\ Arguments\ ..}}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ \ \ \ \ \ \ \ \ \ UPLO,\ MODE}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ INFO,\ LDA,\ LDW,\ N,\ NB,\ STEP}
+\DoxyCodeLine{00035\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00036\ \textcolor{comment}{*\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ IPIV(\ *\ )}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ \ \ \ \ A(\ LDA,\ *\ )}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ \ \ \ \ W(\ LDW,\ *\ )}
+\DoxyCodeLine{00040\ \textcolor{comment}{*}}
+\DoxyCodeLine{00041\ \textcolor{comment}{*\ \ Purpose}}
+\DoxyCodeLine{00042\ \textcolor{comment}{*\ \ =======}}
+\DoxyCodeLine{00043\ \textcolor{comment}{*}}
+\DoxyCodeLine{00044\ \textcolor{comment}{*\ \ ZLASKTRF\ computes\ NB\ steps\ of\ the\ factorization\ of\ a\ skew-\/symmetric}}
+\DoxyCodeLine{00045\ \textcolor{comment}{*\ \ matrix\ A\ using\ the\ Parlett-\/Reid\ algorithm:}}
+\DoxyCodeLine{00046\ \textcolor{comment}{*}}
+\DoxyCodeLine{00047\ \textcolor{comment}{*\ \ \ \ \ P*A*P\string^T\ =\ U*T*U\string^T\ \ or\ \ P*A*P\string^T\ =\ L*T*L\string^T}}
+\DoxyCodeLine{00048\ \textcolor{comment}{*}}
+\DoxyCodeLine{00049\ \textcolor{comment}{*\ \ If\ UPLO\ =\ 'U',\ ZLASKTRF\ reduces\ the\ last\ NB\ rows\ and\ columns\ of\ a}}
+\DoxyCodeLine{00050\ \textcolor{comment}{*\ \ matrix,\ of\ which\ the\ upper\ triangle\ is\ supplied;}}
+\DoxyCodeLine{00051\ \textcolor{comment}{*\ \ if\ UPLO\ =\ 'L',\ ZLASKTRF\ reduces\ the\ first\ NB\ rows\ and\ columns\ of\ a}}
+\DoxyCodeLine{00052\ \textcolor{comment}{*\ \ matrix,\ of\ which\ the\ lower\ triangle\ is\ supplied.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{*}}
+\DoxyCodeLine{00054\ \textcolor{comment}{*\ \ Alternatively,\ the\ routine\ can\ also\ be\ used\ to\ compute\ a\ partial}}
+\DoxyCodeLine{00055\ \textcolor{comment}{*\ \ tridiagonal\ form}}
+\DoxyCodeLine{00056\ \textcolor{comment}{*}}
+\DoxyCodeLine{00057\ \textcolor{comment}{*\ \ This\ is\ an\ auxiliary\ routine\ called\ by\ ZSKTRF.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{*}}
+\DoxyCodeLine{00059\ \textcolor{comment}{*\ \ Arguments}}
+\DoxyCodeLine{00060\ \textcolor{comment}{*\ \ =========}}
+\DoxyCodeLine{00061\ \textcolor{comment}{*}}
+\DoxyCodeLine{00062\ \textcolor{comment}{*\ \ UPLO\ \ \ \ (input)\ CHARACTER*1}}
+\DoxyCodeLine{00063\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ Specifies\ whether\ the\ upper\ or\ lower\ triangular\ part\ of\ the}}
+\DoxyCodeLine{00064\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ symmetric\ matrix\ A\ is\ stored:}}
+\DoxyCodeLine{00065\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'U':\ \ Upper\ triangular}}
+\DoxyCodeLine{00066\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'L':\ \ Lower\ triangular}}
+\DoxyCodeLine{00067\ \textcolor{comment}{*}}
+\DoxyCodeLine{00068\ \textcolor{comment}{*\ \ MODE\ \ \ \ (input)\ CHARACTER*1}}
+\DoxyCodeLine{00069\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'N':\ \ A\ is\ fully\ tridiagonalized}}
+\DoxyCodeLine{00070\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'P':\ \ A\ is\ partially\ tridiagonalized\ for\ Pfaffian\ computation}}
+\DoxyCodeLine{00071\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (details\ see\ below)}}
+\DoxyCodeLine{00072\ \textcolor{comment}{*}}
+\DoxyCodeLine{00073\ \textcolor{comment}{*\ \ N\ \ \ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00074\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ order\ of\ the\ matrix\ A.\ \ N\ >=\ 0.\ N\ must\ be\ even\ if\ MODE\ =\ 'P'.}}
+\DoxyCodeLine{00075\ \textcolor{comment}{*}}
+\DoxyCodeLine{00076\ \textcolor{comment}{*\ \ NB\ \ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00077\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ number\ of\ rows\ and\ columns\ to\ be\ reduced.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{*}}
+\DoxyCodeLine{00079\ \textcolor{comment}{*\ \ A\ \ \ \ \ \ \ (input/output)\ DOUBLE\ COMPLEX\ array,\ dimension\ (LDA,N)}}
+\DoxyCodeLine{00080\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ On\ entry,\ the\ skew-\/symmetric\ matrix\ A.}}
+\DoxyCodeLine{00081\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'U',\ the\ leading\ n-\/by-\/n\ upper\ triangular\ part}}
+\DoxyCodeLine{00082\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ A\ contains\ the\ upper\ triangular\ part\ of\ the\ matrix\ A,}}
+\DoxyCodeLine{00083\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ and\ the\ strictly\ lower\ triangular\ part\ of\ A\ is\ not\ referenced.}}
+\DoxyCodeLine{00084\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'L',\ the\ leading\ n-\/by-\/n\ lower\ triangular\ part}}
+\DoxyCodeLine{00085\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ A\ contains\ the\ lower\ triangular\ part\ of\ the\ matrix\ A,}}
+\DoxyCodeLine{00086\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ and\ the\ strictly\ upper\ triangular\ part\ of\ A\ is\ not\ referenced.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ On\ exit:}}
+\DoxyCodeLine{00088\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ if\ UPLO\ =\ 'U',\ the\ last\ NB\ columns\ have\ been\ reduced\ to}}
+\DoxyCodeLine{00089\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ tridiagonal\ form,\ with\ the\ diagonal\ elements\ overwriting}}
+\DoxyCodeLine{00090\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ the\ diagonal\ elements\ of\ A;\ the\ elements\ above\ the\ diagonal}}
+\DoxyCodeLine{00091\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ represent\ the\ upper\ unit\ triangular\ matrix\ U.\ If\ MODE\ =\ 'P',}}
+\DoxyCodeLine{00092\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ only\ the\ even\ columns\ of\ the\ last\ NB\ columns\ contain}}
+\DoxyCodeLine{00093\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ meaningful\ values.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ if\ UPLO\ =\ 'L',\ the\ first\ NB\ columns\ have\ been\ reduced\ to}}
+\DoxyCodeLine{00095\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ tridiagonal\ form,\ with\ the\ diagonal\ elements\ overwriting}}
+\DoxyCodeLine{00096\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ the\ diagonal\ elements\ of\ A;\ the\ elements\ below\ the\ diagonal}}
+\DoxyCodeLine{00097\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ represent\ the\ lower\ unit\ triangular\ matrix\ L.\ If\ MODE\ =\ 'P',}}
+\DoxyCodeLine{00098\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ only\ the\ \ odd\ columns\ of\ the\ first\ NB\ columns\ contain}}
+\DoxyCodeLine{00099\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ meaningful\ values.}}
+\DoxyCodeLine{00100\ \textcolor{comment}{*}}
+\DoxyCodeLine{00101\ \textcolor{comment}{*\ \ LDA\ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00102\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ leading\ dimension\ of\ the\ array\ A.\ \ LDA\ >=\ max(1,N).}}
+\DoxyCodeLine{00103\ \textcolor{comment}{*}}
+\DoxyCodeLine{00104\ \textcolor{comment}{*\ \ IPIV\ \ \ \ (output)\ INTEGER\ array,\ dimension\ (N)}}
+\DoxyCodeLine{00105\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ Information\ about\ the\ permutation\ matrix\ P:\ row\ and\ column}}
+\DoxyCodeLine{00106\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ i\ are\ interchanged\ with\ IPIV(i).\ If\ UPLO\ =\ 'U',\ those}}
+\DoxyCodeLine{00107\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ interchanges\ are\ done\ in\ the\ order\ i\ =\ N\ ...\ 1,\ if\ UPLO\ =\ 'L'}}
+\DoxyCodeLine{00108\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ in\ the\ order\ i\ =\ 1\ ...\ N.}}
+\DoxyCodeLine{00109\ \textcolor{comment}{*}}
+\DoxyCodeLine{00110\ \textcolor{comment}{*\ \ W\ \ \ \ \ \ \ (workspace)\ DOUBLE\ COMPLEX\ array,\ dimension\ (LDW,NB)}}
+\DoxyCodeLine{00111\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ n-\/by-\/nb\ matrix\ W\ required\ to\ update\ the\ unreduced\ part}}
+\DoxyCodeLine{00112\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ of\ A.\ (The\ update\ is\ performed\ in\ this\ routine)}}
+\DoxyCodeLine{00113\ \textcolor{comment}{*}}
+\DoxyCodeLine{00114\ \textcolor{comment}{*\ \ LDW\ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00115\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ leading\ dimension\ of\ the\ array\ W.\ LDW\ >=\ max(1,N).}}
+\DoxyCodeLine{00116\ \textcolor{comment}{*}}
+\DoxyCodeLine{00117\ \textcolor{comment}{*\ \ =====================================================================}}
+\DoxyCodeLine{00118\ \textcolor{comment}{*}}
+\DoxyCodeLine{00119\ \textcolor{comment}{*\ \ \ \ \ ..\ Parameters\ ..}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ \ \ \ \ ZERO,\ ONE}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ parameter(\ zero\ =\ (0.0d+0,\ 0.0d+0),}
+\DoxyCodeLine{00122\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ one\ =\ (1.0d+0,0.0d+0)\ )}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{*\ \ \ \ \ ..\ Local\ Scalars\ ..}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ K,\ KK,\ KP,\ NPANEL,\ WK}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ COLMAX}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ \ \ \ \ T}
+\DoxyCodeLine{00128\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00129\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Functions\ ..}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ \ \ \ \ \ \ \ \ \ \ \ LSAME}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ IZAMAX}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ \ \ \ \ \ \ \ \ \ \ lsame,\ izamax}
+\DoxyCodeLine{00133\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00134\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Subroutines\ ..}}
+\DoxyCodeLine{00135\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00136\ \textcolor{comment}{*\ \ \ \ \ ..\ Intrinsic\ Functions\ ..}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ \ \ \ \ \ \ \ \ \ abs,\ max}
+\DoxyCodeLine{00138\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00139\ \textcolor{comment}{*\ \ \ \ \ ..\ Executable\ Statements\ ..}}
+\DoxyCodeLine{00140\ \textcolor{comment}{*}}
+\DoxyCodeLine{00141\ \textcolor{comment}{*\ \ \ \ \ No\ safety\ checks,\ it's\ an\ internal\ function}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ lsame(\ mode,\ \textcolor{stringliteral}{'P'}\ )\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ step\ =\ 2}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ step\ =\ 1}
+\DoxyCodeLine{00149\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{comment}{*\ \ \ \ \ double\ the\ amount\ of\ panels\ before\ the\ block\ update,\ if\ STEP\ ==\ 2}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ npanel\ =\ nb\ *\ step}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ lsame(\ uplo,\ \textcolor{stringliteral}{'U'}\ )\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{comment}{*\ \ \ \ \ Factorize\ A\ as\ U\ *\ T\ *\ U\string^T\ using\ the\ upper\ triangle\ of\ A}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{comment}{*\ \ \ \ \ Consider\ the\ last\ NB\ columns\ of\ the\ matrix:}}
+\DoxyCodeLine{00159\ \textcolor{comment}{*\ \ \ \ \ First\ compute\ the\ transformations\ and\ apply\ them\ to\ the\ last\ NB}}
+\DoxyCodeLine{00160\ \textcolor{comment}{*\ \ \ \ \ columns\ (only),\ then\ apply\ the\ accumulated\ transformations\ to\ the\ rest}}
+\DoxyCodeLine{00161\ \textcolor{comment}{*\ \ \ \ \ of\ the\ matrix}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ wk\ =\ 0}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 10\ k=n,\ max(n-\/npanel+1,\ 2),\ -\/1}
+\DoxyCodeLine{00165\ \textcolor{comment}{*}}
+\DoxyCodeLine{00166\ \textcolor{comment}{*\ \ \ \ \ Update\ A(1:K,K)\ with\ all\ the\ accumulated\ transformations}}
+\DoxyCodeLine{00167\ \textcolor{comment}{*\ \ \ \ \ (if\ K<N:\ K=N,N-\/1\ is\ updated\ when\ computing\ the\ Gauss\ vector,}}
+\DoxyCodeLine{00168\ \textcolor{comment}{*\ \ \ \ \ K=N-\/1\ is\ not\ affected\ by\ the\ K=N\ transform)}}
+\DoxyCodeLine{00169\ \textcolor{comment}{*}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ kk\ =\ k-\/1}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ k\ .LT.\ n)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ wk\ .GT.\ 0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ k,\ k\ )\ =\ zero}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ k,\ wk,\ +one,\ a(\ 1,\ n-\/(wk-\/1)*step\ ),}
+\DoxyCodeLine{00177\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lda*step,\ w(\ k,\ nb-\/wk+1\ ),\ ldw,\ one,}
+\DoxyCodeLine{00178\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ 1,\ k\ ),\ 1\ )}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ k,\ wk,\ -\/one,\ w(\ 1,\ nb-\/wk+1\ ),}
+\DoxyCodeLine{00180\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ldw,\ a(\ k,\ n-\/(wk-\/1)*step\ ),\ lda*step,\ one,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ 1,\ k\ ),\ 1\ )}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ k,\ k\ )\ =\ zero}
+\DoxyCodeLine{00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{comment}{*\ \ \ \ \ Store\ the\ (updated)\ column\ K\ in\ W(:,NB-\/WK+1)}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ mod(k,\ step).EQ.1\ .OR.\ step.EQ.1\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wk\ =\ wk\ +\ 1}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zcopy(k,\ a(1,\ k),\ 1,\ w(1,\ nb-\/wk+1\ ),\ 1)}
+\DoxyCodeLine{00189\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00190\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ mod(k,\ step)\ .EQ.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00193\ \textcolor{comment}{*\ \ \ \ \ For\ STEP\ ==\ 1,\ process\ every\ column,\ but\ if}}
+\DoxyCodeLine{00194\ \textcolor{comment}{*\ \ \ \ \ STEP\ ==\ 2,\ do\ only\ things\ for\ the\ even\ columns}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{*\ \ \ \ \ Find\ the\ pivot}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kp\ =\ izamax(k-\/1,\ a(\ 1,\ k\ ),\ 1)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ colmax\ =\ abs(\ a(\ kp,\ k\ )\ )}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ colmax.EQ.zero\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00201\ \textcolor{comment}{*\ \ \ \ \ The\ column\ is\ completely\ zero\ -\/\ do\ nothing}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ info.EQ.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ k\ -\/\ 1}
+\DoxyCodeLine{00204\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kp\ =\ kk}
+\DoxyCodeLine{00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{*\ \ \ \ \ swap\ rows\ and\ columns\ K+1\ and\ KP\ in\ the}}
+\DoxyCodeLine{00209\ \textcolor{comment}{*\ \ \ \ \ full\ matrix\ A(1:N,1:N)}}
+\DoxyCodeLine{00210\ \textcolor{comment}{*\ \ \ \ \ Also,\ swap\ the\ first\ K-\/1\ columns\ of\ W}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ kp\ .NE.\ kk\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ kp-\/1,\ a(\ 1,\ kk\ ),\ 1,\ a(\ 1,\ kp\ ),1)}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ kk-\/kp-\/1,\ a(\ kp+1,\ kk\ ),\ 1,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ kp,\ kp+1\ ),\ lda\ )}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ n-\/k+1,\ a(\ kk,\ k),\ lda,\ a(\ kp,\ k),\ lda)}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(kk-\/kp,\ -\/one,\ a(kp,\ kk),\ 1)}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(kk-\/kp-\/1,\ -\/one,\ a(kp,\ kp+1),\ lda)}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{comment}{*\ \ \ \ \ Swap\ in\ the\ last\ columns\ of\ W}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ wk\ .GT.\ 0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ wk,\ w(\ kk,\ nb-\/wk+1\ ),\ ldw,}
+\DoxyCodeLine{00225\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ kp,\ nb-\/wk+1\ ),\ ldw)}
+\DoxyCodeLine{00226\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \textcolor{comment}{*\ \ \ \ \ (The\ column/row\ K+1\ is\ not\ affected\ by\ the\ update)}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ colmax\ .NE.\ zero\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00231\ \textcolor{comment}{*\ \ \ \ \ Store\ L(k+1)\ in\ A(k)}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(k-\/2,\ one/a(\ k-\/1,\ k\ ),\ a(1,\ k),\ 1)}
+\DoxyCodeLine{00233\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{*\ \ \ \ \ Delay\ the\ update\ of\ the\ trailing\ submatrix\ (done\ at\ the\ beginning}}
+\DoxyCodeLine{00236\ \textcolor{comment}{*\ \ \ \ \ of\ each\ loop\ for\ every\ column\ of\ the\ first\ NB\ columns,\ and\ then}}
+\DoxyCodeLine{00237\ \textcolor{comment}{*\ \ \ \ \ finally\ in\ a\ rank-\/3\ update\ for\ the\ last\ N-\/NB\ block)}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{comment}{*\ \ \ \ \ Store\ Pivot}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipiv(\ k-\/1\ )\ =\ kp}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00244\ \textcolor{comment}{*\ \ \ \ \ STEP\ ==\ 2\ and\ an\ even\ column,\ do\ nothing}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipiv(\ k-\/1\ )\ =\ k-\/1}
+\DoxyCodeLine{00246\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00247\ \ 10\ \ \ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{*\ \ \ \ \ Now\ update\ the\ leading\ A(1:N-\/NB,\ 1:N-\/NB)\ submatrix\ in\ a\ level\ 3\ update,}}
+\DoxyCodeLine{00250\ \textcolor{comment}{*\ \ \ \ \ if\ necessary}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ n-\/npanel+1\ .GT.\ 2\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \textcolor{comment}{*\ \ \ \ \ For\ this\ we\ have\ to\ set\ the\ N-\/NB,N-\/NB+1\ entry\ to\ zero,}}
+\DoxyCodeLine{00254\ \textcolor{comment}{*\ \ \ \ \ but\ restore\ it\ later}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ t\ =\ a(\ n-\/npanel,\ n-\/npanel+1\ )}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ a(\ n-\/npanel,\ n-\/npanel+1\ )\ =\ zero}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ wk\ .LT.\ nb)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00258\ \textcolor{comment}{*\ \ \ \ \ Store\ the\ column\ N-\/NB\ in\ W,\ and\ update\ it\ in\ W}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zcopy(n-\/npanel,\ a(1,\ n-\/npanel),\ 1,}
+\DoxyCodeLine{00260\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ w(1,\ 1),\ 1)}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ n-\/npanel,\ 1\ )\ =\ zero}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/npanel,\ wk,\ +one,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ 1,\ n-\/(wk-\/1)*step\ ),\ lda*step,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ n-\/npanel,\ nb-\/wk+1\ ),\ ldw,\ one,\ w(\ 1,\ 1\ ),\ 1\ )}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/npanel,\ wk,\ -\/one,\ w(\ 1,\ nb-\/wk+1\ ),}
+\DoxyCodeLine{00266\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ ldw,\ a(\ n-\/npanel,\ n-\/(wk-\/1)*step\ ),\ lda*step,\ one,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ 1,\ 1\ ),\ 1\ )}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ n-\/npanel,\ 1\ )\ =\ zero}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wk\ =\ wk\ +\ 1}
+\DoxyCodeLine{00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \textcolor{comment}{*\ \ \ \ \ Now\ do\ the\ rank-\/3\ update}}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{zskr2k_8f_afaa5ee2061615713a0f1dec0a6a4ea59}{zskr2k}}(\ uplo,\ \textcolor{stringliteral}{"{}N"{}},\ n-\/npanel,\ nb,\ one,}
+\DoxyCodeLine{00274\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ a(1,\ n-\/(wk-\/1)*step),\ lda*step,}
+\DoxyCodeLine{00275\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ w(1,1),\ ldw,\ one,\ a(1,\ 1),\ lda)}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ a(\ n-\/npanel,\ n-\/npanel+1\ )\ =\ t}
+\DoxyCodeLine{00278\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{*\ \ \ \ \ Factorize\ A\ as\ L\ *\ T\ *\ L\string^T\ using\ the\ lower\ triangle\ of\ A}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{comment}{*\ \ \ \ \ Consider\ the\ first\ NB\ columns\ of\ the\ matrix:}}
+\DoxyCodeLine{00285\ \textcolor{comment}{*\ \ \ \ \ First\ compute\ the\ transformations\ and\ apply\ them\ to\ the\ first\ NB}}
+\DoxyCodeLine{00286\ \textcolor{comment}{*\ \ \ \ \ columns\ (only),\ then\ apply\ the\ accumulated\ transformations\ to\ the\ rest}}
+\DoxyCodeLine{00287\ \textcolor{comment}{*\ \ \ \ \ of\ the\ matrix}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ wk\ =\ 0}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 30\ k=1,\ min(npanel,\ n-\/1)}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{comment}{*}}
+\DoxyCodeLine{00293\ \textcolor{comment}{*\ \ \ \ \ Update\ A(K+1:n,K+1)\ with\ all\ the\ accumulated\ transformations}}
+\DoxyCodeLine{00294\ \textcolor{comment}{*\ \ \ \ \ (if\ K>2:\ K=1,2\ is\ updated\ when\ computing\ the\ Gauss\ vector,}}
+\DoxyCodeLine{00295\ \textcolor{comment}{*\ \ \ \ \ K=2\ is\ not\ affected\ by\ the\ K=1\ transform)}}
+\DoxyCodeLine{00296\ \textcolor{comment}{*}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ kk\ =\ k+1}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ k\ .GT.\ 1)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ wk\ .GT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ k,\ k\ )\ =\ zero}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/k+1,\ wk,\ +one,\ a(\ k,\ 1\ ),}
+\DoxyCodeLine{00304\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lda*step,\ w(\ k,\ 1\ ),\ ldw,\ one,\ a(\ k,\ k\ ),\ 1\ )}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/k+1,\ wk,\ -\/one,\ w(\ k,\ 1\ ),}
+\DoxyCodeLine{00306\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ldw,\ a(\ k,\ 1\ ),\ lda*step,\ one,\ a(\ k,\ k\ ),\ 1\ )}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ k,\ k\ )\ =\ zero}
+\DoxyCodeLine{00308\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{*\ \ \ \ \ Store\ the\ (updated)\ column\ K\ in\ W(:,WK)}}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ mod(k,\ step)\ .\ eq.\ 0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wk\ =\ wk\ +\ 1}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zcopy(n-\/k+1,\ a(k,\ k),\ 1,\ w(k,\ wk),\ 1)}
+\DoxyCodeLine{00314\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00315\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ mod(k,\ step)\ .EQ.\ 1\ .OR.\ step\ .EQ.\ 1)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00318\ \textcolor{comment}{*\ \ \ \ \ For\ STEP\ ==\ 1,\ process\ every\ column,\ but\ if}}
+\DoxyCodeLine{00319\ \textcolor{comment}{*\ \ \ \ \ STEP\ ==\ 2,\ do\ only\ things\ for\ the\ odd\ columns}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{*\ \ \ \ \ Find\ the\ pivot}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kp\ =\ k\ +\ izamax(n-\/k,\ a(\ k+1,\ k\ ),\ 1)}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ colmax\ =\ abs(\ a(\ kp,\ k\ )\ )}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ colmax.EQ.zero\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00326\ \textcolor{comment}{*\ \ \ \ \ The\ column\ is\ completely\ zero\ -\/\ do\ nothing}}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ info.EQ.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ k}
+\DoxyCodeLine{00329\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kp\ =\ kk}
+\DoxyCodeLine{00331\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{comment}{*\ \ \ \ \ swap\ rows\ and\ columns\ K+1\ and\ KP\ in\ the}}
+\DoxyCodeLine{00334\ \textcolor{comment}{*\ \ \ \ \ full\ matrix\ A(1:N,1:N)}}
+\DoxyCodeLine{00335\ \textcolor{comment}{*\ \ \ \ \ Also,\ swap\ the\ first\ K-\/1\ columns\ of\ W}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ kp\ .NE.\ kk\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ kp.LT.n\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ n-\/kp,\ a(\ kp+1,\ kk\ ),\ 1,}
+\DoxyCodeLine{00340\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ kp+1,\ kp\ ),1\ )}
+\DoxyCodeLine{00341\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ kp-\/kk-\/1,\ a(\ kk+1,\ kk\ ),\ 1,}
+\DoxyCodeLine{00344\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ kp,\ kk+1\ ),\ lda\ )}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ k,\ a(\ kk,\ 1),\ lda,\ a(\ kp,\ 1),\ lda)}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \textcolor{comment}{*\ \ \ \ \ The\ matrix\ is\ anti-\/symmetric,\ hence\ swaps\ beyond\ the\ diagonal\ need\ a\ -\/1}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(\ kp-\/kk,\ -\/one,\ a(kk+1,\ kk),\ 1\ )}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(\ kp-\/kk-\/1,\ -\/one,\ a(kp,\ kk+1),\ lda\ )}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{comment}{*\ \ \ \ \ Swap\ in\ the\ first\ columns\ of\ W}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zswap(\ wk,\ w(\ kk,\ 1\ ),\ ldw,\ w(\ kp,\ 1\ ),\ ldw)}
+\DoxyCodeLine{00355\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{comment}{*\ \ \ \ \ (The\ column/row\ K+1\ is\ not\ affected\ by\ the\ update)}}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ colmax\ .NE.\ zero\ .AND.\ k\ .LE.\ n-\/2)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00359\ \textcolor{comment}{*\ \ \ \ \ Store\ L(k+1)\ in\ A(k)}}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zscal(\ n-\/k-\/1,\ one/a(\ k+1,\ k\ ),\ a(k+2,\ k),\ 1\ )}
+\DoxyCodeLine{00361\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \textcolor{comment}{*\ \ \ \ \ Delay\ the\ update\ of\ the\ trailing\ submatrix\ (done\ at\ the\ beginning}}
+\DoxyCodeLine{00364\ \textcolor{comment}{*\ \ \ \ \ of\ each\ loop\ for\ every\ column\ of\ the\ first\ NB\ columns,\ and\ then}}
+\DoxyCodeLine{00365\ \textcolor{comment}{*\ \ \ \ \ finally\ in\ a\ rank-\/3\ update\ for\ the\ last\ N-\/NB\ block)}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{comment}{*\ \ \ \ \ Store\ Pivot}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipiv(\ k+1\ )\ =\ kp}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00371\ \textcolor{comment}{*\ \ \ \ \ STEP\ ==\ 2\ and\ an\ even\ column,\ do\ nothing}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipiv(k+1)\ =\ k+1}
+\DoxyCodeLine{00373\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00374\ \ 30\ \ \ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{comment}{*\ \ \ \ \ Now\ update\ the\ trailing\ A(NB+1:N,\ NB+1:N)\ submatrix\ in\ a\ level\ 3\ update,}}
+\DoxyCodeLine{00377\ \textcolor{comment}{*\ \ \ \ \ if\ necessary}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ npanel\ .LT.\ n-\/1)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00380\ \textcolor{comment}{*\ \ \ \ \ For\ this\ we\ have\ to\ set\ the\ NB+1,NB\ entry\ to\ zero,\ but\ restore\ it\ later}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ t\ =\ a(\ npanel+1,\ npanel\ )}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ a(\ npanel+1,\ npanel\ )\ =\ zero}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ wk\ .LT.\ nb)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00384\ \textcolor{comment}{*\ \ \ \ \ Store\ the\ column\ NB+1\ in\ W,\ and\ update\ it\ in\ W}}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zcopy(n-\/npanel,\ a(npanel+1,\ npanel+1),\ 1,}
+\DoxyCodeLine{00386\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ w(npanel+1,\ nb),\ 1)}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ npanel+1,\ nb\ )\ =\ zero}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/npanel,\ nb-\/1,\ +one,\ a(\ npanel+1,\ 1\ ),}
+\DoxyCodeLine{00390\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ lda*step,\ w(\ npanel+1,\ 1\ ),\ ldw,}
+\DoxyCodeLine{00391\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ one,\ w(\ npanel+1,\ nb\ ),\ 1\ )}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(\ \textcolor{stringliteral}{'N'},\ n-\/npanel,\ nb-\/1,\ -\/one,\ w(\ npanel+1,\ 1\ ),}
+\DoxyCodeLine{00393\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ ldw,\ a(\ npanel+1,\ 1\ ),\ lda*step,\ one,}
+\DoxyCodeLine{00394\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ npanel+1,\ nb\ ),\ 1\ )}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ w(\ npanel+1,\ nb\ )\ =\ zero}
+\DoxyCodeLine{00396\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{comment}{*\ \ \ \ \ Now\ do\ the\ rank-\/3\ update}}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{zskr2k_8f_afaa5ee2061615713a0f1dec0a6a4ea59}{zskr2k}}(\ uplo,\ \textcolor{stringliteral}{"{}N"{}},\ n-\/npanel,\ nb,\ one,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ a(npanel+1,1),\ lda*step,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ w(npanel+1,1),\ ldw,\ one,\ a(npanel+1,\ npanel+1),\ lda)}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ a(npanel+1,\ npanel)=t}
+\DoxyCodeLine{00403\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00406\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{zskr2k_8f_source_l00030}{zskr2k()}}.
+
+
+
+Referenced by \mbox{\hyperlink{zsktrf_8f_source_l00030}{zsktrf()}}.
+

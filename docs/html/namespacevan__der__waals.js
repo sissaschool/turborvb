@@ -1,5 +1,28 @@
 var namespacevan__der__waals =
 [
-    [ "cp", "structvan__der__waals_1_1cp.html", null ],
-    [ "gromos", "structvan__der__waals_1_1gromos.html", null ]
+    [ "cp", "structvan__der__waals_1_1cp.html", "structvan__der__waals_1_1cp" ],
+    [ "gromos", "structvan__der__waals_1_1gromos.html", "structvan__der__waals_1_1gromos" ],
+    [ "ave2_vdw", "namespacevan__der__waals.html#a123cdfb9c8ff68e6d93f9b86a199ca0e", null ],
+    [ "ave_vdw", "namespacevan__der__waals.html#aa6c843b935b037457ee067673042e127", null ],
+    [ "c12", "namespacevan__der__waals.html#a0351198be4ca2ae251c6e73d5bb36ae0", null ],
+    [ "c6", "namespacevan__der__waals.html#ac6822975366eff4cdd8d3d3723626fca", null ],
+    [ "coord_nn", "namespacevan__der__waals.html#a635e866eefea8a5873c5681444050650", null ],
+    [ "cpmd", "namespacevan__der__waals.html#a7cfa3b4b12cbaf3c9c2ad763270bac99", null ],
+    [ "cs12", "namespacevan__der__waals.html#a09b0b312839cee48da6255693041cff0", null ],
+    [ "cs6", "namespacevan__der__waals.html#ad92dfc9f17669f6fbc47f4a7b12fe5b5", null ],
+    [ "err_vdw", "namespacevan__der__waals.html#a791df3637e8c9ac810e77b6bef275036", null ],
+    [ "filename_vdw", "namespacevan__der__waals.html#a8ab7bfde06343df0e1ef3519e271b979", null ],
+    [ "grom", "namespacevan__der__waals.html#a3045bb14d3f04c1ce6bb52bdc379fb8c", null ],
+    [ "nat_nn", "namespacevan__der__waals.html#aeb740139cc47fea1939ad3c37346cc67", null ],
+    [ "nat_tot", "namespacevan__der__waals.html#ac2046a56bcf820a77673f932955bd104", null ],
+    [ "ncount_vdw", "namespacevan__der__waals.html#ade92107d11bb9c6be27d2ec2ff8eb478", null ],
+    [ "nn_vdw", "namespacevan__der__waals.html#ae1bb7902b9a8c7225d707e89354429f8", null ],
+    [ "nratt", "namespacevan__der__waals.html#a65b0efb10bb602e71dc9f0fb23e8965a", null ],
+    [ "qmc_vdw", "namespacevan__der__waals.html#a2160ba081d661b0bc9d5341ada5a5a15", null ],
+    [ "sum_err", "namespacevan__der__waals.html#a50d8bf6e5fc0b8f6743d8010669d5eb1", null ],
+    [ "sum_pot", "namespacevan__der__waals.html#acb52c120bc3211c545faa703f09caafb", null ],
+    [ "t_ave2_vdw", "namespacevan__der__waals.html#a22d05e99c943e61d8fa92b08d30dd027", null ],
+    [ "t_ave_vdw", "namespacevan__der__waals.html#a85f716005ba7014687d9519ddda8467d", null ],
+    [ "t_ncount_vdw", "namespacevan__der__waals.html#a58a775c43676a0a456477fd1da380e8a", null ],
+    [ "vdw", "namespacevan__der__waals.html#ae6fa7393fc1ae4ae381418d1cb42e15d", null ]
 ];

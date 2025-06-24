@@ -1,0 +1,87 @@
+\doxysection{src/m\+\_\+common/findmaxmat.f90 File Reference}
+\hypertarget{findmaxmat_8f90}{}\label{findmaxmat_8f90}\index{src/m\_common/findmaxmat.f90@{src/m\_common/findmaxmat.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{findmaxmat_8f90_acf2adb0c22096275745cd04b8b8b63c8}{findmaxmat}} (iessw, nnozero, nozero, nelorbh, jbradet, lastmol)
+\begin{DoxyCompactList}\small\item\em Find maximum matrix indices for sparse matrix operations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{findmaxmat_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{findmaxmat_8f90_acf2adb0c22096275745cd04b8b8b63c8}\index{findmaxmat.f90@{findmaxmat.f90}!findmaxmat@{findmaxmat}}
+\index{findmaxmat@{findmaxmat}!findmaxmat.f90@{findmaxmat.f90}}
+\doxysubsubsection{\texorpdfstring{findmaxmat()}{findmaxmat()}}
+{\footnotesize\ttfamily \label{findmaxmat_8f90_acf2adb0c22096275745cd04b8b8b63c8} 
+subroutine findmaxmat (\begin{DoxyParamCaption}\item[{integer}]{iessw}{, }\item[{integer}]{nnozero}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozero}{, }\item[{integer}]{nelorbh}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbradet}{, }\item[{integer}]{lastmol}{}\end{DoxyParamCaption})}
+
+
+
+Find maximum matrix indices for sparse matrix operations. 
+
+This subroutine determines the maximum row and column indices used in a sparse matrix representation, which is useful for allocating memory and optimizing matrix operations in quantum Monte Carlo calculations.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iessw} & Number of active orbitals to consider (0 = skip calculation) \\
+\hline
+\mbox{\texttt{in}}  & {\em nnozero} & Number of non-\/zero elements in the sparse matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & Array containing linear indices of non-\/zero matrix elements \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbh} & Number of orbitals (matrix dimension) \\
+\hline
+\mbox{\texttt{in}}  & {\em jbradet} & Array mapping sparse matrix indices to orbital indices \\
+\hline
+\mbox{\texttt{in,out}}  & {\em lastmol} & Maximum row/column index found (updated on output)\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Checks if calculation should be performed (iessw \texorpdfstring{$>$}{>} 0)
+\item Iterates through all non-\/zero matrix elements
+\item For each element with valid jbradet mapping (1 ≤ jbradet(j) ≤ iessw)\+:
+\begin{DoxyItemize}
+\item Converts linear index to (row, column) coordinates
+\item Updates lastmol with the maximum of current lastmol, row, and column
+\end{DoxyItemize}
+\item Only considers elements where both row and column are ≤ nelorbh
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The subroutine uses linear indexing where element (i,j) corresponds to index (j-\/1)\texorpdfstring{$\ast$}{*}nelorbh + i 
+
+If iessw = 0, the subroutine returns immediately without calculation 
+
+The subroutine updates lastmol in-\/place with the maximum value found 
+
+This is typically used for memory allocation and optimization purposes 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{findmaxmat_8f90_source_l00043}{43}} of file \mbox{\hyperlink{findmaxmat_8f90_source}{findmaxmat.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{integer}\ iessw,\ nelorbh,\ nozero(*),\ i,\ j,\ nnozero,\ jbradet(*),\ lastmol,\ ix,\ iy}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (iessw\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nnozero}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ i\ =\ jbradet(j)}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ne.\ 0\ .and.\ i\ .le.\ iessw)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ iy\ =\ (nozero(j)\ -\/\ 1)/nelorbh\ +\ 1}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ ix\ =\ nozero(j)\ -\/\ (iy\ -\/\ 1)*nelorbh}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iy\ .le.\ nelorbh)\ lastmol\ =\ max(lastmol,\ ix,\ iy)}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

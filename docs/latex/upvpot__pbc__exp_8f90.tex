@@ -1,0 +1,386 @@
+\doxysection{src/a\+\_\+turborvb/upvpot\+\_\+pbc\+\_\+exp.f90 File Reference}
+\hypertarget{upvpot__pbc__exp_8f90}{}\label{upvpot__pbc__exp_8f90}\index{src/a\_turborvb/upvpot\_pbc\_exp.f90@{src/a\_turborvb/upvpot\_pbc\_exp.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upvpot__pbc__exp_8f90_a2076dac1c27507fdf0869193df0a3369}{upvpot}} (npar, iesdr, nw, nel, nelup, rcart, econf, vj, rion, nion, costz, costz3, lbox)
+\begin{DoxyCompactList}\small\item\em Update potential energy with periodic boundary conditions and exponential Jastrow. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upvpot__pbc__exp_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upvpot__pbc__exp_8f90_a2076dac1c27507fdf0869193df0a3369}\index{upvpot\_pbc\_exp.f90@{upvpot\_pbc\_exp.f90}!upvpot@{upvpot}}
+\index{upvpot@{upvpot}!upvpot\_pbc\_exp.f90@{upvpot\_pbc\_exp.f90}}
+\doxysubsubsection{\texorpdfstring{upvpot()}{upvpot()}}
+{\footnotesize\ttfamily \label{upvpot__pbc__exp_8f90_a2076dac1c27507fdf0869193df0a3369} 
+subroutine upvpot (\begin{DoxyParamCaption}\item[{integer}]{npar}{, }\item[{integer}]{iesdr}{, }\item[{integer}]{nw}{, }\item[{integer}]{nel}{, }\item[{integer}]{nelup}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, \texorpdfstring{$\ast$}{*})}]{rcart}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nw, \texorpdfstring{$\ast$}{*})}]{econf}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{vj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{integer}]{nion}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{costz}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{costz3}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{lbox}{}\end{DoxyParamCaption})}
+
+
+
+Update potential energy with periodic boundary conditions and exponential Jastrow. 
+
+Computes potential energy contributions for electron-\/electron interactions with various Jastrow factor types. Supports periodic boundary conditions and handles different Jastrow parameterizations (iesd types). Implements exponential and rational Jastrow functions with spin-\/dependent interactions. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em npar} & Number of parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em iesdr} & Jastrow parameter type \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em nel} & Number of electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em nelup} & Number of up electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em rcart} & Cartesian coordinates \\
+\hline
+\mbox{\texttt{out}}  & {\em econf} & Energy configuration array \\
+\hline
+\mbox{\texttt{in}}  & {\em vj} & Jastrow parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em rion} & Ion positions \\
+\hline
+\mbox{\texttt{in}}  & {\em nion} & Number of ions \\
+\hline
+\mbox{\texttt{in}}  & {\em costz} & Cost z array \\
+\hline
+\mbox{\texttt{in}}  & {\em costz3} & Cost z3 array \\
+\hline
+\mbox{\texttt{in}}  & {\em LBox} & Box length for periodic boundary conditions \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{upvpot__pbc__exp_8f90_source_l00034}{34}} of file \mbox{\hyperlink{upvpot__pbc__exp_8f90_source}{upvpot\+\_\+pbc\+\_\+exp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{integer}\ npar,\ nw,\ L,\ nel,\ keli,\ kelj,\ iesdr2iesd\ \ \ \ \&}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ k,\ i,\ ii,\ jj,\ ind,\ indo,\ iopt,\ j,\ jold,\ iesd,\ iesdr,\ nelup,\ nion}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{real*8}\ xi,\ yi,\ zi,\ xj,\ yj,\ zj,\ nr,\ nrz,\ dx,\ dy,\ dz}
+\DoxyCodeLine{00042\ \ \ \ \ real*8\ econf(nw,\ *),\ vj(*),\ cost,\ fcost\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ fcost1,\ fcost2,\ fcost3,\ fat1,\ fat2,\ fat3,\ fat4,\ costk\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ costz(*),\ costz3(*),\ rion(3,\ *),\ lbox}
+\DoxyCodeLine{00045\ \ \ \ \ real*8\ rcart(3,\ *),\ pi\_l,\ inv\_pi\_l,\ rc(3),\ rt(3),\ src(3)}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{logical}\ iesspin}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iesd=iesdr}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(iesdr.eq.-\/5)\ iesd=1}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(iesdr.eq.-\/6)\ iesd=4}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(iesdr.eq.-\/7)\ iesd=4}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ iesd\ =\ \mbox{\hyperlink{iesdr2iesd_8f90_a68b00e104574c93080bf86f0eb731b85}{iesdr2iesd}}(iesdr)}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesd\ .lt.\ 0\ .or.\ iesd\ .eq.\ 2\ .or.\ iesdr\ .eq.\ -\/7)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ iesspin\ =\ .true.}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ iesspin\ =\ .false.}
+\DoxyCodeLine{00059\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (lbox\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ pi\_l\ =\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ inv\_pi\_l\ =\ 1.d0/\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ costk\ =\ 0.5d0}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ npar}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ econf(1,\ k)\ =\ 0.d0}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ is\ to\ avoid\ negative\ values}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesd\ .ne.\ 6\ .and.\ iesd\ .ne.\ 7)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npar\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ vj(1)\ =\ abs(vj(1))}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (npar\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ vj(1)\ =\ abs(vj(1))}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ vj(2)\ =\ abs(vj(2))}
+\DoxyCodeLine{00078\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00079\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ zi\ =\ rcart(3,\ j)}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ yi\ =\ rcart(2,\ j)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ xi\ =\ rcart(1,\ j)}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesd\ .eq.\ -\/2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lbox\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ Jastrow\ -\/2\ not\ supported\ in\ Periodic\ Systems!'}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ j\ +\ 1,\ nel}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zj\ =\ rcart(3,\ i)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yj\ =\ rcart(2,\ i)}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xj\ =\ rcart(1,\ i)}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dx\ =\ (xi\ -\/\ xj)**2}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dy\ =\ (yi\ -\/\ yj)**2}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dz\ =\ (zi\ -\/\ zj)**2}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr\ =\ dsqrt(dx\ +\ dy\ +\ dz)}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nrz\ =\ dsqrt(vj(1)**2*(dx\ +\ dy)\ +\ vj(2)**2*dz)}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ 1.d0/(2.d0*nrz*(1.d0\ +\ nrz)**2)}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ -\/\ fcost*vj(1)*(dx\ +\ dy)*nr}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ -\/\ fcost*vj(2)*dz*nr}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ j\ +\ 1,\ nel}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesspin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((i\ .le.\ nelup\ .and.\ j\ .le.\ nelup)\ .or.\ (i\ .gt.\ nelup\ .and.\ j\ .gt.\ nelup))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ parallel\ spins}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costk\ =\ 0.25d0}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costk\ =\ 0.5d0}
+\DoxyCodeLine{00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zj\ =\ rcart(3,\ i)}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yj\ =\ rcart(2,\ i)}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xj\ =\ rcart(1,\ i)}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!***********\ PERIODIC\ WORLD\ ***************}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lbox\ .le.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr\ =\ (xi\ -\/\ xj)**2\ +\ (yi\ -\/\ yj)**2\ +\ (zi\ -\/\ zj)**2}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(1)\ =\ xi\ -\/\ xj}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(2)\ =\ yi\ -\/\ yj}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(3)\ =\ zi\ -\/\ zj}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacecell_aef05c09f5dc0d7c65e90a63aa4fccc4f}{yes\_tilted}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_ac8c9f1f844fa90c6b148e1f88f23f0bb}{cartesiantocrystal}}(rc,\ 1)}
+\DoxyCodeLine{00134\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr\ =\ inv\_pi\_l**2*sum((\mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1:3)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ *dsin(pi\_l*rc(1:3)/\mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1:3)))**2)}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=0.d0}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(xi-\/xj))**2}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(yi-\/yj))**2}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(zi-\/zj))**2}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=INV\_PI\_L**2*nr}}
+\DoxyCodeLine{00142\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!***********\ PERIODIC\ WORLD\ ***************}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npar\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(iesd)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/costk*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ +\ fcost}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Unstable\ for\ overflaw}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=dexp(vj(1)*cost)}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=costk*(1.d0-\/fcost+vj(1)*cost)/(vj(1)**2*fcost)}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ dexp(-\/vj(1)*cost)}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ costk*(fcost\ -\/\ 1.d0\ +\ fcost*vj(1)*cost)/vj(1)**2}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ +\ fcost}
+\DoxyCodeLine{00163\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ cost\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*cost))/vj(2)}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/0.5d0*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ +\ fcost}
+\DoxyCodeLine{00171\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 7)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ cost\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*cost))/vj(2)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/costk*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ +\ fcost}
+\DoxyCodeLine{00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (npar\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesd\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (costk\ .eq.\ 0.5d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/costk*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (costk\ .eq.\ 0.25d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/costk*(cost/(1.d0\ +\ vj(2)*cost))**2}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ +\ fcost}
+\DoxyCodeLine{00195\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00196\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ ((1\ +\ vj(2)*cost)*dexp(-\/vj(2)*cost)\ -\/\ 1.d0)/vj(2)**2}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*cost))/vj(2)}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ -\/0.5d0*cost**2}
+\DoxyCodeLine{00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost1\ =\ -\/0.5d0*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ fcost2*0.5d0/(1.d0\ +\ vj(1)*cost)**2}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost1}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ +\ fcost2}
+\DoxyCodeLine{00212\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (abs(iesd)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/costk*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost}
+\DoxyCodeLine{00218\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Unstable\ for\ overflaw}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=dexp(vj(1)*cost)}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=costk*(1.d0-\/fcost+vj(1)*cost)/(vj(1)**2*fcost)}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ dexp(-\/vj(1)*cost)}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ costk*(fcost\ -\/\ 1.d0\ +\ fcost*vj(1)*cost)/vj(1)**2}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost}
+\DoxyCodeLine{00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 7)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ ((1\ +\ vj(2)*cost)*dexp(-\/vj(2)*cost)\ -\/\ 1.d0)/vj(2)**2}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*cost))/vj(2)}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ -\/0.5d0*cost**2}
+\DoxyCodeLine{00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost1\ =\ -\/costk*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ fcost2*costk/(1.d0\ +\ vj(1)*cost)**2}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost1}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ +\ fcost2}
+\DoxyCodeLine{00244\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (npar\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesd\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost1\ =\ cost/(1.d0\ +\ vj(1)*cost)}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ nr/(1.d0\ +\ vj(2)*cost)**2}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ -\/\ costk*fcost1**2}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ -\/\ 2.d0*costk*vj(3)*fcost2**1.5d0}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 3)\ =\ econf(1,\ 3)\ +\ costk*fcost2}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (iesd\ .eq.\ 5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fat1\ =\ dexp(-\/vj(1)*cost)}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fat2\ =\ dexp(-\/vj(2)*cost)}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fat3\ =\ vj(1)\ +\ vj(2)*vj(3)}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fat4\ =\ 0.5d0/fat3**2}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost1\ =\ -\/1.d0\ -\/\ vj(3)\ +\ fat1*(1.d0\ +\ fat3*cost)\ +\ vj(3)*fat2}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost1\ =\ fcost1*fat4}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ -\/1.d0\ -\/\ vj(3)\ +\ fat1\ +\ (vj(3)\ +\ fat3*cost)*fat2}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost2\ =\ fcost2*fat4*vj(3)}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost3\ =\ vj(1)*(1.d0\ -\/\ fat2)\ +\ vj(2)*(-\/1.d0\ +\ fat1)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost3\ =\ fcost3*fat4}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 1)\ =\ econf(1,\ 1)\ +\ fcost1}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ +\ fcost2}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 3)\ =\ econf(1,\ 3)\ +\ fcost3}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00281\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesdr\ .le.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zj\ =\ rion(3,\ i)}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yj\ =\ rion(2,\ i)}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xj\ =\ rion(1,\ i)}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!**************\ PERIODIC\ WORLD\ **************}}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lbox\ .le.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr\ =\ (xi\ -\/\ xj)**2\ +\ (yi\ -\/\ yj)**2\ +\ (zi\ -\/\ zj)**2}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(1)\ =\ xi\ -\/\ xj}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(2)\ =\ yi\ -\/\ yj}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rc(3)\ =\ zi\ -\/\ zj}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacecell_aef05c09f5dc0d7c65e90a63aa4fccc4f}{yes\_tilted}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_ac8c9f1f844fa90c6b148e1f88f23f0bb}{cartesiantocrystal}}(rc,\ 1)}
+\DoxyCodeLine{00298\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr\ =\ inv\_pi\_l**2*sum((\mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1:3)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ *dsin(pi\_l*rc(1:3)/\mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1:3)))**2)}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=0.d0}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(xi-\/xj))**2}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(yi-\/yj))**2}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr+dsin(PI\_L*(zi-\/zj))**2}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nr=nr*INV\_PI\_L**2}}
+\DoxyCodeLine{00306\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!**************\ PERIODIC\ WORLD\ **************}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ costz=(2.d0*zeta(i))**0.25d0}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ costz3=costz**3}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npar\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesdr\ .eq.\ -\/5\ .or.\ iesdr\ .eq.\ -\/17)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costk=0.5d0}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)*costz(i)}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/0.5d0*(cost/(1.d0\ +\ vj(1)*cost))**2}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ -\/\ costz3(i)*fcost}
+\DoxyCodeLine{00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00321\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesdr\ .eq.\ -\/6\ .or.\ iesdr\ .eq.\ -\/7\ .or.\ iesdr\ .eq.\ -\/15)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)*costz(i)}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Unstable\ for\ overflaw}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=dexp(vj(1)*cost)}}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=(1.d0-\/fcost+vj(1)*cost)/(2.d0*vj(1)**2*fcost)}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ dexp(-\/vj(1)*cost)}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ (fcost\ -\/\ 1.d0\ +\ fcost*vj(1)*cost)/(2.d0*vj(1)**2)}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ npar)\ =\ econf(1,\ npar)\ -\/\ costz3(i)*fcost}
+\DoxyCodeLine{00331\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00332\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (npar\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesdr\ .eq.\ -\/5\ .or.\ iesdr\ .eq.\ -\/17)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costk=0.5d0}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)*costz(i)}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ -\/0.5d0*(cost/(1.d0\ +\ vj(2)*cost))**2}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ -\/\ costz3(i)*fcost}
+\DoxyCodeLine{00340\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00341\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesdr\ .eq.\ -\/6\ .or.\ iesdr\ .eq.\ -\/7\ .or.\ iesdr\ .eq.\ -\/15)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nr\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ dsqrt(nr)*costz(i)}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Unstable\ for\ overflaw}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=dexp(vj(1)*cost)}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost=(1.d0-\/fcost+vj(1)*cost)/(2.d0*vj(1)**2*fcost)}}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ dexp(-\/vj(2)*cost)}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcost\ =\ (fcost\ -\/\ 1.d0\ +\ fcost*vj(2)*cost)/(2.d0*vj(2)**2)}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ 2)\ =\ econf(1,\ 2)\ -\/\ costz3(i)*fcost}
+\DoxyCodeLine{00351\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00353\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00354\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00355\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00356\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00383}{cell\+::cartesiantocrystal()}}, \mbox{\hyperlink{cell_8f90_source_l00071}{cell\+::cellscale}}, \mbox{\hyperlink{constants_8f90_source_l00047}{constants\+::pi}}, and \mbox{\hyperlink{cell_8f90_source_l00088}{cell\+::yes\+\_\+tilted}}.
+

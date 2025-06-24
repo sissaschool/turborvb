@@ -1,0 +1,174 @@
+\doxysection{src/m\+\_\+common/zgemm\+\_\+my.f90 File Reference}
+\hypertarget{zgemm__my_8f90}{}\label{zgemm__my_8f90}\index{src/m\_common/zgemm\_my.f90@{src/m\_common/zgemm\_my.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zgemm__my_8f90_a29d998d0fdce35cdcfb6b443842fc356}{zgemm\+\_\+my}} (transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, nproc, rank, comm\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em Parallel complex matrix-\/matrix multiplication with MPI distribution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zgemm__my_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zgemm__my_8f90_a29d998d0fdce35cdcfb6b443842fc356}\index{zgemm\_my.f90@{zgemm\_my.f90}!zgemm\_my@{zgemm\_my}}
+\index{zgemm\_my@{zgemm\_my}!zgemm\_my.f90@{zgemm\_my.f90}}
+\doxysubsubsection{\texorpdfstring{zgemm\_my()}{zgemm\_my()}}
+{\footnotesize\ttfamily \label{zgemm__my_8f90_a29d998d0fdce35cdcfb6b443842fc356} 
+subroutine zgemm\+\_\+my (\begin{DoxyParamCaption}\item[{character\texorpdfstring{$\ast$}{*}1}]{transa}{, }\item[{character\texorpdfstring{$\ast$}{*}1}]{transb}{, }\item[{integer}]{m}{, }\item[{integer}]{n}{, }\item[{integer}]{k}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda, \texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldb, \texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer}]{ldb}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldc, \texorpdfstring{$\ast$}{*})}]{c}{, }\item[{integer}]{ldc}{, }\item[{integer}]{nproc}{, }\item[{integer}]{rank}{, }\item[{integer}]{comm\+\_\+mpi}{}\end{DoxyParamCaption})}
+
+
+
+Parallel complex matrix-\/matrix multiplication with MPI distribution. 
+
+This subroutine performs complex matrix-\/matrix multiplication C = α\texorpdfstring{$\ast$}{*}\+A\texorpdfstring{$\ast$}{*}B + β\texorpdfstring{$\ast$}{*}C in parallel using MPI. The K dimension is distributed across processors, with each processor computing a partial result that is then reduced to form the final result. Supports both transpose and conjugate transpose operations.\hypertarget{zgemm__my_8f90_autotoc_md103}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{zgemm__my_8f90_autotoc_md103}
+TRANSA \+: character\texorpdfstring{$\ast$}{*}1, in Transpose flag for matrix A (\textquotesingle{}N\textquotesingle{}=no transpose, \textquotesingle{}T\textquotesingle{}=transpose, \textquotesingle{}C\textquotesingle{}=conjugate transpose). TRANSB \+: character\texorpdfstring{$\ast$}{*}1, in Transpose flag for matrix B (\textquotesingle{}N\textquotesingle{}=no transpose, \textquotesingle{}T\textquotesingle{}=transpose, \textquotesingle{}C\textquotesingle{}=conjugate transpose). M \+: integer, in Number of rows in matrices A and C. N \+: integer, in Number of columns in matrices B and C. K \+: integer, in Number of columns in A and rows in B (distributed dimension). ALPHA \+: complex\texorpdfstring{$\ast$}{*}16, in Complex scalar multiplier for A\texorpdfstring{$\ast$}{*}B. A \+: complex\texorpdfstring{$\ast$}{*}16 array, in Input complex matrix A (size depends on TRANSA). LDA \+: integer, in Leading dimension of matrix A. B \+: complex\texorpdfstring{$\ast$}{*}16 array, in Input complex matrix B (size depends on TRANSB). LDB \+: integer, in Leading dimension of matrix B. BETA \+: complex\texorpdfstring{$\ast$}{*}16, in Complex scalar multiplier for C. C \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Input/output complex matrix C (M × N). LDC \+: integer, in Leading dimension of matrix C. nproc \+: integer, in Number of MPI processes. rank \+: integer, in MPI rank of current process. comm\+\_\+mpi \+: integer, in MPI communicator.\hypertarget{zgemm__my_8f90_autotoc_md104}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{zgemm__my_8f90_autotoc_md104}
+
+\begin{DoxyItemize}
+\item The K dimension is distributed across processors for parallel computation.
+\item Each processor computes a partial matrix multiplication with its local K slice.
+\item Results are reduced using MPI to form the final matrix C.
+\item Only rank 0 applies the BETA scaling; other ranks start with zero.
+\item Supports all combinations of transpose operations including conjugate transpose.
+\item Complex matrices are handled as pairs of real numbers in MPI reduction.
+\end{DoxyItemize}\hypertarget{zgemm__my_8f90_autotoc_md105}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{zgemm__my_8f90_autotoc_md105}
+Used in distributed complex linear algebra operations throughout Turbo\+RVB. Broadcast input matrices for testing consistency
+
+Calculate local K dimension for this processor
+
+Handle all transpose combinations with parallel computation
+
+A\texorpdfstring{$\ast$}{*}B (no transpose for either matrix)
+
+A\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}T or A\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}H (transpose or conjugate transpose of B)
+
+A\texorpdfstring{$^\wedge$}{\string^}\+T\texorpdfstring{$\ast$}{*}B or A\texorpdfstring{$^\wedge$}{\string^}\+H\texorpdfstring{$\ast$}{*}B (transpose or conjugate transpose of A)
+
+A\texorpdfstring{$^\wedge$}{\string^}\+T\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}T, A\texorpdfstring{$^\wedge$}{\string^}\+H\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}T, A\texorpdfstring{$^\wedge$}{\string^}\+T\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}H, or A\texorpdfstring{$^\wedge$}{\string^}\+H\texorpdfstring{$\ast$}{*}\+B\texorpdfstring{$^\wedge$}{\string^}H (transpose/conjugate transpose of both)
+
+Zero out result matrix for processors with no work
+
+Zero out unused elements in leading dimension
+
+Reduce partial results from all processors (complex as real pairs)
+
+Serial computation using standard BLAS ZGEMM
+
+Definition at line \mbox{\hyperlink{zgemm__my_8f90_source_l00070}{70}} of file \mbox{\hyperlink{zgemm__my_8f90_source}{zgemm\+\_\+my.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim2,\ i,\ nu,\ nm,\ indr}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{character*1}\ TRANSA,\ TRANSB}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{integer}\ M,\ N,\ K,\ LDA,\ LDB,\ LDC,\ nproc,\ rank,\ comm\_mpi}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ ALPHA,\ BETA}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ A(LDA,\ *),\ B(LDB,\ *),\ C(LDC,\ *)}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_\_TEST}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ dima,\ dimb,\ dimc\textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{!>\ @brief\ Broadcast\ input\ matrices\ for\ testing\ consistency}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ dima\ =\ lda*(k\ -\/\ 1)\ +\ m}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ dima\ =\ lda*(m\ -\/\ 1)\ +\ k}
+\DoxyCodeLine{00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ dimb\ =\ ldb*(n\ -\/\ 1)\ +\ k}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ dimb\ =\ ldb*(k\ -\/\ 1)\ +\ n}
+\DoxyCodeLine{00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ dimc\ =\ ldc*(n\ -\/\ 1)\ +\ m}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(a,\ dima,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(b,\ dimb,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(c,\ dimc,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{}\ \ \ \ ndim2\ =\ 2*(ldc*(n\ -\/\ 1)\ +\ m)}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .gt.\ 1)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00104\ \textcolor{comment}{!>\ @brief\ Calculate\ local\ K\ dimension\ for\ this\ processor}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ nm\ =\ k/nproc}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nm*nproc\ .ne.\ k)\ nm\ =\ nm\ +\ 1}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ indr\ =\ rank*nm\ +\ 1}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ nu\ =\ nm}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indr\ +\ nm\ -\/\ 1\ .gt.\ k)\ nu\ =\ k\ -\/\ indr\ +\ 1}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nu\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{!>\ @brief\ Handle\ all\ transpose\ combinations\ with\ parallel\ computation}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00114\ \textcolor{comment}{!>\ @brief\ A*B\ (no\ transpose\ for\ either\ matrix)}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ .and.\&}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \&(transb\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'C'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'c'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00124\ \textcolor{comment}{!>\ @brief\ A*B\string^T\ or\ A*B\string^H\ (transpose\ or\ conjugate\ transpose\ of\ B)}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ transb,\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ transb,\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'c'}\ .or\&}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \&.\ transa\ .eq.\ \textcolor{stringliteral}{'C'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00134\ \textcolor{comment}{!>\ @brief\ A\string^T*B\ or\ A\string^H*B\ (transpose\ or\ conjugate\ transpose\ of\ A)}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'c'}\ .or\&}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \&.\ transa\ .eq.\ \textcolor{stringliteral}{'C'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'t'}\ .or\&}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \&.\ transb\ .eq.\ \textcolor{stringliteral}{'c'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'C'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00145\ \textcolor{comment}{!>\ @brief\ A\string^T*B\string^T,\ A\string^H*B\string^T,\ A\string^T*B\string^H,\ or\ A\string^H*B\string^H\ (transpose/conjugate\ transpose\ of\ both)}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00155\ \textcolor{comment}{!>\ @brief\ Zero\ out\ result\ matrix\ for\ processors\ with\ no\ work}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c(1:m,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00158\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0\ .and.\ ldc\ .gt.\ m)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00161\ \textcolor{comment}{!>\ @brief\ Zero\ out\ unused\ elements\ in\ leading\ dimension}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c(m\ +\ 1:ldc,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00164\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00165\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{00166\ \textcolor{comment}{!>\ @brief\ Reduce\ partial\ results\ from\ all\ processors\ (complex\ as\ real\ pairs)}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(ndim2,\ c,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Serial\ computation\ using\ standard\ BLAS\ ZGEMM}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ k,\ alpha,\ a,\ lda\&}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ b,\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00768}{bcast\+\_\+real()}}, and \mbox{\hyperlink{dsortx_8f90_source_l00444}{reduce\+\_\+base\+\_\+real()}}.
+
+
+
+Referenced by \mbox{\hyperlink{max__ovlp_8f90_source_l01343}{calcob()}}, \mbox{\hyperlink{max__ovlp_8f90_source_l01318}{calcop()}}, \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{convertmod_8f90_source_l00123}{convertmod\+::convertmol\+\_\+fast()}}, \mbox{\hyperlink{convertfort10_8f90_source_l03924}{dsygv\+\_\+my()}}, \mbox{\hyperlink{eval__molec__epsdgel_8f90_source_l00036}{eval\+\_\+molec\+\_\+epsdgel()}}, \mbox{\hyperlink{eval__molec__unpaired_8f90_source_l00039}{eval\+\_\+molec\+\_\+unpaired()}}, \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, \mbox{\hyperlink{invsymeps_8f90_source_l00053}{invsymeps()}}, \mbox{\hyperlink{convertfort10_8f90_source_l02414}{load\+\_\+fort10in()}}, \mbox{\hyperlink{convertmod_8f90_source_l02730}{convertmod\+::ortho\+\_\+fast()}}, \mbox{\hyperlink{convertmod_8f90_source_l03618}{convertmod\+::projectmat()}}, \mbox{\hyperlink{allio_8f90_source_l02126}{allio\+::scontract\+\_\+mat\+\_\+det()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, and \mbox{\hyperlink{zgesvd_8f90_source_l00017}{zgesvd\+\_\+my()}}.
+

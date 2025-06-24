@@ -1,0 +1,172 @@
+\doxysection{src/m\+\_\+common/upwinv.f90 File Reference}
+\hypertarget{upwinv_8f90}{}\label{upwinv_8f90}\index{src/m\_common/upwinv.f90@{src/m\_common/upwinv.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upwinv_8f90_aba5d6bd92695c737144d99d1cfa88948}{upwinv}} (nel, jel, indt, nelorb, winv, v, psi)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for real wave functions. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{upwinv_8f90_a81a39fe6c0901fa07a81b2fc767e538f}{upwinv\+\_\+complex}} (nel, jel, indt, nelorb, winv, v, psi)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for complex wave functions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upwinv_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upwinv_8f90_aba5d6bd92695c737144d99d1cfa88948}\index{upwinv.f90@{upwinv.f90}!upwinv@{upwinv}}
+\index{upwinv@{upwinv}!upwinv.f90@{upwinv.f90}}
+\doxysubsubsection{\texorpdfstring{upwinv()}{upwinv()}}
+{\footnotesize\ttfamily \label{upwinv_8f90_aba5d6bd92695c737144d99d1cfa88948} 
+subroutine upwinv (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nel}{, }\item[{integer, intent(in)}]{jel}{, }\item[{integer, intent(in)}]{indt}{, }\item[{integer, intent(in)}]{nelorb}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nel, indt), intent(inout)}]{winv}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nel), intent(in)}]{v}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(indt, nel), intent(in)}]{psi}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for real wave functions. 
+
+This subroutine updates the wave function inverse matrix WINV when a single electron (JEL) is moved. The update follows the Sherman-\/\+Morrison formula for rank-\/1 updates of matrix inverses.\hypertarget{upwinv_8f90_autotoc_md75}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinv_8f90_autotoc_md75}
+NEL \+: integer, in Number of electrons. JEL \+: integer, in Index of the electron being moved. INDT \+: integer, in Number of basis functions (dimension of orbital space). NELORB \+: integer, in Number of orbitals (unused in current implementation). WINV \+: real\texorpdfstring{$\ast$}{*}8 array, inout Wave function inverse matrix (NEL × INDT). On entry\+: current inverse matrix. On exit\+: updated inverse matrix. V \+: real\texorpdfstring{$\ast$}{*}8 array, in Vector of coefficients for the update (NEL). PSI \+: real\texorpdfstring{$\ast$}{*}8 array, in Wave function matrix (INDT × NEL).\hypertarget{upwinv_8f90_autotoc_md76}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinv_8f90_autotoc_md76}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item The update follows the formula\+: WINV\+\_\+new = WINV\+\_\+old + v \texorpdfstring{$\ast$}{*} psi\texorpdfstring{$^\wedge$}{\string^}T.
+\item Special handling for the moved electron (JEL) with factor (1 + v(\+JEL)).
+\item Optimized for quantum Monte Carlo applications.
+\end{DoxyItemize}\hypertarget{upwinv_8f90_autotoc_md77}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinv_8f90_autotoc_md77}
+
+\begin{DoxyEnumerate}
+\item Update all electrons except JEL\+: WINV(j,i) += v(j) \texorpdfstring{$\ast$}{*} psi(i,j)
+\item Update electron JEL\+: WINV(jel,i) = psi(i,jel) \texorpdfstring{$\ast$}{*} (1 + v(jel))
+\end{DoxyEnumerate}\hypertarget{upwinv_8f90_autotoc_md78}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinv_8f90_autotoc_md78}
+Used in variational Monte Carlo for efficient wave function updates. Update wave function inverse for all electrons except JEL
+
+Special update for the moved electron JEL
+
+Definition at line \mbox{\hyperlink{upwinv_8f90_source_l00056}{56}} of file \mbox{\hyperlink{upwinv_8f90_source}{upwinv.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt,\ jel,\ nelorb}
+\DoxyCodeLine{00062\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel),\ v(nel)}
+\DoxyCodeLine{00063\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)\ if(yes\_ontarget)}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Update\ wave\ function\ inverse\ for\ all\ electrons\ except\ JEL}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ if(j.ne.jel)\ then}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ v(j)*psi(i,\ j)}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ i=1,indt}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,i)=psi(i,j)*(1.d0+v(jel))}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00082\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Special\ update\ for\ the\ moved\ electron\ JEL}}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ winv(jel,\ i)\ =\ psi(i,\ jel)*(1.d0\ +\ v(jel))}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+
+\Hypertarget{upwinv_8f90_a81a39fe6c0901fa07a81b2fc767e538f}\index{upwinv.f90@{upwinv.f90}!upwinv\_complex@{upwinv\_complex}}
+\index{upwinv\_complex@{upwinv\_complex}!upwinv.f90@{upwinv.f90}}
+\doxysubsubsection{\texorpdfstring{upwinv\_complex()}{upwinv\_complex()}}
+{\footnotesize\ttfamily \label{upwinv_8f90_a81a39fe6c0901fa07a81b2fc767e538f} 
+subroutine upwinv\+\_\+complex (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nel}{, }\item[{integer, intent(in)}]{jel}{, }\item[{integer, intent(in)}]{indt}{, }\item[{integer, intent(in)}]{nelorb}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nel, indt), intent(inout)}]{winv}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nel), intent(in)}]{v}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(indt, nel), intent(in)}]{psi}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for complex wave functions. 
+
+This subroutine updates the complex wave function inverse matrix WINV when a single electron (JEL) is moved. The update follows the Sherman-\/\+Morrison formula for rank-\/1 updates of complex matrix inverses.\hypertarget{upwinv_8f90_autotoc_md79}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinv_8f90_autotoc_md79}
+NEL \+: integer, in Number of electrons. JEL \+: integer, in Index of the electron being moved. INDT \+: integer, in Number of basis functions (dimension of orbital space). NELORB \+: integer, in Number of orbitals (unused in current implementation). WINV \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Complex wave function inverse matrix (NEL × INDT). On entry\+: current inverse matrix. On exit\+: updated inverse matrix. V \+: complex\texorpdfstring{$\ast$}{*}16 array, in Vector of complex coefficients for the update (NEL). PSI \+: complex\texorpdfstring{$\ast$}{*}16 array, in Complex wave function matrix (INDT × NEL).\hypertarget{upwinv_8f90_autotoc_md80}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinv_8f90_autotoc_md80}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item The update follows the formula\+: WINV\+\_\+new = WINV\+\_\+old + v \texorpdfstring{$\ast$}{*} psi\texorpdfstring{$^\wedge$}{\string^}T.
+\item Special handling for the moved electron (JEL) with factor (1 + v(\+JEL)).
+\item Complex arithmetic is used throughout the computation.
+\item Optimized for quantum Monte Carlo applications with complex wave functions.
+\end{DoxyItemize}\hypertarget{upwinv_8f90_autotoc_md81}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinv_8f90_autotoc_md81}
+
+\begin{DoxyEnumerate}
+\item Update all electrons except JEL\+: WINV(j,i) += v(j) \texorpdfstring{$\ast$}{*} psi(i,j)
+\item Update electron JEL\+: WINV(jel,i) = psi(i,jel) \texorpdfstring{$\ast$}{*} (1 + v(jel))
+\end{DoxyEnumerate}\hypertarget{upwinv_8f90_autotoc_md82}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinv_8f90_autotoc_md82}
+Used in variational Monte Carlo for efficient complex wave function updates. Update complex wave function inverse for all electrons except JEL
+
+Special update for the moved electron JEL
+
+Definition at line \mbox{\hyperlink{upwinv_8f90_source_l00137}{137}} of file \mbox{\hyperlink{upwinv_8f90_source}{upwinv.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt,\ jel,\ nelorb}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel),\ v(nel)}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)\ if(yes\_ontarget)}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Update\ complex\ wave\ function\ inverse\ for\ all\ electrons\ except\ JEL}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ if(j.ne.jel)\ then}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ v(j)*psi(i,\ j)}
+\DoxyCodeLine{00156\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ do\ i=1,indt}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,i)=psi(i,j)*(1.d0+v(jel))}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00162\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Special\ update\ for\ the\ moved\ electron\ JEL}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ winv(jel,\ i)\ =\ psi(i,\ jel)*(1.d0\ +\ v(jel))}
+\DoxyCodeLine{00172\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+

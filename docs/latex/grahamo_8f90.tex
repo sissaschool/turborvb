@@ -1,0 +1,264 @@
+\doxysection{src/m\+\_\+common/grahamo.f90 File Reference}
+\hypertarget{grahamo_8f90}{}\label{grahamo_8f90}\index{src/m\_common/grahamo.f90@{src/m\_common/grahamo.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{grahamo_8f90_af1390e9131fc3495a62711587d434655}{grahamo}} (psi, sc, rn, ndime, mh, info)
+\begin{DoxyCompactList}\small\item\em Gram-\/\+Schmidt orthogonalization with standard Euclidean metric. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{grahamo_8f90_ae5aecfc5b4a9b362f4faa9e1fa996641}{grahamo\+\_\+complex}} (psi, sc, rn, ndime, mh, info)
+\begin{DoxyCompactList}\small\item\em Complex Gram-\/\+Schmidt orthogonalization with Euclidean metric. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{grahamo_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{grahamo_8f90_af1390e9131fc3495a62711587d434655}\index{grahamo.f90@{grahamo.f90}!grahamo@{grahamo}}
+\index{grahamo@{grahamo}!grahamo.f90@{grahamo.f90}}
+\doxysubsubsection{\texorpdfstring{grahamo()}{grahamo()}}
+{\footnotesize\ttfamily \label{grahamo_8f90_af1390e9131fc3495a62711587d434655} 
+subroutine grahamo (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ndime, \texorpdfstring{$\ast$}{*})}]{psi}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(mh + ndime)}]{sc}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(mh)}]{rn}{, }\item[{integer}]{ndime}{, }\item[{integer}]{mh}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Gram-\/\+Schmidt orthogonalization with standard Euclidean metric. 
+
+This module provides Gram-\/\+Schmidt orthogonalization subroutines for quantum Monte Carlo calculations using the standard Euclidean metric (identity overlap matrix). It includes both real and complex versions with optimized memory usage and numerical stability considerations.
+
+The module implements\+:
+\begin{DoxyItemize}
+\item Real Gram-\/\+Schmidt orthogonalization with Euclidean metric
+\item Complex Gram-\/\+Schmidt orthogonalization with Euclidean metric
+\item Numerical stability checks using machine precision
+\item Efficient memory usage with workspace arrays
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Real Gram-\/\+Schmidt orthogonalization with Euclidean metric
+
+This subroutine performs Gram-\/\+Schmidt orthogonalization of real vectors using the standard Euclidean metric (identity overlap matrix). The algorithm includes numerical stability checks and proper handling of linearly dependent vectors.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em psi} & Matrix of vectors to be orthogonalized (ndime, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em sc} & Workspace array for projections (mh + ndime) \\
+\hline
+\mbox{\texttt{out}}  & {\em rn} & Array of normalization factors for each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em ndime} & Number of components in each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em mh} & Number of vectors to orthogonalize \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Information about orthogonalization success\+:
+\begin{DoxyItemize}
+\item info = 0\+: Successful orthogonalization
+\item info \texorpdfstring{$>$}{>} 0\+: Number of linearly dependent vectors found
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Initializes workspace array sc with -\/1 values
+\item Normalizes all input vectors to unit length
+\item Checks if the first vector is linearly independent
+\item For each subsequent vector i = 2, ..., mh\+:
+\begin{DoxyItemize}
+\item Projects vector i onto all previous orthogonalized vectors
+\item Subtracts the projections to make it orthogonal
+\item Normalizes the resulting orthogonal vector
+\item Checks for linear dependence using machine precision
+\end{DoxyItemize}
+\item Returns normalization factors and information about linear dependencies
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Uses standard Euclidean scalar product\+: a · b = sum\+\_\+i a\+\_\+i \texorpdfstring{$\ast$}{*} b\+\_\+i 
+
+Numerical stability is ensured using machine precision thresholds 
+
+Linearly dependent vectors are set to zero 
+
+The workspace array sc is used efficiently to avoid memory allocation 
+
+Uses BLAS operations (DNRM2, DGEMV, DSCAL, DCOPY) for efficiency 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{grahamo_8f90_source_l00066}{66}} of file \mbox{\hyperlink{grahamo_8f90_source}{grahamo.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ mx,\ i,\ mhh,\ info}
+\DoxyCodeLine{00069\ \ \ \ \ real*8\ psi(ndime,\ *),\ sc(mh\ +\ ndime),\ rn(mh),\ dnrm2,\ cost,\ eps,\ epsmin}
+\DoxyCodeLine{00070\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{00071\ \ \ \ \ eps\ =\ 10000.d0*dlamch(\textcolor{stringliteral}{'E'})}
+\DoxyCodeLine{00072\ \ \ \ \ epsmin\ =\ dlamch(\textcolor{stringliteral}{'S'})}
+\DoxyCodeLine{00073\ \ \ \ \ mhh\ =\ mh\ +\ 1}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ mh}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ sc(i)\ =\ -\/1.d0}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ First\ normalize\ the\ input\ orbitals}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ mh}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ cost\ =\ dnrm2(ndime,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ epsmin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/cost}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(ndime,\ cost,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ psi(:,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00087\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00088\ \ \ \ \ rn(1)\ =\ dnrm2(ndime,\ psi,\ 1)}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{00093\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ ndime,\ i\ -\/\ 1,\ 1.d0,\ psi,\ ndime,\ psi(1,\ i),\ 1,\ 0.d0,\ sc,\ 1)}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ 1.d0,\ psi,\ ndime,\ sc,\ 1,\ 0.d0,\ sc(mhh),\ 1)}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ rn(i)\ =\ dnrm2(ndime,\ sc(mhh),\ 1)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ -\/1.d0/rn(i)}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(ndime,\ cost,\ sc(mhh),\ 1)}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(ndime,\ sc(mhh),\ 1,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ psi(:,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{eval__molec__unpaired_8f90_source_l00039}{eval\+\_\+molec\+\_\+unpaired()}}, \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}, and \mbox{\hyperlink{reweight0__k6_8f90_source_l02535}{update\+\_\+index()}}.
+
+\Hypertarget{grahamo_8f90_ae5aecfc5b4a9b362f4faa9e1fa996641}\index{grahamo.f90@{grahamo.f90}!grahamo\_complex@{grahamo\_complex}}
+\index{grahamo\_complex@{grahamo\_complex}!grahamo.f90@{grahamo.f90}}
+\doxysubsubsection{\texorpdfstring{grahamo\_complex()}{grahamo\_complex()}}
+{\footnotesize\ttfamily \label{grahamo_8f90_ae5aecfc5b4a9b362f4faa9e1fa996641} 
+subroutine grahamo\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ndime, \texorpdfstring{$\ast$}{*})}]{psi}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(mh + ndime)}]{sc}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(mh)}]{rn}{, }\item[{integer}]{ndime}{, }\item[{integer}]{mh}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Complex Gram-\/\+Schmidt orthogonalization with Euclidean metric. 
+
+This subroutine performs Gram-\/\+Schmidt orthogonalization of complex vectors using the standard Euclidean metric (identity overlap matrix). The algorithm includes numerical stability checks and proper handling of linearly dependent vectors using complex conjugate scalar products.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em psi} & Matrix of complex vectors to be orthogonalized (ndime, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em sc} & Complex workspace array for projections (mh + ndime) \\
+\hline
+\mbox{\texttt{out}}  & {\em rn} & Array of normalization factors for each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em ndime} & Number of components in each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em mh} & Number of vectors to orthogonalize \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Information about orthogonalization success\+:
+\begin{DoxyItemize}
+\item info = 0\+: Successful orthogonalization
+\item info \texorpdfstring{$>$}{>} 0\+: Number of linearly dependent vectors found
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Initializes workspace array sc with -\/1 values
+\item Normalizes all input vectors to unit length using complex norm
+\item Checks if the first vector is linearly independent
+\item For each subsequent vector i = 2, ..., mh\+:
+\begin{DoxyItemize}
+\item Projects vector i onto all previous orthogonalized vectors using complex conjugate scalar product
+\item Subtracts the projections to make it orthogonal
+\item Normalizes the resulting orthogonal vector
+\item Checks for linear dependence using machine precision
+\end{DoxyItemize}
+\item Returns normalization factors and information about linear dependencies
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Uses complex conjugate scalar product\+: a · b = sum\+\_\+i a\+\_\+i \texorpdfstring{$\ast$}{*} conjg(b\+\_\+i) 
+
+Numerical stability is ensured using machine precision thresholds 
+
+Linearly dependent vectors are set to zero 
+
+The workspace array sc is used efficiently to avoid memory allocation 
+
+Uses BLAS operations (DZNRM2, ZGEMV, ZSCAL, ZCOPY) for efficiency 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{grahamo_8f90_source_l00145}{145}} of file \mbox{\hyperlink{grahamo_8f90_source}{grahamo.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}},\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ mx,\ i,\ mhh,\ info}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ PSI(NDIME,\ *),\ SC(MH\ +\ NDIME),\ cost}
+\DoxyCodeLine{00150\ \ \ \ \ real*8\ rn(mh),\ eps,\ epsmin}
+\DoxyCodeLine{00151\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ dlamch,\ dznrm2}
+\DoxyCodeLine{00152\ \ \ \ \ eps\ =\ 10000.d0*dlamch(\textcolor{stringliteral}{'E'})\ \textcolor{comment}{!\ Relative\ machine\ precision}}
+\DoxyCodeLine{00153\ \ \ \ \ epsmin\ =\ dlamch(\textcolor{stringliteral}{'S'})\ \textcolor{comment}{!\ Safe\ minimum\ that\ allows\ the\ inverse.}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ mhh\ =\ mh\ +\ 1}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ mh}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ sc(i)\ =\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}}}
+\DoxyCodeLine{00158\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ First\ normalize\ the\ input\ orbitals}}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ mh}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ cost\ =\ dznrm2(ndime,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dreal(cost)\ .gt.\ epsmin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}/cost}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zscal(ndime,\ cost,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ psi(:,\ i)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00167\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00168\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ rn(1)\ =\ dznrm2(ndime,\ psi,\ 1)}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{00175\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ ndime,\ i\ -\/\ 1,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ ndime,\ psi(1,\ i),\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc,\ 1)}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ ndime,\ sc,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc(mhh),\ 1)}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ rn(i)\ =\ dznrm2(ndime,\ sc(mhh),\ 1)}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}}/rn(i)}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zscal(ndime,\ cost,\ sc(mhh),\ 1)}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zcopy(ndime,\ sc(mhh),\ 1,\ psi(1,\ i),\ 1)}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ psi(:,\ i)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{00187\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00252}{constants\+::zmone}}, \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}, and \mbox{\hyperlink{constants_8f90_source_l00248}{constants\+::zzero}}.
+
+
+
+Referenced by \mbox{\hyperlink{eval__molec__unpaired_8f90_source_l00039}{eval\+\_\+molec\+\_\+unpaired()}}.
+

@@ -1,0 +1,347 @@
+\doxysection{src/a\+\_\+turborvb/conjginvs.f90 File Reference}
+\hypertarget{conjginvs_8f90}{}\label{conjginvs_8f90}\index{src/a\_turborvb/conjginvs.f90@{src/a\_turborvb/conjginvs.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{conjginvs_8f90_a077d64c623ed0b18caf971c90b88b248}{conjginvs}} (np, npp, nbin, rank\+\_\+out, rank, comm\+\_\+mpi, mat, forza, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, nproc, eps\+\_\+umrigar)
+\begin{DoxyCompactList}\small\item\em Conjugate gradient solver for linear system with stochastic reconfiguration matrix. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{conjginvs_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{conjginvs_8f90_a077d64c623ed0b18caf971c90b88b248}\index{conjginvs.f90@{conjginvs.f90}!conjginvs@{conjginvs}}
+\index{conjginvs@{conjginvs}!conjginvs.f90@{conjginvs.f90}}
+\doxysubsubsection{\texorpdfstring{conjginvs()}{conjginvs()}}
+{\footnotesize\ttfamily \label{conjginvs_8f90_a077d64c623ed0b18caf971c90b88b248} 
+subroutine conjginvs (\begin{DoxyParamCaption}\item[{integer}]{np}{, }\item[{integer}]{npp}{, }\item[{integer}]{nbin}{, }\item[{integer}]{rank\+\_\+out}{, }\item[{integer}]{rank}{, }\item[{integer}]{comm\+\_\+mpi}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(npp, nbin)}]{mat}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{forza}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(np)}]{g}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(np)}]{h}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{psip}{, }\item[{integer}]{maxit}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{eps}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{epsdgel}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{fkav}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(np)}]{x}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{parcut}{, }\item[{integer}]{nproc}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{eps\+\_\+umrigar}{}\end{DoxyParamCaption})}
+
+
+
+Conjugate gradient solver for linear system with stochastic reconfiguration matrix. 
+
+This subroutine solves the linear system S\texorpdfstring{$\ast$}{*}x = forza using conjugate gradient method, where S is the reduced stochastic reconfiguration (SR) matrix. The matrix S is regularized by adding epsdgel to diagonal elements to avoid numerical instabilities in QMC calculations. The algorithm uses preconditioning and supports parallel execution with MPI. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em np} & Number of parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em npp} & Leading dimension of matrix mat \\
+\hline
+\mbox{\texttt{in}}  & {\em nbin} & Number of parameters per processor block \\
+\hline
+\mbox{\texttt{in}}  & {\em rank\+\_\+out} & Output rank for printing \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Current processor rank \\
+\hline
+\mbox{\texttt{in}}  & {\em comm\+\_\+mpi} & MPI communicator \\
+\hline
+\mbox{\texttt{in,out}}  & {\em mat} & Reduced SR matrix (input), preconditioned matrix (output) \\
+\hline
+\mbox{\texttt{in}}  & {\em forza} & Force vector acting on parameters \\
+\hline
+\mbox{\texttt{in,out}}  & {\em g} & Gradient vector (input), updated gradient (output) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em h} & Search direction vector \\
+\hline
+\mbox{\texttt{in,out}}  & {\em psip} & Work array for temporary storage \\
+\hline
+\mbox{\texttt{in}}  & {\em maxit} & Maximum number of iterations \\
+\hline
+\mbox{\texttt{in}}  & {\em eps} & Convergence tolerance \\
+\hline
+\mbox{\texttt{in}}  & {\em epsdgel} & Regularization parameter for diagonal elements \\
+\hline
+\mbox{\texttt{in,out}}  & {\em fkav} & Diagonal elements of SR matrix (input), preconditioning factors (output) \\
+\hline
+\mbox{\texttt{out}}  & {\em x} & Solution vector of the linear system \\
+\hline
+\mbox{\texttt{in}}  & {\em parcut} & Parameter cutoff threshold for elimination \\
+\hline
+\mbox{\texttt{in}}  & {\em nproc} & Number of processors \\
+\hline
+\mbox{\texttt{in}}  & {\em eps\+\_\+umrigar} & Umrigar regularization parameter \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{conjginvs_8f90_source_l00040}{40}} of file \mbox{\hyperlink{conjginvs_8f90_source}{conjginvs.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{integer}\ np,\ npp,\ i,\ ii,\ j,\ k,\ nl,\ nbin,\ maxit,\ iter,\ rank,\ info,\ np3,\ np4,\ rank\_out\&}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ npm,\ indj,\ itert,\ ierr,\ jblock,\ countzero,\ nproc,\ nbinr,\ nppp,\ comm\_mpi}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{real*8}\ mat(npp,\ nbin),\ h(np),\ g(np),\ psip(*),\ eps\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ epsdgel,\ sv,\ eigmin,\ z,\ error,\ dnrm2,\ fkav(*),\ forza(*),\ cost,\ cost\_umrigar\ \&}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lambda,\ ng2,\ ddot,\ gamma,\ Fun,\ errorg,\ x(np),\ parcut,\ maxsr,\ eps\_umrigar}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{logical}\ yes\_umrigar}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm\_mpi,\ ierr)}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ input\ mat(i,j)=\ reduced\ SR\ matrix}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ input\ forza(i)\ i\ the\ force\ acting\ on\ the\ parameter\ i}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ fkav(i)=s\_\{i,i\}\ where:}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ s\_\{i,j\}\ =\ reduce\ SR\ matrix}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Output\ \ x\ \ solution\ of\ the\ linear\ system\ \ s\ x\ =forza}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ within\ a\ tollerance\ eps}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ For\ QMC\ convenience\ (avoid\ too\ much\ noise\ in\ the\ inversion)}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ matrix\ s\ is\ regularized\ by\ s\_\{i,i\}\ -\/-\/-\/>\ s\_\{i,i\}\ (1\ +\ epsdgel)}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ notice\ that\ in\ the\ last\ block\ for\ jblock=(nproc-\/1)*nbin+1,\ nproc\ *n}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ i.e.\ may\ be\ jblock>npp.\ But\ it\ is\ never\ used\ this\ info.}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ recomputing\ fkav\ inside\ for\ stability\ reasons.\ if\ zero\ do\ not}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ change}}
+\DoxyCodeLine{00067\ \ \ \ \ nbinr\ =\ np\ -\/\ rank*nbin}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (nbinr\ .gt.\ nbin)\ nbinr\ =\ nbin}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{if}\ (nbinr\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ fkav(1:rank*nbin)\ =\ 0.d0}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank*nbin\ +\ nbinr\ .lt.\ np)\ fkav(rank*nbin\ +\ nbinr\ +\ 1:np)\ =\ 0.d0}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbinr}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ indj\ =\ rank*nbin\ +\ j}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(indj)\ .ne.\ 0.d0)\ fkav(indj)\ =\ mat(indj,\ j)}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ fkav(1:np)\ =\ 0.d0}
+\DoxyCodeLine{00078\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(np,\ fkav,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (eps\_umrigar\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ yes\_umrigar\ =\ .true.}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ cost\_umrigar\ =\ eps\_umrigar}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ fkav(i)\ +\ eps\_umrigar}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ yes\_umrigar\ =\ .false.}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ cost\_umrigar\ =\ 0.d0}
+\DoxyCodeLine{00095\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{00098\ \ \ \ \ itert\ =\ 0}
+\DoxyCodeLine{00099\ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ 2.d0*eps}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ parcut\ inside\ =',rank,parcut,parcut2}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ nppp\ =\ nbin*nproc\ +\ 1}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ Initial\ fkav\ ,\ v1\ '}}
+\DoxyCodeLine{00105\ \ \ \ \ countzero\ =\ 0}
+\DoxyCodeLine{00106\ \ \ \ \ maxsr\ =\ 0.d0}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ maxsr)\ maxsr\ =\ fkav(i)}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ parcut*maxsr\ .or.\ (yes\_umrigar\ .and.\ fkav(i)\ .gt.\ 0.d0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ dsqrt(fkav(i))}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ forza(i)/fkav(i)}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ countzero\ =\ countzero\ +\ 1}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ 0.d0}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ fkav(i)\ =\ 0.d0}
+\DoxyCodeLine{00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ i,x(i),fkav(i)}}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{}\textcolor{comment}{!\ Different\ processor\ may\ have\ different\ fkav\ due\ to\ different}}
+\DoxyCodeLine{00125\ \textcolor{comment}{!\ accuracy\ in\ sqrt}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(fkav,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ preconditioning\ the\ matrix}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbinr}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(rank*nbin\ +\ j)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(i,\ j)\ =\ mat(i,\ j)/(fkav(i)*fkav(rank*nbin\ +\ j))}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00137\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00138\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00142\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00144\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{}\textcolor{comment}{!\ Different\ processor\ may\ have\ different\ countzero\ due\ to\ different}}
+\DoxyCodeLine{00148\ \textcolor{comment}{!\ accuracy\ in\ sqrt}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(countzero,\ 1,\ mpi\_integer,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{if}\ (np\ -\/\ countzero\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (iter\ .lt.\ maxit\ .and.\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ .gt.\ eps)}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itert\ .eq.\ 0)\ h\ =\ x}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ now\ psip=\ H\ h}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ The\ master\ force\ the\ calculation\ to\ be\ the\ same\ for\ all.}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(h,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ jblock\ =\ rank*nbin\ +\ 1}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nbinr\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ np,\ nbinr,\ 1.d0,\ mat,\ npp,\ h(jblock),\ 1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ psip(nppp),\ 1)}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(np,\ 0.d0,\ psip(nppp),\ 1)}
+\DoxyCodeLine{00172\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00173\ \textcolor{comment}{!\ \ \ \ \ \ \ call\ dgemv('T',np,nbin,1.d0,mat,npp,h,1,0.d0,psip(nppp),1)}}
+\DoxyCodeLine{00174\ \textcolor{comment}{!\ \ \ \ \ \ \ call\ mpi\_allgather(psip(nppp),nbin,MPI\_DOUBLE\_PRECISION}}
+\DoxyCodeLine{00175\ \textcolor{comment}{!\ \ \ \ 1,psip(jblock),nbin,MPI\_DOUBLE\_PRECISION,comm\_mpi,ierr)}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a83ad9332f6aca1745a57b5c46d928fae}{reduce\_base\_real\_to}}(np,\ psip(nppp),\ psip,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ np,\ nbin,\ 1.d0,\ mat,\ npp,\ h,\ 1,\ 0.d0,\ psip,\ 1)}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ rank\ =',rank,psip(1)}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ regularization}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_umrigar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ np}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(ii)\ =\ psip(ii)\ +\ cost\_umrigar*h(ii)/fkav(ii)**2}
+\DoxyCodeLine{00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00187\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ epsdgel,\ h,\ 1,\ psip,\ 1)}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itert\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ ddot(np,\ h,\ 1,\ psip,\ 1)}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ gauge\ invariant\ error}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#ifdef\ \ UNREL\_DIAG}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ Only\ the\ master\ has\ the\ correct\ value\ of\ cost}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(cost,\ 1,\ mpi\_double\_precision,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lambda\ =\ -\/ddot(np,\ h,\ 1,\ g,\ 1)/cost}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ abs(lambda)*dsqrt(cost)}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ \ Non\ positive\ \ definite\ matrix\ !!!'}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ng2\ =\ dnrm2(np,\ g,\ 1)**2}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ scalar\ g\ A\ h,\ h\ A\ h\ ng2\ \ '}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ 1,ddot(np,g,1,psip,1),ddot(np,h,1,psip,1),ng2,ddot(np,h,1,g,1)}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Overlap\ g\ g\_i-\/1\ ',ng2+lambda*ddot(np,psip,1,g,1)}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ g}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ lambda,\ psip,\ 1,\ g,\ 1)}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gamma\ =\ lambda*ddot(np,\ psip,\ 1,\ g,\ 1)/ng2}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ \ x\ \ the\ solution}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lambda\ =\ -\/lambda}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }daxpy(np,\ lambda,\ h,\ 1,\ x,\ 1)}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ change\ h}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ gamma*h(i)\ +\ g(i)}
+\DoxyCodeLine{00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ compute\ function\ for\ check}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ call\ dgemv('T',np,nbin,1.d0,mat,np,x,1,0.d0,psip(npp),1)}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ call\ dgemv('N',np,nbin,1.d0,mat,np,psip(npp),1,0.d0,psip,1)}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ daxpy(np,epsdgel,x,1,psip,1)}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Fun=0.5d0*ddot(np,psip,1,x,1)}}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ '\ New\ gradient\ at\ new\ position\ '}}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ i=1,np}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(fkav(i).gt.0.d0)\ then}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Fun=Fun-\/x(i)*forza(i)/fkav(i)}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ i,g(i),-\/psip(i)+forza(i)/fkav(i)}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ error=abs(lambda*dnrm2(np,h,1))}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ errorg=dnrm2(np,g,1)}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Value\ of\ the\ function}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ -\/psip(i)\ +\ forza(i)/fkav(i)}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ h(i)\ =\ 0.d0}
+\DoxyCodeLine{00254\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00255\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(np,\ h,\ 1,\ g,\ 1)}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ dnrm2(np,\ g,\ 1)}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ error=max(error,errorg)}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(iopen)\ h,g}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ iter\ =\ iter\ +\ 1}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ itert\ =\ itert\ +\ 1}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if(mod(itert,10).eq.0)\ itert=0}}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ '\ Output\ \ cg\ \ iter\ error\ \ \ =',iter,error}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#ifdef\ \ UNREL\_DIAG}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}},\ 1,\ mpi\_double\_precision,\ 0,\ comm\_mpi,\ ierr)}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ endif\ countzero}}
+\DoxyCodeLine{00278\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\_out\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Output\ \ cg\ \ iter\ error\ \ \ ='},\ iter,\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ Check\ orthogonality\ gs\ '}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ np}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fkav(i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ x(i)/fkav(i)}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ 0.d0}
+\DoxyCodeLine{00287\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00288\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ do\ j=1,iter}}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ rewind(iopen)}}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ k=1,j-\/1}}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ read(iopen)}}
+\DoxyCodeLine{00294\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ read(iopen)\ h,g}}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ dcopy(np,g,1,psip,1)}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ rewind(iopen)}}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i=1,iter}}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ read(iopen)\ h,g}}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,j,ddot(np,psip,1,g,1)}}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ enddo}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#ifdef\ UNREL\_DIAG}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ The\ master\ force\ the\ calculation\ to\ be\ the\ same\ for\ all.}}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(x,\ np,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00768}{bcast\+\_\+real()}}, \mbox{\hyperlink{dscalzero_8f90_source_l00036}{dscalzero()}}, \mbox{\hyperlink{error_8f90_source_l00061}{error()}}, \mbox{\hyperlink{dsortx_8f90_source_l00444}{reduce\+\_\+base\+\_\+real()}}, and \mbox{\hyperlink{dsortx_8f90_source_l00968}{reduce\+\_\+base\+\_\+real\+\_\+to()}}.
+
+
+
+Referenced by \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}.
+

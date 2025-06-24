@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['_5fassembling_5fpseudo_2ef90_0',['_assembling_pseudo.f90',['../__assembling__pseudo_8f90.html',1,'']]],
-  ['_5fhelp_5fonline_2ef90_1',['_help_online.f90',['../__help__online_8f90.html',1,'']]]
+  ['_21copyright_0',['!Copyright',['../a__makefort10_2f__defs_8h.html#a196814c9b2c84b09a99825d7209d9e5c',1,'f_defs.h']]]
 ];

@@ -22,32 +22,32 @@ var annotated_dup =
       [ "reset", "interfaceestimator_1_1reset.html", "interfaceestimator_1_1reset" ]
     ] ],
     [ "exc_list", "namespaceexc__list.html", [
-      [ "list", "structexc__list_1_1list.html", null ]
+      [ "list", "structexc__list_1_1list.html", "structexc__list_1_1list" ]
     ] ],
     [ "link_angle", "namespacelink__angle.html", [
-      [ "ifive", "structlink__angle_1_1ifive.html", null ],
-      [ "ifour", "structlink__angle_1_1ifour.html", null ],
-      [ "iseven", "structlink__angle_1_1iseven.html", null ],
-      [ "isix", "structlink__angle_1_1isix.html", null ]
+      [ "ifive", "structlink__angle_1_1ifive.html", "structlink__angle_1_1ifive" ],
+      [ "ifour", "structlink__angle_1_1ifour.html", "structlink__angle_1_1ifour" ],
+      [ "iseven", "structlink__angle_1_1iseven.html", "structlink__angle_1_1iseven" ],
+      [ "isix", "structlink__angle_1_1isix.html", "structlink__angle_1_1isix" ]
     ] ],
     [ "link_atoms", "namespacelink__atoms.html", [
-      [ "itriplet", "structlink__atoms_1_1itriplet.html", null ]
+      [ "itriplet", "structlink__atoms_1_1itriplet.html", "structlink__atoms_1_1itriplet" ]
     ] ],
-    [ "mod_orbital", null, [
-      [ "atomstypes", "structmod__orbital_1_1atomstypes.html", null ],
-      [ "lsym_type", "structmod__orbital_1_1lsym__type.html", null ],
-      [ "orbital", "structmod__orbital_1_1orbital.html", null ],
-      [ "orbmap", "structmod__orbital_1_1orbmap.html", null ],
-      [ "parsymm", "structmod__orbital_1_1parsymm.html", null ]
+    [ "mod_orbital", "namespacemod__orbital.html", [
+      [ "atomstypes", "structmod__orbital_1_1atomstypes.html", "structmod__orbital_1_1atomstypes" ],
+      [ "lsym_type", "structmod__orbital_1_1lsym__type.html", "structmod__orbital_1_1lsym__type" ],
+      [ "orbital", "structmod__orbital_1_1orbital.html", "structmod__orbital_1_1orbital" ],
+      [ "orbmap", "structmod__orbital_1_1orbmap.html", "structmod__orbital_1_1orbmap" ],
+      [ "parsymm", "structmod__orbital_1_1parsymm.html", "structmod__orbital_1_1parsymm" ]
     ] ],
-    [ "parallel_module", null, [
-      [ "pool", "structparallel__module_1_1pool.html", null ]
+    [ "parallel_module", "namespaceparallel__module.html", [
+      [ "pool", "structparallel__module_1_1pool.html", "structparallel__module_1_1pool" ]
     ] ],
     [ "sub_comm", "namespacesub__comm.html", [
-      [ "mpi_sub_comm", "structsub__comm_1_1mpi__sub__comm.html", null ]
+      [ "mpi_sub_comm", "structsub__comm_1_1mpi__sub__comm.html", "structsub__comm_1_1mpi__sub__comm" ]
     ] ],
     [ "symm_data", "namespacesymm__data.html", [
-      [ "translation", "structsymm__data_1_1translation.html", null ]
+      [ "translation", "structsymm__data_1_1translation.html", "structsymm__data_1_1translation" ]
     ] ],
     [ "types", "namespacetypes.html", [
       [ "array_int", "structtypes_1_1array__int.html", "structtypes_1_1array__int" ],
@@ -56,18 +56,18 @@ var annotated_dup =
       [ "wf_factor", "structtypes_1_1wf__factor.html", "structtypes_1_1wf__factor" ]
     ] ],
     [ "van_der_waals", "namespacevan__der__waals.html", [
-      [ "cp", "structvan__der__waals_1_1cp.html", null ],
-      [ "gromos", "structvan__der__waals_1_1gromos.html", null ]
+      [ "cp", "structvan__der__waals_1_1cp.html", "structvan__der__waals_1_1cp" ],
+      [ "gromos", "structvan__der__waals_1_1gromos.html", "structvan__der__waals_1_1gromos" ]
     ] ],
-    [ "complex", "structcomplex.html", null ],
-    [ "config_notw", "structconfig__notw.html", null ],
-    [ "config_twiddle", "structconfig__twiddle.html", null ],
-    [ "FFTW_COMPLEX", "struct_f_f_t_w___c_o_m_p_l_e_x.html", null ],
-    [ "fftw_plan_node_struct", "structfftw__plan__node__struct.html", null ],
-    [ "fftw_plan_struct", "structfftw__plan__struct.html", null ],
-    [ "fftw_twiddle_struct", "structfftw__twiddle__struct.html", null ],
-    [ "fftwnd_aux_data", "structfftwnd__aux__data.html", null ],
-    [ "nvtxeventattributes", "structnvtxeventattributes.html", null ],
-    [ "table_spc", "structtable__spc.html", null ],
-    [ "wisdom", "structwisdom.html", null ]
+    [ "complex", "structcomplex.html", "structcomplex" ],
+    [ "config_notw", "structconfig__notw.html", "structconfig__notw" ],
+    [ "config_twiddle", "structconfig__twiddle.html", "structconfig__twiddle" ],
+    [ "FFTW_COMPLEX", "struct_f_f_t_w___c_o_m_p_l_e_x.html", "struct_f_f_t_w___c_o_m_p_l_e_x" ],
+    [ "fftw_plan_node_struct", "structfftw__plan__node__struct.html", "structfftw__plan__node__struct" ],
+    [ "fftw_plan_struct", "structfftw__plan__struct.html", "structfftw__plan__struct" ],
+    [ "fftw_twiddle_struct", "structfftw__twiddle__struct.html", "structfftw__twiddle__struct" ],
+    [ "fftwnd_aux_data", "structfftwnd__aux__data.html", "structfftwnd__aux__data" ],
+    [ "nvtxeventattributes", "structnvtxeventattributes.html", "structnvtxeventattributes" ],
+    [ "table_spc", "structtable__spc.html", "structtable__spc" ],
+    [ "wisdom", "structwisdom.html", "structwisdom" ]
 ];

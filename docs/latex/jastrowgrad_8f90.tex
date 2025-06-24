@@ -1,0 +1,332 @@
+\doxysection{src/c\+\_\+adjoint\+\_\+forward/jastrowgrad.f90 File Reference}
+\hypertarget{jastrowgrad_8f90}{}\label{jastrowgrad_8f90}\index{src/c\_adjoint\_forward/jastrowgrad.f90@{src/c\_adjoint\_forward/jastrowgrad.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{jastrowgrad_8f90_a3ff66ba9346a2fa8649327b4dc1668f3}{jastrowgrad}} (rc, vj, iesd, \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}, gradv, grad2, ispin)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{jastrowgrad_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{jastrowgrad_8f90_a3ff66ba9346a2fa8649327b4dc1668f3}\index{jastrowgrad.f90@{jastrowgrad.f90}!jastrowgrad@{jastrowgrad}}
+\index{jastrowgrad@{jastrowgrad}!jastrowgrad.f90@{jastrowgrad.f90}}
+\doxysubsubsection{\texorpdfstring{jastrowgrad()}{jastrowgrad()}}
+{\footnotesize\ttfamily \label{jastrowgrad_8f90_a3ff66ba9346a2fa8649327b4dc1668f3} 
+subroutine jastrowgrad (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3)}]{rc}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{vj}{, }\item[{integer}]{iesd}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{jastrow}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3)}]{gradv}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{grad2}{, }\item[{integer}]{ispin}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{jastrowgrad_8f90_source_l00016}{16}} of file \mbox{\hyperlink{jastrowgrad_8f90_source}{jastrowgrad.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00018\ \ \ \ \ real*8\ r,\ rc(3),\ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}},\ vj(*),\ grad,\ grad2,\ aux,\ aux2,\ aux3,\ peffm\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ gradv(3),\ cost,\ acost,\ bcost,\ rz,\ dxrz,\ dxr,\ fat,\ rs,\ fat0}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesd,\ ispin,\ j}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Output\ jastrow=\ log\ (two\ body\ Jastrow)}}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ grad2=\ 2/r\ u'\ \ +\ u''}}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ grad=\ u'}}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ gradv=\ grad\ u}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ input\ r\ output\ jastrow\ grad\ e\ grad2}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{select\ case}\ (iesd)}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordflow}{case}\ (4)}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/vj(1)*r)}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0/vj(1)*(1.d0\ -\/\ fat)}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*fat}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ 0.5d0*fat*(2.d0\ -\/\ vj(1)*r)}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0/vj(1)*(1.d0\ -\/\ fat)}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.25d0*fat}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ 0.25d0*fat*(2.d0\ -\/\ vj(1)*r)}
+\DoxyCodeLine{00042\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ grad2\ =\ grad2/r}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00048\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{case}\ (-\/4)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/vj(1)*r)}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0/vj(1)*(1.d0\ -\/\ fat)}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*fat}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ grad2\ =\ 0.5d0*fat*(2.d0\ -\/\ vj(1)*r)}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ grad2\ =\ grad2/r}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00060\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{case}\ (8)}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ jastrow\ for\ pseudo\ soft}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ r\ =\ dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2)}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/vj(1)*r**3)}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 1.d0/vj(1)*(1.d0\ -\/\ fat)}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ cost\ =\ fat*3*r}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ grad2\ =\ -\/3*r*fat*(-\/4\ +\ 3*vj(1)*r**3)}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{case}\ (9)}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ acost\ =\ vj(2)*(1\ +\ vj(1))/(4.d0*vj(1))}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ fat0\ =\ (1.d0\ -\/\ r/vj(2))**2}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ fat\ =\ 1.d0\ +\ vj(1)*fat0}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ -\/acost*log(fat)}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ grad\ =\ 2.d0*acost*vj(1)*(1.d0\ -\/\ r/vj(2))/(vj(2)*fat)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ grad2\ =\ -\/acost/vj(2)**2*vj(1)*(-\/4.d0*vj(1)*fat0/fat**2\ +\ 2.d0/fat)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ grad2\ =\ 2*cost\ +\ grad2}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{case}\ (10)}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ acost\ =\ vj(2)*(1\ +\ vj(1))/(4.d0*vj(1))}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ fat0\ =\ (1.d0\ -\/\ 0.5d0*r/vj(2))**2}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ fat0\ =\ (1.d0\ -\/\ r/vj(2))**2}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ fat\ =\ 1.d0\ +\ vj(1)*fat0}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ -\/acost*log(fat)}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ acost*vj(1)*(1.d0\ -\/\ 0.5d0*r/vj(2))/(vj(2)*fat)}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ -\/acost/vj(2)**2*vj(1)*(-\/vj(1)*fat0/fat**2\ +\ 0.5d0/fat)}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 2.d0*acost*vj(1)*(1.d0\ -\/\ r/vj(2))/(vj(2)*fat)}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ -\/acost/vj(2)**2*vj(1)*(-\/4.d0*vj(1)*fat0/fat**2\ +\ 2.d0/fat)}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ grad2\ =\ 2*cost\ +\ grad2}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{case}\ (5)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ aux\ =\ dexp(-\/vj(1)*r)}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ aux2\ =\ dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ aux3\ =\ 0.5d0/(vj(1)\ +\ vj(3)*vj(2))}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ aux3*(1.d0\ +\ vj(3)\ -\/\ aux\ -\/\ vj(3)*aux2)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ grad\ =\ aux3*(vj(1)*aux\ +\ vj(3)*vj(2)*aux2)}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ grad2\ =\ aux3*(2.d0*vj(2)*vj(3)*aux2\ -\/\ vj(2)**2*vj(3)*aux2*r\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ vj(1)*aux*(-\/2.d0\ +\ vj(1)*r))}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ grad2\ =\ grad2/r}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{case}\ (1)}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*aux}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ grad2\ =\ aux3/r}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00134\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{case}\ (6)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ rs\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*r))/vj(2)}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ rs\ =\ r}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*rs)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*rs*aux}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ grad2\ =\ (-\/vj(1)*aux3*dexp(-\/vj(2)*r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ 0.5d0*vj(2)*aux2)*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ grad2\ =\ 2.d0/r*grad\ +\ grad2}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{case}\ (7)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ rs\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*r))/vj(2)}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ rs\ =\ r}
+\DoxyCodeLine{00162\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*rs)}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ parallel}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*rs*aux}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.25d0*aux2*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ 0.5d0*(-\/vj(1)*aux3*dexp(-\/vj(2)*r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ 0.5d0*vj(2)*aux2)*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ antiparallel}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*rs*aux}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ (-\/vj(1)*aux3*dexp(-\/vj(2)*r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ 0.5d0*vj(2)*aux2)*dexp(-\/vj(2)*r)}
+\DoxyCodeLine{00180\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ grad2\ =\ 2.d0/r*grad\ +\ grad2}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{case}\ (2)}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(2)*r)}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*r*aux}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.25d0*aux2}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ 0.5d0*(-\/vj(2)*aux3\ +\ aux2/r)}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*aux}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ -\/vj(1)*aux3\ +\ aux2/r}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00213\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00214\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{case}\ (-\/1)}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ cusp\ condition\ for\ parallel\ electrons}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*r*aux}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.25d0*aux2}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ grad2=-\/vj(1)*(aux+aux2+aux3)}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ 0.5d0*(-\/vj(1)*aux3\ +\ aux2/r)}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00231\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*aux}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ grad2=-\/vj(1)*(aux+aux2+aux3)}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ grad2\ =\ -\/vj(1)*aux3\ +\ aux2/r}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00240\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00241\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{case}\ (-\/2)}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ rz\ =\ dsqrt(vj(1)**2*(rc(1)**2\ +\ rc(2)**2)\ +\ (vj(2)*rc(3))**2)}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ rz)}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*aux}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ aux\ =\ 0.5d0/(1.d0\ +\ rz)**2/rz/r}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ aux2\ =\ vj(2)**2\ -\/\ vj(1)**2}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ acost\ =\ aux2*rc(3)**2}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ bcost\ =\ -\/aux2*(rc(1)**2\ +\ rc(2)**2)}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ '\ New\ laplace\ -\/2\ '}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 2}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ rc(j)*(acost\ +\ rz)*aux}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Grad\ =',j,gradv(j)}}
+\DoxyCodeLine{00263\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ gradv(3)\ =\ rc(3)*(bcost\ +\ rz)*aux}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Grad\ =',3,gradv(3)}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ !\ the\ trivial\ laplacian\ term}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ grad2\ =\ (2.d0*acost\ +\ bcost\ +\ 3.d0*rz)*aux}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ dxrz\ =\ -\/aux/rz/(1.d0\ +\ rz)*(acost\ +\ 3.d0*acost*rz\ +\ 2.d0*rz**2)}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ dxr\ =\ -\/aux/r*(acost\ +\ rz)}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ grad2\ =\ grad2\ +\ (rc(1)**2\ +\ rc(2)**2)*(dxr/r\ +\ dxrz/rz*vj(1)**2)}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ dxrz\ =\ -\/aux/rz/(1.d0\ +\ rz)*(bcost\ +\ 3.d0*bcost*rz\ +\ 2.d0*rz**2)}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ dxr\ =\ -\/aux/r*(bcost\ +\ rz)}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ grad2\ =\ grad2\ +\ rc(3)**2*(dxr/r\ +\ dxrz/rz*vj(2)**2)}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordflow}{case}\ (3)}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ r\ =\ max(dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2),\ 1d-\/9)}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ aux2\ =\ aux*aux}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ aux3\ =\ aux2*aux}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*aux}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ grad\ =\ 0.5d0*aux2}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ grad2=-\/vj(1)*(aux+aux2+aux3)}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ aux\ =\ r/(1.d0\ +\ vj(2)*r)**2}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ aux2\ =\ aux/(1.d0\ +\ vj(2)*r)}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ +\ vj(3)*0.5d0*r*aux}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ jastrow=dexp(jastrow)}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ grad\ =\ grad\ +\ vj(3)*aux2}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ aux3\ =\ aux3\ +\ 3.d0*vj(3)*aux/(1.d0\ +\ vj(2)*r)**2}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ grad2\ =\ aux3/r}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ cost\ =\ grad/r}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ gradv(j)\ =\ cost*rc(j)}
+\DoxyCodeLine{00299\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordflow}{case}\ (0)}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.d0}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ grad\ =\ 0.d0}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ dscalzero(3,0.d0,gradv,1)}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ gradv\ =\ 0.d0}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ grad2\ =\ 0.d0}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{keywordflow}{\ \ \ \ case\ default}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#ifndef\ \_OFFLOAD}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ERROR\ Jastrow:\ wrong\ jastrow\ number'},\ iesd}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ select}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{jastrow__exp_8f90_source_l00028}{jastrow()}}.
+
+
+
+Referenced by \mbox{\hyperlink{testad_8f90_source_l00016}{main()}}, \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}, \mbox{\hyperlink{compute__fast__b_8f90_source_l00563}{task9\+\_\+b()}}, \mbox{\hyperlink{initialize__matrices_8f90_source_l00763}{upload\+\_\+mat()}}, and \mbox{\hyperlink{uptabpip__new_8f90_source_l00060}{uptabpip()}}.
+

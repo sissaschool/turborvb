@@ -1,0 +1,195 @@
+\doxysection{src/a\+\_\+turborvb/bootpress.f90 File Reference}
+\hypertarget{bootpress_8f90}{}\label{bootpress_8f90}\index{src/a\_turborvb/bootpress.f90@{src/a\_turborvb/bootpress.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{bootpress_8f90_a34e4979fc519dd1233997333d3d8ab93}{bootpress}} (nbin, efenergy, e, eta, derr, etanp, derrnp, lbox, omega, ris, rank, nproc)
+\begin{DoxyCompactList}\small\item\em Bootstrap method to evaluate pressure and its error bars. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{bootpress_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{bootpress_8f90_a34e4979fc519dd1233997333d3d8ab93}\index{bootpress.f90@{bootpress.f90}!bootpress@{bootpress}}
+\index{bootpress@{bootpress}!bootpress.f90@{bootpress.f90}}
+\doxysubsubsection{\texorpdfstring{bootpress()}{bootpress()}}
+{\footnotesize\ttfamily \label{bootpress_8f90_a34e4979fc519dd1233997333d3d8ab93} 
+subroutine bootpress (\begin{DoxyParamCaption}\item[{integer}]{nbin}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(1 + ipc, \texorpdfstring{$\ast$}{*})}]{efenergy}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, \texorpdfstring{$\ast$}{*})}]{e}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{eta}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{derr}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{etanp}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{derrnp}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{lbox}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{omega}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(4)}]{ris}{, }\item[{integer}]{rank}{, }\item[{integer}]{nproc}{}\end{DoxyParamCaption})}
+
+
+
+Bootstrap method to evaluate pressure and its error bars. 
+
+This subroutine implements the bootstrap method to evaluate pressure and its error bars for each bin. It calculates pressure contributions including Pulay corrections and Hartree-\/\+Fock contributions. The method uses jackknife resampling to estimate statistical errors for pressure calculations in VMC/\+DMC simulations. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nbin} & Number of bins \\
+\hline
+\mbox{\texttt{in}}  & {\em efenergy} & Energy and weight arrays \\
+\hline
+\mbox{\texttt{in}}  & {\em e} & Energy arrays for pressure calculation \\
+\hline
+\mbox{\texttt{out}}  & {\em eta} & Average pressure \\
+\hline
+\mbox{\texttt{out}}  & {\em derr} & Pressure error \\
+\hline
+\mbox{\texttt{out}}  & {\em etanp} & Average pressure without Pulay contributions \\
+\hline
+\mbox{\texttt{out}}  & {\em derrnp} & Pressure error without Pulay contributions \\
+\hline
+\mbox{\texttt{in}}  & {\em LBox} & Box length \\
+\hline
+\mbox{\texttt{in}}  & {\em omega} & Frequency parameter \\
+\hline
+\mbox{\texttt{in}}  & {\em ris} & Scaling factors \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Process rank \\
+\hline
+\mbox{\texttt{in}}  & {\em nproc} & Number of processes \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{bootpress_8f90_source_l00034}{34}} of file \mbox{\hyperlink{bootpress_8f90_source}{bootpress.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{!\ ***\ Does\ BootStrap\ to\ evalute\ force\ and\ its\ error\ for\ each\ bin}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!\ \ energy\ !\ \ derrivative\ of\ the\ ener!\ log\ derivative\ wf!\ energy\ x\ log\ de}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{!*******\ etanp=\ Pressure\ without\ pulay\ contributes}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ k,\ j,\ jj,\ kk,\ ieskin,\ nbin,\ kmain,\ rank,\ nproc,\ nbins,\ ierr}
+\DoxyCodeLine{00045\ \ \ \ \ real*8\ e(3,\ *),\ et(4),\ eall(4),\ eta,\ givenmeas,\ derr,\ omega,\ ris(4)\ \ \ \ \ \ \&}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ efenergy(1\ +\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ *),\ weight,\ weightall,\ lbox,\ etanp,\ derrnp\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ summpi(5),\ outmpi(5)}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ initialization\ opara\ e\ opars}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ eta\ =\ 0.d0}
+\DoxyCodeLine{00056\ \ \ \ \ derr\ =\ 0.d0}
+\DoxyCodeLine{00057\ \ \ \ \ etanp\ =\ 0.d0}
+\DoxyCodeLine{00058\ \ \ \ \ derrnp\ =\ 0.d0}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(4,\ 0.d0,\ eall,\ 1)}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ weightall\ =\ 0.d0}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nbin}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2,\ 4}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ eall(j)\ =\ eall(j)\ +\ e(j\ -\/\ 1,\ k)}
+\DoxyCodeLine{00066\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ BUG\ in\ scaling\ pressure,\ the\ Pulay\ was\ transfomed\ in\ Hartree\ while\ the\ HF\ contr.\ was\ in}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Ry.\ Then\ both\ contributions\ were\ divided\ by\ the\ same\ factor.\ Thus\ the}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Pulay\ in\ pressure\ before\ 3\ Sept.\ 2014\ was\ underestimated\ by\ a\ factor\ 2}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ always.\ That's\ why\ there\ were\ always\ almost\ the\ same.}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ The\ calculation\ was\ instead\ OK\ when\ computing\ pressure\ at\ fixed\ conf.}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ with\ forcevmc.sh\ or\ forcefn.sh}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ eall(1)=eall(1)+efenergy(1,k)*ris(2)}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ eall(1)\ =\ eall(1)\ +\ efenergy(1,\ k)}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ weightall\ =\ weightall\ +\ efenergy(1\ +\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ k)}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{}\ \ \ \ summpi(1:4)\ =\ eall(1:4)}
+\DoxyCodeLine{00080\ \ \ \ \ summpi(5)\ =\ weightall}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(summpi,\ outmpi,\ 5,\ mpi\_double\_precision\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00082\ \&\ \ ,\ mpi\_sum,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{00083\ \ \ \ \ eall(1:4)\ =\ outmpi(1:4)}
+\DoxyCodeLine{00084\ \ \ \ \ weightall\ =\ outmpi(5)}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 4}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ eall(j)\ =\ eall(j)/weightall}
+\DoxyCodeLine{00089\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(*,*)\ 'eall\ =\ ',eall(1),eall(2),eall(3),eall(4)}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(LBox.ne.1.d0)\ write(6,*)\ '\ eall\ 2\ scaled\ =',eall(2)*LBox}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Jet\ Lag\ evaluation\ of\ error\ bar\ with\ bin\ length\ lbin=100}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{do}\ kmain\ =\ 1,\ nbin}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 2,\ 4}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!w(jj,j)*e(jj,j)}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ et(jj)\ =\ e(jj\ -\/\ 1,\ kmain)}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ BUG\ ???\ \ \ Why\ the\ following\ scaling\ from\ Ry-\/H\ while\ everything}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ is\ done\ in\ Ry?}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ et(1)\ =\ efenergy(1,\ kmain)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ weight\ =\ efenergy(1\ +\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ kmain)}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ '\ et\ read\ ',et(1)/weight,et(2)/weight,et(3)/weight}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ 1,et(4)/weight}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ 4}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!wt(jj)}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ et(jj)\ =\ (eall(jj)*weightall\ -\/\ et(jj))/(weightall\ -\/\ weight)}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ average\ correlation\ function\ on\ the\ given\ bootstrap}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ givenmeas\ =\ -\/(et(2)\ +\ 2.d0*(et(4)\ -\/\ et(1)*et(3)))}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ givenmeas\ =',givenmeas,-\/et(2)}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ eta\ =\ eta\ +\ givenmeas}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ derr\ =\ derr\ +\ givenmeas**2}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ etanp\ =\ etanp\ -\/\ et(2)}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ derrnp\ =\ derrnp\ +\ et(2)**2}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{}\ \ \ \ summpi(1)\ =\ eta}
+\DoxyCodeLine{00132\ \ \ \ \ summpi(2)\ =\ derr}
+\DoxyCodeLine{00133\ \ \ \ \ summpi(3)\ =\ etanp}
+\DoxyCodeLine{00134\ \ \ \ \ summpi(4)\ =\ derrnp}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(summpi,\ outmpi,\ 4,\ mpi\_double\_precision\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00136\ \&\ \ ,\ mpi\_sum,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{00137\ \ \ \ \ eta\ =\ outmpi(1)}
+\DoxyCodeLine{00138\ \ \ \ \ derr\ =\ outmpi(2)}
+\DoxyCodeLine{00139\ \ \ \ \ etanp\ =\ outmpi(3)}
+\DoxyCodeLine{00140\ \ \ \ \ derrnp\ =\ outmpi(4)}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{}\ \ \ \ nbins\ =\ nbin*nproc}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ eta\ =\ eta/nbins}
+\DoxyCodeLine{00145\ \ \ \ \ derr\ =\ derr/nbins}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ etanp\ =\ etanp/nbins}
+\DoxyCodeLine{00148\ \ \ \ \ derrnp\ =\ derrnp/nbins}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ 'etanp\ derrnp\ =',eta,derr,etanp,derrnp}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ derrnp\ =\ dsqrt(dble(nbins\ -\/\ 1)**2/dble(nbins)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ *(derrnp\ -\/\ etanp**2))}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ derr\ =\ dsqrt(dble(nbins\ -\/\ 1)**2/dble(nbins)*(derr\ -\/\ eta**2))}
+\DoxyCodeLine{00156\ \ \ \ \ eta\ =\ -\/(eall(2)\ +\ 2.d0*(eall(4)\ -\/\ eall(1)*eall(3)))}
+\DoxyCodeLine{00157\ \ \ \ \ etanp\ =\ -\/eall(2)}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ scaling\ for\ unit\ Hartree\ at\ the\ end\ for\ all\ (after\ 3\ Sept.\ 2014).}}
+\DoxyCodeLine{00160\ \ \ \ \ eta\ =\ eta*ris(2)}
+\DoxyCodeLine{00161\ \ \ \ \ etanp\ =\ etanp*ris(2)}
+\DoxyCodeLine{00162\ \ \ \ \ derr\ =\ derr*ris(2)}
+\DoxyCodeLine{00163\ \ \ \ \ derrnp\ =\ derrnp*ris(2)}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dscalzero_8f90_source_l00036}{dscalzero()}}, and \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipc}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

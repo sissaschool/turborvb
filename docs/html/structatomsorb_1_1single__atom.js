@@ -8,6 +8,7 @@ var structatomsorb_1_1single__atom =
     [ "map_lambda", "structatomsorb_1_1single__atom.html#a1ac76234bfbe01491852ab4e7980ce6c", null ],
     [ "nconf", "structatomsorb_1_1single__atom.html#aa809afd221845e0e969a339f4782fe3f", null ],
     [ "njlambda", "structatomsorb_1_1single__atom.html#a44e0cbad7893ab31fa25b416db9eb108", null ],
+    [ "nlambda", "structatomsorb_1_1single__atom.html#a07ad86f2a3c5c3a901b8eb0ac135dd2d", null ],
     [ "norb", "structatomsorb_1_1single__atom.html#a9ed41cd20ebb5c3a58d044bc1dae5a30", null ],
     [ "norbj", "structatomsorb_1_1single__atom.html#a6239d63514216a3339a835f933567d87", null ],
     [ "onsite_jlambda", "structatomsorb_1_1single__atom.html#a9e13218caa7eea7d700236aef1806f2f", null ],

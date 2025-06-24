@@ -1,0 +1,165 @@
+\doxysection{src/a\+\_\+turborvb/uptable\+\_\+complex.f90 File Reference}
+\hypertarget{uptable__complex_8f90}{}\label{uptable__complex_8f90}\index{src/a\_turborvb/uptable\_complex.f90@{src/a\_turborvb/uptable\_complex.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{uptable__complex_8f90_a637eb32d453ee3e42fd660abac0d84f6}{uptable\+\_\+complex}} (nelup, neldo, indt, table, tabler, winvup, winvdo, tabpip, tmu, epscut, psiln, psidetln, costa, parcutg, istart, typereg)
+\begin{DoxyCompactList}\small\item\em Update table and tabler for complex wave function ratios. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{uptable__complex_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{uptable__complex_8f90_a637eb32d453ee3e42fd660abac0d84f6}\index{uptable\_complex.f90@{uptable\_complex.f90}!uptable\_complex@{uptable\_complex}}
+\index{uptable\_complex@{uptable\_complex}!uptable\_complex.f90@{uptable\_complex.f90}}
+\doxysubsubsection{\texorpdfstring{uptable\_complex()}{uptable\_complex()}}
+{\footnotesize\ttfamily \label{uptable__complex_8f90_a637eb32d453ee3e42fd660abac0d84f6} 
+subroutine uptable\+\_\+complex (\begin{DoxyParamCaption}\item[{integer}]{nelup}{, }\item[{integer}]{neldo}{, }\item[{integer}]{indt}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelup + neldo, indt)}]{table}{, }\item[{real(8), dimension(nelup + neldo, indt)}]{tabler}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelup, \texorpdfstring{$\ast$}{*})}]{winvup}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(neldo, \texorpdfstring{$\ast$}{*})}]{winvdo}{, }\item[{real(8), dimension(nelup + neldo, \texorpdfstring{$\ast$}{*})}]{tabpip}{, }\item[{real(8), dimension(nelup + neldo, \texorpdfstring{$\ast$}{*})}]{tmu}{, }\item[{real(8)}]{epscut}{, }\item[{real(8)}]{psiln}{, }\item[{real(8)}]{psidetln}{, }\item[{real(8)}]{costa}{, }\item[{integer}]{parcutg}{, }\item[{integer}]{istart}{, }\item[{integer}]{typereg}{}\end{DoxyParamCaption})}
+
+
+
+Update table and tabler for complex wave function ratios. 
+
+Updates the table and tabler arrays for complex wave function ratios. The bosonic regularizing wfb is Sqrt(Det\texorpdfstring{$^\wedge$}{\string^}2+exp(2 epscut)) and the guiding is the fermionic one wf = Sign Det x Sqrt(Det\texorpdfstring{$^\wedge$}{\string^}2+exp(2 epscut)). abs(table) are the ratio of the bosonic wf. Handles complex matrices for up and down electrons with regularization options. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nelup} & Number of up electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em neldo} & Number of down electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em indt} & Index offset for derivatives \\
+\hline
+\mbox{\texttt{out}}  & {\em table} & Complex table of wave function values \\
+\hline
+\mbox{\texttt{out}}  & {\em tabler} & Real table of regularized values \\
+\hline
+\mbox{\texttt{in}}  & {\em winvup} & Complex inverse matrix for up electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em winvdo} & Complex inverse matrix for down electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em tabpip} & Table of pip values \\
+\hline
+\mbox{\texttt{in}}  & {\em tmu} & Table of tmu values \\
+\hline
+\mbox{\texttt{in}}  & {\em epscut} & Cutoff parameter for regularization \\
+\hline
+\mbox{\texttt{in}}  & {\em psiln} & Psi log value \\
+\hline
+\mbox{\texttt{in}}  & {\em psidetln} & Psi determinant log value \\
+\hline
+\mbox{\texttt{in}}  & {\em costa} & Cost parameter (plat(2)/alat\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}2) \\
+\hline
+\mbox{\texttt{in}}  & {\em parcutg} & Cutoff parameter \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Start index for calculation \\
+\hline
+\mbox{\texttt{in}}  & {\em typereg} & Regularization type \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{uptable__complex_8f90_source_l00038}{38}} of file \mbox{\hyperlink{uptable__complex_8f90_source}{uptable\+\_\+complex.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelup,\ neldo,\ i,\ jel,\ indt,\ jel2,\ istart,\ parcutg,\ typereg}
+\DoxyCodeLine{00043\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ tabpip(nelup\ +\ neldo,\ *)\ \&}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ ,\ tabler(nelup\ +\ neldo,\ indt)\ \&}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ ,\ tmu(nelup\ +\ neldo,\ *),\ epscut,\ psidetln,\ psiln,\ costa}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{logical}\ flagsign}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{!\ complex\ variables}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ winvup(nelup,\ *),\ winvdo(neldo,\ *),\ table(nelup\ +\ neldo,\ indt),\ ratio}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ Table(nel,indt)\ contains\ off\ diagonal\ pseudopotential\ terms\ of\ the}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ global\ w.f.}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ Here\ the\ bosonic\ regularizing\ wfb\ is\ Sqrt(\ Det\string^2+exp(2\ epscut))}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ The\ guiding\ is\ the\ fermionic\ one\ wf\ =\ Sign\ Det\ x\ Sqrt(\ Det\string^2+exp(2\ epscut))}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{!\ abs(table)\ are\ the\ ratio\ of\ the\ bosonic\ wf.}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ costa\ on\ input=plat(2)/alat**2\ is\ biased}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (indt\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keywordflow}{if}\ (epscut\ .eq.\ 0.d0\ .and.\ typereg\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*tabpip(jel,\ i)*winvup(jel,\ i)}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*tabpip(jel2,\ i)*winvdo(jel,\ i)}
+\DoxyCodeLine{00068\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ tabler(:,\ :)\ =\ real(table(:,\ :))}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(typereg,\ 2)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvup(jel,\ i)}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*tabpip(jel,\ i)*ratio}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ istart)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ tmu(jel,\ i)*ratio}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ table(jel,\ i)}
+\DoxyCodeLine{00082\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ratiofn__psi_8f90_adb829ac8a22b12d756b6ab00958dc777}{ratiofn\_psi}}(epscut,\ psidetln,\ abs(ratio),\ tabler(jel,\ i),\ typereg)}
+\DoxyCodeLine{00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvdo(jel,\ i)}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*tabpip(jel2,\ i)*ratio}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .eq.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ istart)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel2,\ i)\ =\ tmu(jel2,\ i)*ratio}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel2,\ i)\ =\ table(jel2,\ i)}
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ratiofn__psi_8f90_adb829ac8a22b12d756b6ab00958dc777}{ratiofn\_psi}}(epscut,\ psidetln,\ abs(ratio),\ tabler(jel2,\ i),\ typereg)}
+\DoxyCodeLine{00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvup(jel,\ i)*tabpip(jel,\ i)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel,\ i)\ =\ tmu(jel,\ i)*ratio}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ratiofn__psi_8f90_adb829ac8a22b12d756b6ab00958dc777}{ratiofn\_psi}}(epscut,\ psiln,\ abs(ratio),\ tabler(jel,\ i),\ typereg)}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ neldo}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jel2\ =\ jel\ +\ nelup}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratio\ =\ winvdo(jel,\ i)*tabpip(jel2,\ i)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ table(jel2,\ i)\ =\ tmu(jel2,\ i)*ratio}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ratiofn__psi_8f90_adb829ac8a22b12d756b6ab00958dc777}{ratiofn\_psi}}(epscut,\ psiln,\ abs(ratio),\ tabler(jel2,\ i),\ typereg)}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (typereg\ .ne.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Table\ remains\ untouched\ tabler\ is\ the\ wf\ with\ the\ guiding}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jel\ =\ 1,\ nelup\ +\ neldo}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tabler(jel,\ i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabler(jel,\ i)\ =\ real(table(jel,\ i))/tabler(jel,\ i)}
+\DoxyCodeLine{00123\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00126\ \textcolor{comment}{!\ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00127\ \textcolor{comment}{!\ \ \ \ \ \ \ tabler=table}}
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00129\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!\ end\ if\ over\ epscut.eq.0}}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00131\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{ratiofn__psi_8f90_source_l00030}{ratiofn\+\_\+psi()}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

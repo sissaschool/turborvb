@@ -1,0 +1,268 @@
+\doxysection{src/a\+\_\+turborvb/adjust\+\_\+tpar.f90 File Reference}
+\hypertarget{adjust__tpar_8f90}{}\label{adjust__tpar_8f90}\index{src/a\_turborvb/adjust\_tpar.f90@{src/a\_turborvb/adjust\_tpar.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{adjust__tpar_8f90_a920f121a9971be0c9a263f41451d51e8}{adjust\+\_\+tpar}} (i\+\_\+main, nweight, \mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}}, error\+\_\+energy, tpar, ngentry, itestr4)
+\begin{DoxyCompactList}\small\item\em Automatically adjust learning rate (tpar) during optimization. \end{DoxyCompactList}\item 
+real \texorpdfstring{$\ast$}{*}8 function \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}} (vector, mean, dim)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{adjust__tpar_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{adjust__tpar_8f90_a920f121a9971be0c9a263f41451d51e8}\index{adjust\_tpar.f90@{adjust\_tpar.f90}!adjust\_tpar@{adjust\_tpar}}
+\index{adjust\_tpar@{adjust\_tpar}!adjust\_tpar.f90@{adjust\_tpar.f90}}
+\doxysubsubsection{\texorpdfstring{adjust\_tpar()}{adjust\_tpar()}}
+{\footnotesize\ttfamily \label{adjust__tpar_8f90_a920f121a9971be0c9a263f41451d51e8} 
+subroutine adjust\+\_\+tpar (\begin{DoxyParamCaption}\item[{integer}]{i\+\_\+main}{, }\item[{integer}]{nweight}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{energy}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{error\+\_\+energy}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{tpar}{, }\item[{integer}]{ngentry}{, }\item[{integer}]{itestr4}{}\end{DoxyParamCaption})}
+
+
+
+Automatically adjust learning rate (tpar) during optimization. 
+
+This subroutine automatically adjusts the learning rate (tpar) during optimization based on the stability of energy and error measurements. It monitors running averages and standard deviations of energy and error, and increases or decreases tpar accordingly to maintain stable optimization. The algorithm includes mechanisms to handle unstable behavior and maintain a list of stable tpar values. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em i\+\_\+main} & Main iteration counter \\
+\hline
+\mbox{\texttt{in}}  & {\em nweight} & Number of weights \\
+\hline
+\mbox{\texttt{in}}  & {\em energy} & Current energy value \\
+\hline
+\mbox{\texttt{in}}  & {\em error\+\_\+energy} & Current energy error \\
+\hline
+\mbox{\texttt{in,out}}  & {\em tpar} & Learning rate (adjusted by this subroutine) \\
+\hline
+\mbox{\texttt{in}}  & {\em ngentry} & Number of entries \\
+\hline
+\mbox{\texttt{in}}  & {\em itestr4} & Test parameter \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{adjust__tpar_8f90_source_l00030}{30}} of file \mbox{\hyperlink{adjust__tpar_8f90_source}{adjust\+\_\+tpar.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}},\ \mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}},\ \mbox{\hyperlink{namespaceallio_a8d33a8578611b33ee6c1e1f77c3ee264}{tpar\_buffer\_filled}},\ \&}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a69d034ad5fe6981f6a27fe199a865e52}{tpar\_increased}},\ \mbox{\hyperlink{namespaceallio_ace96f576eec88828e6be0ab9c48e2f15}{inc\_tpar\_frequency}},\ \mbox{\hyperlink{namespaceallio_a1b2f2a0a8062f9c5ba6aadbaa3ca73f2}{stop\_increasing\_tpar}},\ \&}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a41968b78f63206a879ec680430bac535}{tpar\_unstble\_stop}},\ \mbox{\hyperlink{namespaceallio_a52b1b487d120a50f58fb1b928f1536e5}{counter\_unstable\_tpar}},\ \&}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}},\ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}},\ \mbox{\hyperlink{namespaceallio_a335d6bb2e7d0ebf710d0fc9694a0c852}{min\_running\_std}},\ \&}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}},\ \mbox{\hyperlink{namespaceallio_a1a04999879e2e26797fab7ad163b3b1d}{min\_running\_std\_energy}},\ \mbox{\hyperlink{namespaceallio_abdd4cef7d5768e11aec9171e31b9d8fa}{tpar\_max}},\ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}},\ \mbox{\hyperlink{namespaceallio_a5eb36ea8f57e0da640457121c6c9a968}{divide\_tpar}},\ \&}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_af64ee7b8d5812e82cb4919d5ecf46980}{multiply\_tpar}},\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}},\ \mbox{\hyperlink{namespaceallio_ab1b834b3b9a1a330e941575264059364}{cut\_sigma}},\ \mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}},\ \mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}},\ \&}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a3baf095a3f0f156d3a4e49fe3803ec3f}{use\_stable\_tpar}},\ \mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}},\ \mbox{\hyperlink{namespaceallio_a629100b69c6f38ab7841b9c76dfd1264}{len\_tpar\_stable\_list}},\ \mbox{\hyperlink{namespaceallio_a3f3ad91c77a5114414379a383dfd1a84}{n\_sigmas\_tpar}}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ nweight,\ i\_main,\ ngentry,\ itestr4,\ iter\_step,\ start\_index,\ stop\_tpar}
+\DoxyCodeLine{00042\ \ \ \ \ real*8\ \mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}},\ error\_energy,\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}},\ running\_ave,\ running\_std,\ running\_ave\_energy,\ running\_std\_energy,\ ener\_try,\ ener\_sav}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ index\_ene,\ count\_list,\ index\_stable\_list,\ half\_stable\_tpars}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ half\_stable\_tpars\ =\ int(\mbox{\hyperlink{namespaceallio_a629100b69c6f38ab7841b9c76dfd1264}{len\_tpar\_stable\_list}}/2)}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3baf095a3f0f156d3a4e49fe3803ec3f}{use\_stable\_tpar}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{!check\ if\ we\ have\ filled\ the\ list\ of\ "{}stable"{}\ values\ of\ tpar}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ index\_stable\_list\ =\ 1,\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}})}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}(index\_stable\_list)\ .eq.\ -\/1)\ \textcolor{keywordflow}{exit}}
+\DoxyCodeLine{00052\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ we\ have\ all\ the\ stable\ values\ of\ tpar\ we\ just\ use\ the\ mean\ of\ the\ last\ ten\ values}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\_stable\_list\ .gt.\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'adjust\_tpar:\ warning,\ using\ average\ of\ stable\ value\ for\ tpar'},\ int(\mbox{\hyperlink{namespaceallio_a06719e65d89ab6a3c97c47c8c9266e43}{i\_main}}/\mbox{\hyperlink{namespaceallio_a7290b56b28834862661c24da7eea32ab}{nweight}})}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}\ =\ sum(\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}(\textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}})\ -\/\ (half\_stable\_tpars\ -\/\ 1):\textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}})))/half\_stable\_tpars}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00061\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00062\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ count\_list\ =\ 0}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{do}\ index\_ene\ =\ 1,\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}})}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8d33a8578611b33ee6c1e1f77c3ee264}{tpar\_buffer\_filled}}(index\_ene))\ count\_list\ =\ count\_list\ +\ 1}
+\DoxyCodeLine{00067\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{do}\ index\_ene\ =\ 1,\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}})}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_a8d33a8578611b33ee6c1e1f77c3ee264}{tpar\_buffer\_filled}}(index\_ene))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(index\_ene)\ =\ \mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(index\_ene)\ =\ error\_energy}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8d33a8578611b33ee6c1e1f77c3ee264}{tpar\_buffer\_filled}}(index\_ene)\ =\ .true.}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{exit}}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ If\ return\_tpar\ just\ stores\ them,\ this\ subroutine\ skips\ the\ following\ part.}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\_list\ .lt.\ \mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}\ -\/\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ The\ \ buffer\ \ is\ filled\ even\ when\ count\_list=size(energy\_list)-\/1}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ because\ the\ \ previous\ loop\ will\ certainly\ \ add\ one\ element\ in\ the\ list}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00083\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ running\_ave\_energy\ =\ sum(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(1:count\_list))/count\_list}
+\DoxyCodeLine{00086\ \ \ \ \ running\_std\_energy\ =\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}},\ running\_ave\_energy,\ count\_list)}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{if}\ ((running\_std\_energy/error\_energy)**2\ .ge.\ 3)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!.and.\ count\_list\ .ge.\ len\_shorter\_buffer)\ then}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'adjust\_tpar:\ warning,\ using\ only\ last\ elements\ of\ the\ buffer'},\ int(\mbox{\hyperlink{namespaceallio_a06719e65d89ab6a3c97c47c8c9266e43}{i\_main}}/\mbox{\hyperlink{namespaceallio_a7290b56b28834862661c24da7eea32ab}{nweight}})}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ running\_ave\_energy\ =\ sum(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}\ -\/\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}\ +\ 1:\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}))/\mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ running\_std\_energy\ =\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}\ -\/\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}\ +\ 1),\ running\_ave\_energy,\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}})}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ running\_ave\ =\ sum(\mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}\ -\/\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}\ +\ 1:\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}))/\mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ running\_std\ =\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}(\mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(\mbox{\hyperlink{namespaceallio_a29c4000d01540014f2630438fca1084c}{tpar\_buffer\_len}}\ -\/\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}}\ +\ 1),\ running\_ave,\ \mbox{\hyperlink{namespaceallio_a504eec7279942c4bd3796ade72e0f4df}{len\_shorter\_buffer}})}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ running\_ave\ =\ sum(\mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}})/\textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}})}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ running\_std\ =\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}(\mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}},\ running\_ave,\ count\_list)}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{if}\ (running\_ave\ .lt.\ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}}\ =\ running\_ave}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a335d6bb2e7d0ebf710d0fc9694a0c852}{min\_running\_std}}\ =\ running\_std}
+\DoxyCodeLine{00103\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (running\_ave\_energy\ .lt.\ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}}\ =\ running\_ave\_energy}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a1a04999879e2e26797fab7ad163b3b1d}{min\_running\_std\_energy}}\ =\ running\_std\_energy}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{"{}adjust\_tpar:\ minimum\ running\ average\ and\ std\ var/ene"{}},\ \&}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}},\ \mbox{\hyperlink{namespaceallio_a335d6bb2e7d0ebf710d0fc9694a0c852}{min\_running\_std}},\ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}},\ \mbox{\hyperlink{namespaceallio_a1a04999879e2e26797fab7ad163b3b1d}{min\_running\_std\_energy}}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ iter\_step\ =\ mod(\mbox{\hyperlink{namespaceallio_a06719e65d89ab6a3c97c47c8c9266e43}{i\_main}}/\mbox{\hyperlink{namespaceallio_a7290b56b28834862661c24da7eea32ab}{nweight}},\ \mbox{\hyperlink{namespaceallio_ace96f576eec88828e6be0ab9c48e2f15}{inc\_tpar\_frequency}})\ +\ 1}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{!\ \ When\ the\ counter\ is\ just\ filled\ \ begin\ \ to\ increase\ tpar\ \ too}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\_list\ .eq.\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}})\ -\/\ 1\ .or.\ mod(int(\mbox{\hyperlink{namespaceallio_a06719e65d89ab6a3c97c47c8c9266e43}{i\_main}}/\mbox{\hyperlink{namespaceallio_a7290b56b28834862661c24da7eea32ab}{nweight}}),\ \mbox{\hyperlink{namespaceallio_ace96f576eec88828e6be0ab9c48e2f15}{inc\_tpar\_frequency}})\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a1b2f2a0a8062f9c5ba6aadbaa3ca73f2}{stop\_increasing\_tpar}}\ =\ .false.}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ =\ 0}
+\DoxyCodeLine{00119\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}}\ .gt.\ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}}\ +\ 3*\mbox{\hyperlink{namespaceallio_a1a04999879e2e26797fab7ad163b3b1d}{min\_running\_std\_energy}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ =\ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ +\ 1}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(energy.gt.min\_running\_ave\_energy+6*min\_running\_std\_energy)\ \&}}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ counter\_unstable\_energy=counter\_unstable\_energy+3}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ =\ 0}
+\DoxyCodeLine{00127\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (error\_energy\ .gt.\ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}}\ +\ \mbox{\hyperlink{namespaceallio_a3f3ad91c77a5114414379a383dfd1a84}{n\_sigmas\_tpar}}*\mbox{\hyperlink{namespaceallio_a335d6bb2e7d0ebf710d0fc9694a0c852}{min\_running\_std}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ =\ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ +\ 1}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if\ (error\_energy\ .gt.\ min\_running\_ave+6*min\_running\_std)\ \&}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ counter\_unstable\_err=counter\_unstable\_err+3}}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ =\ 0}
+\DoxyCodeLine{00135\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ stop\_tpar\ =\ \mbox{\hyperlink{namespaceallio_a41968b78f63206a879ec680430bac535}{tpar\_unstble\_stop}}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ stop\_tpar\ =\ \mbox{\hyperlink{namespaceallio_a41968b78f63206a879ec680430bac535}{tpar\_unstble\_stop}}*2}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ .ge.\ stop\_tpar\ .or.\ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ .ge.\ stop\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a69d034ad5fe6981f6a27fe199a865e52}{tpar\_increased}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}\ =\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}/\mbox{\hyperlink{namespaceallio_a5eb36ea8f57e0da640457121c6c9a968}{divide\_tpar}}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3baf095a3f0f156d3a4e49fe3803ec3f}{use\_stable\_tpar}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ we\ fill\ the\ list\ of\ stable\ values\ of\ tpar\ until\ it\ is\ filled}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}(index\_stable\_list)\ .eq.\ -\/1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aefb5d9761a8314d97a82c0fb85e76b3d}{tpar\_stable\_list}}(index\_stable\_list)\ =\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}}
+\DoxyCodeLine{00153\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ .ge.\ stop\_tpar\ .and.\ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ .lt.\ stop\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{"{}\ adjust\_tpar:\ energy\ too\ big,\ tpar\ decreased"{}},\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ .ge.\ stop\_tpar\ .and.\ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ .lt.\ stop\_tpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{"{}\ adjust\_tpar:\ variance\ too\ big,\ tpar\ decreased"{}},\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{"{}\ adjust\_tpar:\ variance\ \&\ energy\ too\ big,\ tpar\ decreased"{}},\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}}
+\DoxyCodeLine{00163\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aeec34752d2f460decd7805c445a1b95e}{counter\_unstable\_energy}}\ =\ 0}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a49138d575579d52b3b8419587607d699}{counter\_unstable\_err}}\ =\ 0}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a1b2f2a0a8062f9c5ba6aadbaa3ca73f2}{stop\_increasing\_tpar}}\ =\ .true.}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ =\ \mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ +\ 1}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'adjust\_tpar:\ warning,\ reinitializing\ references\ at\ iteration\ '},\ int(\mbox{\hyperlink{namespaceallio_a06719e65d89ab6a3c97c47c8c9266e43}{i\_main}}/\mbox{\hyperlink{namespaceallio_a7290b56b28834862661c24da7eea32ab}{nweight}})}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a69d034ad5fe6981f6a27fe199a865e52}{tpar\_increased}}\ =\ .false.}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}}\ =\ (running\_ave\_energy\ +\ \mbox{\hyperlink{namespaceallio_a641e3256ddd5cfcd31c033ef3fbdf168}{min\_running\_ave\_energy}})/2}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a1a04999879e2e26797fab7ad163b3b1d}{min\_running\_std\_energy}}\ =\ running\_std\_energy}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}}\ =\ (running\_ave\ +\ \mbox{\hyperlink{namespaceallio_a2eb02760d2b0c3927d31e979fc8895d9}{min\_running\_ave}})/2}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a335d6bb2e7d0ebf710d0fc9694a0c852}{min\_running\_std}}\ =\ running\_std}
+\DoxyCodeLine{00176\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (.not.\ \mbox{\hyperlink{namespaceallio_a1b2f2a0a8062f9c5ba6aadbaa3ca73f2}{stop\_increasing\_tpar}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a5a65572062473d684d5234368b18ad02}{times\_tpar\_decreased}}\ =\ 0}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}\ =\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}*\mbox{\hyperlink{namespaceallio_af64ee7b8d5812e82cb4919d5ecf46980}{multiply\_tpar}}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a67bbf24ded8d87dead621722f0d1b860}{itestr4}}\ .eq.\ -\/4)\ \mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}}\ =\ min(\mbox{\hyperlink{namespaceallio_aa9ef18c0db78fd83b17a1a6fcf2a7314}{tpar}},\ \mbox{\hyperlink{namespaceallio_abdd4cef7d5768e11aec9171e31b9d8fa}{tpar\_max}})}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a1b2f2a0a8062f9c5ba6aadbaa3ca73f2}{stop\_increasing\_tpar}}\ =\ .false.}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a69d034ad5fe6981f6a27fe199a865e52}{tpar\_increased}}\ =\ .true.}
+\DoxyCodeLine{00185\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\_list\ .eq.\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ index\_ene\ =\ 1,\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}})\ -\/\ 1}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(index\_ene)\ =\ \mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(index\_ene\ +\ 1)}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(index\_ene)\ =\ \mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(index\_ene\ +\ 1)}
+\DoxyCodeLine{00191\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8ce6392c3e85729e161fbc44028cf356}{energy\_list}}(index\_ene)\ =\ \mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2c33123d54d7175a685fb3d1831a6bf1}{error\_energy\_list}}(index\_ene)\ =\ error\_energy}
+\DoxyCodeLine{00194\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keyword}{function\ }\mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}(vector,\ mean,\ dim)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ dim}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ real*8\ \mbox{\hyperlink{namespacevector}{vector}}(dim)}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ real*8\ mean,\ sum,\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ sum\ =\ 0}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ dim}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ sum\ =\ sum\ +\ (\mbox{\hyperlink{namespacevector}{vector}}(i)\ -\/\ mean)**2}
+\DoxyCodeLine{00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}\ =\ sqrt(sum/(dim\ -\/\ 1))}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keyword}{end\ function\ }\mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}}
+\DoxyCodeLine{00209\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00682}{allio\+::counter\+\_\+unstable\+\_\+energy}}, \mbox{\hyperlink{allio_8f90_source_l00683}{allio\+::counter\+\_\+unstable\+\_\+err}}, \mbox{\hyperlink{allio_8f90_source_l00681}{allio\+::counter\+\_\+unstable\+\_\+tpar}}, \mbox{\hyperlink{allio_8f90_source_l01416}{allio\+::cut\+\_\+sigma}}, \mbox{\hyperlink{allio_8f90_source_l00692}{allio\+::divide\+\_\+tpar}}, \mbox{\hyperlink{energy_8f90_source_l00039}{energy()}}, \mbox{\hyperlink{allio_8f90_source_l01422}{allio\+::energy\+\_\+list}}, \mbox{\hyperlink{allio_8f90_source_l01423}{allio\+::error\+\_\+energy\+\_\+list}}, \mbox{\hyperlink{allio_8f90_source_l00680}{allio\+::inc\+\_\+tpar\+\_\+frequency}}, \mbox{\hyperlink{allio_8f90_source_l01414}{allio\+::len\+\_\+shorter\+\_\+buffer}}, \mbox{\hyperlink{allio_8f90_source_l00684}{allio\+::len\+\_\+tpar\+\_\+stable\+\_\+list}}, \mbox{\hyperlink{allio_8f90_source_l00687}{allio\+::min\+\_\+running\+\_\+ave}}, \mbox{\hyperlink{allio_8f90_source_l00689}{allio\+::min\+\_\+running\+\_\+ave\+\_\+energy}}, \mbox{\hyperlink{allio_8f90_source_l00688}{allio\+::min\+\_\+running\+\_\+std}}, \mbox{\hyperlink{allio_8f90_source_l00690}{allio\+::min\+\_\+running\+\_\+std\+\_\+energy}}, \mbox{\hyperlink{allio_8f90_source_l00693}{allio\+::multiply\+\_\+tpar}}, \mbox{\hyperlink{allio_8f90_source_l00694}{allio\+::n\+\_\+sigmas\+\_\+tpar}}, \mbox{\hyperlink{adjust__tpar_8f90_source_l00198}{std()}}, \mbox{\hyperlink{allio_8f90_source_l00669}{allio\+::stop\+\_\+increasing\+\_\+tpar}}, \mbox{\hyperlink{allio_8f90_source_l01415}{allio\+::times\+\_\+tpar\+\_\+decreased}}, \mbox{\hyperlink{allio_8f90_source_l00566}{allio\+::tpar}}, \mbox{\hyperlink{allio_8f90_source_l01419}{allio\+::tpar\+\_\+buffer\+\_\+filled}}, \mbox{\hyperlink{allio_8f90_source_l01413}{allio\+::tpar\+\_\+buffer\+\_\+len}}, \mbox{\hyperlink{allio_8f90_source_l00668}{allio\+::tpar\+\_\+increased}}, \mbox{\hyperlink{allio_8f90_source_l00691}{allio\+::tpar\+\_\+max}}, \mbox{\hyperlink{allio_8f90_source_l01424}{allio\+::tpar\+\_\+stable\+\_\+list}}, \mbox{\hyperlink{allio_8f90_source_l00679}{allio\+::tpar\+\_\+unstble\+\_\+stop}}, and \mbox{\hyperlink{allio_8f90_source_l01408}{allio\+::use\+\_\+stable\+\_\+tpar}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}\index{adjust\_tpar.f90@{adjust\_tpar.f90}!std@{std}}
+\index{std@{std}!adjust\_tpar.f90@{adjust\_tpar.f90}}
+\doxysubsubsection{\texorpdfstring{std()}{std()}}
+{\footnotesize\ttfamily \label{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee} 
+real\texorpdfstring{$\ast$}{*}8 function adjust\+\_\+tpar\+::std (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(dim)}]{vector}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{mean}{, }\item[{integer}]{dim}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{adjust__tpar_8f90_source_l00197}{197}} of file \mbox{\hyperlink{adjust__tpar_8f90_source}{adjust\+\_\+tpar.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ dim}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ real*8\ \mbox{\hyperlink{namespacevector}{vector}}(dim)}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ real*8\ mean,\ sum,\ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ sum\ =\ 0}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ dim}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ sum\ =\ sum\ +\ (\mbox{\hyperlink{namespacevector}{vector}}(i)\ -\/\ mean)**2}
+\DoxyCodeLine{00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{adjust__tpar_8f90_aa4be70c80f3401180a161c8879b51bee}{std}}\ =\ sqrt(sum/(dim\ -\/\ 1))}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{adjust__tpar_8f90_source_l00198}{std()}}.
+
+
+
+Referenced by \mbox{\hyperlink{adjust__tpar_8f90_source_l00031}{adjust\+\_\+tpar()}}, and \mbox{\hyperlink{adjust__tpar_8f90_source_l00198}{std()}}.
+

@@ -1,0 +1,203 @@
+\doxysection{src/m\+\_\+common/plot\+\_\+3d\+\_\+data\+\_\+tilted.f90 File Reference}
+\hypertarget{plot__3d__data__tilted_8f90}{}\label{plot__3d__data__tilted_8f90}\index{src/m\_common/plot\_3d\_data\_tilted.f90@{src/m\_common/plot\_3d\_data\_tilted.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{plot__3d__data__tilted_8f90_a56c4e7ce039be2aa4bfa4ae8b7303aa1}{plot\+\_\+3d\+\_\+data\+\_\+tilted}} (ipc, s2r\+\_\+loc, s2r, natoms, pos, zeta, \mbox{\hyperlink{periodic_8f90_ac69dd0cafbf2118cec69d8f2a2928f22}{periodic}}, mesh, origin, datagrid, indmol, word)
+\begin{DoxyCompactList}\small\item\em 3D data visualization output in XCry\+SDen format for tilted cells \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{plot__3d__data__tilted_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{plot__3d__data__tilted_8f90_a56c4e7ce039be2aa4bfa4ae8b7303aa1}\index{plot\_3d\_data\_tilted.f90@{plot\_3d\_data\_tilted.f90}!plot\_3d\_data\_tilted@{plot\_3d\_data\_tilted}}
+\index{plot\_3d\_data\_tilted@{plot\_3d\_data\_tilted}!plot\_3d\_data\_tilted.f90@{plot\_3d\_data\_tilted.f90}}
+\doxysubsubsection{\texorpdfstring{plot\_3d\_data\_tilted()}{plot\_3d\_data\_tilted()}}
+{\footnotesize\ttfamily \label{plot__3d__data__tilted_8f90_a56c4e7ce039be2aa4bfa4ae8b7303aa1} 
+subroutine plot\+\_\+3d\+\_\+data\+\_\+tilted (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{ipc}{, }\item[{double precision, dimension(3, 3)}]{s2r\+\_\+loc}{, }\item[{double precision, dimension(3, 3)}]{s2r}{, }\item[{integer, intent(in)}]{natoms}{, }\item[{double precision, dimension(3, natoms)}]{pos}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(natoms), intent(in)}]{zeta}{, }\item[{logical, intent(in)}]{periodic}{, }\item[{integer, dimension(3), intent(in)}]{mesh}{, }\item[{double precision, dimension(3)}]{origin}{, }\item[{double precision, dimension(ipc\texorpdfstring{$\ast$}{*}mesh(1), mesh(2), mesh(3))}]{datagrid}{, }\item[{integer}]{indmol}{, }\item[{character(14), intent(in)}]{word}{}\end{DoxyParamCaption})}
+
+
+
+3D data visualization output in XCry\+SDen format for tilted cells 
+
+This subroutine generates 3D data visualization files in XCry\+SDen (.xsf) format for quantum Monte Carlo calculations with tilted (non-\/orthogonal) unit cells. It outputs crystal structure information and 3D data grids that can be visualized using XCry\+SDen or similar software.
+
+The subroutine handles unit conversion from atomic units to Angstroms and supports both periodic and non-\/periodic systems with proper file naming conventions. Unlike plot\+\_\+3d\+\_\+data, this version supports general 3x3 transformation matrices for tilted cells.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ipc} & Number of components per grid point (1 for scalar, 3 for vector) \\
+\hline
+\mbox{\texttt{in}}  & {\em s2r\+\_\+loc} & Local transformation matrix for grid coordinates (3,3) \\
+\hline
+\mbox{\texttt{in}}  & {\em s2r} & Global transformation matrix for crystal structure (3,3) \\
+\hline
+\mbox{\texttt{in}}  & {\em natoms} & Number of atoms in the system \\
+\hline
+\mbox{\texttt{in}}  & {\em pos} & Atomic positions in atomic units (3, natoms) \\
+\hline
+\mbox{\texttt{in}}  & {\em zeta} & Atomic numbers or charges (natoms) \\
+\hline
+\mbox{\texttt{in}}  & {\em periodic} & Flag indicating periodic boundary conditions \\
+\hline
+\mbox{\texttt{in}}  & {\em mesh} & Grid dimensions (3) \\
+\hline
+\mbox{\texttt{in}}  & {\em origin} & Origin of the grid in atomic units (3) \\
+\hline
+\mbox{\texttt{in}}  & {\em datagrid} & 3D data grid to be plotted (ipc\texorpdfstring{$\ast$}{*}mesh(1), mesh(2), mesh(3)) \\
+\hline
+\mbox{\texttt{in}}  & {\em indmol} & Molecular index for file naming \\
+\hline
+\mbox{\texttt{in}}  & {\em word} & Identifier string for file naming\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Checks file unit availability and opens output file
+\item Converts all units from atomic units to Angstroms\+:
+\begin{DoxyItemize}
+\item Transformation matrices (s2r and s2r\+\_\+loc)
+\item Origin and atomic positions
+\item Data grid values (divided by length\+\_\+unit\texorpdfstring{$^\wedge$}{\string^}3)
+\end{DoxyItemize}
+\item Writes XCry\+SDen format header\+:
+\begin{DoxyItemize}
+\item CRYSTAL section with primitive vectors from s2r matrix
+\item PRIMCOORD section with atomic positions and charges
+\end{DoxyItemize}
+\item Writes 3D data grid section\+:
+\begin{DoxyItemize}
+\item BEGIN\+\_\+\+BLOCK\+\_\+\+DATAGRID\+\_\+3D header
+\item Grid dimensions and origin
+\item Primitive vectors for grid orientation from s2r\+\_\+loc matrix
+\item Data values in optimized format (3 values per line)
+\end{DoxyItemize}
+\item Closes the output file
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Output filename format\+: output\+\_\+$<$word$>$$<$indmol$>$.xsf 
+
+The subroutine handles both scalar (ipc=1) and vector (ipc=3) data 
+
+Data is written in chunks of 3 values per line for efficiency 
+
+Used for visualizing electron density, wave functions, and other quantum mechanical properties in tilted cell geometries 
+
+Compatible with XCry\+SDen, VESTA, and other visualization software 
+
+The s2r matrix defines the crystal structure, while s2r\+\_\+loc defines the local grid coordinate system 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{plot__3d__data__tilted_8f90_source_l00066}{66}} of file \mbox{\hyperlink{plot__3d__data__tilted_8f90_source}{plot\+\_\+3d\+\_\+data\+\_\+tilted.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{parameter}\ ::\ ofile\ =\ 55555555}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ mesh(3),\ ipc}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ datagrid(ipc*mesh(1),\ mesh(2),\ mesh(3))}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ s2r(3,\ 3),\ s2r\_rescaled(3,\ 3),\ s2r\_loc(3,\ 3),\ s2r\_loc\_rescaled(3,\ 3)}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ origin(3),\ origin\_rescaled(3)}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ pos(3,\ natoms),\ pos\_rescaled(3,\ natoms)}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{parameter}\ ::\ eps\ =\ 1.d-\/6}
+\DoxyCodeLine{00079\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ zeta(natoms)}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ natoms}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{intent(in)}\ ::\ periodic}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{character(14)},\ \textcolor{keywordtype}{intent(in)}\ ::\ word}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i1,\ i2,\ indmol,\ idigit(6),\ ix,\ iy,\ iz,\ i3}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ control}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ UNITOK,\ UNITOP}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{inquire}\ (unit=ofile,\ exist=unitok,\ opened=unitop)}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{if}\ (unitok\ .and.\ .not.\ unitop)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{convertdec_8f90_a80c373c9be66fb8ed810b45ce8b678b7}{convertdec}}(indmol,\ idigit)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=ofile,\ file=\textcolor{stringliteral}{"{}output\_"{}}//trim(word)//char(idigit(1))//char(idigit(2))//\ \&}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ char(idigit(3))//char(idigit(4))//char(idigit(5))//char(idigit(6))//\textcolor{stringliteral}{"{}.xsf"{}},\ form=\textcolor{stringliteral}{"{}formatted"{}},\ status=\textcolor{stringliteral}{"{}unknown"{}})}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'error\ from\ open\ unit\ in\ plot\_3d\_data,\ unit\ already\ opened'}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{!\ rescale\ units\ from\ au\ to\ Angstrom}}
+\DoxyCodeLine{00104\ \ \ \ \ s2r\_rescaled\ =\ s2r*\mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}}
+\DoxyCodeLine{00105\ \ \ \ \ s2r\_loc\_rescaled\ =\ s2r\_loc*\mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}}
+\DoxyCodeLine{00106\ \ \ \ \ origin\_rescaled\ =\ origin*\mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}}
+\DoxyCodeLine{00107\ \ \ \ \ pos\_rescaled\ =\ pos*\mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}}
+\DoxyCodeLine{00108\ \ \ \ \ datagrid\ =\ datagrid/\mbox{\hyperlink{namespaceconstants_ae67f08f3eca6adb42b99274cadc4a0e1}{length\_unit}}**3}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'CRYSTAL\ '}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'PRIMVEC\ '}}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ s2r\_rescaled(:,\ 1)}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ s2r\_rescaled(:,\ 2)}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ s2r\_rescaled(:,\ 3)}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'PRIMCOORD\ '}}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ natoms,\ 1}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{do}\ i1\ =\ 1,\ natoms}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(i3,6(F16.8,4X))'})\ nint(zeta(i1)),\ pos\_rescaled(:,\ i1)}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordflow}{if}\ (any(mesh(:)\ .ne.\ 0))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'BEGIN\_BLOCK\_DATAGRID\_3D'}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'\ \ my\_datagrid'}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'\ \ BEGIN\_DATAGRID\_3D\_datagrid'}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(3i5)'})\ mesh(:)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(3f14.8)'})\ origin\_rescaled(:)}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(3f14.8)'})\ s2r\_loc\_rescaled(:,\ 1)}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(3f14.8)'})\ s2r\_loc\_rescaled(:,\ 2)}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ \textcolor{stringliteral}{'(3f14.8)'})\ s2r\_loc\_rescaled(:,\ 3)}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ do\ ix=1,mesh(1)}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ do\ iy=1,mesh(2)}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(ofile,*)\ (datagrid(ix,iy,iz),iz=1,mesh(3))}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ enddo}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \textcolor{comment}{!write(ofile,*)\ (((datagrid(ix,iy,iz),iz=1,mesh(3)),iy=1,mesh(2)),ix=1,mesh(1))}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i1\ =\ 1,\ mesh(3)}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i2\ =\ 1,\ mesh(2)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(ofile,'(1000(e14.6,4x))')\ (datagrid(i3,i2,i1),i3=1,mesh(1))}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i3\ =\ 1,\ mesh(1),\ 3}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i3\ +\ 2\ .le.\ mesh(1))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i3\ -\/\ 1)\ +\ 1,\ i2,\ i1),\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*i3\ +\ 1,\ i2,\ i1)\&}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i3\ +\ 1)\ +\ 1,\ i2,\ i1)}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (i3\ +\ 1\ .le.\ mesh(1))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i3\ -\/\ 1)\ +\ 1,\ i2,\ i1),\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*i3\ +\ 1,\ i2,\ i1)}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ datagrid(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i3\ -\/\ 1)\ +\ 1,\ i2,\ i1)}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'END\_DATAGRID\_3D'}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (ofile,\ *)\ \textcolor{stringliteral}{'END\_BLOCK\_DATAGRID\_3D'}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{close}\ (ofile)}
+\DoxyCodeLine{00163\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{convertdec_8f90_source_l00054}{convertdec()}}, and \mbox{\hyperlink{constants_8f90_source_l00065}{constants\+::length\+\_\+unit}}.
+
+
+
+Referenced by \mbox{\hyperlink{write__corr__fun_8f90_source_l00260}{write\+\_\+rho()}}.
+

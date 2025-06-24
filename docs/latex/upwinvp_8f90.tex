@@ -1,0 +1,371 @@
+\doxysection{src/m\+\_\+common/upwinvp.f90 File Reference}
+\hypertarget{upwinvp_8f90}{}\label{upwinvp_8f90}\index{src/m\_common/upwinvp.f90@{src/m\_common/upwinvp.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upwinvp_8f90_a5a89b631397e60d8702c404a4f92fb9f}{upwinvp}} (nel, indt, winv, ainv, ainvn, psi)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for real wave functions with two terms. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{upwinvp_8f90_a707be07b0ce7185ada4c648920ecdf32}{upwinvp\+\_\+complex}} (nel, indt, winv, ainv, ainvn, psi)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for complex wave functions with two terms. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{upwinvp_8f90_a189fe7e456814e86302a5578d0508ec5}{upwinvp\+\_\+pfaff}} (nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt, winvup, winvdo, psi, ainv)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for real Pfaffian wave functions. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{upwinvp_8f90_a8605eaf882aa9d69f3e8355640cc1d63}{upwinvp\+\_\+pfaff\+\_\+complex}} (nelc, nelup, neldo, nmol, nmolipf, nmolshift, indt, winvup, winvdo, psi, ainv)
+\begin{DoxyCompactList}\small\item\em Update wave function inverse matrix for complex Pfaffian wave functions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upwinvp_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upwinvp_8f90_a5a89b631397e60d8702c404a4f92fb9f}\index{upwinvp.f90@{upwinvp.f90}!upwinvp@{upwinvp}}
+\index{upwinvp@{upwinvp}!upwinvp.f90@{upwinvp.f90}}
+\doxysubsubsection{\texorpdfstring{upwinvp()}{upwinvp()}}
+{\footnotesize\ttfamily \label{upwinvp_8f90_a5a89b631397e60d8702c404a4f92fb9f} 
+subroutine upwinvp (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nel}{, }\item[{integer, intent(in)}]{indt}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nel, indt), intent(inout)}]{winv}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nel), intent(in)}]{ainv}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nel), intent(in)}]{ainvn}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(indt, nel, 2), intent(in)}]{psi}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for real wave functions with two terms. 
+
+This subroutine updates the wave function inverse matrix WINV using a rank-\/2 update formula with two sets of coefficients and wave functions. The update follows the Sherman-\/\+Morrison-\/\+Woodbury formula for rank-\/2 updates.\hypertarget{upwinvp_8f90_autotoc_md83}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinvp_8f90_autotoc_md83}
+NEL \+: integer, in Number of electrons. INDT \+: integer, in Number of basis functions (dimension of orbital space). WINV \+: real\texorpdfstring{$\ast$}{*}8 array, inout Wave function inverse matrix (NEL × INDT). On entry\+: current inverse matrix. On exit\+: updated inverse matrix. AINV \+: real\texorpdfstring{$\ast$}{*}8 array, in First vector of coefficients for the update (NEL). AINVN \+: real\texorpdfstring{$\ast$}{*}8 array, in Second vector of coefficients for the update (NEL). PSI \+: real\texorpdfstring{$\ast$}{*}8 array, in Wave function matrix with two components (INDT × NEL × 2).\hypertarget{upwinvp_8f90_autotoc_md84}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinvp_8f90_autotoc_md84}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item The update follows\+: WINV\+\_\+new = WINV\+\_\+old + ainv \texorpdfstring{$\ast$}{*} psi(\+:,\+:,1)\texorpdfstring{$^\wedge$}{\string^}T + ainvn \texorpdfstring{$\ast$}{*} psi(\+:,\+:,2)\texorpdfstring{$^\wedge$}{\string^}T.
+\item Optimized for quantum Monte Carlo applications with rank-\/2 updates.
+\end{DoxyItemize}\hypertarget{upwinvp_8f90_autotoc_md85}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinvp_8f90_autotoc_md85}
+WINV(j,i) += ainv(j) \texorpdfstring{$\ast$}{*} psi(i,j,1) + ainvn(j) \texorpdfstring{$\ast$}{*} psi(i,j,2)\hypertarget{upwinvp_8f90_autotoc_md86}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinvp_8f90_autotoc_md86}
+Used in variational Monte Carlo for efficient wave function updates with two terms. 
+
+Definition at line \mbox{\hyperlink{upwinvp_8f90_source_l00052}{52}} of file \mbox{\hyperlink{upwinvp_8f90_source}{upwinvp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt}
+\DoxyCodeLine{00058\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel,\ 2),\ ainv(nel),\ ainvn(nel)}
+\DoxyCodeLine{00059\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00066\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ ainv(j)*psi(i,\ j,\ 1)\ +\ ainvn(j)*psi(i,\ j,\ 2)}
+\DoxyCodeLine{00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00071\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ ainv(j)*psi(i,\ j,\ 1)\ +\ ainvn(j)*psi(i,\ j,\ 2)}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00078\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ ainv(j)*psi(i,\ j,\ 1)\ +\ ainvn(j)*psi(i,\ j,\ 2)}
+\DoxyCodeLine{00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00084\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{test__upwinvp_8f90_source_l00016}{test\+\_\+upwinvp()}}, and \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+
+\Hypertarget{upwinvp_8f90_a707be07b0ce7185ada4c648920ecdf32}\index{upwinvp.f90@{upwinvp.f90}!upwinvp\_complex@{upwinvp\_complex}}
+\index{upwinvp\_complex@{upwinvp\_complex}!upwinvp.f90@{upwinvp.f90}}
+\doxysubsubsection{\texorpdfstring{upwinvp\_complex()}{upwinvp\_complex()}}
+{\footnotesize\ttfamily \label{upwinvp_8f90_a707be07b0ce7185ada4c648920ecdf32} 
+subroutine upwinvp\+\_\+complex (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nel}{, }\item[{integer, intent(in)}]{indt}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nel, indt), intent(inout)}]{winv}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nel), intent(in)}]{ainv}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nel), intent(in)}]{ainvn}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(indt, nel, 2), intent(in)}]{psi}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for complex wave functions with two terms. 
+
+This subroutine updates the complex wave function inverse matrix WINV using a rank-\/2 update formula with two sets of complex coefficients and wave functions. The update follows the Sherman-\/\+Morrison-\/\+Woodbury formula for complex rank-\/2 updates.\hypertarget{upwinvp_8f90_autotoc_md87}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinvp_8f90_autotoc_md87}
+NEL \+: integer, in Number of electrons. INDT \+: integer, in Number of basis functions (dimension of orbital space). WINV \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Complex wave function inverse matrix (NEL × INDT). On entry\+: current inverse matrix. On exit\+: updated inverse matrix. AINV \+: complex\texorpdfstring{$\ast$}{*}16 array, in First vector of complex coefficients for the update (NEL). AINVN \+: complex\texorpdfstring{$\ast$}{*}16 array, in Second vector of complex coefficients for the update (NEL). PSI \+: complex\texorpdfstring{$\ast$}{*}16 array, in Complex wave function matrix with two components (INDT × NEL × 2).\hypertarget{upwinvp_8f90_autotoc_md88}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinvp_8f90_autotoc_md88}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item The update follows\+: WINV\+\_\+new = WINV\+\_\+old + ainv \texorpdfstring{$\ast$}{*} psi(\+:,\+:,1)\texorpdfstring{$^\wedge$}{\string^}T + ainvn \texorpdfstring{$\ast$}{*} psi(\+:,\+:,2)\texorpdfstring{$^\wedge$}{\string^}T.
+\item Complex arithmetic is used throughout the computation.
+\item Optimized for quantum Monte Carlo applications with complex rank-\/2 updates.
+\end{DoxyItemize}\hypertarget{upwinvp_8f90_autotoc_md89}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinvp_8f90_autotoc_md89}
+WINV(j,i) += ainv(j) \texorpdfstring{$\ast$}{*} psi(i,j,1) + ainvn(j) \texorpdfstring{$\ast$}{*} psi(i,j,2)\hypertarget{upwinvp_8f90_autotoc_md90}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinvp_8f90_autotoc_md90}
+Used in variational Monte Carlo for efficient complex wave function updates with two terms. 
+
+Definition at line \mbox{\hyperlink{upwinvp_8f90_source_l00126}{126}} of file \mbox{\hyperlink{upwinvp_8f90_source}{upwinvp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nel,\ indt}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(indt,\ nel,\ 2),\ ainv(nel),\ ainvn(nel)}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(inout)}\ ::\ winv(nel,\ indt)}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)\ if(yes\_ontarget)}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ winv(j,\ i)\ =\ winv(j,\ i)\ +\ ainv(j)*psi(i,\ j,\ 1)\ +\ ainvn(j)*psi(i,\ j,\ 2)}
+\DoxyCodeLine{00144\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00145\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{test__upwinvp__complex_8f90_source_l00016}{test\+\_\+upwinvp\+\_\+complex()}}, and \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+
+\Hypertarget{upwinvp_8f90_a189fe7e456814e86302a5578d0508ec5}\index{upwinvp.f90@{upwinvp.f90}!upwinvp\_pfaff@{upwinvp\_pfaff}}
+\index{upwinvp\_pfaff@{upwinvp\_pfaff}!upwinvp.f90@{upwinvp.f90}}
+\doxysubsubsection{\texorpdfstring{upwinvp\_pfaff()}{upwinvp\_pfaff()}}
+{\footnotesize\ttfamily \label{upwinvp_8f90_a189fe7e456814e86302a5578d0508ec5} 
+subroutine upwinvp\+\_\+pfaff (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nelc}{, }\item[{integer, intent(in)}]{nelup}{, }\item[{integer, intent(in)}]{neldo}{, }\item[{integer, intent(in)}]{nmol}{, }\item[{integer, intent(in)}]{nmolipf}{, }\item[{integer, intent(in)}]{nmolshift}{, }\item[{integer, intent(in)}]{indt}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nelup, indt), intent(inout)}]{winvup}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(neldo, indt), intent(inout)}]{winvdo}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nmolipf, indt), intent(in)}]{psi}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nmol), intent(in)}]{ainv}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for real Pfaffian wave functions. 
+
+This subroutine updates the wave function inverse matrices WINVUP and WINVDO for Pfaffian wave functions. It handles spin-\/up and spin-\/down electrons separately and updates the appropriate matrix based on the electron index.\hypertarget{upwinvp_8f90_autotoc_md91}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinvp_8f90_autotoc_md91}
+NELC \+: integer, in Index of the current electron being updated. NELUP \+: integer, in Number of spin-\/up electrons. NELDO \+: integer, in Number of spin-\/down electrons. NMOL \+: integer, in Total number of molecular orbitals. NMOLIPF \+: integer, in Number of molecular orbitals in Pfaffian. NMOLSHIFT \+: integer, in Shift index for molecular orbitals. INDT \+: integer, in Number of basis functions (dimension of orbital space). WINVUP \+: real\texorpdfstring{$\ast$}{*}8 array, inout Wave function inverse matrix for spin-\/up electrons (NELUP × INDT). WINVDO \+: real\texorpdfstring{$\ast$}{*}8 array, inout Wave function inverse matrix for spin-\/down electrons (NELDO × INDT). PSI \+: real\texorpdfstring{$\ast$}{*}8 array, in Pfaffian wave function matrix (NMOLIPF × INDT). AINV \+: real\texorpdfstring{$\ast$}{*}8 array, in Vector of coefficients for the update (NMOL).\hypertarget{upwinvp_8f90_autotoc_md92}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinvp_8f90_autotoc_md92}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item Handles spin-\/up and spin-\/down electrons separately.
+\item For NELC ≤ NELUP\+: updates WINVUP using ainv(1\+:\+NMOLIPF).
+\item For NELC \texorpdfstring{$>$}{>} NELUP\+: updates WINVDO using ainv(NMOLSHIFT+1\+:NMOL).
+\item Optimized for Pfaffian wave function calculations.
+\end{DoxyItemize}\hypertarget{upwinvp_8f90_autotoc_md93}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinvp_8f90_autotoc_md93}
+If NELC ≤ NELUP\+: WINVUP(nelc,i) = sum(psi(1\+:nmolipf,i) \texorpdfstring{$\ast$}{*} ainv(1\+:nmolipf)) Else\+: WINVDO(nelc-\/nelup,i) = sum(psi(1\+:nmolipf,i) \texorpdfstring{$\ast$}{*} ainv(nmolshift+1\+:nmol))\hypertarget{upwinvp_8f90_autotoc_md94}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinvp_8f90_autotoc_md94}
+Used in variational Monte Carlo for Pfaffian wave function updates. 
+
+Definition at line \mbox{\hyperlink{upwinvp_8f90_source_l00201}{201}} of file \mbox{\hyperlink{upwinvp_8f90_source}{upwinvp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelc,\ nelup,\ neldo,\ nmol,\ nmolipf,\ nmolshift,\ indt}
+\DoxyCodeLine{00207\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(nmolipf,\ indt),\ ainv(nmol)}
+\DoxyCodeLine{00208\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ winvup(nelup,\ indt),\ winvdo(neldo,\ indt)}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ nelcdo}
+\DoxyCodeLine{00212\ \ \ \ \ real*8\ csum}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelc\ .le.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ reduction(+:winvup)}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j)\ reduction(+:winvup)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvup(nelc,\ i)\ =\ sum(psi(1:nmolipf,\ i)*ainv(1:nmolipf))}
+\DoxyCodeLine{00224\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00225\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ \ parallel\ do}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ parallel\ do}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ nelcdo\ =\ nelc\ -\/\ nelup}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ reduction(+:winvup)}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j)\ reduction(+:winvup)}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ 0.d0}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvdo(nelc\ -\/\ nelup,\ i)\ =\ sum(psi(1:nmolipf,\ i)*ainv(nmolshift\ +\ 1:nmol))}
+\DoxyCodeLine{00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00244\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ \ parallel\ do}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ parallel\ do}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelc\ .le.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00253\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ 0.d0}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(j)}
+\DoxyCodeLine{00258\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ winvup(nelc,\ i)\ =\ csum}
+\DoxyCodeLine{00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ nelcdo\ =\ nelc\ -\/\ nelup}
+\DoxyCodeLine{00263\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ 0.d0}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(nmolshift\ +\ j)}
+\DoxyCodeLine{00268\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ winvdo(nelcdo,\ i)\ =\ csum}
+\DoxyCodeLine{00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00271\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00272\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+
+\Hypertarget{upwinvp_8f90_a8605eaf882aa9d69f3e8355640cc1d63}\index{upwinvp.f90@{upwinvp.f90}!upwinvp\_pfaff\_complex@{upwinvp\_pfaff\_complex}}
+\index{upwinvp\_pfaff\_complex@{upwinvp\_pfaff\_complex}!upwinvp.f90@{upwinvp.f90}}
+\doxysubsubsection{\texorpdfstring{upwinvp\_pfaff\_complex()}{upwinvp\_pfaff\_complex()}}
+{\footnotesize\ttfamily \label{upwinvp_8f90_a8605eaf882aa9d69f3e8355640cc1d63} 
+subroutine upwinvp\+\_\+pfaff\+\_\+complex (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nelc}{, }\item[{integer, intent(in)}]{nelup}{, }\item[{integer, intent(in)}]{neldo}{, }\item[{integer, intent(in)}]{nmol}{, }\item[{integer, intent(in)}]{nmolipf}{, }\item[{integer, intent(in)}]{nmolshift}{, }\item[{integer, intent(in)}]{indt}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nelup, indt), intent(inout)}]{winvup}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(neldo, indt), intent(inout)}]{winvdo}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nmolipf, indt), intent(in)}]{psi}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(nmol), intent(in)}]{ainv}{}\end{DoxyParamCaption})}
+
+
+
+Update wave function inverse matrix for complex Pfaffian wave functions. 
+
+This subroutine updates the complex wave function inverse matrices WINVUP and WINVDO for complex Pfaffian wave functions. It handles spin-\/up and spin-\/down electrons separately and updates the appropriate matrix based on the electron index.\hypertarget{upwinvp_8f90_autotoc_md95}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upwinvp_8f90_autotoc_md95}
+NELC \+: integer, in Index of the current electron being updated. NELUP \+: integer, in Number of spin-\/up electrons. NELDO \+: integer, in Number of spin-\/down electrons. NMOL \+: integer, in Total number of molecular orbitals. NMOLIPF \+: integer, in Number of molecular orbitals in Pfaffian. NMOLSHIFT \+: integer, in Shift index for molecular orbitals. INDT \+: integer, in Number of basis functions (dimension of orbital space). WINVUP \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Complex wave function inverse matrix for spin-\/up electrons (NELUP × INDT). WINVDO \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Complex wave function inverse matrix for spin-\/down electrons (NELDO × INDT). PSI \+: complex\texorpdfstring{$\ast$}{*}16 array, in Complex Pfaffian wave function matrix (NMOLIPF × INDT). AINV \+: complex\texorpdfstring{$\ast$}{*}16 array, in Vector of complex coefficients for the update (NMOL).\hypertarget{upwinvp_8f90_autotoc_md96}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upwinvp_8f90_autotoc_md96}
+
+\begin{DoxyItemize}
+\item Uses Open\+MP offloading for parallel computation on accelerators.
+\item Handles spin-\/up and spin-\/down electrons separately.
+\item For NELC ≤ NELUP\+: updates WINVUP using ainv(1\+:\+NMOLIPF).
+\item For NELC \texorpdfstring{$>$}{>} NELUP\+: updates WINVDO using ainv(NMOLSHIFT+1\+:NMOL).
+\item Complex arithmetic is used throughout the computation.
+\item Optimized for complex Pfaffian wave function calculations.
+\end{DoxyItemize}\hypertarget{upwinvp_8f90_autotoc_md97}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upwinvp_8f90_autotoc_md97}
+If NELC ≤ NELUP\+: WINVUP(nelc,i) = sum(psi(1\+:nmolipf,i) \texorpdfstring{$\ast$}{*} ainv(1\+:nmolipf)) Else\+: WINVDO(nelc-\/nelup,i) = sum(psi(1\+:nmolipf,i) \texorpdfstring{$\ast$}{*} ainv(nmolshift+1\+:nmol))\hypertarget{upwinvp_8f90_autotoc_md98}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upwinvp_8f90_autotoc_md98}
+Used in variational Monte Carlo for complex Pfaffian wave function updates. 
+
+Definition at line \mbox{\hyperlink{upwinvp_8f90_source_l00326}{326}} of file \mbox{\hyperlink{upwinvp_8f90_source}{upwinvp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{comment}{!\ argument\ parameters}}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelc,\ nelup,\ neldo,\ nmol,\ nmolipf,\ nmolshift,\ indt}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(in)}\ ::\ psi(nmolipf,\ indt),\ ainv(nmol)}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(inout)}\ ::\ winvup(nelup,\ indt),\ winvdo(neldo,\ indt)}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ nelcdo}
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ csum}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelc\ .le.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ \ parallel\ do\ \ private(csum)}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ reduction(+:csum)}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(j)}
+\DoxyCodeLine{00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvup(nelc,\ i)\ =\ csum}
+\DoxyCodeLine{00354\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ \ parallel\ do}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ parallel\ do}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ nelcdo\ =\ nelc\ -\/\ nelup}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ \ parallel\ do\ \ private(csum)}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ parallel\ do\ reduction(+:csum)}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(nmolshift\ +\ j)}
+\DoxyCodeLine{00374\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvdo(nelcdo,\ i)\ =\ csum}
+\DoxyCodeLine{00376\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ \ parallel\ do}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ parallel\ do}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelc\ .le.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00385\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(j)}
+\DoxyCodeLine{00390\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvup(nelc,\ i)\ =\ csum}
+\DoxyCodeLine{00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00394\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,csum)}}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ indt}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmolipf}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ csum\ =\ csum\ +\ psi(j,\ i)*ainv(nmolshift\ +\ j)}
+\DoxyCodeLine{00399\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ winvdo(nelcdo,\ i)\ =\ csum}
+\DoxyCodeLine{00401\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00402\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00403\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00404\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+
+
+Referenced by \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+

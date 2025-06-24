@@ -1,0 +1,290 @@
+\doxysection{src/m\+\_\+common/graham.f90 File Reference}
+\hypertarget{graham_8f90}{}\label{graham_8f90}\index{src/m\_common/graham.f90@{src/m\_common/graham.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{graham_8f90_aaf2c3f7b6706d4ca66ccdd6019c6b462}{graham}} (psi, over, ldo, rn, lda, ndime, mh, info)
+\begin{DoxyCompactList}\small\item\em Gram-\/\+Schmidt orthogonalization with general metric. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{graham_8f90_ae0d987d62a6277ca0389ef45e54232f7}{graham\+\_\+complex}} (psi, over, ldo, rn, lda, ndime, mh, info)
+\begin{DoxyCompactList}\small\item\em Complex Gram-\/\+Schmidt orthogonalization with general metric. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{graham_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{graham_8f90_aaf2c3f7b6706d4ca66ccdd6019c6b462}\index{graham.f90@{graham.f90}!graham@{graham}}
+\index{graham@{graham}!graham.f90@{graham.f90}}
+\doxysubsubsection{\texorpdfstring{graham()}{graham()}}
+{\footnotesize\ttfamily \label{graham_8f90_aaf2c3f7b6706d4ca66ccdd6019c6b462} 
+subroutine graham (\begin{DoxyParamCaption}\item[{real(8), dimension(lda, \texorpdfstring{$\ast$}{*})}]{psi}{, }\item[{real(8), dimension(ldo, \texorpdfstring{$\ast$}{*})}]{over}{, }\item[{integer}]{ldo}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{rn}{, }\item[{integer}]{lda}{, }\item[{integer}]{ndime}{, }\item[{integer}]{mh}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Gram-\/\+Schmidt orthogonalization with general metric. 
+
+This module provides Gram-\/\+Schmidt orthogonalization subroutines for quantum Monte Carlo calculations, supporting both real and complex vectors with arbitrary overlap matrices as metrics.
+
+The module implements\+:
+\begin{DoxyItemize}
+\item Real Gram-\/\+Schmidt orthogonalization with general metric
+\item Complex Gram-\/\+Schmidt orthogonalization with general metric
+\item Proper handling of linear dependencies and numerical stability
+\item Normalization of orthogonalized vectors
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Real Gram-\/\+Schmidt orthogonalization with general metric
+
+This subroutine performs Gram-\/\+Schmidt orthogonalization of real vectors using a general overlap matrix as the metric. The output vectors are orthogonal in the sense that they satisfy the orthogonality condition with respect to the given metric.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em psi} & Matrix of vectors to be orthogonalized (lda, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em over} & Overlap matrix defining the metric (ldo, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em ldo} & Leading dimension of overlap matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em rn} & Array of normalization factors for each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em lda} & Leading dimension of psi matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em ndime} & Number of components to consider in orthogonalization \\
+\hline
+\mbox{\texttt{in}}  & {\em mh} & Number of vectors to orthogonalize \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Information about orthogonalization success\+:
+\begin{DoxyItemize}
+\item info = 0\+: Successful orthogonalization
+\item info \texorpdfstring{$>$}{>} 0\+: Number of linearly dependent vectors found
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Computes the metric-\/weighted vectors\+: mat = over \texorpdfstring{$\ast$}{*} psi
+\item Normalizes the first vector\+: psi(\+:,1) = psi(\+:,1) / \texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}psi(\+:,1)\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\+\_\+over
+\item For each subsequent vector i = 2, ..., mh\+:
+\begin{DoxyItemize}
+\item Projects vector i onto all previous orthogonalized vectors
+\item Subtracts the projections to make it orthogonal
+\item Normalizes the resulting orthogonal vector
+\end{DoxyItemize}
+\item Returns normalization factors and information about linear dependencies
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The orthogonality condition is\+: sum\+\_\+kl \mbox{[}over(k,l) \texorpdfstring{$\ast$}{*} psi(k,i) \texorpdfstring{$\ast$}{*} psi(l,j)\mbox{]} = δ\+\_\+ij 
+
+Components of psi with k \texorpdfstring{$>$}{>} ndime are not modified 
+
+If a vector becomes linearly dependent (norm ≈ 0), it is set to zero 
+
+The subroutine uses BLAS operations for efficiency 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{graham_8f90_source_l00064}{64}} of file \mbox{\hyperlink{graham_8f90_source}{graham.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ i,\ lda,\ ldo,\ info}
+\DoxyCodeLine{00068\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ over(ldo,\ *)}
+\DoxyCodeLine{00069\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ PSI(lda,\ *),\ RN(*)}
+\DoxyCodeLine{00070\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{00071\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{!\ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ over}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!\ The\ output\ psi\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{!\ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{!\ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{!\ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{comment}{!\ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{!\ the\ components\ of\ psi\ such\ that\ k>ndime\ are\ not\ touched.}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ sp(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{00087\ \ \ \ \ mat\ =\ 0.d0}
+\DoxyCodeLine{00088\ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{00089\ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{00090\ \ \ \ \ sp\ =\ -\/1.d0}
+\DoxyCodeLine{00091\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ mh,\ ndime,\ 1.d0,\ over,\ ldo,\ psi,\ lda,\ 0.d0\&}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ mat,\ ndime)}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00096\ \ \ \ \ rn(1)\ =\ dsqrt(sum(psi(1:ndime,\ 1)*mat(:,\ 1)))}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ ndime,\ i\ -\/\ 1,\ 1.d0,\ psi,\ lda,\ mat(1,\ i),\ 1,\ 0.d0,\ sp,\ 1)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ 1.d0,\ psi,\ lda,\ sp,\ 1,\ 0.d0,\ sc1,\ 1)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ 1.d0,\ over,\ ldo,\ sc1,\ 1,\ 0.d0,\ sc2,\ 1)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ rn(i)\ =\ dsqrt(sum(sc1(:)*sc2(:)))}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{00113\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ sp,\ mat)}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02026}{freeelmod\+\_\+complex\+::cyclesteep\+\_\+complex()}}, \mbox{\hyperlink{improve__diag_8f90_source_l00030}{improvediag()}}, \mbox{\hyperlink{convertmod_8f90_source_l02730}{convertmod\+::ortho\+\_\+fast()}}, and \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}.
+
+\Hypertarget{graham_8f90_ae0d987d62a6277ca0389ef45e54232f7}\index{graham.f90@{graham.f90}!graham\_complex@{graham\_complex}}
+\index{graham\_complex@{graham\_complex}!graham.f90@{graham.f90}}
+\doxysubsubsection{\texorpdfstring{graham\_complex()}{graham\_complex()}}
+{\footnotesize\ttfamily \label{graham_8f90_ae0d987d62a6277ca0389ef45e54232f7} 
+subroutine graham\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(lda, \texorpdfstring{$\ast$}{*})}]{psi}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(ldo, \texorpdfstring{$\ast$}{*})}]{over}{, }\item[{integer}]{ldo}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{rn}{, }\item[{integer}]{lda}{, }\item[{integer}]{ndime}{, }\item[{integer}]{mh}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Complex Gram-\/\+Schmidt orthogonalization with general metric. 
+
+This subroutine performs Gram-\/\+Schmidt orthogonalization of complex vectors using a general overlap matrix as the metric. The output vectors are orthogonal in the sense that they satisfy the orthogonality condition with respect to the given metric, using the complex conjugate scalar product.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em psi} & Matrix of complex vectors to be orthogonalized (lda, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em over} & Complex overlap matrix defining the metric (ldo, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em ldo} & Leading dimension of overlap matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em rn} & Array of normalization factors for each vector \\
+\hline
+\mbox{\texttt{in}}  & {\em lda} & Leading dimension of psi matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em ndime} & Number of components to consider in orthogonalization \\
+\hline
+\mbox{\texttt{in}}  & {\em mh} & Number of vectors to orthogonalize \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Information about orthogonalization success\+:
+\begin{DoxyItemize}
+\item info = 0\+: Successful orthogonalization
+\item info \texorpdfstring{$>$}{>} 0\+: Number of linearly dependent vectors found
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Computes the metric-\/weighted vectors\+: mat = over \texorpdfstring{$\ast$}{*} psi
+\item Normalizes the first vector\+: psi(\+:,1) = psi(\+:,1) / \texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}psi(\+:,1)\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\+\_\+over
+\item For each subsequent vector i = 2, ..., mh\+:
+\begin{DoxyItemize}
+\item Projects vector i onto all previous orthogonalized vectors using complex conjugate scalar product
+\item Subtracts the projections to make it orthogonal
+\item Normalizes the resulting orthogonal vector
+\end{DoxyItemize}
+\item Returns normalization factors and information about linear dependencies
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The orthogonality condition is\+: sum\+\_\+kl \mbox{[}over(k,l) \texorpdfstring{$\ast$}{*} psi(k,i) \texorpdfstring{$\ast$}{*} conjg(psi(l,j))\mbox{]} = δ\+\_\+ij 
+
+The complex scalar product is defined as\+: a · b = sum\+\_\+i a\+\_\+i \texorpdfstring{$\ast$}{*} conjg(b\+\_\+i) 
+
+Components of psi with k \texorpdfstring{$>$}{>} ndime are not modified 
+
+If a vector becomes linearly dependent (norm ≈ 0), it is set to zero 
+
+The subroutine uses BLAS operations for efficiency 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{graham_8f90_source_l00153}{153}} of file \mbox{\hyperlink{graham_8f90_source}{graham.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ i,\ lda,\ ldo,\ info}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ over(ldo,\ *),\ PSI(lda,\ *)}
+\DoxyCodeLine{00160\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ RN(*)}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ over}}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ The\ output\ psi\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ components\ of\ psi\ such\ that\ k>\ ndime\ are\ not\ touched.}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ \mbox{\hyperlink{namespaceconstants_af15aa770a4c1973924668e91cd970b5e}{sp}}(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{00178\ \ \ \ \ mat\ =\ 0.d0}
+\DoxyCodeLine{00179\ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{00180\ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{00181\ \ \ \ \ \mbox{\hyperlink{namespaceconstants_af15aa770a4c1973924668e91cd970b5e}{sp}}\ =\ -\/1.d0}
+\DoxyCodeLine{00182\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ mh,\ ndime,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ over,\ ldo,\ psi,\ lda,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}\ \&}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ mat,\ ndime)}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00187\ \ \ \ \ rn(1)\ =\ sqrt(sum(conjg(psi(1:ndime,\ 1))*mat(:,\ 1)))}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00193\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{comment}{!\ NB:\ in\ the\ case\ of\ complex\ vectors\ the\ scalar\ product\ has\ a\ different\ definition}}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{comment}{!\ in\ order\ to\ keep\ valid\ its\ main\ properties:}}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{comment}{!\ a\ \(\backslash\)dot\ b\ =\ \(\backslash\)sum\_i\ a\_i\ b\_i\string^*}}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ ndime,\ i\ -\/\ 1,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ lda,\ mat(1,\ i),\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ \mbox{\hyperlink{namespaceconstants_af15aa770a4c1973924668e91cd970b5e}{sp}},\ 1)}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ lda,\ \mbox{\hyperlink{namespaceconstants_af15aa770a4c1973924668e91cd970b5e}{sp}},\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc1,\ 1)}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ over,\ ldo,\ sc1,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc2,\ 1)}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ rn(i)\ =\ sqrt(sum(conjg(sc1(:))*sc2(:)))}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{00209\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00210\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ \mbox{\hyperlink{namespaceconstants_af15aa770a4c1973924668e91cd970b5e}{sp}},\ mat)}
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}, and \mbox{\hyperlink{constants_8f90_source_l00248}{constants\+::zzero}}.
+
+
+
+Referenced by \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02026}{freeelmod\+\_\+complex\+::cyclesteep\+\_\+complex()}}, \mbox{\hyperlink{improve__diag_8f90_source_l00030}{improvediag()}}, \mbox{\hyperlink{convertmod_8f90_source_l02730}{convertmod\+::ortho\+\_\+fast()}}, and \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}.
+

@@ -1,0 +1,253 @@
+\doxysection{src/m\+\_\+pfapack/zskr2k.f File Reference}
+\hypertarget{zskr2k_8f}{}\label{zskr2k_8f}\index{src/m\_pfapack/zskr2k.f@{src/m\_pfapack/zskr2k.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zskr2k_8f_afaa5ee2061615713a0f1dec0a6a4ea59}{zskr2k}} (uplo, trans, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zskr2k_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zskr2k_8f_afaa5ee2061615713a0f1dec0a6a4ea59}\index{zskr2k.f@{zskr2k.f}!zskr2k@{zskr2k}}
+\index{zskr2k@{zskr2k}!zskr2k.f@{zskr2k.f}}
+\doxysubsubsection{\texorpdfstring{zskr2k()}{zskr2k()}}
+{\footnotesize\ttfamily \label{zskr2k_8f_afaa5ee2061615713a0f1dec0a6a4ea59} 
+subroutine zskr2k (\begin{DoxyParamCaption}\item[{character}]{uplo}{, }\item[{character}]{trans}{, }\item[{integer}]{n}{, }\item[{integer}]{k}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}}]{alpha}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}, dimension(lda,\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer}]{lda}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}, dimension(ldb,\texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer}]{ldb}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}}]{beta}{, }\item[{double \mbox{\hyperlink{structcomplex}{complex}}, dimension(ldc,\texorpdfstring{$\ast$}{*})}]{c}{, }\item[{integer}]{ldc}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zskr2k_8f_source_l00029}{29}} of file \mbox{\hyperlink{zskr2k_8f_source}{zskr2k.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00030\ \textcolor{comment}{*\ \ \ \ \ ..\ Scalar\ Arguments\ ..}}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ ALPHA}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ BETA}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ K,LDA,LDB,LDC,N}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ TRANS,UPLO}
+\DoxyCodeLine{00035\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00036\ \textcolor{comment}{*\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ A(LDA,*),B(LDB,*),C(LDC,*)}
+\DoxyCodeLine{00038\ \textcolor{comment}{*\ \ MODIFIED\ BY\ SANDRO\ SORELLA\ ON\ 20/6/2018.\ NOWADAYS\ DOES\ NOT\ MAKE\ ANY\ SENSE\ TO\ WRITE\ DOWN\ }}
+\DoxyCodeLine{00039\ \textcolor{comment}{*\ \ HOMEMADE\ BLAS-\/3\ ROUTINES\ TO\ SAVE\ A\ FACTOR\ 2\ FLOPS\ AND/OR\ MEMORY.\ I\ JUST\ USED\ STANDARD\ BLAS3}}
+\DoxyCodeLine{00040\ \textcolor{comment}{*\ \ BY\ DOING\ TWICE\ THE\ COMPUTATIONAL\ EFFORT\ BUT\ OBTAINING\ AN\ EFFICIENT\ CODE\ ALSO\ OPENMP\ THREADED}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00043\ \textcolor{comment}{*}}
+\DoxyCodeLine{00044\ \textcolor{comment}{*\ \ Purpose}}
+\DoxyCodeLine{00045\ \textcolor{comment}{*\ \ =======}}
+\DoxyCodeLine{00046\ \textcolor{comment}{*}}
+\DoxyCodeLine{00047\ \textcolor{comment}{*\ \ ZSKR2K\ \ performs\ one\ of\ the\ skew-\/symmetric\ rank\ 2k\ operations}}
+\DoxyCodeLine{00048\ \textcolor{comment}{*}}
+\DoxyCodeLine{00049\ \textcolor{comment}{*\ \ \ \ \ C\ :=\ alpha*A*B\string^T\ -\/\ alpha*B*A\string^T\ +\ beta*C,}}
+\DoxyCodeLine{00050\ \textcolor{comment}{*}}
+\DoxyCodeLine{00051\ \textcolor{comment}{*\ \ or}}
+\DoxyCodeLine{00052\ \textcolor{comment}{*}}
+\DoxyCodeLine{00053\ \textcolor{comment}{*\ \ \ \ \ C\ :=\ alpha*A\string^T*B\ -\/\ alpha*B\string^T*A\ +\ beta*C,}}
+\DoxyCodeLine{00054\ \textcolor{comment}{*}}
+\DoxyCodeLine{00055\ \textcolor{comment}{*\ \ where\ \ alpha\ and\ beta\ \ are\ scalars,\ \ C\ is\ an\ \ n\ by\ n}}
+\DoxyCodeLine{00056\ \textcolor{comment}{*\ \ skew-\/symmetric\ matrix\ and\ \ A\ and\ B\ \ are\ \ n\ by\ k\ matrices\ in\ the\ first\ case}}
+\DoxyCodeLine{00057\ \textcolor{comment}{*\ \ and\ \ k\ by\ n\ \ matrices\ in\ the\ second\ case.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{*}}
+\DoxyCodeLine{00059\ \textcolor{comment}{*\ \ Arguments}}
+\DoxyCodeLine{00060\ \textcolor{comment}{*\ \ ==========}}
+\DoxyCodeLine{00061\ \textcolor{comment}{*}}
+\DoxyCodeLine{00062\ \textcolor{comment}{*\ \ UPLO\ \ \ -\/\ CHARACTER*1.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ \ entry,\ \ \ UPLO\ \ specifies\ \ whether\ \ the\ \ upper\ \ or\ \ lower}}
+\DoxyCodeLine{00064\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ triangular\ \ part\ \ of\ the\ \ array\ \ C\ \ is\ to\ be\ \ referenced\ \ as}}
+\DoxyCodeLine{00065\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ follows:}}
+\DoxyCodeLine{00066\ \textcolor{comment}{*}}
+\DoxyCodeLine{00067\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ UPLO\ =\ 'U'\ or\ 'u'\ \ \ Only\ the\ \ upper\ triangular\ part\ of\ \ C}}
+\DoxyCodeLine{00068\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is\ to\ be\ referenced.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{*}}
+\DoxyCodeLine{00070\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ UPLO\ =\ 'L'\ or\ 'l'\ \ \ Only\ the\ \ lower\ triangular\ part\ of\ \ C}}
+\DoxyCodeLine{00071\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is\ to\ be\ referenced.}}
+\DoxyCodeLine{00072\ \textcolor{comment}{*}}
+\DoxyCodeLine{00073\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00074\ \textcolor{comment}{*}}
+\DoxyCodeLine{00075\ \textcolor{comment}{*\ \ TRANS\ \ -\/\ CHARACTER*1.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ \ TRANS\ \ specifies\ the\ operation\ to\ be\ performed\ as}}
+\DoxyCodeLine{00077\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ follows:}}
+\DoxyCodeLine{00078\ \textcolor{comment}{*}}
+\DoxyCodeLine{00079\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ TRANS\ =\ 'N'\ or\ 'n'\ \ \ \ C\ :=\ alpha*A*B\string^T\ \ \ -\/}}
+\DoxyCodeLine{00080\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alpha*B*A\string^T\ \ \ +}}
+\DoxyCodeLine{00081\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ beta*C.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{*}}
+\DoxyCodeLine{00083\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ TRANS\ =\ 'T'\ or\ 't'\ \ \ \ C\ :=\ alpha*A\string^T*B\ \ \ -\/}}
+\DoxyCodeLine{00084\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alpha*B\string^T*A\ \ \ +}}
+\DoxyCodeLine{00085\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ beta*C.}}
+\DoxyCodeLine{00086\ \textcolor{comment}{*}}
+\DoxyCodeLine{00087\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00088\ \textcolor{comment}{*}}
+\DoxyCodeLine{00089\ \textcolor{comment}{*\ \ N\ \ \ \ \ \ -\/\ INTEGER.}}
+\DoxyCodeLine{00090\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ \ N\ specifies\ the\ order\ of\ the\ matrix\ C.\ \ N\ must\ be}}
+\DoxyCodeLine{00091\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ at\ least\ zero.}}
+\DoxyCodeLine{00092\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{*}}
+\DoxyCodeLine{00094\ \textcolor{comment}{*\ \ K\ \ \ \ \ \ -\/\ INTEGER.}}
+\DoxyCodeLine{00095\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry\ with\ \ TRANS\ =\ 'N'\ or\ 'n',\ \ K\ \ specifies\ \ the\ number}}
+\DoxyCodeLine{00096\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ of\ \ columns\ \ of\ the\ \ matrices\ \ A\ and\ B,\ \ and\ on\ \ entry\ \ with}}
+\DoxyCodeLine{00097\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ TRANS\ =\ 'C'\ or\ 'c',\ \ K\ \ specifies\ \ the\ number\ of\ rows\ of\ the}}
+\DoxyCodeLine{00098\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ matrices\ \ A\ and\ B.\ \ K\ must\ be\ at\ least\ zero.}}
+\DoxyCodeLine{00099\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00100\ \textcolor{comment}{*}}
+\DoxyCodeLine{00101\ \textcolor{comment}{*\ \ ALPHA\ \ -\/\ DOUBLE\ COMPLEX\ \ \ \ \ \ \ \ \ .}}
+\DoxyCodeLine{00102\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ ALPHA\ specifies\ the\ scalar\ alpha.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{*}}
+\DoxyCodeLine{00105\ \textcolor{comment}{*\ \ A\ \ \ \ \ \ -\/\ DOUBLE\ COMPLEX\ \ array\ of\ DIMENSION\ (\ LDA,\ ka\ ),\ where\ ka\ is}}
+\DoxyCodeLine{00106\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ k\ \ when\ \ TRANS\ =\ 'N'\ or\ 'n',\ \ and\ is\ \ n\ \ otherwise.}}
+\DoxyCodeLine{00107\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Before\ entry\ with\ \ TRANS\ =\ 'N'\ or\ 'n',\ \ the\ \ leading\ \ n\ by\ k}}
+\DoxyCodeLine{00108\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ part\ of\ the\ array\ \ A\ \ must\ contain\ the\ matrix\ \ A,\ \ otherwise}}
+\DoxyCodeLine{00109\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ the\ leading\ \ k\ by\ n\ \ part\ of\ the\ array\ \ A\ \ must\ contain\ \ the}}
+\DoxyCodeLine{00110\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ matrix\ A.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{*}}
+\DoxyCodeLine{00113\ \textcolor{comment}{*\ \ LDA\ \ \ \ -\/\ INTEGER.}}
+\DoxyCodeLine{00114\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ LDA\ specifies\ the\ first\ dimension\ of\ A\ as\ declared}}
+\DoxyCodeLine{00115\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ in\ \ the\ \ calling\ \ (sub)\ \ program.\ \ \ When\ \ TRANS\ =\ 'N'\ or\ 'n'}}
+\DoxyCodeLine{00116\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ then\ \ LDA\ must\ be\ at\ least\ \ max(\ 1,\ n\ ),\ otherwise\ \ LDA\ must}}
+\DoxyCodeLine{00117\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ be\ at\ least\ \ max(\ 1,\ k\ ).}}
+\DoxyCodeLine{00118\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00119\ \textcolor{comment}{*}}
+\DoxyCodeLine{00120\ \textcolor{comment}{*\ \ B\ \ \ \ \ \ -\/\ DOUBLE\ COMPLEX\ \ \ array\ of\ DIMENSION\ (\ LDB,\ kb\ ),\ where\ kb\ is}}
+\DoxyCodeLine{00121\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ k\ \ when\ \ TRANS\ =\ 'N'\ or\ 'n',\ \ and\ is\ \ n\ \ otherwise.}}
+\DoxyCodeLine{00122\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Before\ entry\ with\ \ TRANS\ =\ 'N'\ or\ 'n',\ \ the\ \ leading\ \ n\ by\ k}}
+\DoxyCodeLine{00123\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ part\ of\ the\ array\ \ B\ \ must\ contain\ the\ matrix\ \ B,\ \ otherwise}}
+\DoxyCodeLine{00124\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ the\ leading\ \ k\ by\ n\ \ part\ of\ the\ array\ \ B\ \ must\ contain\ \ the}}
+\DoxyCodeLine{00125\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ matrix\ B.}}
+\DoxyCodeLine{00126\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00127\ \textcolor{comment}{*}}
+\DoxyCodeLine{00128\ \textcolor{comment}{*\ \ LDB\ \ \ \ -\/\ INTEGER.}}
+\DoxyCodeLine{00129\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ LDB\ specifies\ the\ first\ dimension\ of\ B\ as\ declared}}
+\DoxyCodeLine{00130\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ in\ \ the\ \ calling\ \ (sub)\ \ program.\ \ \ When\ \ TRANS\ =\ 'N'\ or\ 'n'}}
+\DoxyCodeLine{00131\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ then\ \ LDB\ must\ be\ at\ least\ \ max(\ 1,\ n\ ),\ otherwise\ \ LDB\ must}}
+\DoxyCodeLine{00132\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ be\ at\ least\ \ max(\ 1,\ k\ ).}}
+\DoxyCodeLine{00133\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00134\ \textcolor{comment}{*}}
+\DoxyCodeLine{00135\ \textcolor{comment}{*\ \ BETA\ \ \ -\/\ DOUBLE\ COMPLEX\ \ \ \ \ \ \ \ \ \ .}}
+\DoxyCodeLine{00136\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ BETA\ specifies\ the\ scalar\ beta.}}
+\DoxyCodeLine{00137\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00138\ \textcolor{comment}{*}}
+\DoxyCodeLine{00139\ \textcolor{comment}{*\ \ C\ \ \ \ \ \ -\/\ DOUBLE\ COMPLEX\ \ array\ of\ DIMENSION\ (\ LDC,\ n\ ).}}
+\DoxyCodeLine{00140\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Before\ entry\ \ with\ \ UPLO\ =\ 'U'\ or\ 'u',\ \ the\ leading\ \ n\ by\ n}}
+\DoxyCodeLine{00141\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ upper\ triangular\ part\ of\ the\ array\ C\ must\ contain\ the\ upper}}
+\DoxyCodeLine{00142\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ triangular\ part\ \ of\ the\ \ skew-\/symmetric\ matrix\ \ and\ the\ strictly}}
+\DoxyCodeLine{00143\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ lower\ triangular\ part\ of\ C\ is\ not\ referenced.\ \ On\ exit,\ the}}
+\DoxyCodeLine{00144\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ upper\ triangular\ part\ of\ the\ array\ \ C\ is\ overwritten\ by\ the}}
+\DoxyCodeLine{00145\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ upper\ triangular\ part\ of\ the\ updated\ matrix.}}
+\DoxyCodeLine{00146\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Before\ entry\ \ with\ \ UPLO\ =\ 'L'\ or\ 'l',\ \ the\ leading\ \ n\ by\ n}}
+\DoxyCodeLine{00147\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ lower\ triangular\ part\ of\ the\ array\ C\ must\ contain\ the\ lower}}
+\DoxyCodeLine{00148\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ triangular\ part\ \ of\ the\ \ skew-\/symmetric\ matrix\ \ and\ the\ strictly}}
+\DoxyCodeLine{00149\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ upper\ triangular\ part\ of\ C\ is\ not\ referenced.\ \ On\ exit,\ the}}
+\DoxyCodeLine{00150\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ lower\ triangular\ part\ of\ the\ array\ \ C\ is\ overwritten\ by\ the}}
+\DoxyCodeLine{00151\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ lower\ triangular\ part\ of\ the\ updated\ matrix.}}
+\DoxyCodeLine{00152\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Note\ that\ the\ diagonal\ elements\ need}}
+\DoxyCodeLine{00153\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ not\ be\ set,\ \ they\ are\ assumed\ to\ be\ zero,\ \ and\ on\ exit\ they}}
+\DoxyCodeLine{00154\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ are\ set\ to\ zero.}}
+\DoxyCodeLine{00155\ \textcolor{comment}{*}}
+\DoxyCodeLine{00156\ \textcolor{comment}{*\ \ LDC\ \ \ \ -\/\ INTEGER.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ On\ entry,\ LDC\ specifies\ the\ first\ dimension\ of\ C\ as\ declared}}
+\DoxyCodeLine{00158\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ in\ \ the\ \ calling\ \ (sub)\ \ program.\ \ \ LDC\ \ must\ \ be\ \ at\ \ least}}
+\DoxyCodeLine{00159\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ max(\ 1,\ n\ ).}}
+\DoxyCodeLine{00160\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Unchanged\ on\ exit.}}
+\DoxyCodeLine{00161\ \textcolor{comment}{*}}
+\DoxyCodeLine{00162\ \textcolor{comment}{*}}
+\DoxyCodeLine{00163\ \textcolor{comment}{*\ \ Level\ 3\ Blas\ routine.}}
+\DoxyCodeLine{00164\ \textcolor{comment}{*}}
+\DoxyCodeLine{00165\ \textcolor{comment}{*\ \ -\/-\/\ Written\ on\ 10/22/2010}}
+\DoxyCodeLine{00166\ \textcolor{comment}{*\ \ \ \ \ Michael\ Wimmer,\ Universiteit\ Leiden}}
+\DoxyCodeLine{00167\ \textcolor{comment}{*\ \ \ \ \ Based\ on\ ZHER2K\ from\ BLAS\ (www.netlib.org)}}
+\DoxyCodeLine{00168\ \textcolor{comment}{*}}
+\DoxyCodeLine{00169\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Functions\ ..}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ LSAME}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ lsame}
+\DoxyCodeLine{00172\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00173\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Subroutines\ ..}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ xerbla}
+\DoxyCodeLine{00175\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00176\ \textcolor{comment}{*\ \ \ \ \ ..\ Intrinsic\ Functions\ ..}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ max}
+\DoxyCodeLine{00178\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00179\ \textcolor{comment}{*\ \ \ \ \ ..\ Local\ Scalars\ ..}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ TEMP1,TEMP2}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ I,INFO,J,L,NROWA}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ UPPER}
+\DoxyCodeLine{00183\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00184\ \textcolor{comment}{*\ \ \ \ \ ..\ Parameters\ ..}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ ONE}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ parameter(one=\ (1.0d+0,0.0d+0))}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ COMPLEX}\ ZERO}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ parameter(zero=\ (0.0d+0,0.0d+0))}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00191\ \textcolor{comment}{*}}
+\DoxyCodeLine{00192\ \textcolor{comment}{*\ \ \ \ \ Test\ the\ input\ parameters.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{*}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (lsame(trans,\textcolor{stringliteral}{'N'}))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ nrowa\ =\ n}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ nrowa\ =\ k}
+\DoxyCodeLine{00198\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ upper\ =\ lsame(uplo,\textcolor{stringliteral}{'U'})}
+\DoxyCodeLine{00200\ \textcolor{comment}{*}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ ((.NOT.upper)\ .AND.\ (.NOT.lsame(uplo,\textcolor{stringliteral}{'L'})))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ info\ =\ 1}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ ((.NOT.lsame(trans,\textcolor{stringliteral}{'N'}))\ .AND.}
+\DoxyCodeLine{00205\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ (.NOT.lsame(trans,\textcolor{stringliteral}{'T'})))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ info\ =\ 2}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (n.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ info\ =\ 3}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (k.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ info\ =\ 4}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (lda.LT.max(1,nrowa))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ info\ =\ 7}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (ldb.LT.max(1,nrowa))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ info\ =\ 9}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (ldc.LT.max(1,n))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ info\ =\ 12}
+\DoxyCodeLine{00217\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (info.NE.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }xerbla(\textcolor{stringliteral}{'ZSKR2K'},info)}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00221\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00222\ \textcolor{comment}{*}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (lsame(trans,\textcolor{stringliteral}{'N'}))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00224\ \textcolor{comment}{*\ \ \ \ \ C\ :=\ alpha*A*B\string^T\ -\/\ alpha*B*A\string^T\ +\ beta*C,}}
+\DoxyCodeLine{00225\ \textcolor{comment}{!\ \ \ \ \ allocate(ab(N,4*k))}}
+\DoxyCodeLine{00226\ \textcolor{comment}{!\ \ \ \ \ ab(1:N,1:k)=A(1:N,1:k)}}
+\DoxyCodeLine{00227\ \textcolor{comment}{!\ \ \ \ \ ab(1:N,k+1:2*k)=-\/B(1:N,1:k)}}
+\DoxyCodeLine{00228\ \textcolor{comment}{!\ \ \ \ \ ab(1:N,2*k+1:3*k)=B(1:N,1:k)}}
+\DoxyCodeLine{00229\ \textcolor{comment}{!\ \ \ \ \ ab(1:N,3*k+1:4*k)=A(1:N,1:k)}}
+\DoxyCodeLine{00230\ \textcolor{comment}{!\ \ \ \ \ call\ zgemm('N','T',N,N,2*k,alpha,ab,N,ab(1,2*k+1),N,beta,C,LDC)}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\textcolor{stringliteral}{'T'},n,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\textcolor{stringliteral}{'T'},n,n,k,-\/alpha,b,ldb,a,lda,one,c,ldc)}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00234\ \textcolor{comment}{*\ \ \ \ \ C\ :=\ alpha*A\string^T*B\ -\/\ alpha*B\string^T*A\ +\ beta*C,}}
+\DoxyCodeLine{00235\ \textcolor{comment}{!\ \ \ \ \ allocate(ab(4*k,N))}}
+\DoxyCodeLine{00236\ \textcolor{comment}{!\ \ \ \ \ ab(1:k,1:N)=A(1:k,1:N)}}
+\DoxyCodeLine{00237\ \textcolor{comment}{!\ \ \ \ \ ab(k+1:2*k,1:N)=-\/B(1:k,1:N)}}
+\DoxyCodeLine{00238\ \textcolor{comment}{!\ \ \ \ \ ab(2*k+1:3*k,1:N)=B(1:k,1:N)}}
+\DoxyCodeLine{00239\ \textcolor{comment}{!\ \ \ \ \ ab(3*k+1:4*k,1:N)=A(1:k,1:N)}}
+\DoxyCodeLine{00240\ \textcolor{comment}{!\ \ \ \ \ call\ zgemm('T','N',N,N,2*k,alpha,ab,4*k,ab(2*k+1,1),4*k}}
+\DoxyCodeLine{00241\ \textcolor{comment}{!\ \ \ \ *,beta,C,LDC)}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},n,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},n,n,k,-\/alpha,b,ldb,a,lda,one,c,ldc)}
+\DoxyCodeLine{00244\ \textcolor{keywordflow}{\ \ \ \ \ \ endif}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{comment}{!\ \ \ \ \ deallocate(ab)}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{*}}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00250\ \textcolor{comment}{*}}
+\DoxyCodeLine{00251\ \textcolor{comment}{*\ \ \ \ \ End\ of\ ZSKR2K.}}
+\DoxyCodeLine{00252\ \textcolor{comment}{*}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{zlasktrf_8f_source_l00031}{zlasktrf()}}, \mbox{\hyperlink{zsktf2_8f_source_l00030}{zsktf2()}}, and \mbox{\hyperlink{zsktrd_8f_source_l00031}{zsktrd()}}.
+

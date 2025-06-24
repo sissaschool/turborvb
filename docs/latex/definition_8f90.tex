@@ -1,0 +1,570 @@
+\doxysection{src/m\+\_\+common/definition.f90 File Reference}
+\hypertarget{definition_8f90}{}\label{definition_8f90}\index{src/m\_common/definition.f90@{src/m\_common/definition.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{definition_8f90_aa942e1d6fb4fb95e261176e791ca3d7f}{definition}} (maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr)
+\begin{DoxyCompactList}\small\item\em Generate spherical quadrature points for different polyhedral symmetries. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{definition_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{definition_8f90_aa942e1d6fb4fb95e261176e791ca3d7f}\index{definition.f90@{definition.f90}!definition@{definition}}
+\index{definition@{definition}!definition.f90@{definition.f90}}
+\doxysubsubsection{\texorpdfstring{definition()}{definition()}}
+{\footnotesize\ttfamily \label{definition_8f90_aa942e1d6fb4fb95e261176e791ca3d7f} 
+subroutine definition (\begin{DoxyParamCaption}\item[{integer}]{maxint}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{wintpseudo}{, }\item[{integer}]{lmax}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{versor}{, }\item[{real(8), dimension(lmax -\/ 1, \texorpdfstring{$\ast$}{*})}]{legendre}{, }\item[{integer}]{rank}{, }\item[{integer}]{iflagerr}{}\end{DoxyParamCaption})}
+
+
+
+Generate spherical quadrature points for different polyhedral symmetries. 
+
+This subroutine generates quadrature points and weights for numerical integration on the unit sphere based on different polyhedral symmetries. It supports octahedral, tetrahedral, and icosahedral point sets with various numbers of integration points.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em maxint} & Number of quadrature points (4, 6, 12, 18, 26, 32, 50) \\
+\hline
+\mbox{\texttt{out}}  & {\em wintpseudo} & Array of quadrature weights \\
+\hline
+\mbox{\texttt{in}}  & {\em lmax} & Maximum angular momentum for Legendre polynomials \\
+\hline
+\mbox{\texttt{out}}  & {\em versor} & Array of unit vectors (3 × maxint) \\
+\hline
+\mbox{\texttt{out}}  & {\em legendre} & Array of Legendre polynomial values \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank for error reporting \\
+\hline
+\mbox{\texttt{out}}  & {\em iflagerr} & Error flag (1 if error occurs)\\
+\hline
+\end{DoxyParams}
+The subroutine supports the following quadrature schemes\+:
+
+{\bfseries{Supported Point Sets\+:}}
+\begin{DoxyItemize}
+\item maxint = 4\+: Tetrahedral symmetry (4 points)
+\item maxint = 6\+: Octahedral symmetry (6 points)
+\item maxint = 12\+: Icosahedral symmetry (12 points)
+\item maxint = 18\+: Extended octahedral symmetry (18 points)
+\item maxint = 26\+: High-\/order octahedral symmetry (26 points)
+\item maxint = 32\+: Extended icosahedral symmetry (32 points)
+\item maxint = 50\+: High-\/order octahedral symmetry (50 points)
+\end{DoxyItemize}
+
+{\bfseries{Point Generation\+:}} Each symmetry type generates points based on geometric properties\+:
+\begin{DoxyItemize}
+\item Tetrahedral\+: Points at (±1/√3, ±1/√3, ±1/√3) with sign combinations
+\item Octahedral\+: Points along coordinate axes (±1,0,0), (0,±1,0), (0,0,±1)
+\item Icosahedral\+: Points based on icosahedron vertices and face centers
+\end{DoxyItemize}
+
+{\bfseries{Weight Assignment\+:}} Weights are assigned to ensure proper normalization\+:
+\begin{DoxyItemize}
+\item Equal weights for symmetric point sets
+\item Different weights for different point classes in extended sets
+\end{DoxyItemize}
+
+{\bfseries{Legendre Polynomial Evaluation\+:}} After generating points, Legendre polynomials are evaluated at each point for use in spherical harmonic expansions.
+
+\begin{DoxyNote}{Note}
+The subroutine requires the legfun function for Legendre polynomial evaluation. 
+
+Points are normalized to lie on the unit sphere. 
+
+Weights sum to 4π for proper spherical integration. 
+
+Error handling is provided for unsupported point counts. 
+\end{DoxyNote}
+Initialize versor array to zero
+
+Octahedral symmetry quadrature (6 points)
+
+Assign equal weights for 6-\/point octahedral quadrature
+
+Generate points along coordinate axes
+
+Assign equal weights for 4-\/point tetrahedral quadrature
+
+Generate tetrahedral points with proper sign combinations
+
+Assign equal weights for 12-\/point icosahedral quadrature
+
+Generate icosahedral points using spherical coordinates
+
+Assign different weights for different point classes
+
+Generate extended octahedral points
+
+Assign weights for different point classes in 26-\/point quadrature
+
+Generate high-\/order octahedral points
+
+Add cube vertices for extended quadrature
+
+Assign weights for different point classes in 32-\/point quadrature
+
+Generate extended icosahedral points
+
+Add additional icosahedral points with different theta angles
+
+Assign weights for different point classes in 50-\/point quadrature
+
+Generate high-\/order octahedral points with additional parameters
+
+Standard octahedral points
+
+Cube vertices
+
+Additional high-\/order points with r and s parameters
+
+Evaluate Legendre polynomials at all quadrature points
+
+Definition at line \mbox{\hyperlink{definition_8f90_source_l00062}{62}} of file \mbox{\hyperlink{definition_8f90_source}{definition.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{character(3)}\ pseudoname}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{integer}\ maxint,\ lmax,\ i,\ j,\ rank,\ iflagerr}
+\DoxyCodeLine{00067\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ versor(3,\ *),\ legendre(lmax\ -\/\ 1,\ *),\ cost,\ legfun,\ wintpseudo(*)\ \ \&}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ par,\ theta,\ phi,\ pi,\ q,\ r,\ s,\ theta1,\ theta2}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ versor\ array\ to\ zero}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ maxint}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ versor(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Octahedral\ symmetry\ quadrature\ (6\ points)}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (maxint\ .eq.\ 6)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ equal\ weights\ for\ 6-\/point\ octahedral\ quadrature}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxint}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/6.d0}
+\DoxyCodeLine{00082\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ points\ along\ coordinate\ axes}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ versor(1,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ versor(1,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ versor(2,\ 3)\ =\ 1.d0}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ versor(2,\ 4)\ =\ -\/1.d0}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ versor(3,\ 5)\ =\ 1.d0}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ versor(3,\ 6)\ =\ -\/1.d0}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ tetrahedron\ symmetry\ quadrature}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 4)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ equal\ weights\ for\ 4-\/point\ tetrahedral\ quadrature}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxint}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/4.d0}
+\DoxyCodeLine{00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ tetrahedral\ points\ with\ proper\ sign\ combinations}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ par\ =\ 1.d0/dsqrt(3.d0)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ maxint}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ versor(i,\ j)\ =\ par}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ versor(2,\ 2)\ =\ -\/versor(2,\ 2)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ versor(3,\ 2)\ =\ -\/versor(3,\ 2)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ versor(1,\ 3)\ =\ -\/versor(1,\ 3)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ versor(3,\ 3)\ =\ -\/versor(3,\ 3)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ versor(1,\ 4)\ =\ -\/versor(1,\ 4)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ versor(2,\ 4)\ =\ -\/versor(2,\ 4)}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ icosahedron\ symmetry\ quadrature}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 12)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ equal\ weights\ for\ 12-\/point\ icosahedral\ quadrature}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxint}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/12.d0}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ icosahedral\ points\ using\ spherical\ coordinates}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ pi\ =\ acos(-\/1.d0)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ versor(3,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ versor(3,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 0,\ 4}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ atan(2.d0)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ 2.d0*pi*dble(j)/5.d0}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 3)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 3)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 3)\ =\ cos(theta)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ pi\ -\/\ atan(2.d0)}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ (2.d0*dble(j)\ +\ 1.d0)*pi/5.d0}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 8)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 8)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 8)\ =\ cos(theta)}
+\DoxyCodeLine{00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ octahedron\ symmetry\ quadrature}}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 18)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ different\ weights\ for\ different\ point\ classes}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 6}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/30.d0}
+\DoxyCodeLine{00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 7,\ maxint}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/15.d0}
+\DoxyCodeLine{00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ extended\ octahedral\ points}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ pi\ =\ 1.d0/dsqrt(2.d0)}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ versor(1,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ versor(1,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ versor(2,\ 3)\ =\ 1.d0}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ versor(2,\ 4)\ =\ -\/1.d0}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ versor(3,\ 5)\ =\ 1.d0}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ versor(3,\ 6)\ =\ -\/1.d0}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ versor(1,\ 7)\ =\ pi}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ versor(2,\ 7)\ =\ pi}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ versor(1,\ 8)\ =\ -\/pi}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ versor(2,\ 8)\ =\ pi}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ versor(1,\ 9)\ =\ pi}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ versor(2,\ 9)\ =\ -\/pi}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ versor(1,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ versor(2,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ versor(1,\ 11)\ =\ pi}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ versor(3,\ 11)\ =\ pi}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ versor(1,\ 12)\ =\ -\/pi}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ versor(3,\ 12)\ =\ pi}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ versor(1,\ 13)\ =\ pi}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ versor(3,\ 13)\ =\ -\/pi}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ versor(1,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ versor(3,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ versor(2,\ 15)\ =\ pi}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ versor(3,\ 15)\ =\ pi}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ versor(2,\ 16)\ =\ -\/pi}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ versor(3,\ 16)\ =\ pi}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ versor(2,\ 17)\ =\ pi}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ versor(3,\ 17)\ =\ -\/pi}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ versor(2,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ versor(3,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 26)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ octahedron}\textcolor{comment}{}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ weights\ for\ different\ point\ classes\ in\ 26-\/point\ quadrature}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 6}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 1.d0/21.d0}
+\DoxyCodeLine{00177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 7,\ 18}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 4.d0/105.d0}
+\DoxyCodeLine{00180\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 19,\ maxint}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 27.d0/840.d0}
+\DoxyCodeLine{00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ high-\/order\ octahedral\ points}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ pi\ =\ 1.d0/dsqrt(2.d0)}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ q\ =\ 1.d0/dsqrt(3.d0)}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ versor(1,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ versor(1,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ versor(2,\ 3)\ =\ 1.d0}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ versor(2,\ 4)\ =\ -\/1.d0}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ versor(3,\ 5)\ =\ 1.d0}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ versor(3,\ 6)\ =\ -\/1.d0}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ versor(1,\ 7)\ =\ pi}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ versor(2,\ 7)\ =\ pi}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ versor(1,\ 8)\ =\ -\/pi}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ versor(2,\ 8)\ =\ pi}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ versor(1,\ 9)\ =\ pi}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ versor(2,\ 9)\ =\ -\/pi}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ versor(1,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ versor(2,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ versor(1,\ 11)\ =\ pi}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ versor(3,\ 11)\ =\ pi}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ versor(1,\ 12)\ =\ -\/pi}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ versor(3,\ 12)\ =\ pi}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ versor(1,\ 13)\ =\ pi}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ versor(3,\ 13)\ =\ -\/pi}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ versor(1,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ versor(3,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ versor(2,\ 15)\ =\ pi}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ versor(3,\ 15)\ =\ pi}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ versor(2,\ 16)\ =\ -\/pi}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ versor(3,\ 16)\ =\ pi}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ versor(2,\ 17)\ =\ pi}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ versor(3,\ 17)\ =\ -\/pi}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ versor(2,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ versor(3,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00217\ \textcolor{comment}{}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Add\ cube\ vertices\ for\ extended\ quadrature}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ versor(1,\ 19)\ =\ q}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ versor(2,\ 19)\ =\ q}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ versor(3,\ 19)\ =\ q}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ versor(1,\ 20)\ =\ -\/q}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ versor(2,\ 20)\ =\ q}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ versor(3,\ 20)\ =\ q}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ versor(1,\ 21)\ =\ q}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ versor(2,\ 21)\ =\ -\/q}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ versor(3,\ 21)\ =\ q}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ versor(1,\ 22)\ =\ -\/q}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ versor(2,\ 22)\ =\ -\/q}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ versor(3,\ 22)\ =\ q}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ versor(1,\ 23)\ =\ q}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ versor(2,\ 23)\ =\ q}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ versor(3,\ 23)\ =\ -\/q}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ versor(1,\ 24)\ =\ q}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ versor(2,\ 24)\ =\ -\/q}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ versor(3,\ 24)\ =\ -\/q}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ versor(1,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ versor(2,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ versor(3,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ versor(1,\ 26)\ =\ -\/q}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ versor(2,\ 26)\ =\ q}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ versor(3,\ 26)\ =\ -\/q}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 32)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ icosahedron}}
+\DoxyCodeLine{00252\ \textcolor{comment}{}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ weights\ for\ different\ point\ classes\ in\ 32-\/point\ quadrature}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 12}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 5.d0/168.d0}
+\DoxyCodeLine{00256\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 13,\ maxint}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 27.d0/840.d0}
+\DoxyCodeLine{00259\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00260\ \textcolor{comment}{}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ extended\ icosahedral\ points}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ pi\ =\ acos(-\/1.d0)}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ theta1\ =\ dacos((2.d0\ +\ dsqrt(5.d0))/dsqrt(15.d0\ +\ 6.d0*dsqrt(5.d0)))}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ theta2\ =\ dacos(1.d0/dsqrt(15.d0\ +\ 6.d0*dsqrt(5.d0)))}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ versor(3,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ versor(3,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 0,\ 4}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ atan(2.d0)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ 2.d0*pi*dble(j)/5.d0}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 3)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 3)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 3)\ =\ cos(theta)}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ pi\ -\/\ atan(2.d0)}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ (2.d0*dble(j)\ +\ 1.d0)*pi/5.d0}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 8)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 8)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 8)\ =\ cos(theta)}
+\DoxyCodeLine{00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00280\ \textcolor{comment}{}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Add\ additional\ icosahedral\ points\ with\ different\ theta\ angles}}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 0,\ 4}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ theta1}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ (2.d0*dble(j)\ +\ 1.d0)*pi/5.d0}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 13)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 13)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 13)\ =\ cos(theta)}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ theta2}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ (2.d0*dble(j)\ +\ 1.d0)*pi/5.d0}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 18)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 18)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 18)\ =\ cos(theta)}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ pi\ -\/\ theta1}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ 2.d0*pi*dble(j)/5.d0}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 23)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 23)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 23)\ =\ cos(theta)}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ theta\ =\ pi\ -\/\ theta2}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ phi\ =\ 2.d0*pi*dble(j)/5.d0}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ versor(1,\ j\ +\ 28)\ =\ sin(theta)*cos(phi)}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ versor(2,\ j\ +\ 28)\ =\ sin(theta)*sin(phi)}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ versor(3,\ j\ +\ 28)\ =\ cos(theta)}
+\DoxyCodeLine{00303\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 50)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ octahedron}\textcolor{comment}{}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Assign\ weights\ for\ different\ point\ classes\ in\ 50-\/point\ quadrature}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 6}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 4.d0/315.d0}
+\DoxyCodeLine{00309\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 7,\ 18}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 64.d0/2835.d0}
+\DoxyCodeLine{00312\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 19,\ 26}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 27.d0/1280.d0}
+\DoxyCodeLine{00315\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 27,\ maxint}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ wintpseudo(i)\ =\ 14641.d0/725760.d0}
+\DoxyCodeLine{00318\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00319\ \textcolor{comment}{}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Generate\ high-\/order\ octahedral\ points\ with\ additional\ parameters}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ pi\ =\ 1.d0/dsqrt(2.d0)}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ q\ =\ 1.d0/dsqrt(3.d0)}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ r\ =\ 1.d0/dsqrt(11.d0)}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ s\ =\ 3.d0/dsqrt(11.d0)}
+\DoxyCodeLine{00325\ \textcolor{comment}{}}
+\DoxyCodeLine{00326\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Standard\ octahedral\ points}}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ versor(1,\ 1)\ =\ 1.d0}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ versor(1,\ 2)\ =\ -\/1.d0}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ versor(2,\ 3)\ =\ 1.d0}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ versor(2,\ 4)\ =\ -\/1.d0}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ versor(3,\ 5)\ =\ 1.d0}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ versor(3,\ 6)\ =\ -\/1.d0}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ versor(1,\ 7)\ =\ pi}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ versor(2,\ 7)\ =\ pi}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ versor(1,\ 8)\ =\ -\/pi}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ versor(2,\ 8)\ =\ pi}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ versor(1,\ 9)\ =\ pi}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ versor(2,\ 9)\ =\ -\/pi}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ versor(1,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ versor(2,\ 10)\ =\ -\/pi}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ versor(1,\ 11)\ =\ pi}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ versor(3,\ 11)\ =\ pi}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ versor(1,\ 12)\ =\ -\/pi}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ versor(3,\ 12)\ =\ pi}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ versor(1,\ 13)\ =\ pi}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ versor(3,\ 13)\ =\ -\/pi}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ versor(1,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ versor(3,\ 14)\ =\ -\/pi}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ versor(2,\ 15)\ =\ pi}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ versor(3,\ 15)\ =\ pi}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ versor(2,\ 16)\ =\ -\/pi}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ versor(3,\ 16)\ =\ pi}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ versor(2,\ 17)\ =\ pi}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ versor(3,\ 17)\ =\ -\/pi}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ versor(2,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ versor(3,\ 18)\ =\ -\/pi}
+\DoxyCodeLine{00357\ \textcolor{comment}{}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Cube\ vertices}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ versor(1,\ 19)\ =\ q}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ versor(2,\ 19)\ =\ q}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ versor(3,\ 19)\ =\ q}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ versor(1,\ 20)\ =\ -\/q}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ versor(2,\ 20)\ =\ q}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ versor(3,\ 20)\ =\ q}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ versor(1,\ 21)\ =\ q}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ versor(2,\ 21)\ =\ -\/q}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ versor(3,\ 21)\ =\ q}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ versor(1,\ 22)\ =\ -\/q}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ versor(2,\ 22)\ =\ -\/q}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ versor(3,\ 22)\ =\ q}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ versor(1,\ 23)\ =\ q}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ versor(2,\ 23)\ =\ q}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ versor(3,\ 23)\ =\ -\/q}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ versor(1,\ 24)\ =\ q}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ versor(2,\ 24)\ =\ -\/q}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ versor(3,\ 24)\ =\ -\/q}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ versor(1,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ versor(2,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ versor(3,\ 25)\ =\ -\/q}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ versor(1,\ 26)\ =\ -\/q}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ versor(2,\ 26)\ =\ q}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ versor(3,\ 26)\ =\ -\/q}
+\DoxyCodeLine{00390\ \textcolor{comment}{}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Additional\ high-\/order\ points\ with\ r\ and\ s\ parameters}}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ versor(1,\ 27)\ =\ r}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ versor(2,\ 27)\ =\ r}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ versor(3,\ 27)\ =\ s}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ versor(1,\ 28)\ =\ -\/r}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ versor(2,\ 28)\ =\ r}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ versor(3,\ 28)\ =\ s}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ versor(1,\ 29)\ =\ r}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ versor(2,\ 29)\ =\ -\/r}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ versor(3,\ 29)\ =\ s}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ versor(1,\ 30)\ =\ -\/r}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ versor(2,\ 30)\ =\ -\/r}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ versor(3,\ 30)\ =\ s}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ versor(1,\ 31)\ =\ r}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ versor(2,\ 31)\ =\ r}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ versor(3,\ 31)\ =\ -\/s}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ versor(1,\ 32)\ =\ r}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ versor(2,\ 32)\ =\ -\/r}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ versor(3,\ 32)\ =\ -\/s}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ versor(1,\ 33)\ =\ -\/r}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ versor(2,\ 33)\ =\ -\/r}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ versor(3,\ 33)\ =\ -\/s}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ versor(1,\ 34)\ =\ -\/r}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ versor(2,\ 34)\ =\ r}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ versor(3,\ 34)\ =\ -\/s}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ versor(1,\ 35)\ =\ r}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ versor(2,\ 35)\ =\ s}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ versor(3,\ 35)\ =\ r}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ versor(1,\ 36)\ =\ -\/r}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ versor(2,\ 36)\ =\ s}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ versor(3,\ 36)\ =\ r}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ versor(1,\ 37)\ =\ r}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ versor(2,\ 37)\ =\ -\/s}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ versor(3,\ 37)\ =\ r}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ versor(1,\ 38)\ =\ -\/r}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ versor(2,\ 38)\ =\ -\/s}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ versor(3,\ 38)\ =\ r}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ versor(1,\ 39)\ =\ r}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ versor(2,\ 39)\ =\ s}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ versor(3,\ 39)\ =\ -\/r}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ versor(1,\ 40)\ =\ r}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ versor(2,\ 40)\ =\ -\/s}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ versor(3,\ 40)\ =\ -\/r}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ versor(1,\ 41)\ =\ -\/r}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ versor(2,\ 41)\ =\ -\/s}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ versor(3,\ 41)\ =\ -\/r}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ versor(1,\ 42)\ =\ -\/r}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ versor(2,\ 42)\ =\ s}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ versor(3,\ 42)\ =\ -\/r}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ versor(1,\ 43)\ =\ s}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ versor(2,\ 43)\ =\ r}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ versor(3,\ 43)\ =\ r}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ versor(1,\ 44)\ =\ -\/s}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ versor(2,\ 44)\ =\ r}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ versor(3,\ 44)\ =\ r}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ versor(1,\ 45)\ =\ s}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ versor(2,\ 45)\ =\ -\/r}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ versor(3,\ 45)\ =\ r}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ versor(1,\ 46)\ =\ -\/s}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ versor(2,\ 46)\ =\ -\/r}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ versor(3,\ 46)\ =\ r}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ versor(1,\ 47)\ =\ s}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ versor(2,\ 47)\ =\ r}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ versor(3,\ 47)\ =\ -\/r}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ versor(1,\ 48)\ =\ s}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ versor(2,\ 48)\ =\ -\/r}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ versor(3,\ 48)\ =\ -\/r}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ versor(1,\ 49)\ =\ -\/s}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ versor(2,\ 49)\ =\ -\/r}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ versor(3,\ 49)\ =\ -\/r}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ versor(1,\ 50)\ =\ -\/s}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ versor(2,\ 50)\ =\ r}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ versor(3,\ 50)\ =\ -\/r}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (maxint\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ no\ quadrature\ points\ with\ pseudo\ '}}
+\DoxyCodeLine{00490\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ERROR\ \#\ of\ quadrature\ points\ non\ defined!!!'}}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ iflagerr\ =\ 1}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00494\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{00496\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Evaluate\ Legendre\ polynomials\ at\ all\ quadrature\ points}}
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxint}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ cost\ =\ versor(3,\ i)}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ lmax\ -\/\ 1}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ legendre(j,\ i)\ =\ \mbox{\hyperlink{legfun_8f90_a8e1285ec3859fac20187bf021c87d8e7}{legfun}}(j\ -\/\ 1,\ cost)}
+\DoxyCodeLine{00501\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00502\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00504\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

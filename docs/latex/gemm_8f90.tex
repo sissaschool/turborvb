@@ -1,0 +1,730 @@
+\doxysection{src/a\+\_\+turborvb/gemm.f90 File Reference}
+\hypertarget{gemm_8f90}{}\label{gemm_8f90}\index{src/a\_turborvb/gemm.f90@{src/a\_turborvb/gemm.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{gemm_8f90_a8db9d5e9156a4ef416ca371193f80a66}{gemm}} (transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+\begin{DoxyCompactList}\small\item\em Generic matrix-\/matrix multiplication supporting mixed real/complex operations. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}
+\begin{DoxyCompactList}\small\item\em Conjugate matrix B by negating imaginary parts. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}{putcrealinc}} (m, n, ldc, alpha, beta, c, creal)
+\begin{DoxyCompactList}\small\item\em Put real matrix result into complex matrix with scaling. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}} (m, n, ldc, alpha, beta, c, ccomp)
+\begin{DoxyCompactList}\small\item\em Put complex matrix result into complex matrix with scaling. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{gemm_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}\index{gemm.f90@{gemm.f90}!conjb@{conjb}}
+\index{conjb@{conjb}!gemm.f90@{gemm.f90}}
+\doxysubsubsection{\texorpdfstring{conjb()}{conjb()}}
+{\footnotesize\ttfamily \label{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401} 
+subroutine gemm\+::conjb}
+
+
+
+Conjugate matrix B by negating imaginary parts. 
+
+This subroutine performs complex conjugation of matrix B by negating the imaginary components (even-\/indexed rows) while keeping real parts unchanged. The matrix is modified in-\/place. \begin{DoxyNote}{Note}
+Matrix B is assumed to be stored in interleaved real/imaginary format where even rows contain imaginary parts and odd rows contain real parts. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{gemm_8f90_source_l00549}{549}} of file \mbox{\hyperlink{gemm_8f90_source}{gemm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ k}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b(2*i,\ j)\ =\ -\/b(2*i,\ j)}
+\DoxyCodeLine{00555\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00556\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{gemm_8f90_source_l00042}{gemm()}}.
+
+\Hypertarget{gemm_8f90_a8db9d5e9156a4ef416ca371193f80a66}\index{gemm.f90@{gemm.f90}!gemm@{gemm}}
+\index{gemm@{gemm}!gemm.f90@{gemm.f90}}
+\doxysubsubsection{\texorpdfstring{gemm()}{gemm()}}
+{\footnotesize\ttfamily \label{gemm_8f90_a8db9d5e9156a4ef416ca371193f80a66} 
+subroutine gemm (\begin{DoxyParamCaption}\item[{character\texorpdfstring{$\ast$}{*}2}]{transa}{, }\item[{character\texorpdfstring{$\ast$}{*}2}]{transb}{, }\item[{integer}]{m}{, }\item[{integer}]{n}{, }\item[{integer}]{k}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, \texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ldb, \texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer}]{ldb}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ldc, \texorpdfstring{$\ast$}{*})}]{c}{, }\item[{integer}]{ldc}{}\end{DoxyParamCaption})}
+
+
+
+Generic matrix-\/matrix multiplication supporting mixed real/complex operations. 
+
+This subroutine performs matrix-\/matrix multiplication C = alpha\texorpdfstring{$\ast$}{*}\+A\texorpdfstring{$\ast$}{*}B + beta\texorpdfstring{$\ast$}{*}C with support for various combinations of real and complex matrices. The operation type is specified by TRANSA and TRANSB parameters which can be\+:
+\begin{DoxyItemize}
+\item \textquotesingle{}NR\textquotesingle{}\+: Real normal (no transpose)
+\item \textquotesingle{}NC\textquotesingle{}\+: Complex normal (no transpose)
+\item \textquotesingle{}TR\textquotesingle{}\+: Real transpose
+\item \textquotesingle{}TC\textquotesingle{}\+: Complex transpose (no conjugate)
+\item \textquotesingle{}CC\textquotesingle{}\+: Complex adjoint (transpose + conjugate)
+\item \textquotesingle{}SC\textquotesingle{}\+: Simple conjugate (no transpose) The subroutine handles mixed cases where one matrix is real and the other is complex by decomposing the operation into separate real matrix multiplications. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em TRANSA} & Operation on matrix A (\textquotesingle{}NR\textquotesingle{}, \textquotesingle{}NC\textquotesingle{}, \textquotesingle{}TR\textquotesingle{}, \textquotesingle{}TC\textquotesingle{}, \textquotesingle{}CC\textquotesingle{}, \textquotesingle{}SC\textquotesingle{}) \\
+\hline
+\mbox{\texttt{in}}  & {\em TRANSB} & Operation on matrix B (\textquotesingle{}NR\textquotesingle{}, \textquotesingle{}NC\textquotesingle{}, \textquotesingle{}TR\textquotesingle{}, \textquotesingle{}TC\textquotesingle{}, \textquotesingle{}CC\textquotesingle{}, \textquotesingle{}SC\textquotesingle{}) \\
+\hline
+\mbox{\texttt{in}}  & {\em M} & Number of rows in matrix C \\
+\hline
+\mbox{\texttt{in}}  & {\em N} & Number of columns in matrix C \\
+\hline
+\mbox{\texttt{in}}  & {\em K} & Number of columns in A and rows in B \\
+\hline
+\mbox{\texttt{in}}  & {\em ALPHA} & Complex scaling factor for A\texorpdfstring{$\ast$}{*}B \\
+\hline
+\mbox{\texttt{in}}  & {\em A} & Input matrix A \\
+\hline
+\mbox{\texttt{in}}  & {\em LDA} & Leading dimension of matrix A \\
+\hline
+\mbox{\texttt{in}}  & {\em B} & Input matrix B \\
+\hline
+\mbox{\texttt{in}}  & {\em LDB} & Leading dimension of matrix B \\
+\hline
+\mbox{\texttt{in}}  & {\em BETA} & Complex scaling factor for C \\
+\hline
+\mbox{\texttt{in,out}}  & {\em C} & Input/output matrix C \\
+\hline
+\mbox{\texttt{in}}  & {\em LDC} & Leading dimension of matrix C \\
+\hline
+\end{DoxyParams}
+
+\end{DoxyItemize}
+
+Definition at line \mbox{\hyperlink{gemm_8f90_source_l00041}{41}} of file \mbox{\hyperlink{gemm_8f90_source}{gemm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ alpha,\ beta}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{integer}\ M,\ N,\ K,\ LDA,\ LDB,\ LDC,\ i,\ j}
+\DoxyCodeLine{00046\ \ \ \ \ real*8\ a(lda,\ *),\ b(ldb,\ *),\ c(ldc,\ *)}
+\DoxyCodeLine{00047\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ creal,\ ccomp}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{character*2}\ TRANSA,\ TRANSB}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{character*1}\ TRANSAB,\ TRANSBB}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesr}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Generic\ matrix\ matrix\ multiplication\ not\ dependent\ on\ the\ type}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ complex\ or\ real\ of\ the\ matrices.}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Always\ capital\ letter\ assumed\ for\ simplicity}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Trans=\ 'NR'\ \ \ \ \ \ \ Real\ normal}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 'NC'\ \ \ \ \ \ \ Complex\ normal}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Trans=\ 'TR'\ \ \ \ \ \ \ Real\ Transpose}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Trans=\ 'TC'\ \ \ \ \ \ \ Complex\ Transpose\ (no\ Conjugate)}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Trans=\ 'CC'\ \ \ \ \ \ \ Complex\ Adjoint\ (Transpose+Conjugate)}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Trans=\ 'SC'\ \ \ \ \ \ \ Simple\ \ Conjugate\ (no\ Transpose)}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ alpha\ and\ beta\ are\ complex\ constants}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ NB\ in\ case\ A,B,C\ are\ complex\ matrices\ the\ leading\ dimension}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ in\ input\ has\ to\ be\ obviously\ equal\ to\ twice\ the\ number\ of\ complex}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ components\ in\ each\ column\ of\ the\ matrix.}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ Does\ not\ work\ for\ mixed\ cases!}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{!\ if\ in\ input\ they\ are\ real\ some\ simplification\ occurs.}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (aimag(alpha)\ .eq.\ 0.d0\ .and.\ aimag(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}})\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ yesr\ =\ .true.}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ yesr\ =\ .false.}
+\DoxyCodeLine{00072\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{if}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NR'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ C\ is\ complex\ but\ AxB\ is\ real}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (creal(m,\ n))}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ creal,\ m)}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}{putcrealinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ creal)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (creal)}
+\DoxyCodeLine{00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TR'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ C\ is\ complex\ but\ AxB\ is\ real}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (creal(m,\ n))}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ creal,\ m)}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}{putcrealinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ creal)}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (creal)}
+\DoxyCodeLine{00097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NR'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ C\ is\ complex\ but\ AxB\ is\ real}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (creal(m,\ n))}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ creal,\ m)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}{putcrealinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ creal)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (creal)}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TR'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ C\ is\ complex\ but\ AxB\ is\ real}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (creal(m,\ n))}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ creal,\ m)}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}{putcrealinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ creal)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (creal)}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'C'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ We\ use\ that\ two\ times\ the\ conjugate\ is\ the\ identity}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'C'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ We\ use\ that\ two\ times\ the\ conjugate\ is\ the\ identity}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'CC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'CC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'CC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'C'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Now\ non\ trivial\ cases\ :\ A\ is\ real\ and\ \ B\ is\ complex}}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'CC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ We\ use\ that\ two\ times\ the\ conjugate\ is\ the\ identity}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'SC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'SC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'SC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'C'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'SC'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ We\ use\ that\ two\ times\ the\ conjugate\ is\ the\ identity}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ alpha,\ a,\ lda/2,\ b,\ ldb/2,\ \&}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc/2)}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00211\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ldc)}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00230\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00249\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00271\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00293\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00294\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00312\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00313\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00331\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00350\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transa\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transb\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b(2,\ 1),\ ldb,\ \&}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00372\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00394\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00413\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ -\/real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ -\/1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00432\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00433\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'NR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00454\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00456\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'NC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00476\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00477\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'TC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00495\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'CC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ -\/1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00514\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00515\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (transb\ .eq.\ \textcolor{stringliteral}{'TR'}\ .and.\ transa\ .eq.\ \textcolor{stringliteral}{'SC'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Here\ I\ use\ that\ the\ product\ of\ a\ real\ times\ a\ complex\ matrix}}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ equivalent\ to\ two\ realxreal\ \ matrix\ products.}}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c,\ ldc)}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ real(alpha),\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real(\mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}}),\ c(2,\ 1),\ ldc)}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ real\ part}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ccomp(2*m,\ n))}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a,\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp,\ 2*m)}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ imaginary\ \ part}}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ n,\ k,\ 1.d0,\ a(2,\ 1),\ lda,\ b,\ ldb,\ \&}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0.d0,\ ccomp(2,\ 1),\ 2*m)}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}{putccompinc}}(m,\ n,\ ldc,\ alpha,\ \mbox{\hyperlink{namespaceallio_aea10605035376af861d7bbb13286d484}{beta}},\ c,\ ccomp)}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ccomp)}
+\DoxyCodeLine{00536\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conja}
+\DoxyCodeLine{00538\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Case\ not\ treated\ in\ gemm\ !!!\ '},\ transa,\ transb}
+\DoxyCodeLine{00540\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00541\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00542\ \textcolor{keyword}{contains}\textcolor{comment}{}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Conjugate\ matrix\ B\ by\ negating\ imaginary\ parts}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ performs\ complex\ conjugation\ of\ matrix\ B\ by\ negating}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ \ !>\ the\ imaginary\ components\ (even-\/indexed\ rows)\ while\ keeping\ real\ parts\ unchanged.}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ \ !>\ The\ matrix\ is\ modified\ in-\/place.}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ \ !>\ @note\ Matrix\ B\ is\ assumed\ to\ be\ stored\ in\ interleaved\ real/imaginary\ format}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ \ !>\ where\ even\ rows\ contain\ imaginary\ parts\ and\ odd\ rows\ contain\ real\ parts.}}
+\DoxyCodeLine{00549\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ k}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b(2*i,\ j)\ =\ -\/b(2*i,\ j)}
+\DoxyCodeLine{00555\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00556\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00557\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{gemm_8f90_ab58d47aeb89923ea1633f8d3f3538401}{conjb}}}
+\DoxyCodeLine{00558\ \textcolor{comment}{}}
+\DoxyCodeLine{00559\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Conjugate\ matrix\ A\ by\ negating\ imaginary\ parts\ \ }}
+\DoxyCodeLine{00560\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ performs\ complex\ conjugation\ of\ matrix\ A\ by\ negating}}
+\DoxyCodeLine{00561\ \textcolor{comment}{\ \ \ \ !>\ the\ imaginary\ components\ (even-\/indexed\ rows)\ while\ keeping\ real\ parts\ unchanged.}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ \ !>\ The\ matrix\ is\ modified\ in-\/place.}}
+\DoxyCodeLine{00563\ \textcolor{comment}{\ \ \ \ !>\ @note\ Matrix\ A\ is\ assumed\ to\ be\ stored\ in\ interleaved\ real/imaginary\ format}}
+\DoxyCodeLine{00564\ \textcolor{comment}{\ \ \ \ !>\ where\ even\ rows\ contain\ imaginary\ parts\ and\ odd\ rows\ contain\ real\ parts.}}
+\DoxyCodeLine{00565\ \ \ \ \ \textcolor{keyword}{subroutine\ }conja}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ k}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ m}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(2*i,\ j)\ =\ -\/a(2*i,\ j)}
+\DoxyCodeLine{00571\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00572\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00573\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }conja}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{gemm_8f90_source_l00550}{conjb()}}, \mbox{\hyperlink{gemm_8f90_source_l00607}{putccompinc()}}, \mbox{\hyperlink{gemm_8f90_source_l00588}{putcrealinc()}}, and \mbox{\hyperlink{allio_8f90_source_l01119}{allio\+::rank}}.
+
+\Hypertarget{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee}\index{gemm.f90@{gemm.f90}!putccompinc@{putccompinc}}
+\index{putccompinc@{putccompinc}!gemm.f90@{gemm.f90}}
+\doxysubsubsection{\texorpdfstring{putccompinc()}{putccompinc()}}
+{\footnotesize\ttfamily \label{gemm_8f90_a1a649bd0171ec53cbf652a065e8017ee} 
+subroutine putccompinc (\begin{DoxyParamCaption}\item[{integer}]{m}{, }\item[{integer}]{n}{, }\item[{integer}]{ldc}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldc/2, \texorpdfstring{$\ast$}{*})}]{c}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(m, \texorpdfstring{$\ast$}{*})}]{ccomp}{}\end{DoxyParamCaption})}
+
+
+
+Put complex matrix result into complex matrix with scaling. 
+
+This helper subroutine combines two complex matrices using the formula\+: C = beta\texorpdfstring{$\ast$}{*}C + alpha\texorpdfstring{$\ast$}{*}\+Ccomp. It is used when both input and output matrices are complex. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em M} & Number of rows \\
+\hline
+\mbox{\texttt{in}}  & {\em N} & Number of columns \\
+\hline
+\mbox{\texttt{in}}  & {\em LDC} & Leading dimension of matrix C \\
+\hline
+\mbox{\texttt{in}}  & {\em alpha} & Complex scaling factor \\
+\hline
+\mbox{\texttt{in}}  & {\em beta} & Complex scaling factor \\
+\hline
+\mbox{\texttt{in,out}}  & {\em C} & Complex output matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em Ccomp} & Complex input matrix \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{gemm_8f90_source_l00606}{606}} of file \mbox{\hyperlink{gemm_8f90_source}{gemm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00607\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00608\ \ \ \ \ \textcolor{keywordtype}{integer}\ M,\ N,\ LDC}
+\DoxyCodeLine{00609\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ C(LDC/2,\ *),\ Ccomp(M,\ *),\ alpha,\ beta}
+\DoxyCodeLine{00610\ \ \ \ \ c(1:m,\ 1:n)\ =\ beta*c(1:m,\ 1:n)\ +\ alpha*ccomp(1:m,\ 1:n)}
+\DoxyCodeLine{00611\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{gemm_8f90_source_l00042}{gemm()}}.
+
+\Hypertarget{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f}\index{gemm.f90@{gemm.f90}!putcrealinc@{putcrealinc}}
+\index{putcrealinc@{putcrealinc}!gemm.f90@{gemm.f90}}
+\doxysubsubsection{\texorpdfstring{putcrealinc()}{putcrealinc()}}
+{\footnotesize\ttfamily \label{gemm_8f90_ab83fc982dcc68d1dfd49a1f5bc36a53f} 
+subroutine putcrealinc (\begin{DoxyParamCaption}\item[{integer}]{m}{, }\item[{integer}]{n}{, }\item[{integer}]{ldc}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldc/2, \texorpdfstring{$\ast$}{*})}]{c}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(m, n)}]{creal}{}\end{DoxyParamCaption})}
+
+
+
+Put real matrix result into complex matrix with scaling. 
+
+This helper subroutine combines a real matrix result with a complex matrix using the formula\+: C = beta\texorpdfstring{$\ast$}{*}C + alpha\texorpdfstring{$\ast$}{*}\+Creal. It is used when the matrix multiplication result is real but needs to be stored in a complex matrix format. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em M} & Number of rows \\
+\hline
+\mbox{\texttt{in}}  & {\em N} & Number of columns \\
+\hline
+\mbox{\texttt{in}}  & {\em LDC} & Leading dimension of matrix C \\
+\hline
+\mbox{\texttt{in}}  & {\em alpha} & Complex scaling factor \\
+\hline
+\mbox{\texttt{in}}  & {\em beta} & Complex scaling factor \\
+\hline
+\mbox{\texttt{in,out}}  & {\em C} & Complex output matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em Creal} & Real input matrix \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{gemm_8f90_source_l00587}{587}} of file \mbox{\hyperlink{gemm_8f90_source}{gemm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00588\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00589\ \ \ \ \ \textcolor{keywordtype}{integer}\ M,\ N,\ LDC}
+\DoxyCodeLine{00590\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ C(LDC/2,\ *),\ alpha,\ beta}
+\DoxyCodeLine{00591\ \ \ \ \ real*8\ creal(m,\ n)}
+\DoxyCodeLine{00592\ \ \ \ \ c(1:m,\ 1:n)\ =\ beta*c(1:m,\ 1:n)\ +\ alpha*creal(1:m,\ 1:n)}
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{gemm_8f90_source_l00042}{gemm()}}.
+

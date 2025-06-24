@@ -1,0 +1,258 @@
+\doxysection{src/m\+\_\+common/constrbra.f90 File Reference}
+\hypertarget{constrbra_8f90}{}\label{constrbra_8f90}\index{src/m\_common/constrbra.f90@{src/m\_common/constrbra.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{constrbra_8f90_a328743800d330807b32bf480f5715668}{constrbra}} (iesfreer, n3body, jbraj, nozeroj, derjas, econf, nw, iopt)
+\begin{DoxyCompactList}\small\item\em Real wave function constraint builder with sparse matrix indexing. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{constrbra_8f90_a2d4c0ea03d8af2ccf835e78ff23c5ad3}{constrbra\+\_\+sparse}} (iesfreer, n3body, jbraj, nozeroj, derjas, econf, nw, iopt)
+\begin{DoxyCompactList}\small\item\em Sparse matrix constraint builder with alternative indexing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{constrbra_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{constrbra_8f90_a328743800d330807b32bf480f5715668}\index{constrbra.f90@{constrbra.f90}!constrbra@{constrbra}}
+\index{constrbra@{constrbra}!constrbra.f90@{constrbra.f90}}
+\doxysubsubsection{\texorpdfstring{constrbra()}{constrbra()}}
+{\footnotesize\ttfamily \label{constrbra_8f90_a328743800d330807b32bf480f5715668} 
+subroutine constrbra (\begin{DoxyParamCaption}\item[{integer}]{iesfreer}{, }\item[{integer}]{n3body}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbraj}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozeroj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{derjas}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nw, \texorpdfstring{$\ast$}{*})}]{econf}{, }\item[{integer}]{nw}{, }\item[{integer}]{iopt}{}\end{DoxyParamCaption})}
+
+
+
+Real wave function constraint builder with sparse matrix indexing. 
+
+This subroutine constructs constraints for real wave functions using sparse matrix indexing. It handles Jastrow factor derivatives and maps them to wave function parameters using a sparse matrix representation.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & Number of free parameters in the wave function \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & Number of three-\/body terms (Jastrow factors) \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & Array mapping Jastrow terms to parameter indices \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & Array of sparse matrix indices for non-\/zero elements \\
+\hline
+\mbox{\texttt{in}}  & {\em derjas} & Array of Jastrow derivatives \\
+\hline
+\mbox{\texttt{in,out}}  & {\em econf} & Energy configuration array to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em iopt} & Operation mode flag\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+
+{\bfseries{Operation Modes (iopt)\+:}}
+\begin{DoxyItemize}
+\item iopt = 0\+: Accumulate derivatives (add to existing values)
+\item iopt ≠ 0\+: Replace derivatives (set new values)
+\end{DoxyItemize}
+
+{\bfseries{Sparse Matrix Handling\+:}} The nozeroj array provides indices into the sparse derivative array, allowing efficient handling of only non-\/zero matrix elements.
+
+{\bfseries{Parameter Mapping\+:}}
+\begin{DoxyItemize}
+\item jbraj(i) \texorpdfstring{$>$}{>} 0\+: Add derivative to parameter jbraj(i)
+\item jbraj(i) \texorpdfstring{$<$}{<} 0\+: Subtract derivative from parameter \texorpdfstring{$\vert$}{|}jbraj(i)\texorpdfstring{$\vert$}{|}
+\end{DoxyItemize}
+
+\begin{DoxyNote}{Note}
+This subroutine always initializes the energy configuration array to zero. 
+
+The sparse indexing allows efficient handling of large, sparse matrices. 
+\end{DoxyNote}
+Early return if no free parameters
+
+Initialize energy configuration array to zero
+
+Accumulate derivatives (iopt = 0)
+
+Add derivative using sparse matrix indexing
+
+Subtract derivative using sparse matrix indexing
+
+Replace derivatives (iopt ≠ 0)
+
+Set derivative using sparse matrix indexing
+
+Set negative derivative using sparse matrix indexing
+
+Definition at line \mbox{\hyperlink{constrbra_8f90_source_l00048}{48}} of file \mbox{\hyperlink{constrbra_8f90_source}{constrbra.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesfreer,\ jbraj(*),\ nozeroj(*),\ nw,\ i,\ j,\ n3body,\ iopt}
+\DoxyCodeLine{00052\ \ \ \ \ real*8\ econf(nw,\ *),\ derjas(*)}
+\DoxyCodeLine{00053\ \textcolor{comment}{}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Early\ return\ if\ no\ free\ parameters}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesfreer\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ energy\ configuration\ array\ to\ zero}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ iesfreer}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00060\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00061\ \textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Accumulate\ derivatives\ (iopt\ =\ 0)}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Add\ derivative\ using\ sparse\ matrix\ indexing}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ econf(1,\ j)\ +\ derjas(nozeroj(i))}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Subtract\ derivative\ using\ sparse\ matrix\ indexing}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ econf(1,\ -\/j)\ -\/\ derjas(nozeroj(i))}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Replace\ derivatives\ (iopt\ ≠\ 0)}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ derivative\ using\ sparse\ matrix\ indexing}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ derjas(nozeroj(i))}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ negative\ derivative\ using\ sparse\ matrix\ indexing}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ -\/derjas(nozeroj(i))}
+\DoxyCodeLine{00088\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00089\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{constrbra_8f90_a2d4c0ea03d8af2ccf835e78ff23c5ad3}\index{constrbra.f90@{constrbra.f90}!constrbra\_sparse@{constrbra\_sparse}}
+\index{constrbra\_sparse@{constrbra\_sparse}!constrbra.f90@{constrbra.f90}}
+\doxysubsubsection{\texorpdfstring{constrbra\_sparse()}{constrbra\_sparse()}}
+{\footnotesize\ttfamily \label{constrbra_8f90_a2d4c0ea03d8af2ccf835e78ff23c5ad3} 
+subroutine constrbra\+\_\+sparse (\begin{DoxyParamCaption}\item[{integer}]{iesfreer}{, }\item[{integer}]{n3body}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbraj}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozeroj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{derjas}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nw, \texorpdfstring{$\ast$}{*})}]{econf}{, }\item[{integer}]{nw}{, }\item[{integer}]{iopt}{}\end{DoxyParamCaption})}
+
+
+
+Sparse matrix constraint builder with alternative indexing. 
+
+This subroutine constructs constraints using an alternative sparse matrix indexing scheme. It differs from constrbra in the order of array indexing for the sparse matrix elements.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & Number of free parameters in the wave function \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & Number of three-\/body terms (Jastrow factors) \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & Array mapping Jastrow terms to parameter indices \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeroj} & Array of sparse matrix indices for non-\/zero elements \\
+\hline
+\mbox{\texttt{in}}  & {\em derjas} & Array of Jastrow derivatives \\
+\hline
+\mbox{\texttt{in,out}}  & {\em econf} & Energy configuration array to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em iopt} & Operation mode flag\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+
+{\bfseries{Operation Modes (iopt)\+:}}
+\begin{DoxyItemize}
+\item iopt = 0\+: Accumulate derivatives (add to existing values)
+\item iopt ≠ 0\+: Replace derivatives (set new values)
+\end{DoxyItemize}
+
+{\bfseries{Alternative Sparse Indexing\+:}} This version uses jbraj(nozeroj(i)) instead of jbraj(i), providing a different mapping between sparse matrix elements and parameter indices.
+
+{\bfseries{Parameter Mapping\+:}}
+\begin{DoxyItemize}
+\item jbraj(nozeroj(i)) \texorpdfstring{$>$}{>} 0\+: Add derivative to parameter jbraj(nozeroj(i))
+\item jbraj(nozeroj(i)) \texorpdfstring{$<$}{<} 0\+: Subtract derivative from parameter \texorpdfstring{$\vert$}{|}jbraj(nozeroj(i))\texorpdfstring{$\vert$}{|}
+\end{DoxyItemize}
+
+\begin{DoxyNote}{Note}
+This subroutine always initializes the energy configuration array to zero. 
+
+The alternative indexing scheme may be more efficient for certain sparse matrix structures. 
+\end{DoxyNote}
+Early return if no free parameters
+
+Initialize energy configuration array to zero
+
+Accumulate derivatives (iopt = 0)
+
+Add derivative using alternative sparse indexing
+
+Subtract derivative using alternative sparse indexing
+
+Replace derivatives (iopt ≠ 0)
+
+Set derivative using alternative sparse indexing
+
+Set negative derivative using alternative sparse indexing
+
+Definition at line \mbox{\hyperlink{constrbra_8f90_source_l00129}{129}} of file \mbox{\hyperlink{constrbra_8f90_source}{constrbra.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesfreer,\ jbraj(*),\ nozeroj(*),\ nw,\ i,\ j,\ n3body,\ iopt}
+\DoxyCodeLine{00133\ \ \ \ \ real*8\ econf(nw,\ *),\ derjas(*)}
+\DoxyCodeLine{00134\ \textcolor{comment}{}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Early\ return\ if\ no\ free\ parameters}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesfreer\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00137\ \textcolor{comment}{}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ energy\ configuration\ array\ to\ zero}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ iesfreer}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00142\ \textcolor{comment}{}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Accumulate\ derivatives\ (iopt\ =\ 0)}}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(nozeroj(i))}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Add\ derivative\ using\ alternative\ sparse\ indexing}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ econf(1,\ j)\ +\ derjas(i)}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Subtract\ derivative\ using\ alternative\ sparse\ indexing}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ econf(1,\ -\/j)\ -\/\ derjas(i)}
+\DoxyCodeLine{00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00156\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Replace\ derivatives\ (iopt\ ≠\ 0)}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(nozeroj(i))}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ derivative\ using\ alternative\ sparse\ indexing}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ derjas(i)}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ negative\ derivative\ using\ alternative\ sparse\ indexing}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ -\/derjas(i)}
+\DoxyCodeLine{00169\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00170\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

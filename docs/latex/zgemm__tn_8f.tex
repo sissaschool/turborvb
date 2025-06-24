@@ -1,0 +1,168 @@
+\doxysection{src/d\+\_\+qlapack/zgemm\+\_\+tn.f File Reference}
+\hypertarget{zgemm__tn_8f}{}\label{zgemm__tn_8f}\index{src/d\_qlapack/zgemm\_tn.f@{src/d\_qlapack/zgemm\_tn.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zgemm__tn_8f_ace5fb9c60da3d0e3c6b3b1cd072700ab}{zgemm\+\_\+tn}} (m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+\item 
+subroutine \mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\+\_\+}} (trana, tranb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+\item 
+subroutine \mbox{\hyperlink{zgemm__tn_8f_ac4b6fcccd1252675d63e57ae2034131c}{ztrsm\+\_\+}} (side, uplo, transa, diag, m, n, alpha, a, lda, b, ldb)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zgemm__tn_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}\index{zgemm\_tn.f@{zgemm\_tn.f}!zgemm\_@{zgemm\_}}
+\index{zgemm\_@{zgemm\_}!zgemm\_tn.f@{zgemm\_tn.f}}
+\doxysubsubsection{\texorpdfstring{zgemm\_()}{zgemm\_()}}
+{\footnotesize\ttfamily \label{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8} 
+subroutine zgemm\+\_\+ (\begin{DoxyParamCaption}\item[{character(len=1)}]{trana}{, }\item[{character(len=1)}]{tranb}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{k}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda,\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldb,\texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{ldb}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldc,\texorpdfstring{$\ast$}{*})}]{c}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{ldc}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemm__tn_8f_source_l00061}{61}} of file \mbox{\hyperlink{zgemm__tn_8f_source}{zgemm\+\_\+tn.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00062\ \textcolor{comment}{c}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00064\ \textcolor{comment}{c}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ A(LDA,*),\ B(LDB,*),\ C(LDC,*)}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ ALPHA,\ BETA}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ M,\ N,\ K,\ LDA,\ LDB,\ LDC}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER(len=1)}\ ::\ TRANA,\ TRANB}
+\DoxyCodeLine{00069\ \textcolor{comment}{c}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(n.EQ.0.OR.m.EQ.0.OR.k.EQ.0)\ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00071\ \textcolor{comment}{c}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#ifndef\ \_OFFLOAD}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemm(trana,tranb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemm\_offload\_(trana,tranb,m,n,k,alpha,a,lda}
+\DoxyCodeLine{00078\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemm\_offload(trana,tranb,m,n,k,alpha,a,lda}
+\DoxyCodeLine{00082\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00088\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{fill__matrix__scalapack_8f90_source_l00141}{fill\+\_\+matrix\+\_\+scalapack\+\_\+complex()}}, \mbox{\hyperlink{elec__density_8f90_source_l00926}{fill\+\_\+phase\+\_\+wf()}}, \mbox{\hyperlink{convertfort10_8f90_source_l02414}{load\+\_\+fort10in()}}, \mbox{\hyperlink{convertmod_8f90_source_l03477}{convertmod\+::projectder()}}, \mbox{\hyperlink{scratchdet_8f90_source_l00030}{scratchdet()}}, \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}, \mbox{\hyperlink{compute__fast__b_8f90_source_l00563}{task9\+\_\+b()}}, \mbox{\hyperlink{test__zgemm_8f90_source_l00016}{test\+\_\+zgemm()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, \mbox{\hyperlink{elec__density_8f90_source_l00299}{upload\+\_\+dens()}}, \mbox{\hyperlink{uptabtot__new_8f90_source_l00166}{uptabtot()}}, \mbox{\hyperlink{zgemm__b_8f90_source_l00004}{zgemm\+\_\+b()}}, and \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00719}{zgemmtry()}}.
+
+\Hypertarget{zgemm__tn_8f_ace5fb9c60da3d0e3c6b3b1cd072700ab}\index{zgemm\_tn.f@{zgemm\_tn.f}!zgemm\_tn@{zgemm\_tn}}
+\index{zgemm\_tn@{zgemm\_tn}!zgemm\_tn.f@{zgemm\_tn.f}}
+\doxysubsubsection{\texorpdfstring{zgemm\_tn()}{zgemm\_tn()}}
+{\footnotesize\ttfamily \label{zgemm__tn_8f_ace5fb9c60da3d0e3c6b3b1cd072700ab} 
+subroutine zgemm\+\_\+tn (\begin{DoxyParamCaption}\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{k}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{alpha}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda,\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ldb,\texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{ldb}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{beta}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ldc,\texorpdfstring{$\ast$}{*})}]{c}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{ldc}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemm__tn_8f_source_l00019}{19}} of file \mbox{\hyperlink{zgemm__tn_8f_source}{zgemm\+\_\+tn.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00020\ \textcolor{comment}{c}}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \textcolor{keywordtype}{USE\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{ONLY}:\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{00022\ \textcolor{comment}{c}}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00024\ \textcolor{comment}{c}}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ real*8\ ::\ a(lda,*),\ b(ldb,*),\ c(ldc,*)}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ real*8\ ::\ alpha,\ beta}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ M,\ N,\ K,\ LDA,\ LDB,\ LDC}
+\DoxyCodeLine{00028\ \textcolor{comment}{c}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(n.EQ.0.OR.m.EQ.0.OR.k.EQ.0)\ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00030\ \textcolor{comment}{c}}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.\mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemm(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00034\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00035\ \textcolor{comment}{c}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#ifndef\ \_OFFLOAD}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemm(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemm\_offload\_(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},m,n,k,alpha,a,lda}
+\DoxyCodeLine{00042\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemm\_offload(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},m,n,k,alpha,a,lda}
+\DoxyCodeLine{00046\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(A(1:lda,1:n))}}
+\DoxyCodeLine{00051\ \textcolor{comment}{!\$omp\ target\ update\ from(B(1:lda,1:n))}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemm(\textcolor{stringliteral}{'T'},\textcolor{stringliteral}{'N'},m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)}
+\DoxyCodeLine{00053\ \textcolor{comment}{!\$omp\ target\ update\ to(A(1:lda,1:n))}}
+\DoxyCodeLine{00054\ \textcolor{comment}{!\$omp\ target\ update\ to(B(1:lda,1:n))}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{}\textcolor{comment}{c}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00232}{constants\+::yes\+\_\+ontarget}}.
+
+\Hypertarget{zgemm__tn_8f_ac4b6fcccd1252675d63e57ae2034131c}\index{zgemm\_tn.f@{zgemm\_tn.f}!ztrsm\_@{ztrsm\_}}
+\index{ztrsm\_@{ztrsm\_}!zgemm\_tn.f@{zgemm\_tn.f}}
+\doxysubsubsection{\texorpdfstring{ztrsm\_()}{ztrsm\_()}}
+{\footnotesize\ttfamily \label{zgemm__tn_8f_ac4b6fcccd1252675d63e57ae2034131c} 
+subroutine ztrsm\+\_\+ (\begin{DoxyParamCaption}\item[{character(len=1)}]{side}{, }\item[{character(len=1)}]{uplo}{, }\item[{character(len=1)}]{transa}{, }\item[{character(len=1)}]{diag}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda,\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldb,\texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{ldb}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemm__tn_8f_source_l00091}{91}} of file \mbox{\hyperlink{zgemm__tn_8f_source}{zgemm\+\_\+tn.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00092\ \textcolor{comment}{c}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00094\ \textcolor{comment}{c}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ ALPHA}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ A(LDA,*),B(LDB,*)}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ lda,ldb,M,N}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER(len=1)}\ ::\ SIDE,\ UPLO,\ TRANSA,\ DIAG}
+\DoxyCodeLine{00099\ \textcolor{comment}{c}}
+\DoxyCodeLine{00100\ \#ifndef\ \_OFFLOAD}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ \ }ztrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_ztrsm\_offload\_(side,uplo,transa,diag,m,n,alpha}
+\DoxyCodeLine{00106\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,a,lda,b,ldb)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_ztrsm\_offload(side,uplo,transa,diag,m,n,alpha}
+\DoxyCodeLine{00110\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,a,lda,b,ldb)}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(A(1:lda,1:n))}}
+\DoxyCodeLine{00115\ \textcolor{comment}{!\$omp\ target\ update\ from(B(1:lda,1:n))}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }ztrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)}
+\DoxyCodeLine{00117\ \textcolor{comment}{!\$omp\ target\ update\ to(A(1:lda,1:n))}}
+\DoxyCodeLine{00118\ \textcolor{comment}{!\$omp\ target\ update\ to(B(1:lda,1:n))}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{}\textcolor{comment}{c}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00123\ \textcolor{comment}{c}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{test__ztrsm_8f90_source_l00016}{test\+\_\+ztrsm()}}.
+

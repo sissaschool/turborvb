@@ -1,0 +1,155 @@
+\doxysection{src/m\+\_\+common/dsktri.f90 File Reference}
+\hypertarget{dsktri_8f90}{}\label{dsktri_8f90}\index{src/m\_common/dsktri.f90@{src/m\_common/dsktri.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dsktri_8f90_ac2cfb5dcc1ba1751c8ed1636956e37a2}{dsktri}} (uplo, n, a, lda, ainv, ldinv, ipiv, work, info)
+\begin{DoxyCompactList}\small\item\em Invert a skew-\/symmetric matrix using LU decomposition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{dsktri_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dsktri_8f90_ac2cfb5dcc1ba1751c8ed1636956e37a2}\index{dsktri.f90@{dsktri.f90}!dsktri@{dsktri}}
+\index{dsktri@{dsktri}!dsktri.f90@{dsktri.f90}}
+\doxysubsubsection{\texorpdfstring{dsktri()}{dsktri()}}
+{\footnotesize\ttfamily \label{dsktri_8f90_ac2cfb5dcc1ba1751c8ed1636956e37a2} 
+subroutine dsktri (\begin{DoxyParamCaption}\item[{character}]{uplo}{, }\item[{integer}]{n}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, \texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ldinv, \texorpdfstring{$\ast$}{*})}]{ainv}{, }\item[{integer}]{ldinv}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{ipiv}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{work}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Invert a skew-\/symmetric matrix using LU decomposition. 
+
+This subroutine computes the inverse of a skew-\/symmetric matrix A using the LU decomposition A = L\texorpdfstring{$\ast$}{*}\+U\texorpdfstring{$\ast$}{*}P, where P is a permutation matrix. The inverse is computed as A\texorpdfstring{$^\wedge$}{\string^}(-\/1) = P\texorpdfstring{$^\wedge$}{\string^}T \texorpdfstring{$\ast$}{*} U\texorpdfstring{$^\wedge$}{\string^}(-\/1) \texorpdfstring{$\ast$}{*} L\texorpdfstring{$^\wedge$}{\string^}(-\/1).\hypertarget{dsktri_8f90_autotoc_md27}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{dsktri_8f90_autotoc_md27}
+UPLO \+: character, in Specifies which part of the matrix A is stored\+: \textquotesingle{}U\textquotesingle{} or \textquotesingle{}u\textquotesingle{}\+: Upper triangular part is stored. \textquotesingle{}L\textquotesingle{} or \textquotesingle{}l\textquotesingle{}\+: Lower triangular part is stored. N \+: integer, in Order of the matrix A. A \+: real\texorpdfstring{$\ast$}{*}8 array, in The skew-\/symmetric matrix A, stored in packed format. On entry, contains the LU factors from DSKTRF. LDA \+: integer, in Leading dimension of array A. AINV \+: real\texorpdfstring{$\ast$}{*}8 array, out The inverse of matrix A. LDINV \+: integer, in Leading dimension of array AINV. IPIV \+: integer array, in Pivot indices from DSKTRF; dimension at least N. WORK \+: real\texorpdfstring{$\ast$}{*}8 array, work Workspace array; dimension at least N\texorpdfstring{$^\wedge$}{\string^}2 + 12\texorpdfstring{$\ast$}{*}N -\/ 2. INFO \+: integer, out = 0\+: successful exit. \texorpdfstring{$<$}{<} 0\+: if INFO = -\/i, the i-\/th argument had an illegal value. \texorpdfstring{$>$}{>} 0\+: if INFO = i, U(i,i) is exactly zero; the matrix is singular.\hypertarget{dsktri_8f90_autotoc_md28}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{dsktri_8f90_autotoc_md28}
+
+\begin{DoxyItemize}
+\item Assumes that DSKTRF has been called previously to factorize A.
+\item Uses a three-\/step process\+: permutation, triangular solve, permutation.
+\item Supports both upper and lower triangular storage formats.
+\item The algorithm handles the special structure of skew-\/symmetric matrices.
+\end{DoxyItemize}\hypertarget{dsktri_8f90_autotoc_md29}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{dsktri_8f90_autotoc_md29}
+
+\begin{DoxyEnumerate}
+\item Initialize AINV as identity matrix
+\item Apply first permutation (reverse order)
+\item Extract skew-\/symmetric elements and prepare for triangular solve
+\item Solve triangular system using DTRTRS
+\item Solve tridiagonal system using DSKTRS or DGTSVX
+\item Solve triangular system with transpose
+\item Apply final permutation
+\end{DoxyEnumerate}\hypertarget{dsktri_8f90_autotoc_md30}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{dsktri_8f90_autotoc_md30}
+Used in quantum Monte Carlo calculations for matrix operations. Flag to choose between LAPACK and homemade algorithm
+
+Initialize AINV as identity matrix
+
+Apply first permutation in reverse order
+
+Extract skew-\/symmetric elements and prepare triangular solve
+
+Upper triangular case\+: extract superdiagonal elements
+
+Lower triangular case\+: extract subdiagonal elements
+
+Set diagonal elements to zero (skew-\/symmetric property)
+
+First triangular solve\+: U \texorpdfstring{$\ast$}{*} X = B
+
+Solve tridiagonal system using LAPACK or homemade algorithm
+
+Use LAPACK DGTSVX for tridiagonal solve
+
+Use homemade DSKTRS for skew-\/symmetric tridiagonal solve
+
+Second triangular solve\+: L\texorpdfstring{$^\wedge$}{\string^}T \texorpdfstring{$\ast$}{*} X = B
+
+Apply final permutation to complete A\texorpdfstring{$^\wedge$}{\string^}(-\/1) = P\texorpdfstring{$^\wedge$}{\string^}T \texorpdfstring{$\ast$}{*} U\texorpdfstring{$^\wedge$}{\string^}(-\/1) \texorpdfstring{$\ast$}{*} L\texorpdfstring{$^\wedge$}{\string^}(-\/1)
+
+Definition at line \mbox{\hyperlink{dsktri_8f90_source_l00068}{68}} of file \mbox{\hyperlink{dsktri_8f90_source}{dsktri.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{character}\ uplo}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i,\ j,\ lda,\ ldinv,\ info,\ lwork,\ ipiv(*)}
+\DoxyCodeLine{00072\ \ \ \ \ real*8\ a(lda,\ *),\ ainv(ldinv,\ *),\ work(*)}
+\DoxyCodeLine{00073\ \ \ \ \ real*8\ rcond}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{logical}\ yeslap\textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{!>\ @brief\ Flag\ to\ choose\ between\ LAPACK\ and\ homemade\ algorithm}}
+\DoxyCodeLine{00076\ \ \ \ \ yeslap\ =\ .false.\ \textcolor{comment}{!\ if\ .false.\ the\ homemade\ algorithm\ is\ done.}\textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{!>\ @brief\ Initialize\ AINV\ as\ identity\ matrix}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ ainv(i,\ i)\ =\ 1.d0}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ n}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(j,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00086\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00087\ \textcolor{comment}{!>\ @brief\ Apply\ first\ permutation\ in\ reverse\ order}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ n,\ 1,\ -\/1}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00093\ \textcolor{comment}{!>\ @brief\ Extract\ skew-\/symmetric\ elements\ and\ prepare\ triangular\ solve}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'u'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'U'})\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{!>\ @brief\ Upper\ triangular\ case:\ extract\ superdiagonal\ elements}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ a(i,\ i\ +\ 1)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ -\/a(i,\ i\ +\ 1)}
+\DoxyCodeLine{00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2,\ n\ -\/\ 1}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ a(1:j\ -\/\ 1,\ j)\ =\ a(1:j\ -\/\ 1,\ j\ +\ 1)}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ a(1:n\ -\/\ 1,\ n)\ =\ 0.d0}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00105\ \textcolor{comment}{!>\ @brief\ Lower\ triangular\ case:\ extract\ subdiagonal\ elements}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ -\/a(i\ +\ 1,\ i)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ work(n\ +\ i\ -\/\ 1)\ =\ a(i\ +\ 1,\ i)}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ n\ -\/\ 1,\ 2,\ -\/1}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ a(j\ +\ 1:n,\ j)\ =\ a(j\ +\ 1:n,\ j\ -\/\ 1)}
+\DoxyCodeLine{00112\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ a(2:n,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{00115\ \textcolor{comment}{!>\ @brief\ Set\ diagonal\ elements\ to\ zero\ (skew-\/symmetric\ property)}}
+\DoxyCodeLine{00116\ \ \ \ \ work(2*n\ -\/\ 1:3*n\ -\/\ 2)\ =\ 0.d0\ \textcolor{comment}{!\ diagonal\ elements\ of\ skew\ matrix\ ,\ obviously\ set\ to\ zero.}\textcolor{comment}{}}
+\DoxyCodeLine{00117\ \textcolor{comment}{!>\ @brief\ First\ triangular\ solve:\ U\ *\ X\ =\ B}}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{call\ }dtrtrs(uplo,\ \textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!>\ @brief\ Solve\ tridiagonal\ system\ using\ LAPACK\ or\ homemade\ algorithm}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslap)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00121\ \textcolor{comment}{!>\ @brief\ Use\ LAPACK\ DGTSVX\ for\ tridiagonal\ solve}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgtsvx(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ work(n),\ work(2*n\ -\/\ 1),\ work,\ work(3*n)\&}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(4*n),\ work(5*n),\ work(6*n),\ ipiv(n\ +\ 1),\ ainv,\ lda,\ work(7*n),\ n\&}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rcond,\ work(7*n\ +\ n*n\ -\/\ 1),\ work(8*n\ +\ n*n\ -\/\ 1)\&}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(9*n\ +\ n*n\ -\/\ 1),\ ipiv(2*n\ +\ 1),\ info)}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ ainv(1:n,\ i)\ =\ work(7*n\ +\ (i\ -\/\ 1)*n:7*n\ +\ i*n\ -\/\ 1)}
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00130\ \textcolor{comment}{!>\ @brief\ Use\ homemade\ DSKTRS\ for\ skew-\/symmetric\ tridiagonal\ solve}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsktrs_8f90_a341e526da073d5247a3da764c372e205}{dsktrs}}(uplo,\ n,\ n,\ work,\ ainv,\ ldinv,\ work(n),\ info)}
+\DoxyCodeLine{00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{00133\ \textcolor{comment}{!>\ @brief\ Second\ triangular\ solve:\ L\string^T\ *\ X\ =\ B}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{call\ }dtrtrs(uplo,\ \textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'U'},\ n,\ n,\ a,\ lda,\ ainv,\ ldinv,\ info)\textcolor{comment}{}}
+\DoxyCodeLine{00135\ \textcolor{comment}{!>\ @brief\ Apply\ final\ permutation\ to\ complete\ A\string^(-\/1)\ =\ P\string^T\ *\ U\string^(-\/1)\ *\ L\string^(-\/1)}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ work(1:n)\ =\ ainv(i,\ 1:n)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ ainv(i,\ 1:n)\ =\ ainv(ipiv(i),\ 1:n)}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ ainv(ipiv(i),\ 1:n)\ =\ work(1:n)}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsktrs_8f90_source_l00068}{dsktrs()}}.
+
+
+
+Referenced by \mbox{\hyperlink{scratchdet_8f90_source_l00030}{scratchdet()}}, and \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}.
+

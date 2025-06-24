@@ -1,11 +1,13 @@
 var searchData=
 [
-  ['thomas_5ffermi_5fcore_5felectron_5fnumber_0',['thomas_fermi_core_electron_number',['../namespacethomas__fermi__model.html#afd8b4fd7dde5b28eb816577b81bc6c04',1,'thomas_fermi_model']]],
-  ['tracemat_1',['tracemat',['../invsymeps_8f90.html#ab874df30d74248482fb9c2fb24b686ab',1,'invsymeps.f90']]],
-  ['tracemat2_2',['tracemat2',['../invsymeps_8f90.html#ac92ddc50d1d27cfbf39078459c2952dd',1,'invsymeps.f90']]],
-  ['tracemat2c_3',['tracemat2c',['../invsymeps_8f90.html#a94e1032f01b0042b68041099319593d3',1,'invsymeps.f90']]],
-  ['tracematc_4',['tracematc',['../invsymeps_8f90.html#a8ca9b7c5b0b297c8899754ebc5598ec7',1,'invsymeps.f90']]],
-  ['tracetrue_5',['tracetrue',['../invsymeps_8f90.html#a3cb0b5db71f10fe6267665dffbba21c5',1,'invsymeps.f90']]],
-  ['transform_5fpoint_6',['transform_point',['../symmetries_8f90.html#a98ac5e36e319bbd86b3ae0d70d7658d6',1,'symmetries']]],
-  ['trigrecur_7',['trigrecur',['../ewald_8f90.html#a7c6b9c7184f9064355e8c92abb7ce105',1,'ewald']]]
+  ['offload_5fdata_5fcomplex_0',['offload_data_complex',['../offload__code__assessment__complex_8f90.html#ab62654ff50d173048f32120806d94647',1,'offload_data_complex:&#160;offload_code_assessment_complex.f90'],['../offload__data__complex_8f90.html#ab62654ff50d173048f32120806d94647',1,'offload_data_complex:&#160;offload_data_complex.f90'],['../openmp__reduction__complex_8f90.html#ab62654ff50d173048f32120806d94647',1,'offload_data_complex:&#160;openmp_reduction_complex.f90']]],
+  ['offload_5fdata_5freal_1',['offload_data_real',['../offload__code__assessment__real_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;offload_code_assessment_real.f90'],['../offload__code__forcycle__complex_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;offload_code_forcycle_complex.f90'],['../offload__code__forcycle__real_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;offload_code_forcycle_real.f90'],['../offload__data__real_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;offload_data_real.f90'],['../openmp__reduction__nested__real_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;openmp_reduction_nested_real.f90'],['../openmp__reduction__real_8f90.html#a6657f3237a5670750a3765a66908de94',1,'offload_data_real:&#160;openmp_reduction_real.f90']]],
+  ['offload_5fif_2',['offload_if',['../offload__if_8f90.html#a769489bad30cab2826555be1dba89128',1,'offload_if.f90']]],
+  ['offload_5fpointer_5ftranscription_3',['offload_pointer_transcription',['../offload__pointer__transcription_8f90.html#a74d651eb4a85732f458e9ccc8148cd70',1,'offload_pointer_transcription.f90']]],
+  ['open_5ffile_5fpseudo_4',['open_file_pseudo',['../__assembling__pseudo_8f90.html#aeeda70ce5352aaad9d131c52ca870471',1,'_assembling_pseudo.f90']]],
+  ['open_5ffiles_5',['open_files',['../file_o_p_8f90.html#acf11c442131ad2d86a8f38e288ad28e5',1,'fileOP.f90']]],
+  ['ortho_5ffast_6',['ortho_fast',['../namespaceconvertmod.html#a9d9376d6c01cbf3ad11d7729bc3eaa40',1,'convertmod']]],
+  ['orthomol_7',['orthomol',['../orthomol_8f90.html#aef31d90abe1552f12036d93447102e6f',1,'orthomol.f90']]],
+  ['orthonormalization_8',['orthonormalization',['../namespaceexact__diagonalization.html#ae5460ea5131fc3f901742a39b4bfb3bd',1,'exact_diagonalization']]],
+  ['overlap_5fmatrix_9',['overlap_matrix',['../namespaceexact__diagonalization.html#a4616a6633385fcc5dbc52e539ccb8632',1,'exact_diagonalization']]]
 ];

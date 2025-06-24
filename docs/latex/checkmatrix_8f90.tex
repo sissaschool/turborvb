@@ -1,0 +1,448 @@
+\doxysection{src/m\+\_\+common/checkmatrix.f90 File Reference}
+\hypertarget{checkmatrix_8f90}{}\label{checkmatrix_8f90}\index{src/m\_common/checkmatrix.f90@{src/m\_common/checkmatrix.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{checkmatrix_8f90_aafb6d5a34fe399678364bb82d15bd31b}{checkmatrix\+\_\+sparse}} (nnozero, nnozeron, nelorb, nozero, nozeron, index\+\_\+out, rank, nelorb\+\_\+c)
+\begin{DoxyCompactList}\small\item\em Sparse matrix validation and checking utilities. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{checkmatrix_8f90_aac3a05532749445f6b57d0a5b5c44bbe}{checkmatrix}} (nnozero, nnozeron, nelorb, nozero, nozeron, index\+\_\+out, rank, nelorb\+\_\+c)
+\begin{DoxyCompactList}\small\item\em Check and validate sparse matrix with linear indexing. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{checkmatrix_8f90_ad573b72a7afce14e38608dbbadb5a0d5}{checkrepeat}} (nnozero, nelorb, nozero, rank)
+\begin{DoxyCompactList}\small\item\em Check for duplicate matrix elements in sparse matrix. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{checkmatrix_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{checkmatrix_8f90_aac3a05532749445f6b57d0a5b5c44bbe}\index{checkmatrix.f90@{checkmatrix.f90}!checkmatrix@{checkmatrix}}
+\index{checkmatrix@{checkmatrix}!checkmatrix.f90@{checkmatrix.f90}}
+\doxysubsubsection{\texorpdfstring{checkmatrix()}{checkmatrix()}}
+{\footnotesize\ttfamily \label{checkmatrix_8f90_aac3a05532749445f6b57d0a5b5c44bbe} 
+subroutine checkmatrix (\begin{DoxyParamCaption}\item[{integer}]{nnozero}{, }\item[{integer}]{nnozeron}{, }\item[{integer}]{nelorb}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozero}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozeron}{, }\item[{integer, dimension(nnozero)}]{index\+\_\+out}{, }\item[{integer}]{rank}{, }\item[{integer}]{nelorb\+\_\+c}{}\end{DoxyParamCaption})}
+
+
+
+Check and validate sparse matrix with linear indexing. 
+
+This subroutine validates a sparse matrix stored in linear format and finds correspondences between two different sparse matrix representations. It uses a 1D indexing scheme where matrix elements are stored as linear indices.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nnozero} & Number of non-\/zero elements in the reference matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nnozeron} & Number of non-\/zero elements in the target matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals (matrix dimension) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & Array containing reference matrix linear indices (nnozero elements) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeron} & Array containing target matrix linear indices (nnozeron elements) \\
+\hline
+\mbox{\texttt{out}}  & {\em index\+\_\+out} & Output array mapping reference indices to target indices \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank for parallel execution \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb\+\_\+c} & Number of orbitals in the contracted basis\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Validates that all matrix indices are within the valid range \mbox{[}1, nelorb\+\_\+c\texorpdfstring{$\ast$}{*}nelorb\mbox{]}
+\item Sorts both sparse matrix representations for efficient searching
+\item Finds correspondences between reference and target matrix elements
+\item Creates a mapping array index\+\_\+out where\+:
+\begin{DoxyItemize}
+\item index\+\_\+out(j) = i if reference element j corresponds to target element i
+\item index\+\_\+out(j) = -\/i if reference element j corresponds to target element -\/i (sign change)
+\item index\+\_\+out(j) = 0 if no correspondence is found
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The input arrays nozero and nozeron contain linear indices where element (i,j) in the matrix corresponds to index (j-\/1)\texorpdfstring{$\ast$}{*}nelorb + i 
+
+This subroutine is designed for parallel execution with MPI. 
+
+The subroutine terminates the program if matrix elements are out of range. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{checkmatrix_8f90_source_l00187}{187}} of file \mbox{\hyperlink{checkmatrix_8f90_source}{checkmatrix.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordtype}{integer}\ nnozero,\ nnozeron,\ nelorb,\ nozero(*),\ nozeron(*),\ rank,\ dimmax\&}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ i,\ ind,\ icheck,\ iy,\ ix,\ ii,\ jj,\ ifound,\ ierr,\ maxindex,\ nelorb\_c}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordtype}{real*8},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sortvect}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ indexo,\ indexn}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keywordtype}{logical}\ doloop}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keywordtype}{integer}\ index\_out(nnozero)}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00200\ \ \ \ \ maxindex\ =\ nelorb\_c*nelorb}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ dimmax\ =\ max(nnozero,\ nnozeron)}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{if}\ (dimmax\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ nnozero\ nnozeron\ inside\ ',nnozero,nnozeron}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (sortvect(dimmax),\ indexo(dimmax),\ indexn(dimmax))}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ indexo\ =\ 1}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ indexn\ =\ 1}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nnozero\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ sortvect(1:nnozero)\ =\ nozero(1:nnozero)}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(sortvect,\ 1,\ nnozero,\ indexo)}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sortvect(1)\ .lt.\ 1\ .or.\ sortvect(nnozero)\ .gt.\ maxindex)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ elements\ out\ of\ range\ !!!\ '}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#ifdef\ \ PARALLEL}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00225\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nnozeron\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ sortvect(1:nnozeron)\ =\ abs(nozeron(1:nnozeron))}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(sortvect,\ 1,\ nnozeron,\ indexn)}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sortvect(1)\ .lt.\ 1\ .or.\ sortvect(nnozero)\ .gt.\ maxindex)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ elements\ out\ of\ range\ !!!\ '}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#ifdef\ \ PARALLEL}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00238\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ index\_out\ =\ 0}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ search\ in\ ascending\ order}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ ifound\ =\ 1}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nnozeron}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indexn(i)}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ifound\ .lt.\ nnozero\ .and.\ nozero(indexo(ifound))\ .lt.\ abs(nozeron(ii)))}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifound\ =\ ifound\ +\ 1}
+\DoxyCodeLine{00247\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indexo(ifound)}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nozero(jj)\ .eq.\ abs(nozeron(ii)))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ scaleout(ii)=scalein(jj)}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nozeron(ii)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\_out(jj)\ =\ -\/ii}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\_out(jj)\ =\ ii}
+\DoxyCodeLine{00255\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iy\ =\ (abs(nozeron(ii))\ -\/\ 1)/nelorb\ +\ 1}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ix\ =\ abs(nozeron(ii))\ -\/\ (iy\ -\/\ 1)*nelorb}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Not\ found\ in\ given\ lambda\ table:\ ix,\ iy'},\ ix,\ iy}
+\DoxyCodeLine{00260\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00261\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (sortvect,\ indexo,\ indexn)}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a53edbd43d9699ce24776994c6ca5a7ed}{bcast\_integer}}(index\_out,\ nnozero,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00672}{bcast\+\_\+integer()}}, and \mbox{\hyperlink{dsortx_8f90_source_l00046}{dsortx()}}.
+
+
+
+Referenced by \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}.
+
+\Hypertarget{checkmatrix_8f90_aafb6d5a34fe399678364bb82d15bd31b}\index{checkmatrix.f90@{checkmatrix.f90}!checkmatrix\_sparse@{checkmatrix\_sparse}}
+\index{checkmatrix\_sparse@{checkmatrix\_sparse}!checkmatrix.f90@{checkmatrix.f90}}
+\doxysubsubsection{\texorpdfstring{checkmatrix\_sparse()}{checkmatrix\_sparse()}}
+{\footnotesize\ttfamily \label{checkmatrix_8f90_aafb6d5a34fe399678364bb82d15bd31b} 
+subroutine checkmatrix\+\_\+sparse (\begin{DoxyParamCaption}\item[{integer}]{nnozero}{, }\item[{integer}]{nnozeron}{, }\item[{integer}]{nelorb}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozero}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozeron}{, }\item[{integer, dimension(nnozero)}]{index\+\_\+out}{, }\item[{integer}]{rank}{, }\item[{integer}]{nelorb\+\_\+c}{}\end{DoxyParamCaption})}
+
+
+
+Sparse matrix validation and checking utilities. 
+
+This module provides subroutines for validating and checking sparse matrix structures used in quantum Monte Carlo calculations. It includes functions for checking matrix element ranges, finding correspondences between different sparse matrix representations, and detecting duplicate matrix elements.
+
+The module handles both standard sparse matrix formats and specialized formats used in Turbo\+RVB for orbital and molecular orbital matrices.
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Check and validate sparse matrix with row-\/column indexing
+
+This subroutine validates a sparse matrix stored in row-\/column format and finds correspondences between two different sparse matrix representations. It uses a 2D indexing scheme where matrix elements are stored as (row, col) pairs.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nnozero} & Number of non-\/zero elements in the reference matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nnozeron} & Number of non-\/zero elements in the target matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals (matrix dimension) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & Array containing reference matrix indices (2\texorpdfstring{$\ast$}{*}nnozero elements) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozeron} & Array containing target matrix indices (2\texorpdfstring{$\ast$}{*}nnozeron elements) \\
+\hline
+\mbox{\texttt{out}}  & {\em index\+\_\+out} & Output array mapping reference indices to target indices \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank for parallel execution \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb\+\_\+c} & Number of orbitals in the contracted basis\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Validates that all matrix indices are within the valid range \mbox{[}1, nelorb\+\_\+c\texorpdfstring{$\ast$}{*}nelorb\mbox{]}
+\item Sorts both sparse matrix representations for efficient searching
+\item Finds correspondences between reference and target matrix elements
+\item Creates a mapping array index\+\_\+out where\+:
+\begin{DoxyItemize}
+\item index\+\_\+out(j) = i if reference element j corresponds to target element i
+\item index\+\_\+out(j) = -\/i if reference element j corresponds to target element -\/i (sign change)
+\item index\+\_\+out(j) = 0 if no correspondence is found
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The input arrays nozero and nozeron are expected to be in the format\+: nozero(1\+:nnozero) = row indices, nozero(nnozero+1\+:2\texorpdfstring{$\ast$}{*}nnozero) = column indices 
+
+This subroutine is designed for parallel execution with MPI. 
+
+The subroutine terminates the program if matrix elements are out of range. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{checkmatrix_8f90_source_l00059}{59}} of file \mbox{\hyperlink{checkmatrix_8f90_source}{checkmatrix.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ nnozero,\ nnozeron,\ nelorb,\ nozero(*),\ nozeron(*),\ rank,\ dimmax\&}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ i,\ ind,\ icheck,\ iy,\ ix,\ ii,\ jj,\ ifound,\ ierr,\ nelorb\_c}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{real*8},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sortvect}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ indexo,\ indexn}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{logical}\ doloop}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{integer}\ index\_out(nnozero)}
+\DoxyCodeLine{00068\ \ \ \ \ real*8\ val\_nozero,\ val\_nozeron}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{integer*8}\ maxindex}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00074\ \ \ \ \ maxindex\ =\ int(nelorb\_c,\ 8)*nelorb}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ dimmax\ =\ max(nnozero,\ nnozeron)}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (dimmax\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ nnozero\ nnozeron\ inside\ ',nnozero,nnozeron}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (sortvect(dimmax),\ indexo(dimmax),\ indexn(dimmax))}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ indexo\ =\ 1}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ indexn\ =\ 1}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nnozero\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nnozero}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sortvect(i)\ =\ nozero(i)\ +\ dble(nelorb)*(nozero(i\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(sortvect,\ 1,\ nnozero,\ indexo)}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sortvect(1)\ .lt.\ 1\ .or.\ sortvect(nnozero)\ .gt.\ maxindex)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ elements\ out\ of\ range\ !!!\ '}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#ifdef\ \ PARALLEL}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nnozeron\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nnozeron}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sortvect(i)\ =\ abs(nozeron(i))\ +\ dble(nelorb)*(nozeron(i\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(sortvect,\ 1,\ nnozeron,\ indexn)}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sortvect(1)\ .lt.\ 1\ .or.\ sortvect(nnozero)\ .gt.\ maxindex)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ elements\ out\ of\ range\ !!!\ '}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#ifdef\ \ PARALLEL}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ index\_out\ =\ 0}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ search\ in\ ascending\ order}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ ifound\ =\ 1}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nnozeron}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indexn(i)}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indexo(ifound)}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ val\_nozero\ =\ nozero(jj)\ +\ dble(nelorb)*(nozero(jj\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ val\_nozeron\ =\ abs(nozeron(ii))\ +\ dble(nelorb)*(nozeron(ii\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ifound\ .lt.\ nnozero\ .and.\ val\_nozero\ .lt.\ val\_nozeron)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifound\ =\ ifound\ +\ 1}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indexo(ifound)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ val\_nozero\ =\ nozero(jj)\ +\ dble(nelorb)*(nozero(jj\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00131\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ jj\ =\ indexo(ifound)}}
+\DoxyCodeLine{00132\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ val\_nozero=nozero(jj)+dble(nelorb)*(nozero(jj+nnozero)-\/1)}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ val\_nozeron\ =\ abs(nozeron(ii))\ +\ dble(nelorb)*(nozeron(ii\ +\ nnozero)\ -\/\ 1)}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (val\_nozero\ .eq.\ val\_nozeron)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ scaleout(ii)=scalein(jj)}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nozeron(ii)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\_out(jj)\ =\ -\/ii}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\_out(jj)\ =\ ii}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iy\ =\ nozeron(ii\ +\ nnozero)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ix\ =\ abs(nozeron(ii))}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Not\ found\ in\ given\ lambda\ table:\ ix,\ iy'},\ ix,\ iy}
+\DoxyCodeLine{00145\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00146\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (sortvect,\ indexo,\ indexn)}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a53edbd43d9699ce24776994c6ca5a7ed}{bcast\_integer}}(index\_out,\ nnozero,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00672}{bcast\+\_\+integer()}}, and \mbox{\hyperlink{dsortx_8f90_source_l00046}{dsortx()}}.
+
+
+
+Referenced by \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}.
+
+\Hypertarget{checkmatrix_8f90_ad573b72a7afce14e38608dbbadb5a0d5}\index{checkmatrix.f90@{checkmatrix.f90}!checkrepeat@{checkrepeat}}
+\index{checkrepeat@{checkrepeat}!checkmatrix.f90@{checkmatrix.f90}}
+\doxysubsubsection{\texorpdfstring{checkrepeat()}{checkrepeat()}}
+{\footnotesize\ttfamily \label{checkmatrix_8f90_ad573b72a7afce14e38608dbbadb5a0d5} 
+subroutine checkrepeat (\begin{DoxyParamCaption}\item[{integer}]{nnozero}{, }\item[{integer}]{nelorb}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{nozero}{, }\item[{integer}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Check for duplicate matrix elements in sparse matrix. 
+
+This subroutine detects and reports duplicate matrix elements in a sparse matrix representation. It is used for validation to ensure that each matrix element appears only once in the sparse format.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nnozero} & Number of non-\/zero elements in the matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals (matrix dimension) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & Array containing matrix linear indices (nnozero elements) \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank for parallel execution\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Sorts the matrix indices in ascending order
+\item Scans through the sorted array to find consecutive identical elements
+\item Reports the location (row, column) and frequency of each duplicate
+\item Terminates the program if duplicates are found (in parallel mode)
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The subroutine converts linear indices back to (row, column) format for reporting\+: row = (index -\/ 1) \% nelorb + 1, column = (index -\/ 1) / nelorb + 1 
+
+This subroutine is designed for parallel execution with MPI. 
+
+The subroutine terminates the program if duplicate elements are found. 
+
+Only rank 0 performs the checking and reporting, but all ranks are synchronized for termination. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{checkmatrix_8f90_source_l00297}{297}} of file \mbox{\hyperlink{checkmatrix_8f90_source}{checkmatrix.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keywordtype}{integer}\ nnozero,\ nelorb,\ nozero(*),\ rank\&}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ i,\ ind,\ iy,\ ix,\ ii,\ jj,\ ifound,\ j,\ ierr}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keywordtype}{real*8},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sortvect}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ index}
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{keywordtype}{logical}\ iflagerr}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (nnozero\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (sortvect(nnozero),\ index(nnozero))}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ iflagerr\ =\ .false.}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ sortvect(1:nnozero)\ =\ abs(nozero(1:nnozero))}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(sortvect,\ 1,\ nnozero,\ index)}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nnozero}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(nozero(index(i)))\ .eq.\ abs(nozero(index(i\ -\/\ 1))))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifound\ =\ 2}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .lt.\ nnozero)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ i\ +\ 1}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (abs(nozero(index(j)))\ .eq.\ abs(nozero(index(j\ -\/\ 1)))\ .and.\ j\ .lt.\ nnozero)}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifound\ =\ ifound\ +\ 1}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ j\ +\ 1}
+\DoxyCodeLine{00325\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .eq.\ nnozero)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(nozero((index(j))))\ .eq.\ abs(nozero(index(j\ -\/\ 1))))\ ifound\ =\ ifound\ +\ 1}
+\DoxyCodeLine{00328\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00329\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ index(i)}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iy\ =\ (abs(nozero(ii))\ -\/\ 1)/nelorb\ +\ 1}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ix\ =\ abs(nozero(ii))\ -\/\ (iy\ -\/\ 1)*nelorb}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Repeated\ matrix\ elem.\ '},\ ix,\ iy}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ \#\ times\ \ \ '},\ ifound}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflagerr\ =\ .true.}
+\DoxyCodeLine{00336\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00337\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (sortvect,\ index)}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(iflagerr,\ 1,\ mpi\_logical,\ 0,\ mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keywordflow}{if}\ (iflagerr)\ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (iflagerr)\ stop}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00046}{dsortx()}}.
+
+
+
+Referenced by \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}.
+

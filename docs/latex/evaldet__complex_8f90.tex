@@ -1,0 +1,82 @@
+\doxysection{src/c\+\_\+adjoint\+\_\+forward/evaldet\+\_\+complex.f90 File Reference}
+\hypertarget{evaldet__complex_8f90}{}\label{evaldet__complex_8f90}\index{src/c\_adjoint\_forward/evaldet\_complex.f90@{src/c\_adjoint\_forward/evaldet\_complex.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{evaldet__complex_8f90_a22f784ce8430da4398f8bff1125952a2}{evaldet\+\_\+complex}} (a, nl, nd, ipiv, detln, detsn)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{evaldet__complex_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{evaldet__complex_8f90_a22f784ce8430da4398f8bff1125952a2}\index{evaldet\_complex.f90@{evaldet\_complex.f90}!evaldet\_complex@{evaldet\_complex}}
+\index{evaldet\_complex@{evaldet\_complex}!evaldet\_complex.f90@{evaldet\_complex.f90}}
+\doxysubsubsection{\texorpdfstring{evaldet\_complex()}{evaldet\_complex()}}
+{\footnotesize\ttfamily \label{evaldet__complex_8f90_a22f784ce8430da4398f8bff1125952a2} 
+subroutine evaldet\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nl, nd)}]{a}{, }\item[{integer}]{nl}{, }\item[{integer}]{nd}{, }\item[{integer, dimension(nd)}]{ipiv}{, }\item[{real(8)}]{detln}{, }\item[{real(8)}]{detsn}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{evaldet__complex_8f90_source_l00016}{16}} of file \mbox{\hyperlink{evaldet__complex_8f90_source}{evaldet\+\_\+complex.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keywordtype}{integer}\ nl,\ nd,\ isum,\ i}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ a(nl,\ nd)}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ detph}
+\DoxyCodeLine{00025\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ detln,\ detsn}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipiv(nd)}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ detln\ =\ 0.d0}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ detsn\ =\ 0.d0}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ isum\ =\ 0}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifdef\ \_CUSOLVER}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ \ do\ reduction(+:isum,detln,detsn)\ private(detph)}}
+\DoxyCodeLine{00033\ \textcolor{comment}{!!\$omp\ target\ update\ from(ipiv,a)}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nd}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ detph\ =\ log(a(i,\ i))}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ detln\ =\ dreal(detph)\ +\ detln\ \textcolor{comment}{!\ real\ part\ of\ log(det\(\backslash\)psi)\ \ \ -\/-\/>\ log}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ detsn\ =\ detsn\ +\ aimag(detph)\ \textcolor{comment}{!\ imaginary\ part\ log(det\(\backslash\)psi)\ -\/-\/>\ phase}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(i)\ .ne.\ i)\ isum\ =\ isum\ +\ 1}
+\DoxyCodeLine{00040\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#ifdef\ \_CUSOLVER}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{}\textcolor{comment}{!\ Workaround\ for\ nvfortran\ compiler.\ Does\ not\ update\ automatically\ scalars.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{!\$omp\ target\ update\ from(isum,detln,detsn)}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(isum,\ 2)\ .ne.\ 0)\ detsn\ =\ detsn\ +\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ detph\ =\ log(a(1,\ 2))}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ detln\ =\ dreal(detph)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ detsn\ =\ aimag(detph)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ isum\ =\ 0}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(1)\ .ne.\ 1)\ isum\ =\ 1}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nd}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(i)\ .ne.\ i)\ isum\ =\ isum\ +\ 1}
+\DoxyCodeLine{00054\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 3,\ nd\ -\/\ 1,\ 2}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ detph\ =\ log(a(i,\ i\ +\ 1))}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ detln\ =\ dreal(detph)\ +\ detln\ \textcolor{comment}{!\ real\ part\ of\ log(det\(\backslash\)psi)\ \ \ -\/-\/>\ log}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ detsn\ =\ detsn\ +\ aimag(detph)\ \textcolor{comment}{!\ imaginary\ part\ log(det\(\backslash\)psi)\ -\/-\/>\ phase}}
+\DoxyCodeLine{00059\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(isum,\ 2)\ .ne.\ 0)\ detsn\ =\ detsn\ +\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{00061\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00064\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipf}}, and \mbox{\hyperlink{constants_8f90_source_l00047}{constants\+::pi}}.
+
+
+
+Referenced by \mbox{\hyperlink{scratchdet_8f90_source_l00030}{scratchdet()}}, and \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}.
+

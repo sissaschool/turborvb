@@ -1,0 +1,179 @@
+\doxysection{src/a\+\_\+makefort10/makeforces.f90 File Reference}
+\hypertarget{makeforces_8f90}{}\label{makeforces_8f90}\index{src/a\_makefort10/makeforces.f90@{src/a\_makefort10/makeforces.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{makeforces_8f90_a1eb602400b5d3fc3a7cdbe46e901e211}{makeforces}} (ntotatoms, symrot, nrot, nrotu, symtra, ntra, ntrau, occupied, recordsym, lenrec, nrec, ipsip)
+\begin{DoxyCompactList}\small\item\em Generate symmetry-\/equivalent force components. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{makeforces_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{makeforces_8f90_a1eb602400b5d3fc3a7cdbe46e901e211}\index{makeforces.f90@{makeforces.f90}!makeforces@{makeforces}}
+\index{makeforces@{makeforces}!makeforces.f90@{makeforces.f90}}
+\doxysubsubsection{\texorpdfstring{makeforces()}{makeforces()}}
+{\footnotesize\ttfamily \label{makeforces_8f90_a1eb602400b5d3fc3a7cdbe46e901e211} 
+subroutine makeforces (\begin{DoxyParamCaption}\item[{integer}]{ntotatoms}{, }\item[{integer, dimension(3\texorpdfstring{$\ast$}{*}ntotatoms, nrot)}]{symrot}{, }\item[{integer}]{nrot}{, }\item[{integer}]{nrotu}{, }\item[{integer, dimension(3\texorpdfstring{$\ast$}{*}ntotatoms, ntra)}]{symtra}{, }\item[{integer}]{ntra}{, }\item[{integer}]{ntrau}{, }\item[{logical, dimension(3\texorpdfstring{$\ast$}{*}ntotatoms)}]{occupied}{, }\item[{integer, dimension(2, ntra\texorpdfstring{$\ast$}{*}nrot, \texorpdfstring{$\ast$}{*})}]{recordsym}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{lenrec}{, }\item[{integer}]{nrec}{, }\item[{integer, dimension(2, ntra\texorpdfstring{$\ast$}{*}nrot)}]{ipsip}{}\end{DoxyParamCaption})}
+
+
+
+Generate symmetry-\/equivalent force components. 
+
+This subroutine generates symmetry-\/equivalent force components for atomic forces using rotation and translation symmetries. It identifies equivalent force components and groups them into records for efficient computation during force calculations.
+
+The subroutine handles\+:
+\begin{DoxyItemize}
+\item Rotation symmetries for force components (symrot)
+\item Translation symmetries for force components (symtra)
+\item Grouping of equivalent force components into records
+\item Elimination of redundant symmetry operations
+\end{DoxyItemize}
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ntotatoms} & Total number of atoms \\
+\hline
+\mbox{\texttt{in}}  & {\em symrot} & Rotation symmetry matrix for force components (3\texorpdfstring{$\ast$}{*}ntotatoms, nrot) \\
+\hline
+\mbox{\texttt{in}}  & {\em nrot} & Number of rotation symmetries \\
+\hline
+\mbox{\texttt{in}}  & {\em nrotu} & Number of unique rotation symmetries \\
+\hline
+\mbox{\texttt{in}}  & {\em symtra} & Translation symmetry matrix for force components (3\texorpdfstring{$\ast$}{*}ntotatoms, ntra) \\
+\hline
+\mbox{\texttt{in}}  & {\em ntra} & Number of translation symmetries \\
+\hline
+\mbox{\texttt{in}}  & {\em ntrau} & Number of unique translation symmetries \\
+\hline
+\mbox{\texttt{out}}  & {\em occupied} & Logical array indicating processed force components \\
+\hline
+\mbox{\texttt{out}}  & {\em recordsym} & Symmetry records for force components \\
+\hline
+\mbox{\texttt{out}}  & {\em lenrec} & Length of each symmetry record \\
+\hline
+\mbox{\texttt{in,out}}  & {\em nrec} & Number of records (input\+: max, output\+: actual) \\
+\hline
+\mbox{\texttt{in}}  & {\em ipsip} & Temporary array for symmetry operations \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{makeforces_8f90_source_l00040}{40}} of file \mbox{\hyperlink{makeforces_8f90_source}{makeforces.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{integer}\ norb,\ ntotatoms,\ nrot,\ ntra,\ symrot(3*ntotatoms,\ nrot)\&}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ symtra(3*ntotatoms,\ ntra),\ ntrau,\ nrotu}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{logical}\ occupied(3*ntotatoms),\ accept}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{integer}\ recordsym(2,\ ntra*nrot,\ *),\ lenrec(*),\ i,\ j,\ k,\ l,\ jfirst,\ imap,\ jmap\&}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ signi,\ signj,\ imapr,\ jmapr,\ signir,\ signjr,\ ipsip(2,\ ntra*nrot),\ indsym,\ countrec\&}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nrec,\ count,\ kk,\ iatom,\ icomp}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ Input\ symrot(norb,nrot)}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ j=symrot(i,is)\ \ \ is=1,nrot\ are\ the\ possible\ rotation\ symmetries}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ |j|>0\ \ is\ the\ orbital\ obtained\ after\ application\ of\ the\ symmetry\ is}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ to\ the\ orbital\ i.\ if\ symrot(i,is)=0\ \ it\ is\ not\ possible\ to\ apply\ this}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ \ symmetry\ to\ the\ orbital\ i\ (generates\ more\ than\ a\ single\ orbital).}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{!\ \ the\ sign\ of\ j\ is\ the\ sign\ obtained\ after\ this\ transformation\ to\ the}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ \ orbital\ including\ the\ sign\ of\ the\ boundary\ conditions.}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{!\ \ \ symtra(norb,ntra)\ as\ above\ for\ the\ translation\ symmetries.}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ \ \ assumed\ that\ the\ translation\ symmetries\ are\ always\ allowed\ (never\ symtra(i,j)=0.}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ Output\ occupied=.true.\ for\ an\ allowed\ matrix\ element\ of\ the}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!\ \ \ lambda\_ij}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{!\ \ \ output\ record(2,1:lenrec(k),k)\ k<=nrec,\ if\ nrec\ large\ enough\ all\ matrix}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ \ \ elements\ are\ classified\ otherwise\ a\ Warning\ appears\ and\ nrec\ is\ the\ number}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{!\ \ \ of\ records\ that\ are\ actually\ required.}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ \ \ lenrec(k)\ \ is\ the\ length\ of\ the\ record\ \#k}}
+\DoxyCodeLine{00066\ \ \ \ \ occupied\ =\ .false.}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ countrec\ =\ 0}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ norb\ =\ 3*ntotatoms}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ norb}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ occupied(i))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ indsym\ =\ 0}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ ntrau}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signi\ =\ 1}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imap\ =\ symtra(i,\ k)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imap\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imap\ =\ -\/imap}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signi\ =\ -\/signi}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imap\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Error\ in\ symtra\ !!!\ '},\ imap,\ jmap}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ nrotu}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imapr\ =\ symrot(imap,\ l)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imapr\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imapr\ =\ -\/imapr}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signir\ =\ -\/signi}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signir\ =\ signi}
+\DoxyCodeLine{00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imapr\ .ne.\ 0)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ if\ it\ is\ an\ allowed\ symmetry}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indsym\ =\ indsym\ +\ 1}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iatom\ =\ (imapr\ -\/\ 1)/3\ +\ 1}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icomp\ =\ imapr\ -\/\ (iatom\ -\/\ 1)*3}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(1,\ indsym)\ =\ iatom*signir}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(2,\ indsym)\ =\ icomp}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ check\ if\ it\ is\ a\ compatible\ record}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indsym\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .true.}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ indsym}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(3*(abs(ipsip(1,\ k))\ -\/\ 1)\ +\ ipsip(2,\ k))\ =\ .true.}
+\DoxyCodeLine{00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Reject\ record\ if\ I\ can\ go\ back\ to\ the\ same\ component\ changing\ sign.}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ indsym}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(1,\ k)\ .eq.\ -\/ipsip(1,\ 1)\ .and.\ ipsip(2,\ k)\ .eq.\ ipsip(2,\ 1))\ accept\ =\ .false.}
+\DoxyCodeLine{00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .false.}
+\DoxyCodeLine{00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ k=2,indsym}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ if(ipsip(1,k).eq.-\/ipsip(1,1).and.ipsip(2,k).eq.ipsip(2,1))\ accept=.false.}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (accept)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ countrec\ =\ countrec\ +\ 1}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (countrec\ .le.\ nrec)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ group\ toghether\ the\ various\ pairs}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lenrec(countrec)\ =\ 1}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1:2,\ 1,\ countrec)\ =\ ipsip(1:2,\ 1)}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ indsym}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept\ =\ .true.}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ k\ -\/\ 1}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(ipsip(1,\ l))\ .eq.\ abs(ipsip(1,\ k))\ .and.\ ipsip(2,\ l)\ .eq.\ ipsip(2,\ k))\&}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ accept\ =\ .false.}
+\DoxyCodeLine{00135\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (accept)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lenrec(countrec)\ =\ lenrec(countrec)\ +\ 1}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recordsym(1:2,\ lenrec(countrec),\ countrec)\ =\ ipsip(1:2,\ k)}
+\DoxyCodeLine{00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ if\ countrec<=nrec}}
+\DoxyCodeLine{00142\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ accepted}}
+\DoxyCodeLine{00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ occupied}}
+\DoxyCodeLine{00144\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ nrec\ =\ countrec}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00149\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{makefort10_8f90_source_l00063}{makefort10()}}.
+

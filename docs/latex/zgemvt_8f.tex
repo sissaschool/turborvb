@@ -1,0 +1,135 @@
+\doxysection{src/d\+\_\+qlapack/zgemvt.f File Reference}
+\hypertarget{zgemvt_8f}{}\label{zgemvt_8f}\index{src/d\_qlapack/zgemvt.f@{src/d\_qlapack/zgemvt.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zgemvt_8f_a828a010051cabf051dfa422057254c7c}{zgemvt\+\_\+offload}} (m, n, alpha, a, lda, x, incx, beta, y, incy)
+\item 
+subroutine \mbox{\hyperlink{zgemvt_8f_a818b3a763010edff88de7e751dd6b5ce}{zgemvc\+\_\+offload}} (m, n, alpha, a, lda, x, incx, beta, y, incy)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zgemvt_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zgemvt_8f_a818b3a763010edff88de7e751dd6b5ce}\index{zgemvt.f@{zgemvt.f}!zgemvc\_offload@{zgemvc\_offload}}
+\index{zgemvc\_offload@{zgemvc\_offload}!zgemvt.f@{zgemvt.f}}
+\doxysubsubsection{\texorpdfstring{zgemvc\_offload()}{zgemvc\_offload()}}
+{\footnotesize\ttfamily \label{zgemvt_8f_a818b3a763010edff88de7e751dd6b5ce} 
+subroutine zgemvc\+\_\+offload (\begin{DoxyParamCaption}\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda\texorpdfstring{$\ast$}{*}(n-\/1)+m)}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(incx\texorpdfstring{$\ast$}{*}(n-\/1)+1)}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(incy\texorpdfstring{$\ast$}{*}(m-\/1)+1)}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemvt_8f_source_l00089}{89}} of file \mbox{\hyperlink{zgemvt_8f_source}{zgemvt.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00090\ \textcolor{comment}{c}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00092\ \textcolor{comment}{c}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ alpha,\ beta}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ incx,\ incy,\ lda,\ M,\ N}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ A(lda*(N-\/1)+M),\ X(incx*(N-\/1)+1),\ Y(incy*(M-\/1)+1)}
+\DoxyCodeLine{00096\ \textcolor{comment}{c}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ real*8\ ::\ one,\ zero}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ parameter(one=1.0d+0,zero=0.0d+0)}
+\DoxyCodeLine{00099\ \textcolor{comment}{c}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::I,\ J}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ temp}
+\DoxyCodeLine{00102\ \textcolor{comment}{c}}
+\DoxyCodeLine{00103\ \#ifdef\ \_OFFLOAD}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (beta.NE.one)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (beta.EQ.zero)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00106\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,n}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(i-\/1)+1)\ =\ zero}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00111\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,n}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(i-\/1)+1)\ =\ beta*y(incy*(i-\/1)+1)}
+\DoxyCodeLine{00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00116\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00117\ \textcolor{comment}{c}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (alpha.NE.zero)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ private(temp)}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ j\ =\ 1,n}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ zero}
+\DoxyCodeLine{00122\ \textcolor{comment}{!\$omp\ parallel\ do\ reduction(+:temp)}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,m}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ temp\ +\ dconjg(a(lda*(j-\/1)+i))\ *\ x(incx*(i-\/1)+1)}
+\DoxyCodeLine{00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(j-\/1)+1)\ =\ y(incy*(j-\/1)+1)\ +\ alpha\ *\ temp}
+\DoxyCodeLine{00127\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00132\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{test__zgemv__offload_8f90_source_l00016}{test\+\_\+zgemvn\+\_\+offload()}}, and \mbox{\hyperlink{zgemv_8f_source_l00021}{zgemv\+\_\+()}}.
+
+\Hypertarget{zgemvt_8f_a828a010051cabf051dfa422057254c7c}\index{zgemvt.f@{zgemvt.f}!zgemvt\_offload@{zgemvt\_offload}}
+\index{zgemvt\_offload@{zgemvt\_offload}!zgemvt.f@{zgemvt.f}}
+\doxysubsubsection{\texorpdfstring{zgemvt\_offload()}{zgemvt\_offload()}}
+{\footnotesize\ttfamily \label{zgemvt_8f_a828a010051cabf051dfa422057254c7c} 
+subroutine zgemvt\+\_\+offload (\begin{DoxyParamCaption}\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda\texorpdfstring{$\ast$}{*}(n-\/1)+m)}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(incx\texorpdfstring{$\ast$}{*}(n-\/1)+1)}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(incy\texorpdfstring{$\ast$}{*}(m-\/1)+1)}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemvt_8f_source_l00032}{32}} of file \mbox{\hyperlink{zgemvt_8f_source}{zgemvt.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00033\ \textcolor{comment}{c}}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00035\ \textcolor{comment}{c}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ alpha,\ beta}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ incx,\ incy,\ lda,\ M,\ N}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ A(lda*(N-\/1)+M),\ X(incx*(N-\/1)+1),\ Y(incy*(M-\/1)+1)}
+\DoxyCodeLine{00039\ \textcolor{comment}{c}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ real*8\ ::\ one,\ zero}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ parameter(one=1.0d+0,zero=0.0d+0)}
+\DoxyCodeLine{00042\ \textcolor{comment}{c}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::I,\ J}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ temp}
+\DoxyCodeLine{00045\ \textcolor{comment}{c}}
+\DoxyCodeLine{00046\ \#ifdef\ \_OFFLOAD}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (beta.NE.one)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (beta.EQ.zero)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00049\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,n}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(i-\/1)+1)\ =\ zero}
+\DoxyCodeLine{00052\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00054\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,n}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(i-\/1)+1)\ =\ beta*y(incy*(i-\/1)+1)}
+\DoxyCodeLine{00057\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00058\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00059\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00060\ \textcolor{comment}{c}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (alpha.NE.zero)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00062\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ private(temp)}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ j\ =\ 1,n}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ zero}
+\DoxyCodeLine{00065\ \textcolor{comment}{!\$omp\ parallel\ do\ reduction(+:temp)}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ \ i\ =\ 1,m}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ temp\ +\ a(lda*(j-\/1)+i)*x(incx*(i-\/1)+1)}
+\DoxyCodeLine{00068\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(incy*(j-\/1)+1)\ =\ y(incy*(j-\/1)+1)\ +\ alpha*temp}
+\DoxyCodeLine{00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00071\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{test__zgemv__offload_8f90_source_l00016}{test\+\_\+zgemvn\+\_\+offload()}}, and \mbox{\hyperlink{zgemv_8f_source_l00021}{zgemv\+\_\+()}}.
+

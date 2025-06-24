@@ -1,0 +1,180 @@
+\doxysection{src/m\+\_\+common/save\+\_\+jall\+\_\+fn.f90 File Reference}
+\hypertarget{save__jall__fn_8f90}{}\label{save__jall__fn_8f90}\index{src/m\_common/save\_jall\_fn.f90@{src/m\_common/save\_jall\_fn.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{save__jall__fn_8f90_ab0643b367294d2b56481ecb8a1b9a59d}{save\+\_\+jall}} (yesfn, jastrowall\+\_\+ee, winvjbar, winvjbarsz, winvj, psip)
+\begin{DoxyCompactList}\small\item\em Jastrow factor support vector update for DMC and LR-\/\+DMC. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{save__jall__fn_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{save__jall__fn_8f90_ab0643b367294d2b56481ecb8a1b9a59d}\index{save\_jall\_fn.f90@{save\_jall\_fn.f90}!save\_jall@{save\_jall}}
+\index{save\_jall@{save\_jall}!save\_jall\_fn.f90@{save\_jall\_fn.f90}}
+\doxysubsubsection{\texorpdfstring{save\_jall()}{save\_jall()}}
+{\footnotesize\ttfamily \label{save__jall__fn_8f90_ab0643b367294d2b56481ecb8a1b9a59d} 
+subroutine save\+\_\+jall (\begin{DoxyParamCaption}\item[{logical}]{yesfn}{, }\item[{real(8), dimension(nelup + neldo, nelup + neldo, 0\+:indt4j), intent(inout)}]{jastrowall\+\_\+ee}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{winvjbar}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{winvjbarsz}{, }\item[{real(8), dimension(max(nelorbjh, 1), 0\+:indt4j, \texorpdfstring{$\ast$}{*}), intent(in)}]{winvj}{, }\item[{real(8), dimension(nel, nel), intent(inout)}]{psip}{}\end{DoxyParamCaption})}
+
+
+
+Jastrow factor support vector update for DMC and LR-\/\+DMC. 
+
+This subroutine updates the support vector jastrowall\+\_\+ee used in Diffusion Monte Carlo (DMC) and Lattice Regularized DMC (LR-\/\+DMC) calculations. The updated vector is used by the fast update routine "{}uptabtot\+\_\+new.\+f90"{} to speed up Jastrow factor calculations.
+
+The subroutine handles both 3/4-\/body Jastrow factors and wave function components, with support for spin-\/dependent calculations and Open\+MP offloading for GPU acceleration.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em yesfn} & Flag indicating whether to update gradients and Laplacians \\
+\hline
+\mbox{\texttt{in,out}}  & {\em jastrowall\+\_\+ee} & Support vector for Jastrow factor calculations \\
+\hline
+\mbox{\texttt{in}}  & {\em winvjbar} & Jastrow factor basis coefficients for up electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em winvjbarsz} & Jastrow factor basis coefficients for spin-\/dependent terms \\
+\hline
+\mbox{\texttt{in}}  & {\em winvj} & Jastrow factor basis vectors \\
+\hline
+\mbox{\texttt{in,out}}  & {\em psip} & Working array for matrix operations\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Initializes working array psip to zero
+\item If yesfn is true, updates gradients and Laplacians\+:
+\begin{DoxyItemize}
+\item Processes 3/4-\/body terms (k = 1 to ip4)
+\item Processes lattice terms (k = 1 to indt)
+\item Uses matrix multiplication to compute Jastrow contributions
+\item Handles both up and down electron components
+\item Updates spin-\/dependent terms if iessz is true
+\end{DoxyItemize}
+\item Updates wave function components\+:
+\begin{DoxyItemize}
+\item Computes Jastrow factor contributions to wave function
+\item Handles both up and down electron components
+\item Updates spin-\/dependent terms if iessz is true
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The 2-\/body part of jastrowall\+\_\+ee is computed in "{}compute\+\_\+fast.\+f90"{} 
+
+The subroutine supports Open\+MP offloading for GPU acceleration 
+
+Handles both paired (ipj=1) and unpaired (ipj=2) electron configurations 
+
+Spin-\/dependent calculations are performed when iessz is true 
+
+Used in DMC and LR-\/\+DMC calculations for efficient Jastrow updates 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{save__jall__fn_8f90_source_l00053}{53}} of file \mbox{\hyperlink{save__jall__fn_8f90_source}{save\+\_\+jall\+\_\+fn.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a6fe7914eaaab88d424f7f30c21429cf1}{ip4}},\ \mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ \mbox{\hyperlink{namespaceallio_a985209d4e6ec95fa8c1df6c25352cbf0}{neldo}},\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}},\ \mbox{\hyperlink{namespaceallio_a069d85070309041e413adf123c90de65}{indt4j}},\ \mbox{\hyperlink{namespaceallio_a05c14a5276193b31bcbaff92ed3a118d}{nelorbj}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ \mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{00060\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ jastrowall\_ee(nelup\ +\ neldo,\ nelup\ +\ neldo,\ 0:indt4j),\ psip(nel,\ nel)}
+\DoxyCodeLine{00061\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ winvj(max(nelorbjh,\ 1),\ 0:indt4j,\ *),\ winvjbar(*),\ winvjbarsz(*)}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nelused}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ k,\ nelorbj5}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesfn}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a05c14a5276193b31bcbaff92ed3a118d}{nelorbj}}\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ nelorbj5\ =\ \mbox{\hyperlink{namespaceallio_a05c14a5276193b31bcbaff92ed3a118d}{nelorbj}}*(\mbox{\hyperlink{namespaceallio_a069d85070309041e413adf123c90de65}{indt4j}}\ +\ 1)}
+\DoxyCodeLine{00070\ \ \ \ \ nelused\ =\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}}\ +\ mod(\mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}},\ 2)*\mbox{\hyperlink{namespaceallio_a985209d4e6ec95fa8c1df6c25352cbf0}{neldo}}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!!!!!!!!!!}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ 3/4body}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!!!!!!!!!!}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!\ in\ the\ following\ I\ assume\ that\ indt4j.ge.indt+ip4,}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{!\ therefore\ the\ basis\ vector\ winvj\ must\ be\ already}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{!\ completely\ filled.}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{!\ clearing\ working\ space}}
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}\ =\ 0.d0}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ to\ (psip)}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (yesfn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ update\ gradients\ and\ laplacians}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceconstants_a6fe7914eaaab88d424f7f30c21429cf1}{ip4}}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nelused,\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}\ +\ k,\ 1)\ \&}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}},\ \mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_a985209d4e6ec95fa8c1df6c25352cbf0}{neldo}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}\ +\ k,\ 1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}})\ \&}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}}(1\ +\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}}),\ 2*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ 1),\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_af55f042854194024cfeaba69e95689d0}{upjastrowall}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}}(1,\ 1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}\ +\ k),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}\ +\ k,\ 1)\ \&}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a83791a4174af9aec6f15f1c61cc6cb32}{winvjbarsz}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_a85744cf24560a27c0178cc473f921dae}{upjastrowall\_sz}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}}(1,\ 1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}\ +\ k),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ finally\ the\ 1:indt\ positions\ in\ the\ LRDMC\ lattice}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nelused,\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ k,\ 1)\ \ \ \ \ \ \&}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}},\ \mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_a985209d4e6ec95fa8c1df6c25352cbf0}{neldo}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ k,\ 1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}})\ \ \ \ \ \ \&}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}}(1\ +\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}}),\ 2*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ 1),\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_a58a843401f7dafded4b61d6ea3ddf9ad}{upjastrowallfat}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}}(1,\ 1,\ k),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ k,\ 1)\ \&}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nelorbj5,\ \mbox{\hyperlink{namespaceallio_a83791a4174af9aec6f15f1c61cc6cb32}{winvjbarsz}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_a12e82ad08db3374f1043a03958b6a4d6}{upjastrowallfat\_sz}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}}(1,\ 1,\ k),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00122\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{comment}{!\ then\ update\ jastrowall\_ee\ for\ the\ wave\ function}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{!call\ dgemm('T','N',nel,nelused,ipj*nelorbjh,1.d0,winvjbar\ \ \ \&}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&,ipj*nelorbjh,winvj,nelorbj5,0.d0,psip,nel)}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ nelused,\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}}\ \ \ \&}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}},\ nelorbj5,\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_acf04a18cf68a1ea9f9f325a76bc791c8}{ipj}}\ ==\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a985209d4e6ec95fa8c1df6c25352cbf0}{neldo}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_a673e4b102033a88deef0567ed8c9b01e}{winvjbar}}(1\ +\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}})\ \ \ \&}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 2*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}}(1,\ 0,\ 1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}}),\ nelorbj5,\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(1,\ 1\ +\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}}),\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{!\ \ write(*,*)\ "{}\ psip\ in\ save\_jastrowall:"{},\ psip(1:nel,1:nel)}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(psip)}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_a5ee06f79da3f2ade5fadf390fe0c63a4}{upjastrowallpsi}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}},\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1.d0,\ \mbox{\hyperlink{namespaceallio_a83791a4174af9aec6f15f1c61cc6cb32}{winvjbarsz}}\ \&}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ \mbox{\hyperlink{namespaceallio_af67e5b3d01517b864e520e76d94e2100}{winvj}},\ nelorbj5,\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}})}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__jastrowall_8f90_aa287d7072a6534ee7c9b6dd348bfdb61}{upjastrowallpsi\_sz}}(\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}},\ \mbox{\hyperlink{namespaceallio_a01e84bdb18f98dec6a1876d609798d30}{nelup}},\ \mbox{\hyperlink{namespaceallio_af9dbcff5caf4b62fa23a347bb34fa61f}{jastrowall\_ee}},\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}})}
+\DoxyCodeLine{00143\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00146\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dgemm__tn_8f_source_l00062}{dgemm\+\_\+()}}, \mbox{\hyperlink{allio_8f90_source_l01248}{allio\+::iessz}}, \mbox{\hyperlink{allio_8f90_source_l00149}{allio\+::indt}}, \mbox{\hyperlink{allio_8f90_source_l00165}{allio\+::indt4j}}, \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ip4}}, \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipj}}, \mbox{\hyperlink{allio_8f90_source_l00191}{allio\+::nel}}, \mbox{\hyperlink{allio_8f90_source_l00189}{allio\+::neldo}}, \mbox{\hyperlink{allio_8f90_source_l00263}{allio\+::nelorbj}}, \mbox{\hyperlink{allio_8f90_source_l00472}{allio\+::nelorbjh}}, \mbox{\hyperlink{allio_8f90_source_l00188}{allio\+::nelup}}, \mbox{\hyperlink{update__jastrowall_8f90_source_l00048}{upjastrowall()}}, \mbox{\hyperlink{update__jastrowall_8f90_source_l00099}{upjastrowall\+\_\+sz()}}, \mbox{\hyperlink{update__jastrowall_8f90_source_l00154}{upjastrowallfat()}}, \mbox{\hyperlink{update__jastrowall_8f90_source_l00206}{upjastrowallfat\+\_\+sz()}}, \mbox{\hyperlink{update__jastrowall_8f90_source_l00263}{upjastrowallpsi()}}, and \mbox{\hyperlink{update__jastrowall_8f90_source_l00316}{upjastrowallpsi\+\_\+sz()}}.
+
+
+
+Referenced by \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}.
+

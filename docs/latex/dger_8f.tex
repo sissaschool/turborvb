@@ -1,0 +1,86 @@
+\doxysection{src/d\+\_\+qlapack/dger.f File Reference}
+\hypertarget{dger_8f}{}\label{dger_8f}\index{src/d\_qlapack/dger.f@{src/d\_qlapack/dger.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dger_8f_a5b959bc754fff3061a51f26493840d20}{dger\+\_\+}} (m, n, alpha, x, incx, y, incy, a, lda)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{dger_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dger_8f_a5b959bc754fff3061a51f26493840d20}\index{dger.f@{dger.f}!dger\_@{dger\_}}
+\index{dger\_@{dger\_}!dger.f@{dger.f}}
+\doxysubsubsection{\texorpdfstring{dger\_()}{dger\_()}}
+{\footnotesize\ttfamily \label{dger_8f_a5b959bc754fff3061a51f26493840d20} 
+subroutine dger\+\_\+ (\begin{DoxyParamCaption}\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{alpha}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(incx\texorpdfstring{$\ast$}{*}(m-\/1)+1)}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(incy\texorpdfstring{$\ast$}{*}(n-\/1)+1)}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda\texorpdfstring{$\ast$}{*}(n-\/1)+m)}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dger_8f_source_l00019}{19}} of file \mbox{\hyperlink{dger_8f_source}{dger.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \textcolor{keywordtype}{USE\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{ONLY}:\ yes\_ontarget}
+\DoxyCodeLine{00021\ \textcolor{comment}{c}}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00023\ \textcolor{comment}{c}}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ real*8\ ::\ alpha}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ real*8\ ::\ a(lda*(n-\/1)+m),\ x(incx*(m-\/1)+1),\ y(incy*(n-\/1)+1)}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ INCX,\ INCY,\ LDA,\ M,\ N}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ I,\ INFO,\ J}
+\DoxyCodeLine{00028\ \textcolor{comment}{c}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dger(m,n,alpha,x,incx,y,incy,a,lda)}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00032\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00033\ \textcolor{comment}{c}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dger\_offload\_(m,n,alpha,x,incx,y}
+\DoxyCodeLine{00038\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incy,a,lda)}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dger\_offload(m,n,alpha,x,incx,y}
+\DoxyCodeLine{00042\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incy,a,lda)}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{}\textcolor{comment}{c}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 0}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (m.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 1}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (n.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 2}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incx.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 5}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incy.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 7}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (lda.LT.max(1,m))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 9}
+\DoxyCodeLine{00058\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00059\ \textcolor{comment}{c}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ ((\mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}.NE.0)}
+\DoxyCodeLine{00061\ \ \ \ \ \ +\ \ \ \ .OR.(m.EQ.0)}
+\DoxyCodeLine{00062\ \ \ \ \ \ +\ \ \ \ .OR.(n.EQ.0)}
+\DoxyCodeLine{00063\ \ \ \ \ \ +\ \ \ \ .OR.(alpha.EQ.0))}
+\DoxyCodeLine{00064\ \ \ \ \ \ +\ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00065\ \textcolor{comment}{c}}
+\DoxyCodeLine{00066\ \textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ 1,n}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,m}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(lda*(j-\/1)+i)\ =\ a(lda*(j-\/1)+i)\ +}
+\DoxyCodeLine{00070\ \ \ \ \ \ 1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alpha*x(incx*(i-\/1)+1)*y(incy*(j-\/1)+1)}
+\DoxyCodeLine{00071\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00072\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{ratiovar_8f90_source_l00027}{ratiovar()}}, \mbox{\hyperlink{test__dger_8f90_source_l00016}{test\+\_\+dger()}}, \mbox{\hyperlink{upinvhop_8f90_source_l00018}{upinvhop()}}, and \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}.
+

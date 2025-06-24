@@ -1,0 +1,88 @@
+\doxysection{src/c\+\_\+adjoint\+\_\+forward/eval\+\_\+iond.f90 File Reference}
+\hypertarget{eval__iond_8f90}{}\label{eval__iond_8f90}\index{src/c\_adjoint\_forward/eval\_iond.f90@{src/c\_adjoint\_forward/eval\_iond.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{eval__iond_8f90_aa4db69a2b7c5d55abcebc1e806fd1853}{eval\+\_\+iond}} (iond, rion, nion, lbox, psip, iond\+\_\+cart)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{eval__iond_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{eval__iond_8f90_aa4db69a2b7c5d55abcebc1e806fd1853}\index{eval\_iond.f90@{eval\_iond.f90}!eval\_iond@{eval\_iond}}
+\index{eval\_iond@{eval\_iond}!eval\_iond.f90@{eval\_iond.f90}}
+\doxysubsubsection{\texorpdfstring{eval\_iond()}{eval\_iond()}}
+{\footnotesize\ttfamily \label{eval__iond_8f90_aa4db69a2b7c5d55abcebc1e806fd1853} 
+subroutine eval\+\_\+iond (\begin{DoxyParamCaption}\item[{real(8), dimension(nion, nion)}]{iond}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{integer}]{nion}{, }\item[{real(8)}]{lbox}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{psip}{, }\item[{real(8), dimension(3, nion, nion)}]{iond\+\_\+cart}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{eval__iond_8f90_source_l00016}{16}} of file \mbox{\hyperlink{eval__iond_8f90_source}{eval\+\_\+iond.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ i,\ j,\ d,\ counter,\ inds,\ kkk}
+\DoxyCodeLine{00020\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ iond(nion,\ nion),\ rion(3,\ *),\ LBox,\ psip(3,\ *),\ \&}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \&iond\_cart(3,\ nion,\ nion)}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{comment}{!\ \ \ \ cdrion(3,(nion*(nion-\/1))/2)}}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{comment}{!\ \ \ \ 1,srion(3,(nion*(nion-\/1))/2)}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordflow}{if}\ (lbox\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{comment}{!pbc\ case}}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{comment}{!vectors\ between\ ions}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ counter\ =\ 0}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ counter\ =\ counter\ +\ 1}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(:,\ counter)\ =\ rion(:,\ i)\ -\/\ rion(:,\ j)}
+\DoxyCodeLine{00034\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00035\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_aba17aa76b83089553830ab955bff6686}{applypbc}}(psip,\ counter)}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{comment}{!distances\ between\ ions}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ counter\ =\ 0}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ counter\ =\ counter\ +\ 1}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iond(i,\ j)\ =\ dsqrt(sum(psip(:,\ counter)**2))}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iond\_cart(:,\ i,\ j)\ =\ psip(:,\ counter)}
+\DoxyCodeLine{00046\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00047\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{!open\ system\ case}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!distances\ between\ ions}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iond(i,\ j)\ =\ dsqrt(sum((rion(:,\ i)\ -\/\ rion(:,\ j))**2))}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iond\_cart(:,\ i,\ j)\ =\ rion(:,\ i)\ -\/\ rion(:,\ j)}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00057\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ put\ the\ correspondent\ (j,i)\ from\ (i,j)}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ iond(i,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ iond\_cart(:,\ i,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{comment}{!distances\ between\ ions}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ iond(j,\ i)\ =\ iond(i,\ j)}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ iond\_cart(:,\ j,\ i)\ =\ -\/iond\_cart(:,\ i,\ j)}
+\DoxyCodeLine{00067\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00068\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00534}{cell\+::applypbc()}}.
+
+
+
+Referenced by \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{plotlambda_8f90_source_l00025}{fort10toxyz()}}, \mbox{\hyperlink{initialize__environment_8f90_source_l00023}{initialize\+\_\+environment()}}, \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

@@ -1,0 +1,288 @@
+\doxysection{src/a\+\_\+tools/funvsa.f90 File Reference}
+\hypertarget{funvsa_8f90}{}\label{funvsa_8f90}\index{src/a\_tools/funvsa.f90@{src/a\_tools/funvsa.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+program \mbox{\hyperlink{funvsa_8f90_a449da438263fdfaf4e01fc4c17986824}{fitvsa}}
+\begin{DoxyCompactList}\small\item\em Variable selection and analysis program for Turbo\+RVB. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{funvsa_8f90_a623771aa627e4a46d22d5e524c91de77}{funmult}} (order, n, ntrue, x, y, wy, ypred, dypred, coeff, res, psip, ipsip, power, map, beta, gamma, evidence, fixbeta)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{funvsa_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{funvsa_8f90_a449da438263fdfaf4e01fc4c17986824}\index{funvsa.f90@{funvsa.f90}!fitvsa@{fitvsa}}
+\index{fitvsa@{fitvsa}!funvsa.f90@{funvsa.f90}}
+\doxysubsubsection{\texorpdfstring{fitvsa()}{fitvsa()}}
+{\footnotesize\ttfamily \label{funvsa_8f90_a449da438263fdfaf4e01fc4c17986824} 
+program fitvsa}
+
+
+
+Variable selection and analysis program for Turbo\+RVB. 
+
+This program performs variable selection and analysis using polynomial fitting with various transformation options. It supports machine learning approaches with evidence-\/based model selection. The program can handle different input formats and provides statistical error analysis through Monte Carlo sampling.
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2022 
+\end{DoxyDate}
+
+
+Definition at line \mbox{\hyperlink{funvsa_8f90_source_l00025}{25}} of file \mbox{\hyperlink{funvsa_8f90_source}{funvsa.\+f90}}.
+
+
+
+References \mbox{\hyperlink{funvsa_8f90_source_l00270}{funmult()}}, and \mbox{\hyperlink{__help__online_8f90_source_l00051}{name\+\_\+tool}}.
+
+\Hypertarget{funvsa_8f90_a623771aa627e4a46d22d5e524c91de77}\index{funvsa.f90@{funvsa.f90}!funmult@{funmult}}
+\index{funmult@{funmult}!funvsa.f90@{funvsa.f90}}
+\doxysubsubsection{\texorpdfstring{funmult()}{funmult()}}
+{\footnotesize\ttfamily \label{funvsa_8f90_a623771aa627e4a46d22d5e524c91de77} 
+subroutine funmult (\begin{DoxyParamCaption}\item[{integer}]{order}{, }\item[{integer}]{n}{, }\item[{integer}]{ntrue}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{x}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{y}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{wy}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{ypred}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{dypred}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(order + 1)}]{coeff}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{res}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(order + 1, \texorpdfstring{$\ast$}{*})}]{psip}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{ipsip}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{power}{, }\item[{double precision}]{map}{, }\item[{double precision}]{beta}{, }\item[{double precision}]{gamma}{, }\item[{double precision}]{evidence}{, }\item[{logical}]{fixbeta}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{funvsa_8f90_source_l00268}{268}} of file \mbox{\hyperlink{funvsa_8f90_source}{funvsa.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ k,\ l,\ order,\ orderp,\ orderpp,\ orderp3,\ N,\ ipsip(*),\ info,\ iter,\ maxit,\ Ntrue}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{}\ \ \ \ real*16\ coeff(order\ +\ 1)}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{}\ \ \ \ real*8\ coeff(order\ +\ 1)}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{}\ \ \ \ real*8\ y(n),\ x(n),\ wy(n),\ psip(order\ +\ 1,\ *),\ res,\ power\&}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ypred(n),\ dypred(n),\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}},\ eps}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ eig,\ work,\ vec}
+\DoxyCodeLine{00281\ \ \ \ \ real*16,\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ coeffd,\ vecd}
+\DoxyCodeLine{00282\ \ \ \ \ real*16,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ psipd}
+\DoxyCodeLine{00283\ \ \ \ \ real*16\ xd,\ xk,\ fx,\ dfx,\ resd}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{parameter}\ ::\ TWO\_PI\ =\ 6.28318530717958647692d0}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{parameter}\ ::\ one\ =\ 1.d0}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{parameter}\ ::\ zero\ =\ 0.d0}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{keywordtype}{logical}\ fixbeta}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ map,\ beta,\ gamma,\ evidence,\ eig\_min}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ orderp\ =\ order\ +\ 1}
+\DoxyCodeLine{00293\ \ \ \ \ orderpp\ =\ order\ +\ 2}
+\DoxyCodeLine{00294\ \ \ \ \ \textcolor{comment}{!\ \ Implementing\ quadruple\ precision\ in\ the\ O(N\string^2)\ operations\ (load\ matrix)}}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keyword}{allocate}\ (coeffd(orderp),\ vecd(orderp),\ psipd(orderp,\ orderp))}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \ \ \ \ coeffd\ =\ 0}
+\DoxyCodeLine{00298\ \ \ \ \ vecd\ =\ 0}
+\DoxyCodeLine{00299\ \ \ \ \ psipd\ =\ 0}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ orderp}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ orderp}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00303\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ coeff(i)\ =\ 0.d0}
+\DoxyCodeLine{00305\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wy(i)\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ xd\ =\ x(i)}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (power\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(1)\ =\ xd**(power\ -\/\ 1)}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1,orderpp)=x(i)**(power-\/1)}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (abs(power)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(1)\ =\ 1}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1,orderpp)=1.d0}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(1)\ =\ xd**(power\ +\ 1)}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1,orderpp)=x(i)**(power+1)}}
+\DoxyCodeLine{00319\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (power\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(k,orderpp)=psip(k-\/1,orderpp)*x(i)}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(k)\ =\ vecd(k\ -\/\ 1)*xd}
+\DoxyCodeLine{00324\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(k,orderpp)=psip(k-\/1,orderpp)/x(i)}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(k)\ =\ vecd(k\ -\/\ 1)/xd}
+\DoxyCodeLine{00329\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00330\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(1,orderpp)=1.d0}}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ vecd(1)\ =\ 1}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ orderp}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecd(k)\ =\ vecd(k)/wy(i)}
+\DoxyCodeLine{00335\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ update\ the\ matrix}}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ orderp}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ orderp}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(k,l)=psip(k,l)+vecd(k)*psip(l,orderpp)/wy(i)**2}}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(k,l)=psip(k,l)+vecd(k)*vecd(l)}}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psipd(k,\ l)\ =\ psipd(k,\ l)\ +\ vecd(k)*vecd(l)}
+\DoxyCodeLine{00342\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ coeff(k)=coeff(k)+y(i)*psip(k,orderpp)/wy(i)**2}}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ coeffd(k)\ =\ coeffd(k)\ +\ y(i)*(vecd(k)/wy(i))}
+\DoxyCodeLine{00345\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00346\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00347\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ orderp}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ coeff(k)\ =\ coeffd(k)}
+\DoxyCodeLine{00350\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00351\ \ \ \ \ psip(1:orderp,\ 1:orderp)\ =\ psipd(1:orderp,\ 1:orderp)}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \ \ \textcolor{keywordflow}{if}\ (map\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mat(orderp,\ orderp),\ eig(orderp),\ vec(orderp),\ work(3*orderp))}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ mat(1:orderp,\ 1:orderp)\ =\ psip(1:orderp,\ 1:orderp)}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ orderp,\ mat,\ orderp,\ eig,\ work,\ 3*orderp,\ info)}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ 1.d0}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ eps\ =\ 1d-\/8}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ maxit\ =\ 100}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(1)\ .le.\ 0.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \&}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{stringliteral}{'\ Warning\ accuracy\ diag/cond\ numb.\ '},\ eig(1),\ abs(eig(orderp)/eig(1))}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ eig\_min\ =\ eig(orderp)*dlamch(\textcolor{stringliteral}{'E'})}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ orderp}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(i)\ .lt.\ eig\_min)\ eig(i)\ =\ eig\_min}
+\DoxyCodeLine{00367\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ orderp,\ orderp,\ one,\ mat,\ orderp,\ coeff,\ 1,\ zero,\ vec,\ 1)}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (iter\ .le.\ maxit\ .and.\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ .gt.\ eps)}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ iter\ =\ iter\ +\ 1}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ gamma\ =\ 0.d0}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ orderp}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gamma\ =\ gamma\ +\ beta*eig(i)/(beta*eig(i)\ +\ map)}
+\DoxyCodeLine{00374\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ orderp}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ work(i)\ =\ beta*vec(i)/(map\ +\ beta*eig(i))}
+\DoxyCodeLine{00377\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ orderp,\ orderp,\ one,\ mat,\ orderp,\ work,\ 1,\ zero,\ coeff,\ 1)}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ map}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ map\ =\ gamma/sum(coeff(1:orderp)**2)}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ =\ abs(map\ -\/\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}})}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ resd\ =\ 0.d0}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ coeff(1)}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dfx\ =\ 0.d0}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xd\ =\ x(i)}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(power)\ .eq.\ 1.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ 1.d0}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (power\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xd**(power\ -\/\ 1)}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xd**(power\ +\ 1)}
+\DoxyCodeLine{00393\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (power\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dfx\ =\ dfx\ +\ (k\ -\/\ 2\ +\ power)*(xk*coeff(k))}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xk*x(i)}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeff(k)*xk}
+\DoxyCodeLine{00399\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xk/x(i)}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeff(k)*xk}
+\DoxyCodeLine{00404\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00405\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ypred(i)\ =\ fx}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dypred(i)\ =\ dfx}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wy(i)\ .ne.\ 0.d0)\ resd\ =\ resd\ +\ ((fx\ -\/\ y(i))/wy(i))**2}
+\DoxyCodeLine{00409\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ res\ =\ resd}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ fixbeta)\ beta\ =\ (ntrue\ -\/\ gamma)/res}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (map\ .gt.\ 0.d0\ .and.\ beta\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ evidence\ =\ orderp*log(map)\ +\ ntrue*log(beta/two\_pi)\ -\/\ (beta*res\ +\ gamma)}
+\DoxyCodeLine{00414\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ orderp}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (beta*eig(i)\ +\ map\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ evidence\ =\ evidence\ -\/\ log(beta*eig(i)\ +\ map)}
+\DoxyCodeLine{00418\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00419\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ evidence\ =\ evidence/2.d0}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ New\ value\ of\ alpha,beta\ =',iter,map,beta,res,error}}
+\DoxyCodeLine{00422\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}\ .gt.\ eps\ .or.\ iter\ .ge.\ maxit)\ \&}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ not\ converged'},\ \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}},\ iter}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (mat,\ eig,\ work,\ vec)}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ stop}}
+\DoxyCodeLine{00427\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Now\ solve\ the\ linear\ system}}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{keywordflow}{if}\ (map\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00432\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrf(orderp,\ orderp,\ psipd,\ orderp,\ ipsip,\ info)}
+\DoxyCodeLine{00434\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00435\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrf(orderp,\ orderp,\ psip,\ orderp,\ ipsip,\ info)}
+\DoxyCodeLine{00436\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00437\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00438\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrs(\textcolor{stringliteral}{'N'},\ orderp,\ 1,\ psipd,\ orderp,\ ipsip,\ coeffd,\ orderp,\ info)}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ \ \ \ \ coeff(1:orderp)\ =\ coeffd(1:orderp)}
+\DoxyCodeLine{00441\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00442\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrs(\textcolor{stringliteral}{'N'},\ orderp,\ 1,\ psip,\ orderp,\ ipsip,\ coeff,\ orderp,\ info)}
+\DoxyCodeLine{00443\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00444\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ There\ is\ depdendency\ !!!\ '}}
+\DoxyCodeLine{00446\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ resd\ =\ 0.d0}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00449\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00450\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ coeffd(1)}
+\DoxyCodeLine{00451\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00452\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ coeff(1)}
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00454\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ dfx\ =\ 0.d0}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ xd\ =\ x(i)}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(power)\ .eq.\ 1.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ 1.d0}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (power\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xd**(power\ -\/\ 1)}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xd**(power\ +\ 1)}
+\DoxyCodeLine{00462\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (power\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dfx\ =\ dfx\ +\ (k\ -\/\ 2\ +\ power)*coeffd(k)*xk}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00469\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dfx\ =\ dfx\ +\ (k\ -\/\ 2\ +\ power)*coeff(k)*xk}
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xk*x(i)}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeffd(k)*xk}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeff(k)*xk}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ orderp}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk\ =\ xk/x(i)}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\#ifdef\ \_\_DDIAG}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeffd(k)*xk}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fx\ =\ fx\ +\ coeff(k)*xk}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00487\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ ypred(i)\ =\ fx}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ dypred(i)\ =\ dfx}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wy(i)\ .ne.\ 0.d0)\ resd\ =\ resd\ +\ ((fx\ -\/\ y(i))/wy(i))**2}
+\DoxyCodeLine{00491\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ res\ =\ resd}
+\DoxyCodeLine{00493\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keyword}{deallocate}\ (coeffd,\ vecd,\ psipd)}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error_8f90_source_l00061}{error()}}.
+
+
+
+Referenced by \mbox{\hyperlink{funvsa_8f90_source_l00025}{fitvsa()}}.
+

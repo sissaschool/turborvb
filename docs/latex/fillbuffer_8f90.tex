@@ -1,0 +1,144 @@
+\doxysection{src/a\+\_\+prep/fillbuffer.f90 File Reference}
+\hypertarget{fillbuffer_8f90}{}\label{fillbuffer_8f90}\index{src/a\_prep/fillbuffer.f90@{src/a\_prep/fillbuffer.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a}{fillbuff\+\_\+complex}} (nelorb, indt, istart, indtms, tcost, vpots, winv\+\_\+c, buffer)
+\begin{DoxyCompactList}\small\item\em Fills buffer with complex wavefunction values for Hamiltonian calculations. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d}{fillbuff}} (nelorb, indt, istart, indtms, tcost, vpots, winv, buffer)
+\begin{DoxyCompactList}\small\item\em Fills buffer with real wavefunction values for Hamiltonian calculations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{fillbuffer_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d}\index{fillbuffer.f90@{fillbuffer.f90}!fillbuff@{fillbuff}}
+\index{fillbuff@{fillbuff}!fillbuffer.f90@{fillbuffer.f90}}
+\doxysubsubsection{\texorpdfstring{fillbuff()}{fillbuff()}}
+{\footnotesize\ttfamily \label{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d} 
+subroutine fillbuff (\begin{DoxyParamCaption}\item[{integer}]{nelorb}{, }\item[{integer}]{indt}{, }\item[{integer}]{istart}{, }\item[{integer}]{indtms}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{tcost}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vpots}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nelorb, 0\+:indt + 4)}]{winv}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{buffer}{}\end{DoxyParamCaption})}
+
+
+
+Fills buffer with real wavefunction values for Hamiltonian calculations. 
+
+This subroutine computes the buffer array for real wavefunctions by combining potential energy contributions, non-\/local potential terms, and kinetic energy. It uses real arithmetic and BLAS operations for efficient matrix-\/vector products. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em indt} & Maximum angular momentum index \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Starting index for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em indtms} & Ending index for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em tcost} & Array of cost factors for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em vpots} & Scalar potential value \\
+\hline
+\mbox{\texttt{in}}  & {\em winv} & Real wavefunction inverse matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em buffer} & Output buffer array to be filled \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{fillbuffer_8f90_source_l00071}{71}} of file \mbox{\hyperlink{fillbuffer_8f90_source}{fillbuffer.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorb,\ indt,\ istart,\ indtms,\ dims,\ i}
+\DoxyCodeLine{00074\ \ \ \ \ real*8\ tcost(*),\ vpots,\ winv(nelorb,\ 0:indt\ +\ 4),\ buffer(*)}
+\DoxyCodeLine{00075\ \ \ \ \ dims\ =\ indtms\ -\/\ istart\ +\ 1}
+\DoxyCodeLine{00076\ \ \ \ \ buffer(1:nelorb)\ =\ 0.5d0*vpots*winv(1:nelorb,\ 0)\ \textcolor{comment}{!\ unit\ Hartree}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (dims\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ non\ local\ part\ if\ any}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nelorb,\ dims,\ -\/0.5d0,\ winv(1,\ istart),\ nelorb,\ tcost(istart)\&}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 1,\ 1.d0,\ buffer,\ 1)}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ buffer\ inside\ fillbuf\ ',sum(buffer(1:nelorb))}}
+\DoxyCodeLine{00082\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ SSTEST}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ buffer(1:nelorb)=0.d0\ !\ disregard\ potential\ for\ tests}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ kinetic\ energy\ unit\ Hartree}}
+\DoxyCodeLine{00086\ \ \ \ \ buffer(1:nelorb)\ =\ buffer(1:nelorb)\ -\/\ 0.5d0*winv(1:nelorb,\ indt\ +\ 4)}
+\DoxyCodeLine{00087\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{initialize__matrices_8f90_source_l00763}{upload\+\_\+mat()}}.
+
+\Hypertarget{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a}\index{fillbuffer.f90@{fillbuffer.f90}!fillbuff\_complex@{fillbuff\_complex}}
+\index{fillbuff\_complex@{fillbuff\_complex}!fillbuffer.f90@{fillbuffer.f90}}
+\doxysubsubsection{\texorpdfstring{fillbuff\_complex()}{fillbuff\_complex()}}
+{\footnotesize\ttfamily \label{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a} 
+subroutine fillbuff\+\_\+complex (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{nelorb}{, }\item[{integer, intent(in)}]{indt}{, }\item[{integer, intent(in)}]{istart}{, }\item[{integer, intent(in)}]{indtms}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{tcost}{, }\item[{real(8), intent(in)}]{vpots}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelorb, 0\+:indt + 4), intent(in)}]{winv\+\_\+c}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelorb), intent(out)}]{buffer}{}\end{DoxyParamCaption})}
+
+
+
+Fills buffer with complex wavefunction values for Hamiltonian calculations. 
+
+This subroutine computes the buffer array for complex wavefunctions by combining potential energy contributions, non-\/local potential terms, and kinetic energy. It handles complex arithmetic and uses BLAS operations for matrix-\/vector products. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em indt} & Maximum angular momentum index \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Starting index for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em indtms} & Ending index for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em tcost} & Array of cost factors for non-\/local potential \\
+\hline
+\mbox{\texttt{in}}  & {\em vpots} & Scalar potential value \\
+\hline
+\mbox{\texttt{in}}  & {\em winv\+\_\+c} & Complex wavefunction inverse matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em buffer} & Output buffer array to be filled \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{fillbuffer_8f90_source_l00028}{28}} of file \mbox{\hyperlink{fillbuffer_8f90_source}{fillbuffer.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a7c52fca9cdf95ea5a6727ad4e9a4fb77}{zhalf}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{comment}{!\ input\ variables}}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelorb,\ indt,\ istart,\ indtms}
+\DoxyCodeLine{00036\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ tcost(*),\ vpots}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(in)}\ ::\ winv\_c(nelorb,\ 0:indt\ +\ 4)}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(out)}\ ::\ buffer(nelorb)}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ dims,\ i}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ dims\ =\ indtms\ -\/\ istart\ +\ 1}
+\DoxyCodeLine{00044\ \ \ \ \ buffer(1:nelorb)\ =\ \mbox{\hyperlink{namespaceconstants_a7c52fca9cdf95ea5a6727ad4e9a4fb77}{zhalf}}*dcmplx(vpots)*winv\_c(1:nelorb,\ 0)\ \textcolor{comment}{!\ unit\ Hartree}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{if}\ (dims\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ adding\ non\ local\ part\ if\ any}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ 2*nelorb,\ dims,\ -\/0.5d0,\ winv\_c(1,\ istart),\ 2*nelorb,\ tcost(istart)\&}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 1,\ 1.d0,\ buffer,\ 1)}
+\DoxyCodeLine{00050\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ SSTEST}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ buffer(1:nelorb)=0.d0\ !\ disregard\ potential\ for\ tests}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ kinetic\ energy\ unit\ Hartree}}
+\DoxyCodeLine{00054\ \ \ \ \ buffer(1:nelorb)\ =\ buffer(1:nelorb)\ -\/\ 0.5d0*winv\_c(1:nelorb,\ indt\ +\ 4)}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00253}{constants\+::zhalf}}, and \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}.
+
+
+
+Referenced by \mbox{\hyperlink{initialize__matrices_8f90_source_l00763}{upload\+\_\+mat()}}.
+

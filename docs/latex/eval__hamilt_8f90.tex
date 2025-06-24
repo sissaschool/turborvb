@@ -1,0 +1,720 @@
+\doxysection{src/a\+\_\+prep/eval\+\_\+hamilt.f90 File Reference}
+\hypertarget{eval__hamilt_8f90}{}\label{eval__hamilt_8f90}\index{src/a\_prep/eval\_hamilt.f90@{src/a\_prep/eval\_hamilt.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{eval__hamilt_8f90_a5e979b24039a558d0f9b67f72980dbe1}{eval\+\_\+hamilt}} (nelorb\+\_\+c, oversav, matsav, molecorb, eig, lda, epsr, eps\+\_\+mach, rank, optprint, lworkr, iopt, premat, eigmat, info, bands, nlax, mincond)
+\begin{DoxyCompactList}\small\item\em Evaluates Hamiltonian eigenvalues and eigenvectors in non-\/orthogonal basis. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{eval__hamilt_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{eval__hamilt_8f90_a5e979b24039a558d0f9b67f72980dbe1}\index{eval\_hamilt.f90@{eval\_hamilt.f90}!eval\_hamilt@{eval\_hamilt}}
+\index{eval\_hamilt@{eval\_hamilt}!eval\_hamilt.f90@{eval\_hamilt.f90}}
+\doxysubsubsection{\texorpdfstring{eval\_hamilt()}{eval\_hamilt()}}
+{\footnotesize\ttfamily \label{eval__hamilt_8f90_a5e979b24039a558d0f9b67f72980dbe1} 
+subroutine eval\+\_\+hamilt (\begin{DoxyParamCaption}\item[{integer}]{nelorb\+\_\+c}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, nelorb\+\_\+c)}]{oversav}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, nelorb\+\_\+c)}]{matsav}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, nelorb\+\_\+c)}]{molecorb}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nelorb\+\_\+c)}]{eig}{, }\item[{integer}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{epsr}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{eps\+\_\+mach}{, }\item[{integer}]{rank}{, }\item[{integer}]{optprint}{, }\item[{integer}]{lworkr}{, }\item[{integer}]{iopt}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nelorb\+\_\+c)}]{premat}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{eigmat}{, }\item[{integer}]{info}{, }\item[{integer}]{bands}{, }\item[{integer, intent(in)}]{nlax}{, }\item[{integer}]{mincond}{}\end{DoxyParamCaption})}
+
+
+
+Evaluates Hamiltonian eigenvalues and eigenvectors in non-\/orthogonal basis. 
+
+This subroutine computes the first bands eigenvectors of a Hamiltonian defined in a non-\/orthogonal basis. It handles ill-\/conditioned overlap matrices by applying a stable diagonalization algorithm that removes singular eigenvalues and reorthogonalizes eigenvectors. Supports both serial and parallel (SCALAPACK) execution with different algorithms for each case. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nelorb\+\_\+c} & Number of basis functions \\
+\hline
+\mbox{\texttt{in}}  & {\em oversav} & Overlap matrix (not destroyed on output) \\
+\hline
+\mbox{\texttt{in}}  & {\em matsav} & Hamiltonian matrix (not destroyed on output) \\
+\hline
+\mbox{\texttt{out}}  & {\em molecorb} & Eigenvectors in original basis \\
+\hline
+\mbox{\texttt{out}}  & {\em eig} & Eigenvalues \\
+\hline
+\mbox{\texttt{in}}  & {\em lda} & Leading dimension of arrays \\
+\hline
+\mbox{\texttt{in}}  & {\em epsr} & Tolerance for eigenvalue filtering \\
+\hline
+\mbox{\texttt{in}}  & {\em eps\+\_\+mach} & Machine precision \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Rank of current process \\
+\hline
+\mbox{\texttt{in}}  & {\em optprint} & Print option flag \\
+\hline
+\mbox{\texttt{in}}  & {\em lworkr} & Work array size \\
+\hline
+\mbox{\texttt{in}}  & {\em iopt} & Option flag (1\+: initialization, 0\+: iteration) \\
+\hline
+\mbox{\texttt{in}}  & {\em premat} & Preconditioning matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em eigmat} & Eigenvalue matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Status flag \\
+\hline
+\mbox{\texttt{in}}  & {\em bands} & Number of bands to compute \\
+\hline
+\mbox{\texttt{in}}  & {\em nlax} & Leading dimension for SCALAPACK arrays \\
+\hline
+\mbox{\texttt{in}}  & {\em mincond} & Minimum condition number \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{eval__hamilt_8f90_source_l00041}{41}} of file \mbox{\hyperlink{eval__hamilt_8f90_source}{eval\+\_\+hamilt.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ This\ subroutine\ was\ written\ by\ Sandro\ Sorella\ and\ Carlo\ Cavazzoni}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 14\ November\ 2008.\ Revised\ 20\ January\ 2008}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ task\ of\ this\ subroutine\ is\ to\ compute\ in\ a\ stable\ way\ the\ first}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ bands=\ (\string~\#\ electrons/2)\ \ eigenvectors\ of\ an\ Hamiltonian\ defined\ in}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ a\ non\ orthogonal\ basis\ of\ linear\ dimension\ nelorb\_c>>bands.}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ overlap\ matrix\ input\ matrix\ elements}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ being\ oversav\ and\ the\ corresponding\ hamiltonian\ matrix\ elements\ matsav.}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ These\ matrices\ are\ not\ destroyed\ on\ output.}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ problem\ is\ that\ the\ matrix\ oversav\ may\ have\ a\ very\ small\ condition}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ number\ and\ straighforward\ diagonalization\ using\ scalapack\ \ PDSYGVX}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ leads\ to\ inaccurate\ and\ often\ garbage\ eigenvectors.}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ In\ parallel\ computation\ there\ is\ also\ the\ further\ complication\ that}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ it\ is\ difficult\ to\ preserve\ orthogonality\ (and\ accuracy)\ of\ eigenvectors}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ without\ having\ a\ huge\ buffer\ memory\ \ \ at\ disposal,\ as\ no\ memory}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ distribution\ \ is\ possible\ in\ order\ to\ orthogonalize.}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ parallel\ code\ is\ therefore\ slightly\ different\ from\ the\ scalar\ one.}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{!\ \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Scalar\ algorithm:}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 1)\ \ \ \ Diagonalize\ the\ full\ overlap\ matrix\ with\ maximum\ accuracy}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ \ \ (ABSTOL=2.*dlamch('S')),\ compute\ eigenvalies\ eig(i)\ and\ eigenvectors\ umat).}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ After\ removing\ the\ singular\ eigenvalues\ recompute\ and\ reorthoganilize}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ them\ exactly\ as\ is\ done\ in\ the\ parallel\ algorithm.}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 2)\ \ Recompute\ the\ matrix\ elements\ of\ the\ Hamiltonian\ in\ the\ new}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ orthogonal\ basis\ by\ taking\ only\ the\ vectors\ \{i\}\ \ with\ eigenvalues}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ eig(i)/eig\_max\ <\ epsr\ (input).\ So\ that\ the\ new\ overlap\ matrix}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ has\ by\ definition\ condition\ number\ >\ eps.}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 3)\ Now\ the\ diagonalization\ of\ the\ matrix\ in\ the\ new\ basis\ can\ be\ done}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ because\ it\ is\ a\ well\ conditioned\ \ matrix\ as}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ the\ eigenvalues\ are\ the\ physical\ \ eigenvalues\ of\ the\ Hamiltonian.}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 4)\ \ Go\ back\ in\ the\ original\ basis\ for\ the\ eigenvectors\ computed.}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{!\ \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ PARALLEL\ \ algorithm\ (Using\ SCALAPACK\ version...):}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 1)\ Apply\ Cavazzoni's\ diagonalization\ \ to\ the\ overlap\ matrix.}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ Disregard\ eigenvalues\ \ of\ the\ overlap\ matrix\ with}}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ eig(i)/eig\_max\ <\ eps.}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ This\ is\ justified\ from\ the\ fact\ that\ an\ eigenvector\ of\ the}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ overlap\ matrix\ with\ nearly\ zero\ eigenvalue\ corresponds\ \ to}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ a\ linear\ combination\ of\ states\ in\ the\ original\ basis\ with}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ vanishing\ norm,\ i.e.\ the\ non\ orthogonal\ basis\ is\ redundant\ and}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ this\ direction\ can\ be\ eliminated\ within\ numerical\ accuracy<sqrt(eps).}}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ In\ this\ step\ we\ do\ not\ require\ neither\ orthogonality\ between}}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ selected\ eigenvectors\ nor\ maximum\ accuracy.}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ However\ the\ accuracy\ has\ to\ be\ sufficient\ to\ guarantee\ that}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ eigenvectors\ are\ at\ least\ linearly\ independent.}}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ In\ a\ second\ step\ we\ diagonalize\ again\ the\ overlap\ matrix\ in}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ this\ basis\ without\ the\ singular\ vectors\ corresponding\ to\ the}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ disregarded\ eigenvalues.\ Since\ in\ this\ basis}}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ matrix\ has\ very\ good\ condition\ number,\ we\ can\ assume\ that}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ Cavazzoni's\ diagonalization\ routine\ provides\ a\ very\ accurate}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ orthonormal\ basis\ set.\ Then\ we\ store\ in\ umatl\ the\ transformation}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ between\ the\ original\ basis\ and\ the\ orthogonal\ one.}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ step\ is\ done\ only\ at\ the\ inizialization\ (iopt=1)\ and\ umatl\ is}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ saved,\ and\ used\ \ for\ all\ further\ iterations\ (iopt=0).}}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 2)\ \ At\ each\ iteration\ recompute\ the\ hamiltonian\ matrix\ H}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ this\ new\ basis.}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 3)\ \ Then\ \ apply\ again\ the\ Cavazzoni's\ diagonalization\ routine.}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Computation\ and\ memory\ requirements\ are\ minimal.}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ 4)\ \ Go\ back\ to\ \ the\ original\ basis\ for\ the\ eigenvectors\ computed\ at}}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ each\ iteration.}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_adab42294590a36c1b75b89256b949b9a}{ortho\_cntx}},\ \mbox{\hyperlink{namespaceallio_a0f57338bfcc5f05d206d6ff96978b578}{me\_blacs}},\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}},\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}},\ \mbox{\hyperlink{namespaceallio_aa5c2b53c5ea9389f1922e1bd39a6359c}{ortho\_comm}},\ \mbox{\hyperlink{namespaceallio_a02d1807c1384e89410279f23a4bffce4}{ortho\_comm\_id}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{use\ }dspev\_module}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nlax}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorb\_c,\ i,\ j,\ rank,\ info,\ n,\ lda,\ mine,\ dimo,\ neig,\ lwork,\ optprint\&}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lworkr,\ iopt,\ countexc,\ bands,\ dimorb,\ ierr,\ mincond}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordtype}{real*8}\ eig(nelorb\_c),\ premat(nelorb\_c)\&}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ eigmat(*),\ abstol,\ eps,\ epsr,\ orbmax,\ dlamch,\ minover\&}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ condnumber,\ cost,\ maxeig,\ eps\_mach}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{real(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat\_in,\ overs}
+\DoxyCodeLine{00121\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ work}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ iwork,\ ifail}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{}\ \ \ \ real*8\ molecorb(nlax,\ nlax),\ oversav(nlax,\ nlax),\ matsav(nlax,\ nlax)}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{}\ \ \ \ real*8\ molecorb(lda,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}),\ oversav(lda,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}),\ matsav(lda,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}})}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desch(20)}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desc(descla\_siz\_)}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ LIWORK,\ ic,\ ir,\ mm,\ nz,\ ii,\ jj,\ ip,\ jp,\ nrlx}
+\DoxyCodeLine{00137\ \ \ \ \ real*8\ ::\ pdlamch}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ INDXG2L,\ INDXG2P,\ INDXL2G}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00141\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{save}\ ::\ umatl(:,\ :)}
+\DoxyCodeLine{00142\ \ \ \ \ real*8,\ \textcolor{keywordtype}{allocatable}\ ::\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}(:,\ :),\ vv(:,\ :),\ overlap(:,\ :)}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00148\ \ \ \ \ n\ =\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{00149\ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_a7bbbf54fe29dc57a681727cd1c18c8e2}{descla\_init}}(desc,\ n,\ n,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}},\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}},\ \mbox{\hyperlink{namespaceallio_aa5c2b53c5ea9389f1922e1bd39a6359c}{ortho\_comm}},\ \mbox{\hyperlink{namespaceallio_a02d1807c1384e89410279f23a4bffce4}{ortho\_comm\_id}})}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(\mbox{\hyperlink{namespacedescriptors_ab8e33d37bc924bedd16c0c1f8ef5d21f}{lambda\_node\_}})\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mat\_in(desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}})))}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ mat\_in\ =\ 0.d0}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \textcolor{keyword}{allocated}(umatl))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (umatl(desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}})))}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ umatl\ =\ 0.d0}
+\DoxyCodeLine{00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overs(desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}})))}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ ir\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a37d4fae84d9983220c5e0b5f8016defc}{ilar\_}})}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ ic\ =\ desc(\mbox{\hyperlink{namespacedescriptors_aa5dac3f566a40f6cfbf0735e8abfa0ed}{ilac\_}})}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{comment}{!\ \ \ \ if(rank.eq.0)\ write(6,*)\ '\ abstol\ =',abstol}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ eps\ =\ epsr}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ abs(eps\_mach)}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{comment}{!\ \ \ \ For\ the\ first\ part\ we\ do\ not\ assume\ to\ have\ accurate\ eigenvectors.}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }descinit(desch,\ n,\ n,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ 0,\ 0,\ \mbox{\hyperlink{namespaceallio_adab42294590a36c1b75b89256b949b9a}{ortho\_cntx}},\ \textcolor{keyword}{size}(umatl,\ 1),\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}})}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ cdiaghg\ '},\ \textcolor{stringliteral}{'\ descinit\ '},\ abs(\mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}))}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{comment}{!\ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{00180\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{00181\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ overs(i,j)=oversav(i+ir-\/1,j+ic-\/1)}}
+\DoxyCodeLine{00182\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00183\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{00184\ \textcolor{comment}{!\ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{00185\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{00186\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ mat\_in(i,j)=matsav(i+ir-\/1,j+ic-\/1)}}
+\DoxyCodeLine{00187\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00188\ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{00189\ \textcolor{comment}{!\ \ \ \ To\ be\ sure\ there\ is\ no\ garbage.}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ overs\ =\ oversav}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ mat\_in\ =\ matsav}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,oversav,1,1,desch,0.d0,overs,1,1,desch\ )}}
+\DoxyCodeLine{00194\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,matsav,1,1,desch,0.d0,mat\_in,1,1,desch\ )}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ ==\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (overlap(desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}})))}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ overlap\ =\ 0.d0}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ overs(i,\ j)*premat(i\ +\ ir\ -\/\ 1)*premat(j\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{00204\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00205\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ nrlx\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a492771616568fc755d09086e33af1eba}{la\_nrlx\_}})}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}\ =\ 0.d0}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_aea151dfe67039cf93001061d62bb5484}{blk2cyc\_redist}}(n,\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ overs,\ \textcolor{keyword}{size}(overs,\ 1),\ desc(1))}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00216\ \textcolor{comment}{!\ \ \ \ iopt=0,\ the\ standard\ one}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ vv,\ nrlx,\ desc(\mbox{\hyperlink{namespacedescriptors_a42f08c808ab1905f5b22bcba5eab934d}{la\_nrl\_}}),\ n,\&}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \&desc(\mbox{\hyperlink{namespacedescriptors_a58b91a284dcd838d07f2d0eb355c6757}{la\_npr\_}})*desc(\mbox{\hyperlink{namespacedescriptors_a11f6a3909016c615737d6a5f1352c40e}{la\_npc\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a88e7647dd5b86754d25e35475bf4a9f0}{la\_me\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a5a0ed4c959a486a0f8872e39760060f8}{la\_comm\_}}),\ eps\_mach,\ 1)}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_ad640bbcddd7e46dc1ad3b81648ac4cc4}{cyc2blk\_redist}}(n,\ vv,\ nrlx,\ umatl,\ \textcolor{keyword}{size}(umatl,\ 1),\ desc(1))}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ vv)}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ ==\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Lowest/Max\ \ eigenvalue\ overlap\ mat\ ='},\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n),\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ condnumber\ =\ abs(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1))}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)\ .lt.\ 0.d0)\ condnumber\ =\ condnumber/100.d0}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ 1,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1),\ 1.d0}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ n}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ =\ abs(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1))}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .lt.\ 0.d0)\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ =\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}/100.d0}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i),\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ .lt.\ condnumber)\ condnumber\ =\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{00238\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Inverse\ Condition\ Number\ basis\ set\ ='},\ condnumber}
+\DoxyCodeLine{00240\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)\ .gt.\ abs(eps)\ .or.\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .lt.\ 0\ .and.\ -\/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)\&}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.gt.\ abs(eps*100.d0)))\ .and.\ i\ .le.\ n\ -\/\ mincond\ +\ 1)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/abs(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)))}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{00249\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00250\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .and.\ optprint\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ disregarded\ coll.\ ='},\ mine\ -\/\ 1}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{comment}{!\ \ \ \ \ \ \ \ rescale\ umatl}}
+\DoxyCodeLine{00261\ \textcolor{comment}{!\ \ \ \ the\ matrix\ used\ \ for\ the\ transformation\ in\ the\ new\ basis}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ umatl(i,\ j)\ =\ umatl(i,\ j)*premat(i\ +\ ir\ -\/\ 1)*eigmat(j\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{00265\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00266\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ oversav,\ 1,\ 1,\ desch\ \&}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ umatl(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ overs,\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1,\ desch\ \&}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ overlap(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{comment}{!\ \ \ \ \ \ do\ j=1,desc(\ nlac\_\ )}}
+\DoxyCodeLine{00275\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,desc(\ nlar\_\ )}}
+\DoxyCodeLine{00276\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ overlap(i,j)=overlap(i,j)*eigmat(i+ir-\/1)*eigmat(j+ic-\/1)}}
+\DoxyCodeLine{00277\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00278\ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ maxeig\ =\ 100}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{!\ \ \ \ diagonalize\ again\ overlap}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indxg2l(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(1))}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indxg2l(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(2))}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ indxg2p(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(1))}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jp\ =\ indxg2p(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(2))}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ip\ ==\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1)\ .and.\ jp\ ==\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2)\ .and.\ eigmat(i)\ ==\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overlap(ii,\ jj)\ =\ maxeig\ +\ dble(i)}
+\DoxyCodeLine{00291\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00292\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{00295\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Output\ matrix\ overlap\ '}}
+\DoxyCodeLine{00296\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{00297\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ i,overlap(i,i)}}
+\DoxyCodeLine{00298\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00299\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ nrlx\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a492771616568fc755d09086e33af1eba}{la\_nrlx\_}})}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}\ =\ 0.d0}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_aea151dfe67039cf93001061d62bb5484}{blk2cyc\_redist}}(n,\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ overlap,\ \textcolor{keyword}{size}(overlap,\ 1),\ desc(1))}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00311\ \textcolor{comment}{!!\ maxeig\ should\ be\ calculated\ here\ as\ max\_i\ \ \ sum\_j\ |mat\_ij|\ and\ then}}
+\DoxyCodeLine{00312\ \textcolor{comment}{!\ \ \ \ \ \ \ \ replaced\ in\ the\ diagonal\ elements\ with\ eigmat=0.}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \textcolor{comment}{!\ \ \ \ \ Here\ iopt=0\ \ the\ standard\ one.}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ vv,\ nrlx,\ desc(\mbox{\hyperlink{namespacedescriptors_a42f08c808ab1905f5b22bcba5eab934d}{la\_nrl\_}}),\ n,\ \&}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \&\ desc(\mbox{\hyperlink{namespacedescriptors_a58b91a284dcd838d07f2d0eb355c6757}{la\_npr\_}})*desc(\mbox{\hyperlink{namespacedescriptors_a11f6a3909016c615737d6a5f1352c40e}{la\_npc\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a88e7647dd5b86754d25e35475bf4a9f0}{la\_me\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a5a0ed4c959a486a0f8872e39760060f8}{la\_comm\_}}),\ eps\_mach,\ 0)}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_ad640bbcddd7e46dc1ad3b81648ac4cc4}{cyc2blk\_redist}}(n,\ vv,\ nrlx,\ molecorb,\ \textcolor{keyword}{size}(molecorb,\ 1),\ desc(1))}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ vv,\ overlap)}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{00328\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Eigenvalues\ new\ overlap\ matrix\ \string~\ 1\ \ '}}
+\DoxyCodeLine{00329\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{00330\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{00331\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00332\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .le.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .gt.\ -\/1.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Further\ singular\ eigenvalue\ '},\ i}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{00338\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00339\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ the\ matrix\ used\ \ to\ go\ back\ to\ the\ original\ representation}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ umatl(i,\ j)}
+\DoxyCodeLine{00345\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00346\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(j\ +\ ic\ -\/\ 1)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb(i,\ j)\ =\ molecorb(i,\ j)/dsqrt(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorb(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00356\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00357\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00358\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00359\ \textcolor{comment}{!\ \ \ \ FINAL\ \ PDGEMM}}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ overs(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ molecorb(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ umatl(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{!\ \ \ Calculation\ new\ lwork\ for\ next\ iterations}}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0.d0)\ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{00368\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ dimo\ =\ n\ -\/\ mine\ +\ 1}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ destroy\ overs\ mat\_in}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ mat\_in(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ umatl(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ \&}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ \&}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ desc(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i\ +\ ir\ -\/\ 1)\ .eq.\ 0.d0\ .or.\ eigmat(j\ +\ ic\ -\/\ 1)\ .eq.\ 0.d0)\ mat\_in(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00384\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00385\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ maxeig\ =\ max(1000.d0,\ 10.d0*n)}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ ii\ =\ indxg2l(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(1))}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indxg2l(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(2))}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ indxg2p(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(1))}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ jp\ =\ indxg2p(i,\ desc(\mbox{\hyperlink{namespacedescriptors_ac26af6ea61f05326086114ac4eca7087}{nlax\_}}),\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2),\ 0,\ \mbox{\hyperlink{namespaceallio_adf88626c18598f1b6486ef7f27873390}{np\_ortho}}(2))}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ip\ ==\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(1)\ .and.\ jp\ ==\ \mbox{\hyperlink{namespaceallio_a082c468041a1fdea9a8085823b909cc3}{me\_ortho}}(2)\ .and.\ eigmat(i)\ ==\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(ii,\ jj)\ =\ maxeig\ +\ dble(10*i)}
+\DoxyCodeLine{00396\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00397\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ nrlx\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a492771616568fc755d09086e33af1eba}{la\_nrlx\_}})}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}(nrlx,\ n),\ vv(nrlx,\ n))}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}\ =\ 0.d0}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ vv\ =\ 0.d0}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_aea151dfe67039cf93001061d62bb5484}{blk2cyc\_redist}}(n,\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ mat\_in,\ \textcolor{keyword}{size}(mat\_in,\ 1),\ desc(1))}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00409\ \textcolor{comment}{!!\ \ \ maxeig\ should\ be\ calculated\ here\ as\ max\_i\ \ \ sum\_j\ |mat\_ij|\ and\ then}}
+\DoxyCodeLine{00410\ \textcolor{comment}{!\ \ \ \ \ \ \ \ replaced\ in\ the\ diagonal\ elements\ with\ eigmat=0.}}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{comment}{!\ \ \ \ Here\ the\ standard\ one.}}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(\textcolor{stringliteral}{'V'},\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ nrlx,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ vv,\ nrlx,\ desc(\mbox{\hyperlink{namespacedescriptors_a42f08c808ab1905f5b22bcba5eab934d}{la\_nrl\_}}),\ n,\ \&}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \&desc(\mbox{\hyperlink{namespacedescriptors_a58b91a284dcd838d07f2d0eb355c6757}{la\_npr\_}})*desc(\mbox{\hyperlink{namespacedescriptors_a11f6a3909016c615737d6a5f1352c40e}{la\_npc\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a88e7647dd5b86754d25e35475bf4a9f0}{la\_me\_}}),\ desc(\mbox{\hyperlink{namespacedescriptors_a5a0ed4c959a486a0f8872e39760060f8}{la\_comm\_}}),\ eps\_mach,\ 0)}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Redistribute\ matrix\ "{}vv"{}\ into\ "{}s"{}}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ matrix\ "{}s"{}\ is\ block\ distributed}}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ across\ 2D\ processors\ grid\ (\ ortho\_comm\ )}}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedescriptors_ad640bbcddd7e46dc1ad3b81648ac4cc4}{cyc2blk\_redist}}(n,\ vv,\ nrlx,\ molecorb,\ \textcolor{keyword}{size}(molecorb,\ 1),\ desc(1))}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ vv)}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ overs\ =\ molecorb}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \textcolor{comment}{!\ \ \ \ call\ pdgeadd('N',n,n,1.d0,molecorb,1,1,desch,0.d0,overs,1,1,desch\ )}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.0d0,\ umatl(1,\ 1),\ 1,\ 1\ \&}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ desch,\ overs(1,\ 1),\ 1,\ 1,\ desch,\ 0.0d0,\ molecorb(1,\ 1),\ 1,\ 1,\ desch)}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ if(rank.eq.0.and.optprint.ne.0)\ then}}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ do\ i=1,bands}}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ endif}}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (overs,\ mat\_in)}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \textcolor{comment}{!\ In\ case\ not\ all\ processors\ are\ involved\ in\ the\ diagonalization}}
+\DoxyCodeLine{00442\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00443\ \textcolor{preprocessor}{}\textcolor{comment}{!\ call\ mpi\_bcast(eig,nelorb\_c,MPI\_DOUBLE\_PRECISION,0,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}})}
+\DoxyCodeLine{00445\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00446\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00447\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \textcolor{keyword}{allocated}(umatl))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (umatl(\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}))}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ umatl\ =\ 0.d0}
+\DoxyCodeLine{00454\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mat\_in(\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}})\&}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ work(max(30*\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ lworkr)),\ overs(lda,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}})\&}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iwork(5*\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}),\ ifail(\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}))}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ mat\_in\ =\ 0.d0}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ work\ =\ 0.d0}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ overs\ =\ 0.d0}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ iwork\ =\ 0}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ ifail\ =\ 0}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ destroy\ invo}}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ calculation\ overlap\ old}}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ calculation\ normalized\ orbitals\ and\ eigenvectors}}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ maximum\ accuracy}}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ abstol\ =\ 2.d0*dlamch(\textcolor{stringliteral}{'S'})}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ eps\ =\ epsr}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eps\ .eq.\ 0.d0)\ eps\ =\ eps\_mach}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ n\ =\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}}\ =\ 30*n}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ mine\ =\ 1}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ This\ code\ compute\ the\ generalized\ eigenvalue\ equation:}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ mat\_in\ x\ \ \ y\ =\ over\_s\ lambda\ y}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ by\ stable\ preconditioning\ and\ pre-\/diagonalization\ of\ the\ matrix\ over\_s}}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ overs\ =\ oversav}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ minover\ =\ -\/1.d0}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(overs(i,i).gt.0.d0)\ then}}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(overs(i,i).lt.minover.or.minover.eq.-\/1.d0)\ minover=overs(i,i)}}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ premat(i)=1.d0/dsqrt(overs(i,i))}}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ write(6,*)\ '\ Singular\ norm\ for\ orbital\ ',i,overs(i,i)}}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ premat(i)=-\/1.d0}}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(premat(i).eq.-\/1.d0)\ premat(i)=1.d0/dsqrt(minover)}}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ There\ is\ numerical\ instability\ to\ use\ premat\ ne\ 1}}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ the\ orthogonality\ of\ the\ eigenvectors}}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ with\ respect\ to\ the\ metric\ given\ by\ overs\ \ is\ poorly\ satisfied}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if\ premat\ ne\ 1\ is\ used.}}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ premat\ =\ 1.d0}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reduced\ matrix}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overs(i,\ j)\ =\ overs(i,\ j)*premat(i)*premat(j)}
+\DoxyCodeLine{00509\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00510\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ n,\ overs,\ lda,\ 0.d0,\ 0.d0,\ 1,\ 1,\ abstol\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ neig,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ umatl,\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ work,\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ iwork,\ ifail,\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}})}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Lowest/Max\ \ eigenvalue\ overlap\ mat\ ='},\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1),\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n)}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ condnumber\ =\ abs(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n))}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(1)\ .lt.\ 0)\ condnumber\ =\ condnumber/100.d0}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ n}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ =\ abs(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n))}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .lt.\ 0.d0)\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ =\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}/100.d0}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ .lt.\ condnumber)\ condnumber\ =\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{00523\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Condition\ number\ basis\ set\ ='},\ condnumber}
+\DoxyCodeLine{00525\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n)\ .gt.\ abs(eps)\ .or.\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .lt.\ 0\ .and.\ -\/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(n)\&}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.gt.\ abs(eps*100.d0)))\ .and.\ i\ .ge.\ mincond)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ the\ condition\ number\ criterium}}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ dsqrt(1.d0/\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i))}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{00534\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00535\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ .gt.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{stringliteral}{'\ info\ >\ 0\ in\ dsyevx\ !!!\ '},\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ we\ assume\ here\ that\ the\ garbage\ eigenvectors\ are\ the\ ones}}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ close\ to\ zero\ eigenvalue.}}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(ifail(i))\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ifail(i)\ .ge.\ mine)\ mine\ =\ ifail(i)\ +\ 1}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(1:ifail(i))\ =\ 0.d0}
+\DoxyCodeLine{00546\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00547\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mine\ .ne.\ 1\ .and.\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .and.\ optprint\ .ne.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ disregarded\ coll.\ ='},\ mine\ -\/\ 1}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ first\ transformation\ \ umatl}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ umatl(:,\ i)\ =\ umatl(:,\ i)*eigmat(i)}
+\DoxyCodeLine{00556\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ compute\ the\ overlap\ matrix\ in\ the\ new\ basis}}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ oversav,\ lda,\ umatl,\ n,\ 0.d0,\ mat\_in,\ n)}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ umatl,\ n,\ mat\_in,\ lda,\ 0.d0,\ overs,\ lda)}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0)\ overs(i,\ i)\ =\ -\/1000.d0\ -\/\ dble(i)}
+\DoxyCodeLine{00564\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ n,\ overs,\ lda,\ 0.d0,\ 0.d0,\ 1,\ 1,\ abstol\ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ neig,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ mat\_in,\ n,\ work,\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ iwork,\ ifail,\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}})}
+\DoxyCodeLine{00568\ }
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .gt.\ eps)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(:,\ i)\ =\ mat\_in(:,\ i)/dsqrt(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i))}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}}(i)\ .gt.\ -\/1.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Further\ singular\ eigenvalue\ '},\ i}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmat(i)\ =\ 0.d0}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(:,\ i)\ =\ 0.d0}
+\DoxyCodeLine{00576\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00577\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \ \ \ \ overs(1:n,\ 1:n)\ =\ umatl(1:n,\ 1:n)}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Final\ dgemm}}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ overs,\ lda,\ mat\_in,\ n,\ 0.d0,\ umatl,\ n)}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmat(i)\ .eq.\ 0.d0)\ mine\ =\ mine\ +\ 1}
+\DoxyCodeLine{00587\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Now\ modifying\ the\ matrix\ detmat\_c\ (and\ forgetting\ it)}}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ mat\_in(1:n,\ 1:n)\ =\ matsav(1:n,\ 1:n)}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_in(i,\ j)\ =\ mat\_in(i,\ j)*premat(i)*premat(j)}
+\DoxyCodeLine{00596\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00597\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ destroy\ overs\ mat\_in}}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ mat\_in,\ n,\ umatl,\ n,\ 0.d0,\ overs,\ lda)}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ umatl,\ n,\ overs,\ lda,\ 0.d0,\ mat\_in,\ n)}
+\DoxyCodeLine{00602\ }
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ j=1,n}}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ mat\_in(i,j)=mat\_in(i,j)*eigmat(i)*eigmat(j)}}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lworkr\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}}\ =\ 30*n}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}}\ =\ lworkr}
+\DoxyCodeLine{00613\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ dimo\ =\ n\ -\/\ mine\ +\ 1}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ molecorb\ =\ 0.d0}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ avoid\ to\ include\ the\ garbage\ matrix\ elements.}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bands\ .lt.\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'I'},\ \textcolor{stringliteral}{'L'},\ dimo,\ mat\_in(mine,\ mine),\ n,\ 0.d0,\ 0.d0,\ 1,\ bands\ \&}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ abstol,\ neig,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ molecorb(mine,\ 1),\ lda,\ work,\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ iwork\ \ \ \&}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ifail,\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}})}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyevx(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'A'},\ \textcolor{stringliteral}{'L'},\ dimo,\ mat\_in(mine,\ mine),\ n,\ 0.d0,\ 0.d0,\ 1,\ 1\ \&}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ abstol,\ neig,\ \mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ molecorb(mine,\ 1),\ lda,\ work,\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ iwork\ \ \ \&}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ifail,\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}})}
+\DoxyCodeLine{00631\ }
+\DoxyCodeLine{00632\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00633\ }
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lworkr\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lworkr\ =\ work(1)}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Optimal\ lwork\ \ found\ ='},\ lworkr}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lworkr\ =\ 30*n}
+\DoxyCodeLine{00640\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00641\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ .ne.\ 0)\ \&}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ info\ ne\ 0\ in\ dsyevx\ '},\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ overs\ =\ molecorb}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ bands,\ n,\ 1.d0,\ umatl,\ n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ overs,\ lda,\ 0.d0,\ molecorb,\ lda)}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ choose\ a\ gauge}}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ bands}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ \ \ \ \ orbmax\ =\ sum(molecorb(1:\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ i))}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ j=2,nelorb\_c}}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(abs(molecorb(j,i)).gt.abs(orbmax))\ orbmax=molecorb(j,i)}}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (orbmax\ .lt.\ 0)\ molecorb(:,\ i)\ =\ -\/molecorb(:,\ i)}
+\DoxyCodeLine{00657\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(info.eq.0)\ then}}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \ \ \textcolor{comment}{!if(rank.eq.0.and.optprint.ne.0)\ then}}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ do\ i=1,bands}}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ i,eig(i)}}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ \textcolor{comment}{!endif}}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Eigenvectors\ \ '}}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelorb\_c}}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,(molecorb(j,i),j=1,nelorb\_c)}}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (mat\_in,\ work,\ iwork,\ ifail,\ overs)}
+\DoxyCodeLine{00672\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00675\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ \ \ \ \ \ bcast\ just\ the\ relevant\ info\ to\ the\ nodes}}
+\DoxyCodeLine{00676\ \ \ \ \ dimorb\ =\ lda*(\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}\ -\/\ 1)\ +\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{00677\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(molecorb,\ dimorb,\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}})}
+\DoxyCodeLine{00678\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(\mbox{\hyperlink{namespaceallio_ac549e781daac9462fd24734c815579f5}{eig}},\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}},\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}})}
+\DoxyCodeLine{00679\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00680\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00681\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00682\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{comment}{!call\ mpi\_finalize(ierr)}}
+\DoxyCodeLine{00684\ \ \ \ \ \textcolor{comment}{!stop}}
+\DoxyCodeLine{00685\ }
+\DoxyCodeLine{00686\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00768}{bcast\+\_\+real()}}, \mbox{\hyperlink{descriptors_8f90_source_l00880}{descriptors\+::blk2cyc\+\_\+redist()}}, \mbox{\hyperlink{allio_8f90_source_l00386}{allio\+::commrep\+\_\+mpi}}, \mbox{\hyperlink{allio_8f90_source_l00530}{allio\+::cost}}, \mbox{\hyperlink{descriptors_8f90_source_l00516}{descriptors\+::cyc2blk\+\_\+redist()}}, \mbox{\hyperlink{descriptors_8f90_source_l00162}{descriptors\+::descla\+\_\+init()}}, \mbox{\hyperlink{allio_8f90_source_l00936}{allio\+::diag}}, \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}, \mbox{\hyperlink{descriptors_8f90_source_l00051}{descriptors\+::ilac\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00049}{descriptors\+::ilar\+\_\+}}, \mbox{\hyperlink{allio_8f90_source_l00137}{allio\+::iopt}}, \mbox{\hyperlink{descriptors_8f90_source_l00061}{descriptors\+::la\+\_\+comm\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00062}{descriptors\+::la\+\_\+me\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00058}{descriptors\+::la\+\_\+npc\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00057}{descriptors\+::la\+\_\+npr\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00063}{descriptors\+::la\+\_\+nrl\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00064}{descriptors\+::la\+\_\+nrlx\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00054}{descriptors\+::lambda\+\_\+node\+\_\+}}, \mbox{\hyperlink{allio_8f90_source_l01106}{allio\+::me\+\_\+blacs}}, \mbox{\hyperlink{allio_8f90_source_l01110}{allio\+::me\+\_\+ortho}}, \mbox{\hyperlink{descriptors_8f90_source_l00052}{descriptors\+::nlac\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00050}{descriptors\+::nlar\+\_\+}}, \mbox{\hyperlink{descriptors_8f90_source_l00053}{descriptors\+::nlax\+\_\+}}, \mbox{\hyperlink{allio_8f90_source_l01112}{allio\+::np\+\_\+ortho}}, \mbox{\hyperlink{allio_8f90_source_l01109}{allio\+::ortho\+\_\+cntx}}, \mbox{\hyperlink{allio_8f90_source_l01114}{allio\+::ortho\+\_\+comm}}, \mbox{\hyperlink{allio_8f90_source_l01115}{allio\+::ortho\+\_\+comm\+\_\+id}}, and \mbox{\hyperlink{allio_8f90_source_l00388}{allio\+::rankrep}}.
+
+
+
+Referenced by \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02607}{freeelmod\+\_\+complex\+::diagonalize\+\_\+hamiltonian()}}, and \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}.
+

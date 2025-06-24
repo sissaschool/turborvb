@@ -1,0 +1,92 @@
+\doxysection{src/a\+\_\+readforward/el\+\_\+ion\+\_\+distance\+\_\+2d.f90 File Reference}
+\hypertarget{el__ion__distance__2d_8f90}{}\label{el__ion__distance__2d_8f90}\index{src/a\_readforward/el\_ion\_distance\_2d.f90@{src/a\_readforward/el\_ion\_distance\_2d.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{el__ion__distance__2d_8f90_a5c884a9d68c49393eac7c2a620e600b0}{el\+\_\+ion\+\_\+distance\+\_\+2d}} (eliond, kel, nel, rion, nion, iespbc, outofplane)
+\begin{DoxyCompactList}\small\item\em Computes electron-\/ion distances in 2D systems. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{el__ion__distance__2d_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{el__ion__distance__2d_8f90_a5c884a9d68c49393eac7c2a620e600b0}\index{el\_ion\_distance\_2d.f90@{el\_ion\_distance\_2d.f90}!el\_ion\_distance\_2d@{el\_ion\_distance\_2d}}
+\index{el\_ion\_distance\_2d@{el\_ion\_distance\_2d}!el\_ion\_distance\_2d.f90@{el\_ion\_distance\_2d.f90}}
+\doxysubsubsection{\texorpdfstring{el\_ion\_distance\_2d()}{el\_ion\_distance\_2d()}}
+{\footnotesize\ttfamily \label{el__ion__distance__2d_8f90_a5c884a9d68c49393eac7c2a620e600b0} 
+subroutine el\+\_\+ion\+\_\+distance\+\_\+2d (\begin{DoxyParamCaption}\item[{real(8), dimension(nion, \texorpdfstring{$\ast$}{*})}]{eliond}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{kel}{, }\item[{integer}]{nel}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{integer}]{nion}{, }\item[{logical}]{iespbc}{, }\item[{real(8)}]{outofplane}{}\end{DoxyParamCaption})}
+
+
+
+Computes electron-\/ion distances in 2D systems. 
+
+This subroutine calculates the distances between electrons and ions in 2D systems. It projects the distances onto the z=0 plane and handles out-\/of-\/plane filtering. For periodic boundary conditions, it applies PBC to the distance vectors. For non-\/periodic systems, it filters out electrons that are too close to the z-\/plane. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{out}}  & {\em eliond} & Distance matrix between ions and electrons (nion, nel) \\
+\hline
+\mbox{\texttt{in}}  & {\em kel} & Electron positions (3, nel) \\
+\hline
+\mbox{\texttt{in}}  & {\em nel} & Number of electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em rion} & Ion positions (3, nion) \\
+\hline
+\mbox{\texttt{in}}  & {\em nion} & Number of ions \\
+\hline
+\mbox{\texttt{in}}  & {\em iespbc} & Flag for periodic boundary conditions \\
+\hline
+\mbox{\texttt{in}}  & {\em outofplane} & Out-\/of-\/plane threshold distance \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{el__ion__distance__2d_8f90_source_l00030}{30}} of file \mbox{\hyperlink{el__ion__distance__2d_8f90_source}{el\+\_\+ion\+\_\+distance\+\_\+2d.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ nel,\ k,\ j}
+\DoxyCodeLine{00036\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ eliond(nion,\ *),\ rion(3,\ *),\ kel(3,\ *)}
+\DoxyCodeLine{00037\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ dist\_kel(3)}
+\DoxyCodeLine{00038\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ outofplane}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{logical}\ iespbc}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!not\ implemented\ for\ PCB}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_kel(:)\ =\ kel(:,\ j)\ -\/\ rion(:,\ k)}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_aba17aa76b83089553830ab955bff6686}{applypbc}}(dist\_kel,\ 1)}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max(sum(dist\_kel(1:2)**2),\ 1d-\/18))}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(eliond(k,j).lt.1d-\/18)\ eliond(k,j)=1d-\/18}}
+\DoxyCodeLine{00049\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00050\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(kel(3,\ j)\ -\/\ rion(3,\ k))\ .ge.\ outofplane)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!distance\ between\ k\ and\ j\ projected\ on\ the\ z=0\ plane}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max((kel(1,\ j)\ -\/\ rion(1,\ k))**2\ +\ (kel(2,\ j)\ -\/\ rion(2,\ k))**2,\ 1d-\/18))}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ if(eliond(k,j).lt.1d-\/18)\ eliond(k,j)=1d-\/18}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ 1.d8\ \textcolor{comment}{!\ put\ it\ out-\/of-\/range}}
+\DoxyCodeLine{00062\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00063\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00067\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00534}{cell\+::applypbc()}}.
+
+
+
+Referenced by \mbox{\hyperlink{compute__corr__fun_8f90_source_l00079}{compute\+\_\+corr\+\_\+fun()}}.
+

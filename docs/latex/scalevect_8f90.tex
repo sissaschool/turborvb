@@ -1,0 +1,84 @@
+\doxysection{src/m\+\_\+common/scalevect.f90 File Reference}
+\hypertarget{scalevect_8f90}{}\label{scalevect_8f90}\index{src/m\_common/scalevect.f90@{src/m\_common/scalevect.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{scalevect_8f90_aaed9c8c1db1745b398cb7dc5946693f6}{scalevect}} (n, cellfat, vect)
+\begin{DoxyCompactList}\small\item\em Vector scaling and mapping for periodic boundary conditions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{scalevect_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{scalevect_8f90_aaed9c8c1db1745b398cb7dc5946693f6}\index{scalevect.f90@{scalevect.f90}!scalevect@{scalevect}}
+\index{scalevect@{scalevect}!scalevect.f90@{scalevect.f90}}
+\doxysubsubsection{\texorpdfstring{scalevect()}{scalevect()}}
+{\footnotesize\ttfamily \label{scalevect_8f90_aaed9c8c1db1745b398cb7dc5946693f6} 
+subroutine scalevect (\begin{DoxyParamCaption}\item[{integer}]{n}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3)}]{cellfat}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3\texorpdfstring{$\ast$}{*}n)}]{vect}{}\end{DoxyParamCaption})}
+
+
+
+Vector scaling and mapping for periodic boundary conditions. 
+
+This subroutine applies periodic mapping to a set of 3D vectors using the mapping function from the cell module. It is designed for efficient processing of multiple vectors in quantum Monte Carlo calculations with periodic boundary conditions.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em n} & Number of 3D vectors to process \\
+\hline
+\mbox{\texttt{in}}  & {\em cellfat} & Cell dimensions for periodic mapping (3) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em vect} & Array of 3D vectors to be mapped (3\texorpdfstring{$\ast$}{*}n)\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Iterates through n 3D vectors stored in the vect array
+\item For each vector (i, i+1, i+2), applies the map function\+:
+\begin{DoxyItemize}
+\item vect(i) = map(vect(i), cellfat(1)) for x-\/component
+\item vect(i+1) = map(vect(i+1), cellfat(2)) for y-\/component
+\item vect(i+2) = map(vect(i+2), cellfat(3)) for z-\/component
+\end{DoxyItemize}
+\item Uses Open\+MP parallelization for efficient processing of large arrays
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The vect array contains n consecutive 3D vectors stored as\+: \mbox{[}x1, y1, z1, x2, y2, z2, ..., xn, yn, zn\mbox{]} 
+
+The map function applies periodic boundary conditions to each component 
+
+Open\+MP parallelization is used for performance on multi-\/core systems 
+
+The subroutine modifies the input vect array in-\/place 
+
+Used for coordinate transformations in periodic quantum Monte Carlo 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{scalevect_8f90_source_l00042}{42}} of file \mbox{\hyperlink{scalevect_8f90_source}{scalevect.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}}}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i}
+\DoxyCodeLine{00046\ \ \ \ \ real*8\ cellfat(3),\ vect(3*n)}
+\DoxyCodeLine{00047\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i)}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3*n,\ 3}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ vect(i)\ =\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}}(vect(i),\ cellfat(1))}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ vect(i\ +\ 1)\ =\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}}(vect(i\ +\ 1),\ cellfat(2))}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ vect(i\ +\ 2)\ =\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}}(vect(i\ +\ 2),\ cellfat(3))}
+\DoxyCodeLine{00052\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00053\ \textcolor{comment}{!\$omp\ end\ parallel\ do}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00576}{cell\+::map()}}.
+
+
+
+Referenced by \mbox{\hyperlink{ratiovar_8f90_source_l00027}{ratiovar()}}.
+
