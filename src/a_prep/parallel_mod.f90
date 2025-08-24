@@ -33,6 +33,11 @@ module parallel_module
 
 contains
 
+    !> @brief Sets up parallel environments for DFT calculations
+    !> @details This subroutine initializes the parallel environments for DFT
+    !>          calculations, including MPI communicators for k-point sampling
+    !>          and SCALAPACK environment for matrix operations. It handles
+    !>          processor grid splitting for efficient parallel execution.
     subroutine setup_para
 
         ! This subroutine setup the parallel environments involved
@@ -328,6 +333,13 @@ contains
     ! the tool find_kpoints.x in order to know how many processor
     ! need to be allocated for the DFT run.
 
+    !> @brief Finds optimal number of k-points for given number of processors
+    !> @details This subroutine checks if the number of k-points is a multiple
+    !>          of the number of processors and rescales it if necessary to
+    !>          ensure efficient parallel execution.
+    !> @param[in] nproc Number of processors
+    !> @param[in] nk Number of k-points
+    !> @param[out] nk_opt Optimal number of k-points
     subroutine find_nk_opt(nproc, nk, nk_opt)
 
         implicit none
@@ -361,6 +373,11 @@ contains
     ! It is used in the evaluation of electron occupations and for variables
     ! printout at the end of SC cycle.
 
+    !> @brief Collects eigenvalues and occupations from processor pools
+    !> @details This subroutine gathers eigenvalues and occupation numbers
+    !>          from all processor pools and collects them to the master
+    !>          process. It handles both spin-up and spin-down components
+    !>          for LSDA calculations.
     subroutine collect_from_pools
 
         use constants, only: ipc
@@ -433,6 +450,14 @@ contains
 
     end subroutine collect_from_pools
 
+    !> @brief Gathers distributed grid data to master process
+    !> @details This subroutine collects distributed grid data from all
+    !>          processes in a pool and assembles it on the master process.
+    !> @param[in] ps_in Input data distributed across processes
+    !> @param[in] buf Buffer for communication
+    !> @param[out] ps_out Assembled data on master process
+    !> @param[in] meshproc Number of grid points per process
+    !> @param[in] nx,ny,nz Grid dimensions
     subroutine gather_from_grid(ps_in, buf, ps_out, meshproc, nx, ny, nz)
         implicit none
         ! input
@@ -468,6 +493,14 @@ contains
         return
     end subroutine gather_from_grid
 
+    !> @brief Scatters grid data from master to all processes
+    !> @details This subroutine distributes grid data from the master process
+    !>          to all processes in a pool for parallel processing.
+    !> @param[in] ps_in Input data on master process
+    !> @param[in] buf Buffer for communication
+    !> @param[out] ps_out Distributed data on each process
+    !> @param[in] meshproc Number of grid points per process
+    !> @param[in] nx,ny,nz Grid dimensions
     subroutine scatter_to_grid(ps_in, buf, ps_out, meshproc, nx, ny, nz)
         implicit none
         ! input
@@ -503,6 +536,13 @@ contains
         return
     end subroutine scatter_to_grid
 
+    !> @brief Collects k-point data across processor pools
+    !> @details This subroutine performs simple summation of quantities
+    !>          across processor pools for k-point calculations.
+    !> @param[in,out] ps Array to be summed across pools
+    !> @param[in] dim_ps Dimension of the array
+    !> @param[in] value Value to be added
+    !> @param[in] root Root process for the operation
     subroutine collect_kpoints(ps, dim_ps, value, root)
         ! simple summation over pools
         implicit none

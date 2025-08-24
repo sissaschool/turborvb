@@ -13,6 +13,24 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Solve generalized eigenvalue problem for molecular orbitals
+!> @details This subroutine solves the generalized eigenvalue problem for molecular orbitals
+!> using singular value decomposition (SVD). It handles both real and complex wavefunctions,
+!> symmetric and non-symmetric cases, and Pfaffian wavefunctions. The routine performs
+!> matrix preconditioning, diagonalization, and eigenvector sorting with proper gauge fixing.
+!> @param[in] nelorb_c Number of contracted orbitals
+!> @param[in] overs Overlap matrix
+!> @param[in] mat_in Input matrix (Hamiltonian or other operator)
+!> @param[out] molecorb Molecular orbitals (eigenvectors)
+!> @param[out] eig Eigenvalues
+!> @param[in] lda Leading dimension of arrays
+!> @param[in] eps Tolerance for eigenvalue filtering
+!> @param[in] nproc Number of MPI processes
+!> @param[in] rank Rank of current process
+!> @param[in] rank_mpi Rank in MPI communicator
+!> @param[in] comm_mpi MPI communicator
+!> @param[in] optprint Print option flag
+!> @param[in] symmagp Symmetric AGP flag
 subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
         &, molecorb, eig, lda, eps, nproc, rank, rank_mpi, comm_mpi, optprint, symmagp)
     use constants, only: ipc, ipf, zone, zzero
@@ -795,6 +813,12 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
 
 end subroutine eval_molec_epsdgel
 
+!> @brief Fix gauge phase for complex molecular orbitals
+!> @param[in] N Number of orbitals
+!> @param[in] molecorbup Spin-up molecular orbitals
+!> @param[in] ldup Leading dimension for spin-up orbitals
+!> @param[in,out] molecorbdown Spin-down molecular orbitals (modified)
+!> @param[in] lddown Leading dimension for spin-down orbitals
 subroutine gauge_fix(N, molecorbup, ldup, molecorbdown, lddown)
     implicit none
     integer n, ldup, lddown
@@ -804,6 +828,12 @@ subroutine gauge_fix(N, molecorbup, ldup, molecorbdown, lddown)
     molecorbdown(1, 1:n) = molecorbdown(1, 1:n)*over
     return
 end
+!> @brief Fix gauge sign for real molecular orbitals
+!> @param[in] N Number of orbitals
+!> @param[in] molecorbup Spin-up molecular orbitals
+!> @param[in] ldup Leading dimension for spin-up orbitals
+!> @param[in,out] molecorbdown Spin-down molecular orbitals (modified)
+!> @param[in] lddown Leading dimension for spin-down orbitals
 subroutine gauge_fixr(N, molecorbup, ldup, molecorbdown, lddown)
     implicit none
     integer n, ldup, lddown
@@ -813,6 +843,11 @@ subroutine gauge_fixr(N, molecorbup, ldup, molecorbdown, lddown)
     return
 end
 
+!> @brief Check complex matrix construction from molecular orbitals
+!> @param[in] n Matrix dimension
+!> @param[in] eig Eigenvalues
+!> @param[in] molecorb Molecular orbitals
+!> @param[out] mat Output matrix for verification
 subroutine check_complex(n, eig, molecorb, mat)
     implicit none
     real*8 eig(*)

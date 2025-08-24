@@ -1,0 +1,823 @@
+\doxysection{kpoints.\+f90}
+\hypertarget{kpoints_8f90_source}{}\label{kpoints_8f90_source}\index{src/m\_common/kpoints.f90@{src/m\_common/kpoints.f90}}
+\mbox{\hyperlink{kpoints_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00016}00016\ \textcolor{comment}{!\#include\ "{}mathvec.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00017}00017\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @file\ kpoints.f90}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00019}00019\ \textcolor{comment}{!>\ @brief\ K-\/points\ generation\ and\ management\ module\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @details\ This\ module\ provides\ comprehensive\ functionality\ for\ generating\ and\ managing}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ k-\/points\ in\ the\ Brillouin\ zone\ for\ quantum\ Monte\ Carlo\ calculations\ with}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ periodic\ boundary\ conditions.\ It\ supports\ various\ k-\/point\ generation\ methods}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00023}00023\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ including\ Monkhorst-\/Pack\ grids,\ custom\ k-\/points,\ band\ structure\ paths,}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ random\ sampling,\ and\ flavor\ twisted\ boundary\ conditions.\ The\ module\ handles}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ symmetry\ operations,\ time\ reversal\ symmetry,\ and\ k-\/point\ averaging\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ accurate\ sampling\ of\ the\ Brillouin\ zone.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @see\ cell,\ constants,\ symmetry\ operations}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00031}\mbox{\hyperlink{namespacekpoints__mod}{00031}}\ \textcolor{keyword}{module}\ \mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{public}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00036}00036\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ to\ enable\ multiple\ fort.10\ file\ reading\ for\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00037}\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{00037}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ \mbox{\hyperlink{namespacekpoints__mod_a96acefd4fa9de97fba2d02c3f5f24a3d}{yes\_kpoints}},\ \mbox{\hyperlink{namespacekpoints__mod_a4f24e0d370f2cdd6a9d391b18aec935e}{same\_phase}},\ \mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00038}00038\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Number\ of\ k-\/points\ and\ grid\ dimensions\ for\ Monkhorst-\/Pack\ algorithm}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00039}00039\ \textcolor{comment}{\ \ \ \ !>\ @details\ nk\ =\ total\ number\ of\ k-\/points,\ nks\ =\ number\ of\ inequivalent\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00040}\mbox{\hyperlink{namespacekpoints__mod_a9b60bdc3a5645c4a46034c3a006a6521}{00040}}\ \ \ \ \ \textcolor{keywordtype}{integer}\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ \mbox{\hyperlink{namespacekpoints__mod_a201c612875364b3f1725430c3598e4db}{nk3}},\ \mbox{\hyperlink{namespacekpoints__mod_a9b60bdc3a5645c4a46034c3a006a6521}{k1}},\ \mbox{\hyperlink{namespacekpoints__mod_a246c2755dfd01d1a4555b4b7bb5d3d2f}{k2}},\ \mbox{\hyperlink{namespacekpoints__mod_a1d9684a0705e6c727b810f40844a6dcd}{k3}},\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00041}00041\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00042}00042\ \textcolor{comment}{\ \ \ \ !>\ @brief\ K-\/points\ coordinates\ and\ weights\ for\ up/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00043}00043\ \textcolor{comment}{\ \ \ \ !>\ @details\ xkp,\ wkp\ =\ final\ k-\/points/weights\ for\ up/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00044}\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{00044}}\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}},\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00045}\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{00045}}\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}},\ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00046}\mbox{\hyperlink{namespacekpoints__mod_ab2aeae19abe912909a763866fbeba08a}{00046}}\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ \mbox{\hyperlink{namespacekpoints__mod_ab2aeae19abe912909a763866fbeba08a}{tot\_wt}},\ \mbox{\hyperlink{namespacekpoints__mod_aa350bc1e80afcee79cbc55ec6307f02e}{tot\_wt\_down}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00047}00047\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00048}00048\ \textcolor{comment}{\ \ \ \ !>\ @brief\ K-\/points\ generation\ method\ identifier}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00049}00049\ \textcolor{comment}{\ \ \ \ !>\ @details\ Methods\ used\ to\ generate\ k-\/points:}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00050}00050\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 0\ =\ gamma\ point\ or\ single\ phase\ calculation\ (phase\ read\ from\ fort.10)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00051}00051\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 1\ =\ Monkhorst-\/Pack\ algorithm}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00052}00052\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 2\ =\ read\ k-\/points\ in\ crystal\ coordinates\ from\ datasmin.input}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00053}00053\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 3\ =\ read\ k-\/points\ path\ in\ 1BZ\ for\ band\ structure\ calculations}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00054}00054\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 4\ =\ generate\ random\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00055}00055\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ -\/\ 5\ =\ generate\ nk*nk\ matrix\ for\ flavor\ twisted\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00056}\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{00056}}\ \ \ \ \ \textcolor{keywordtype}{integer}\ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00057}00057\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00058}00058\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Index\ identifying\ the\ k-\/point\ in\ the\ current\ pool\ (rankcolrep\ +\ 1)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00059}\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{00059}}\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00060}00060\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00061}00061\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ to\ enable\ twist\ average\ algorithm}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00062}\mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{00062}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00063}00063\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00064}00064\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ to\ skip\ k-\/point\ equivalence\ check\ using\ Bravais\ lattice\ symmetries}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00065}\mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{00065}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{skip\_equivalence}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00066}00066\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ to\ use\ time\ reversal\ symmetry\ to\ reduce\ number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00068}\mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{00068}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{time\_reversal}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00069}00069\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00070}00070\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ to\ impose\ opposite\ boundary\ conditions\ for\ UP/DOWN\ spin\ electrons}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00071}\mbox{\hyperlink{namespacekpoints__mod_ac3cfefbdad63472fc83dfa5fb0ae5f80}{00071}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_ac3cfefbdad63472fc83dfa5fb0ae5f80}{double\_kpgrid}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00072}00072\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00073}00073\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ for\ decoupled\ (independent\ k-\/points)\ VMC/DMC\ calculations}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00074}\mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{00074}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00075}00075\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00076}00076\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Flag\ for\ band\ structure\ calculations\ (DFT\ only)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00077}\mbox{\hyperlink{namespacekpoints__mod_aa4e0c0d8bec0598b418513c11f101fe2}{00077}}\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ \mbox{\hyperlink{namespacekpoints__mod_aa4e0c0d8bec0598b418513c11f101fe2}{compute\_bands}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordtype}{private}\ ::\ init\_random\_seed,\ found\_sec,\ kpoint\_grid,\ generate\_kp\_path}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00080}00080\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00081}00081\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Namelist\ for\ k-\/points\ grid\ definition}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00082}00082\ \ \ \ \ namelist\ /kpoints/\ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}},\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ \mbox{\hyperlink{namespacekpoints__mod_a201c612875364b3f1725430c3598e4db}{nk3}},\ \mbox{\hyperlink{namespacekpoints__mod_a9b60bdc3a5645c4a46034c3a006a6521}{k1}},\ \mbox{\hyperlink{namespacekpoints__mod_a246c2755dfd01d1a4555b4b7bb5d3d2f}{k2}},\ \mbox{\hyperlink{namespacekpoints__mod_a1d9684a0705e6c727b810f40844a6dcd}{k3}},\ \mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{time\_reversal}},\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{skip\_equivalence}},\ \mbox{\hyperlink{namespacekpoints__mod_ac3cfefbdad63472fc83dfa5fb0ae5f80}{double\_kpgrid}},\ \mbox{\hyperlink{namespacekpoints__mod_aa4e0c0d8bec0598b418513c11f101fe2}{compute\_bands}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00085}00085\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00086}00086\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00087}00087\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00088}00088\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ k-\/points\ for\ all\ kp\_type\ methods}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00089}00089\ \textcolor{comment}{\ \ \ \ !>\ @details\ Initializes\ the\ k-\/point\ grid\ and\ related\ arrays\ for\ periodic\ boundary}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00090}00090\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ condition\ calculations.\ Handles\ various\ k-\/point\ generation\ schemes:}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00091}00091\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Monkhorst-\/Pack,\ custom\ input,\ band\ structure\ paths,\ random,\ and\ flavor\ twist.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00092}00092\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Also\ sets\ up\ symmetry\ operations\ and\ transforms\ coordinates\ as\ needed.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00093}00093\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ iflag\ Integer\ flag\ for\ error\ handling\ (0=success,\ 1=error)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00094}00094\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nel\ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00095}00095\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nion\ Number\ of\ ions}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00096}00096\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ rion\ Ion\ positions\ (3,\ nion)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00097}00097\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ atom\_number\ Atomic\ numbers\ (nion)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00098}00098\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ rs\ Wigner-\/Seitz\ radius\ parameter}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00099}00099\ \textcolor{comment}{\ \ \ \ !>\ @note\ K-\/points\ are\ left\ in\ crystal\ coordinates\ and\ must\ be\ transformed\ to\ cartesian}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00100}00100\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ coordinates\ (multiply\ by\ 2*pi/cell\_scale)\ for\ use\ in\ other\ routines.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00101}00101\ \textcolor{comment}{\ \ \ \ !>\ @note\ Handles\ symmetry\ reduction,\ time\ reversal,\ and\ double\ grid\ for\ up/down\ spins.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00102}00102\ \textcolor{comment}{\ \ \ \ !>\ @note\ Writes\ symmetry\ information\ to\ stdout\ for\ user\ reference.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00103}00103\ \textcolor{comment}{\ \ \ \ !>\ @see\ kpoint\_grid,\ generate\_kp\_path,\ set\_sym\_bl,\ purge\_isymm}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00104}\mbox{\hyperlink{namespacekpoints__mod_a9527bf65e0d6ee4839de8a1bee20f481}{00104}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a9527bf65e0d6ee4839de8a1bee20f481}{get\_kpoints}}(iflag,\ nel,\ nion,\ rion,\ atom\_number,\ rs)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ This\ routine\ initialize\ k-\/points\ for\ all\ kp\_type}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{!!!!!!!\ NB\ !!!!!!!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ k-\/points\ are\ left\ in\ crystal\ coordinates.\ Every\ subroutine}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ which\ needs\ k-\/points\ must\ transform\ them\ back\ to\ carthesian}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ coordinates\ (multiply\ by\ 2*pi/cell\_scale)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00113}00113\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00115}00115\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflag,\ nel,\ nion}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00119}00119\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ rs,\ t\_comp,\ alphap,\ betap,\ gammap}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ ikp,\ nks\_up,\ nks\_do}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00121}00121\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ wkp\_,\ wkp\_down\_}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00122}00122\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ xkp\_,\ xkp\_down\_}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00123}00123\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{external}\ ::\ ran}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ rion(3,\ *),\ atom\_number(*)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ smerding}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ initialize\ cell\ in\ any\ case}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(1)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ celldm(4:6)\ =\ 90d0*PI/180.d0}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00130}00130\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(2)*\mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(3)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ omega=celldm(2)*celldm(3)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(1)\ =\ (\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}*nel*4.d0/3.d0/\mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}})**(1.d0/3.d0)*rs}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00135}00135\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ omega=celldm(2)*celldm(3)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ celldm(1)=(PI*nel*4.d0/3.d0/omega)**(1.d0/3.d0)*rs}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ setting\ up\ direct\ and\ reciprocal\ lattices}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacecell_aef05c09f5dc0d7c65e90a63aa4fccc4f}{yes\_tilted}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a995ccfa7352b004f303a7e3d8946cd3a}{givens2r}}\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a995ccfa7352b004f303a7e3d8946cd3a}{givens2r}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00143}00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_a98d4f9925b082286d825b1135842043a}{initcell}}(nion,\ nel,\ .true.)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ Bravais\ lattice\ symmetry\ operations}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }set\_sym\_bl(\mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }purge\_isymm(.true.,\ nrot,\ isymm,\ sname,\ \mbox{\hyperlink{namespacecell_adc0fb535f0972a8b66d49a9c99442dd0}{t\_rev}},\ rion,\ nion,\ atom\_number,\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'number\ of\ point\ symmetries\ found'},\ nrot}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Symmetries\ types\ found:'}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nrot}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ sname(i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ (isymm(j,\ 1,\ i),\ j=1,\ 3)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ (isymm(j,\ 2,\ i),\ j=1,\ 3)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ (isymm(j,\ 3,\ i),\ j=1,\ 3)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ smerding\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ smerding\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ =\ -\/\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ 1)\ =\ \mbox{\hyperlink{namespacecell_a3b9c1d51e6be88d6f6f100e672dacf9a}{phase}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(:,\ 1)\ =\ \mbox{\hyperlink{namespacecell_a9d3bee10fd01b8f24f62b9af62d31efa}{phase\_down}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(:)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}(:)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00167}00167\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }kpoint\_grid(nrot,\ \mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{time\_reversal}},\ \mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{skip\_equivalence}},\ isymm,\ \mbox{\hyperlink{namespacecell_adc0fb535f0972a8b66d49a9c99442dd0}{t\_rev}},\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ \mbox{\hyperlink{namespacekpoints__mod_a9b60bdc3a5645c4a46034c3a006a6521}{k1}},\ \mbox{\hyperlink{namespacekpoints__mod_a246c2755dfd01d1a4555b4b7bb5d3d2f}{k2}},\ \mbox{\hyperlink{namespacekpoints__mod_a1d9684a0705e6c727b810f40844a6dcd}{k3}},\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ \mbox{\hyperlink{namespacekpoints__mod_a201c612875364b3f1725430c3598e4db}{nk3}},\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}},\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}},\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}}\ \textcolor{comment}{!\ define\ the\ right\ number\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ the\ case\ of\ an\ automatic\ grid,\ I\ restrict\ the\ choice\ of\ the}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ down\ spin\ electrons\ to\ the\ opposite\ of\ up\ spin\ ones.\ This}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ should\ probably\ be\ generalized.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00177}00177\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ -\/\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 2\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (found\_sec(5,\ \textcolor{stringliteral}{'KPOINTS'},\ iflag))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag\ =\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *,\ err=121)\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(1,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(2,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(3,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00191}00191\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag\ =\ 0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_ac3cfefbdad63472fc83dfa5fb0ae5f80}{double\_kpgrid}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *)\ \textcolor{comment}{!\ one\ blank}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *,\ err=121)\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(1,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(2,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(3,\ i),\ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}(i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00197}00197\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ -\/\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00203}00203\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00206}00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }generate\_kp\_path(\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}},\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}},\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ iflag)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_ac3cfefbdad63472fc83dfa5fb0ae5f80}{double\_kpgrid}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }generate\_kp\_path(\mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}},\ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}},\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ iflag)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ -\/\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00217}00217\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00218}00218\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(:)\ =\ 1.d0/\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00221}00221\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00222}00222\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }init\_random\_seed}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}\ =\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}}\ \textcolor{comment}{!\ \#\ of\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(:)\ =\ 1.d0/\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_number(t\_comp)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t\_comp\ =\ t\_comp\ -\/\ 0.5d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(j,\ i)\ =\ t\_comp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(j,\ i)\ =\ -\/t\_comp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(j,\ i)\ =\ t\_comp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00237}00237\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00238}00238\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00239}00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00240}00240\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .eq.\ 5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00242}00242\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}\ =\ nint(sqrt(dble(\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00244}00244\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (xkp\_(3,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}),\ wkp\_(\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (xkp\_down\_(3,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}),\ wkp\_down\_(\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ xkp\_\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ wkp\_\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ xkp\_down\_\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ wkp\_down\_\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00251}00251\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ combine\ MP\ grids\ with\ and\ without\ offset\ to\ create}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ the\ k-\/points\ matrix\ needed\ by\ flavor\ twist}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00254}00254\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ no\ offset}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }kpoint\_grid(nrot,\ \mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{time\_reversal}},\ \mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{skip\_equivalence}},\ isymm,\ \mbox{\hyperlink{namespacecell_adc0fb535f0972a8b66d49a9c99442dd0}{t\_rev}},\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ 0,\ 0,\ 0,\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ \mbox{\hyperlink{namespacekpoints__mod_a201c612875364b3f1725430c3598e4db}{nk3}},\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}},\ xkp\_,\ wkp\_)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ nks\_up\ =\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00259}00259\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ with\ offset}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }kpoint\_grid(nrot,\ \mbox{\hyperlink{namespacekpoints__mod_a07af04b5fda6e09b9248426e2d8cf837}{time\_reversal}},\ \mbox{\hyperlink{namespacekpoints__mod_a23160ad7b2db0e4f83c90de89110d99d}{skip\_equivalence}},\ isymm,\ \mbox{\hyperlink{namespacecell_adc0fb535f0972a8b66d49a9c99442dd0}{t\_rev}},\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ 1,\ 1,\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a3dad055012d4f56b2f2b6bc2ba2af747}{nk1}},\ \mbox{\hyperlink{namespacekpoints__mod_ab2ce4f28a55e726556eb10d6907d7526}{nk2}},\ \mbox{\hyperlink{namespacekpoints__mod_a201c612875364b3f1725430c3598e4db}{nk3}},\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}},\ xkp\_down\_,\ wkp\_down\_)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ nks\_do\ =\ \mbox{\hyperlink{namespacekpoints__mod_a5d383185001123870b7af8966c218d14}{nks}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00264}00264\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}\ =\ nks\_up*nks\_do\ \textcolor{comment}{!\ now\ I\ have\ a\ k-\/point\ matrix\ in\ the\ case\ of\ flavor\ twist}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00266}00266\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ ikp\ =\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nks\_up}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nks\_do}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ ikp)\ =\ xkp\_(:,\ i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(:,\ ikp)\ =\ xkp\_down\_(:,\ j)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(ikp)\ =\ wkp\_(i)*wkp\_down\_(j)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_af9201661770e392e1ceeb27903554c79}{wkp\_down}}(ikp)\ =\ wkp\_(i)*wkp\_down\_(j)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ikp\ =\ ikp\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00275}00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00276}00276\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00277}00277\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (xkp\_,\ wkp\_,\ xkp\_down\_,\ wkp\_down\_)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (smerding)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ adding\ a\ small\ pseudo\ random\ twist\ \&}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00283}00283\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ to\ remove\ degeneracies\ '}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ adding\ a\ pseudo\ random\ small\ contribution\ to\ remove\ all\ possible}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ degeneracy\ of\ the\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(1,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(1,\ :)\ +\ 1.d-\/8/dsqrt(5.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(2,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(2,\ :)\ -\/\ 1.d-\/8/dsqrt(7.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(3,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(3,\ :)\ -\/\ 1.d-\/8/dsqrt(11.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_a8f03b9d11868c14c1566037b741982ac}{opposite\_phase}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(1,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(1,\ :)\ -\/\ 1.d-\/8/dsqrt(5.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(2,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(2,\ :)\ +\ 1.d-\/8/dsqrt(7.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(3,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(3,\ :)\ +\ 1.d-\/8/dsqrt(11.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(1,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(1,\ :)\ +\ 1.d-\/8/dsqrt(5.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(2,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(2,\ :)\ -\/\ 1.d-\/8/dsqrt(7.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(3,\ :)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(3,\ :)\ -\/\ 1.d-\/8/dsqrt(11.d0)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00297}00297\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00298}00298\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00299}00299\ 121\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00301}00301\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a9527bf65e0d6ee4839de8a1bee20f481}{get\_kpoints}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00302}00302\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00303}00303\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00304}00304\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Generate\ uniform\ grid\ of\ k-\/points\ using\ Monkhorst-\/Pack\ algorithm}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00305}00305\ \textcolor{comment}{\ \ \ \ !>\ @details\ Implements\ the\ Monkhorst-\/Pack\ algorithm\ for\ generating\ uniform\ k-\/point\ grids.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00306}00306\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Applies\ symmetry\ operations\ and\ time\ reversal\ to\ reduce\ the\ number\ of\ inequivalent}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00307}00307\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ k-\/points.\ Handles\ equivalence\ checking\ and\ normalization\ of\ weights.\ Ported\ from}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00308}00308\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ QuantumESPRESSO.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00309}00309\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nrot\ Number\ of\ rotation\ operations\ (symmetries)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00310}00310\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ time\_reversal\ Logical\ flag\ to\ use\ time\ reversal\ symmetry}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00311}00311\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ skip\_equivalence\ Logical\ flag\ to\ skip\ k-\/point\ equivalence\ check}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00312}00312\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ s\ Symmetry\ operations\ (3,3,nrot)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00313}00313\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ t\_rev\ Time\ reversal\ flags\ for\ each\ symmetry\ operation\ (nrot)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00314}00314\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ nkp\ Total\ number\ of\ k-\/points\ (input:\ max,\ output:\ actual)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00315}00315\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ k1,k2,k3\ Offset\ parameters\ for\ Monkhorst-\/Pack\ grid}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00316}00316\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nk1,nk2,nk3\ Grid\ dimensions}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00317}00317\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ nks\ Number\ of\ inequivalent\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00318}00318\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ xk\ K-\/point\ coordinates\ (3,nkp)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00319}00319\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ wk\ K-\/point\ weights\ (nkp)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00320}00320\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ symmetry\ operations\ to\ reduce\ the\ number\ of\ inequivalent\ k-\/points.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00321}00321\ \textcolor{comment}{\ \ \ \ !>\ @note\ Normalizes\ weights\ to\ sum\ to\ one.\ Writes\ summary\ to\ stdout.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00322}00322\ \textcolor{comment}{\ \ \ \ !>\ @see\ get\_kpoints,\ set\_sym\_bl}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00323}00323\ \ \ \ \ \textcolor{keyword}{subroutine\ }kpoint\_grid(nrot,\ time\_reversal,\ skip\_equivalence,\ s,\ t\_rev,\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00324}00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nkp,\ k1,\ k2,\ k3,\ nk1,\ nk2,\ nk3,\ nks,\ xk,\ wk)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00325}00325\ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00326}00326\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Automatic\ generation\ of\ a\ uniform\ grid\ of\ k-\/points\ with\ MP\ algorithm.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00328}00328\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Ported\ from\ QuantumESPRESSO.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00329}00329\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00330}00330\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nrot,\ k1,\ k2,\ k3,\ nk1,\ nk2,\ nk3,\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t\_rev(48),\ s(3,\ 3,\ 48)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{intent(in)}\ ::\ time\_reversal,\ skip\_equivalence}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(inout)}\ ::\ nks,\ nkp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00337}00337\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(out)}\ ::\ xk(3,\ nkp)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00338}00338\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(out)}\ ::\ wk(nkp)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ LOCAL:}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00340}00340\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{parameter}\ ::\ eps\ =\ 1.0d-\/5}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00341}00341\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ xkr(3),\ fact,\ xx,\ yy,\ zz}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00342}00342\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ xkg(:,\ :),\ wkk(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00343}00343\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nkr,\ i,\ j,\ k,\ ns,\ n,\ nk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ equiv(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ in\_the\_list}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ nkr\ =\ nk1*nk2*nk3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (xkg(3,\ nkr),\ wkk(nkr))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (equiv(nkr))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nk1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nk2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nk3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ this\ is\ nothing\ but\ consecutive\ ordering}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ n\ =\ (k\ -\/\ 1)\ +\ (j\ -\/\ 1)*nk3\ +\ (i\ -\/\ 1)*nk2*nk3\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ xkg\ are\ the\ components\ of\ the\ complete\ grid\ in\ crystal\ axis}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00357}00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkg(1,\ n)\ =\ dble(i\ -\/\ 1)/nk1\ +\ dble(k1)/2/nk1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkg(2,\ n)\ =\ dble(j\ -\/\ 1)/nk2\ +\ dble(k2)/2/nk2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkg(3,\ n)\ =\ dble(k\ -\/\ 1)/nk3\ +\ dble(k3)/2/nk3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00360}00360\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00361}00361\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00362}00362\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00363}00363\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ equiv(nk)\ =nk\ :\ k-\/point\ nk\ is\ not\ equivalent\ to\ any\ previous\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ equiv(nk)!=nk\ :\ k-\/point\ nk\ is\ equivalent\ to\ k-\/point\ equiv(nk)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00366}00366\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ nk\ =\ 1,\ nkr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ \ \ \ \ equiv(nk)\ =\ nk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00369}00369\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00370}00370\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (skip\_equivalence)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ k-\/points\ grid:\ skip\ check\ of\ k-\/points\ equivalence\ '}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ wkk\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ nk\ =\ 1,\ nkr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ check\ if\ this\ k-\/point\ has\ already\ been\ found\ equivalent\ to\ another}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (equiv(nk)\ ==\ nk)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wkk(nk)\ =\ 1.0d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ check\ if\ there\ are\ equivalent\ k-\/point\ to\ this\ in\ the\ list}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ (excepted\ those\ previously\ found\ to\ be\ equivalent\ to\ another)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ check\ both\ k\ and\ -\/k}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ns\ =\ 1,\ nrot}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkr(i)\ =\ s(i,\ 1,\ ns)*xkg(1,\ nk)\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ +\ s(i,\ 2,\ ns)*xkg(2,\ nk)\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ +\ s(i,\ 3,\ ns)*xkg(3,\ nk)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkr(i)\ =\ xkr(i)\ -\/\ nint(xkr(i))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00388}00388\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (t\_rev(ns)\ ==\ 1)\ xkr\ =\ -\/xkr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xx\ =\ xkr(1)*nk1\ -\/\ 0.5d0*k1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yy\ =\ xkr(2)*nk2\ -\/\ 0.5d0*k2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zz\ =\ xkr(3)*nk3\ -\/\ 0.5d0*k3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\_the\_list\ =\ abs(xx\ -\/\ nint(xx))\ <=\ eps\ .and.\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ abs(yy\ -\/\ nint(yy))\ <=\ eps\ .and.\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ abs(zz\ -\/\ nint(zz))\ <=\ eps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (in\_the\_list)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ mod(nint(xkr(1)*nk1\ -\/\ 0.5d0*k1\ +\ 2*nk1),\ nk1)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ mod(nint(xkr(2)*nk2\ -\/\ 0.5d0*k2\ +\ 2*nk2),\ nk2)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ =\ mod(nint(xkr(3)*nk3\ -\/\ 0.5d0*k3\ +\ 2*nk3),\ nk3)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ n\ =\ (k\ -\/\ 1)\ +\ (j\ -\/\ 1)*nk3\ +\ (i\ -\/\ 1)*nk2*nk3\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ >\ nk\ .and.\ equiv(n)\ ==\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ equiv(n)\ =\ nk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wkk(nk)\ =\ wkk(nk)\ +\ 1.0d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00404}00404\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00405}00405\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (time\_reversal)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xx\ =\ -\/xkr(1)*nk1\ -\/\ 0.5d0*k1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yy\ =\ -\/xkr(2)*nk2\ -\/\ 0.5d0*k2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zz\ =\ -\/xkr(3)*nk3\ -\/\ 0.5d0*k3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\_the\_list\ =\ abs(xx\ -\/\ nint(xx))\ <=\ eps\ .and.\ abs(yy\ -\/\ nint(yy))\ <=\ eps\ \&}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .and.\ abs(zz\ -\/\ nint(zz))\ <=\ eps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (in\_the\_list)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ mod(nint(-\/xkr(1)*nk1\ -\/\ 0.5d0*k1\ +\ 2*nk1),\ nk1)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ mod(nint(-\/xkr(2)*nk2\ -\/\ 0.5d0*k2\ +\ 2*nk2),\ nk2)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ =\ mod(nint(-\/xkr(3)*nk3\ -\/\ 0.5d0*k3\ +\ 2*nk3),\ nk3)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ n\ =\ (k\ -\/\ 1)\ +\ (j\ -\/\ 1)*nk3\ +\ (i\ -\/\ 1)*nk2*nk3\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ >\ nk\ .and.\ equiv(n)\ ==\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ equiv(n)\ =\ nk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00419}00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wkk(nk)\ =\ wkk(nk)\ +\ 1.0d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00420}00420\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00421}00421\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00422}00422\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00423}00423\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00424}00424\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00425}00425\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00426}00426\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00427}00427\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ count\ irreducible\ points\ and\ order\ them}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ nks\ =\ 0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ fact\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ nk\ =\ 1,\ nkr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (equiv(nk)\ ==\ nk)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nks\ =\ nks\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wk(nks)\ =\ wkk(nk)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fact\ =\ fact\ +\ wk(nks)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ bring\ back\ into\ to\ the\ first\ BZ}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xk(i,\ nks)\ =\ xkg(i,\ nk)\ -\/\ nint(xkg(i,\ nk))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00439}00439\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00440}00440\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00441}00441\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00442}00442\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ normalize\ weights\ to\ one}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00443}00443\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ nk\ =\ 1,\ nks}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00444}00444\ \ \ \ \ \ \ \ \ \ \ \ \ wk(nk)\ =\ wk(nk)/fact}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00445}00445\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00446}00446\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00447}00447\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'number\ of\ inequivalent/total\ k-\/points\ found'},\ nks,\ nkp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00448}00448\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ set\ total\ number\ of\ k-\/points\ as\ the\ number\ of\ inequivalent\ ones}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00449}00449\ \ \ \ \ \ \ \ \ nkp\ =\ nks}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00450}00450\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (equiv)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (xkg,\ wkk)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00453}00453\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00454}00454\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00455}00455\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00456}00456\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }kpoint\_grid}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00457}00457\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00458}00458\ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00459}00459\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Generate\ k-\/points\ path\ for\ band\ structure\ calculations}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00460}00460\ \textcolor{comment}{\ \ \ \ !>\ @details\ Generates\ a\ continuous\ k-\/point\ path\ in\ the\ first\ Brillouin\ zone\ for\ band}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00461}00461\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ structure\ calculations.\ Interpolates\ between\ user-\/specified\ endpoints\ to}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00462}00462\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ create\ a\ path\ with\ specified\ resolution.\ Computes\ distances\ along\ the\ path.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00463}00463\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ xkp\ K-\/point\ coordinates\ (3,nk):\ input\ =\ path\ endpoints,\ output\ =\ full\ path}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00464}00464\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ wkp\ K-\/point\ weights\ (nk):\ output\ =\ path\ distances}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00465}00465\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nk1\ Number\ of\ path\ segments\ (number\ of\ endpoints)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00466}00466\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nk2\ Number\ of\ points\ per\ segment}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00467}00467\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ iflag\ Error\ flag\ (0=success,\ 1=error)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00468}00468\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ linear\ interpolation\ between\ endpoints.\ Adds\ last\ point\ explicitly.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00469}00469\ \textcolor{comment}{\ \ \ \ !>\ @note\ Writes\ error\ to\ stdout\ if\ path\ generation\ fails.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00470}00470\ \textcolor{comment}{\ \ \ \ !>\ @see\ get\_kpoints}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00471}00471\ \ \ \ \ \textcolor{keyword}{subroutine\ }generate\_kp\_path(xkp,\ wkp,\ nk1,\ nk2,\ iflag)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00472}00472\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ This\ subroutine\ generates\ a\ k-\/points\ path\ in\ the\ 1BZ\ according}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00475}00475\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ to\ the\ points\ read\ in\ the\ section\ KPOINTS.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00476}00476\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00478}00478\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00479}00479\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nk1,\ nk2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00480}00480\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(inout)}\ ::\ iflag}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00481}00481\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(out)}\ ::\ xkp(3,\ nk),\ wkp(nk)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00482}00482\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ klines}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00483}00483\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ k}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00484}00484\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ dk,\ t,\ xpar(3),\ xold(3),\ wold,\ xmod}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00485}00485\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ read\ lines\ of\ the\ path}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00487}00487\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (klines(3,\ nk1))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00488}00488\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nk1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ klines(:,\ i)\ =\ xkp(:,\ i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00490}00490\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00491}00491\ \ \ \ \ \ \ \ \ xkp\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00492}00492\ \ \ \ \ \ \ \ \ wkp\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00493}00493\ \ \ \ \ \ \ \ \ dk\ =\ 1.d0/nk2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00494}00494\ \ \ \ \ \ \ \ \ iflag\ =\ 0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00495}00495\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ generates\ k-\/points\ along\ the\ lines}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00496}00496\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ using\ parametrization}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00497}00497\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nk1\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00498}00498\ \ \ \ \ \ \ \ \ \ \ \ \ t\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00499}00499\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nk2}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00500}00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (t\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00501}00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag\ =\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00502}00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{go\ to}\ 123}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00503}00503\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00504}00504\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xold(:)\ =\ klines(:,\ i)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00507}00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00508}00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xold(:)\ =\ xkp(:,\ (i\ -\/\ 1)*nk2\ +\ j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00509}00509\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00510}00510\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00511}00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wold\ =\ wkp((i\ -\/\ 1)*nk2\ +\ j)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00512}00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xpar(:)\ =\ t*(klines(:,\ i)\ -\/\ klines(:,\ i\ +\ 1))\ +\ klines(:,\ i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xkp(:,\ (i\ -\/\ 1)*nk2\ +\ j)\ =\ xpar(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00514}00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmod\ =\ dsqrt(sum((xpar(:)\ -\/\ xold(:))**2))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00515}00515\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wkp((i\ -\/\ 1)*nk2\ +\ j\ +\ 1)\ =\ wold\ +\ xmod}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00516}00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t\ =\ t\ -\/\ dk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00517}00517\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00518}00518\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00519}00519\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00520}00520\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ add\ the\ last\ point}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00521}00521\ \ \ \ \ \ \ \ \ xkp(:,\ (nk1\ -\/\ 1)*nk2\ +\ 1)\ =\ klines(:,\ nk1)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00523}00523\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00524}00524\ 123\ \ \ \ \ \textcolor{keywordflow}{if}\ (iflag\ .ne.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ERROR\ in\ generate\ k-\/points\ path'}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00525}00525\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (klines)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00526}00526\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00527}00527\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00528}00528\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00529}00529\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }generate\_kp\_path}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00530}00530\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00531}00531\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Check\ consistency\ between\ wavefunction\ phases\ and\ k-\/points}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00532}00532\ \textcolor{comment}{\ \ \ \ !>\ @details\ Verifies\ that\ the\ wavefunction\ phases\ in\ fort.10\ files\ correspond\ to\ the}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00533}00533\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ input\ k-\/points\ for\ all\ MPI\ processes.\ Ensures\ that\ the\ k-\/point\ grid\ and}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00534}00534\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ wavefunction\ phases\ are\ consistent\ across\ the\ pool.\ Calls\ error\ routine}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00535}00535\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ if\ any\ mismatch\ is\ detected.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00536}00536\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ id\ Process\ ID\ in\ the\ k-\/point\ pool}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00537}00537\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00538}00538\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ rank\ MPI\ rank}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00539}00539\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ reduce\_base\_real\ for\ collective\ communication.\ Writes\ error\ and\ aborts}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00540}00540\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ if\ phases\ do\ not\ match\ k-\/points.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00541}00541\ \textcolor{comment}{\ \ \ \ !>\ @see\ error,\ reduce\_base\_real}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00542}\mbox{\hyperlink{namespacekpoints__mod_aab0dfaeda5fa09b9e647c5d96bbf092e}{00542}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_aab0dfaeda5fa09b9e647c5d96bbf092e}{check\_kpoints}}(id,\ comm,\ rank)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00543}00543\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00544}00544\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00545}00545\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ id,\ comm,\ rank}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00546}00546\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ indk}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00547}00547\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ all\_phases,\ all\_phases\_down}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00548}00548\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8)\ ::\ phase\_diff,\ phase\_diff\_down}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00549}00549\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ is\_same(3),\ is\_same\_do(3)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00550}00550\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00551}00551\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (all\_phases(3,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}),\ all\_phases\_down(3,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00552}00552\ \ \ \ \ \ \ \ \ all\_phases\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00553}00553\ \ \ \ \ \ \ \ \ all\_phases\_down\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00554}00554\ \ \ \ \ \ \ \ \ indk\ =\ id\ +\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00555}00555\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00556}00556\ \ \ \ \ \ \ \ \ all\_phases(:,\ indk)\ =\ \mbox{\hyperlink{namespacecell_a3b9c1d51e6be88d6f6f100e672dacf9a}{phase}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00557}00557\ \ \ \ \ \ \ \ \ all\_phases\_down(:,\ indk)\ =\ \mbox{\hyperlink{namespacecell_a9d3bee10fd01b8f24f62b9af62d31efa}{phase\_down}}(:)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00558}00558\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00559}00559\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(\textcolor{keyword}{size}(all\_phases),\ all\_phases,\ comm,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00560}00560\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(\textcolor{keyword}{size}(all\_phases\_down),\ all\_phases\_down,\ comm,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00561}00561\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00562}00562\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00563}00563\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00564}00564\ \ \ \ \ \ \ \ \ \ \ \ \ is\_same(:)\ =\ ((abs(\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ i)\ -\/\ all\_phases(:,\ i)))\ <\ 1.0d-\/5)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00565}00565\ \ \ \ \ \ \ \ \ \ \ \ \ is\_same\_do(:)\ =\ ((abs(\mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(:,\ i)\ -\/\ all\_phases\_down(:,\ i)))\ <\ 1.0d-\/5)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00566}00566\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ all(is\_same))\ .or.\ (.not.\ all(is\_same\_do)))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00568}00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_diff\ =\ sum(abs(\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ i)\ -\/\ all\_phases(:,\ i)))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00569}00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_diff\_down\ =\ sum(abs(\mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(:,\ i)\ -\/\ all\_phases\_down(:,\ i)))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00570}00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'kpoints'},\ \textcolor{stringliteral}{'\ Some\ wavefunction\ phases\ do\ not\ correspond\ to\ the\ \&}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00571}00571\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ input\ k-\/points!\ Check\ \&kpoints\ card\ of\ fort.10\_000xxx\ '},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00572}00572\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00573}00573\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00574}00574\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00575}00575\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00576}00576\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (all\_phases,\ all\_phases\_down)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00577}00577\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00578}00578\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00579}00579\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_aab0dfaeda5fa09b9e647c5d96bbf092e}{check\_kpoints}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00580}00580\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00581}00581\ \ \ \ \ \textcolor{comment}{!\ weighted\ sums\ of\ over\ pools\ for\ different\ variables\ types}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00582}00582\ \ \ \ \ \textcolor{comment}{!\ To\ call\ those\ functions\ use\ the\ interface\ above!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00583}00583\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00584}00584\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ array\ of\ integers\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00585}00585\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ an\ integer\ array\ using\ the\ k-\/point\ weights\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00586}00586\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00587}00587\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ MPI\_ALLREDUCE\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00588}00588\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Integer\ array\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00589}00589\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ dim\_ps\ Dimension\ of\ the\ array}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00590}00590\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00591}00591\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00592}00592\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ MPI\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00593}00593\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_scalar\_int,\ sum\_kpoints\_array\_real8}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00594}\mbox{\hyperlink{namespacekpoints__mod_ab950e50ac3ee6bbebd36f48564313fc3}{00594}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_ab950e50ac3ee6bbebd36f48564313fc3}{sum\_kpoints\_array\_int}}(ps,\ dim\_ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00595}00595\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00596}00596\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ dim\_ps,\ comm,\ root}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00597}00597\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps(*)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00598}00598\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00599}00599\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ps\_tmp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00600}00600\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00601}00601\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00602}00602\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00603}00603\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00604}00604\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ps\_tmp(dim\_ps))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00605}00605\ \ \ \ \ \ \ \ \ ps\_tmp(1:dim\_ps)\ =\ ps(1:dim\_ps)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00606}00606\ \ \ \ \ \ \ \ \ ps\_tmp(1:dim\_ps)\ =\ ps\_tmp(1:dim\_ps)*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00607}00607\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00608}00608\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps\_tmp,\ ps,\ dim\_ps,\ mpi\_integer,\ mpi\_sum,\ comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00609}00609\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00610}00610\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00611}00611\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ps\_tmp)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00612}00612\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00613}00613\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_ab950e50ac3ee6bbebd36f48564313fc3}{sum\_kpoints\_array\_int}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00614}00614\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00615}00615\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ scalar\ integer\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00616}00616\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ an\ integer\ scalar\ using\ the\ k-\/point\ weight\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00617}00617\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00618}00618\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ MPI\_ALLREDUCE\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00619}00619\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Integer\ scalar\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00620}00620\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00621}00621\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00622}00622\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ MPI\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00623}00623\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_array\_int,\ sum\_kpoints\_scalar\_real8}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00624}\mbox{\hyperlink{namespacekpoints__mod_a14667ffeb19e661bd50289ceb8a66b7a}{00624}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a14667ffeb19e661bd50289ceb8a66b7a}{sum\_kpoints\_scalar\_int}}(ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00625}00625\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00626}00626\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ comm,\ root}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00627}00627\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00628}00628\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ps\_tmp,\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00629}00629\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00630}00630\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00631}00631\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00632}00632\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00633}00633\ \ \ \ \ \ \ \ \ ps\_tmp\ =\ ps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00634}00634\ \ \ \ \ \ \ \ \ ps\_tmp\ =\ ps\_tmp*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00635}00635\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00636}00636\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps\_tmp,\ ps,\ 1,\ mpi\_integer,\ mpi\_sum,\ comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00637}00637\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00638}00638\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00639}00639\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00640}00640\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a14667ffeb19e661bd50289ceb8a66b7a}{sum\_kpoints\_scalar\_int}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00641}00641\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00642}00642\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ scalar\ real*8\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00643}00643\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ a\ real*8\ scalar\ using\ the\ k-\/point\ weight\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00644}00644\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00645}00645\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ reduce\_base\_real\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00646}00646\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Real*8\ scalar\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00647}00647\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00648}00648\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00649}00649\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ reduce\_base\_real\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00650}00650\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_array\_real8,\ sum\_kpoints\_scalar\_int}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00651}\mbox{\hyperlink{namespacekpoints__mod_aa97373477880ab5bf7332b6c2b5662b8}{00651}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_aa97373477880ab5bf7332b6c2b5662b8}{sum\_kpoints\_scalar\_real8}}(ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00652}00652\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00653}00653\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ root,\ comm}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00654}00654\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00655}00655\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00656}00656\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00657}00657\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00658}00658\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00659}00659\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00660}00660\ \ \ \ \ \ \ \ \ ps\ =\ ps*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00661}00661\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00662}00662\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(1,\ ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00663}00663\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00664}00664\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00665}00665\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00666}00666\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_aa97373477880ab5bf7332b6c2b5662b8}{sum\_kpoints\_scalar\_real8}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00667}00667\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00668}00668\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ array\ of\ real*8\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00669}00669\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ a\ real*8\ array\ using\ the\ k-\/point\ weights\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00670}00670\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00671}00671\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ reduce\_base\_real\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00672}00672\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Real*8\ array\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00673}00673\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ dim\_ps\ Dimension\ of\ the\ array}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00674}00674\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00675}00675\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00676}00676\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ reduce\_base\_real\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00677}00677\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_scalar\_real8,\ sum\_kpoints\_array\_int}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00678}\mbox{\hyperlink{namespacekpoints__mod_a1aa117846b391925549e0a8a231f7f60}{00678}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a1aa117846b391925549e0a8a231f7f60}{sum\_kpoints\_array\_real8}}(ps,\ dim\_ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00679}00679\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00680}00680\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ dim\_ps,\ root,\ comm}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00681}00681\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps(*)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00682}00682\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00683}00683\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00684}00684\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00685}00685\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00686}00686\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00687}00687\ \ \ \ \ \ \ \ \ ps(1:dim\_ps)\ =\ ps(1:dim\_ps)*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00688}00688\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00689}00689\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(dim\_ps,\ ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00690}00690\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00691}00691\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00692}00692\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_a1aa117846b391925549e0a8a231f7f60}{sum\_kpoints\_array\_real8}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00693}00693\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00694}00694\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ array\ of\ real*16\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00695}00695\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ a\ real*16\ array\ using\ the\ k-\/point\ weights\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00696}00696\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00697}00697\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ MPI\_ALLREDUCE\ with\ conversion\ to\ real*8\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00698}00698\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Real*16\ array\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00699}00699\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ dim\_ps\ Dimension\ of\ the\ array}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00700}00700\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00701}00701\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00702}00702\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ MPI\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00703}00703\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_scalar\_real16,\ sum\_kpoints\_array\_real8}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00704}\mbox{\hyperlink{namespacekpoints__mod_ad1e97e85d61d8669c440a85d6c5d2b42}{00704}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_ad1e97e85d61d8669c440a85d6c5d2b42}{sum\_kpoints\_array\_real16}}(ps,\ dim\_ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00705}00705\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00706}00706\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ dim\_ps,\ comm,\ root}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00707}00707\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps(*)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00708}00708\ \ \ \ \ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ps\_tmp,\ ps\_double}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00709}00709\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00710}00710\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00711}00711\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00712}00712\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00713}00713\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00714}00714\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ps\_tmp(dim\_ps),\ ps\_double(dim\_ps))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00715}00715\ \ \ \ \ \ \ \ \ ps\_tmp(1:dim\_ps)\ =\ ps(1:dim\_ps)*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00716}00716\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00717}00717\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps\_tmp,\ ps\_double,\ dim\_ps,\ mpi\_real8,\ mpi\_sum,\ comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00718}00718\ \ \ \ \ \ \ \ \ ps(1:dim\_ps)\ =\ ps\_double(1:dim\_ps)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00719}00719\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00720}00720\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ ps(1:dim\_ps)\ =\ ps\_tmp(1:dim\_ps)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00721}00721\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00722}00722\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ps\_tmp,\ ps\_double)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00723}00723\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00724}00724\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_ad1e97e85d61d8669c440a85d6c5d2b42}{sum\_kpoints\_array\_real16}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00725}00725\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00726}00726\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Sum\ k-\/point\ weighted\ scalar\ real*16\ across\ MPI\ processes}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00727}00727\ \textcolor{comment}{\ \ \ \ !>\ @details\ Performs\ a\ weighted\ sum\ of\ a\ real*16\ scalar\ using\ the\ k-\/point\ weight\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00728}00728\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ current\ process.\ Only\ active\ when\ kaverage\ is\ true\ and\ not\ in\ decoupled\_run\ mode.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00729}00729\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Uses\ MPI\_ALLREDUCE\ with\ conversion\ to\ real*8\ for\ parallel\ reduction\ if\ compiled\ with\ PARALLEL.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00730}00730\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ ps\ Real*16\ scalar\ to\ be\ summed\ (modified\ in\ place)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00731}00731\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ comm\ MPI\ communicator}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00732}00732\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ root\ Root\ process\ for\ reduction}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00733}00733\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ MPI\ for\ parallel\ reduction.\ No\ operation\ if\ kaverage\ is\ false\ or\ decoupled\_run\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00734}00734\ \textcolor{comment}{\ \ \ \ !>\ @see\ sum\_kpoints\_array\_real16,\ sum\_kpoints\_scalar\_real8}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00735}\mbox{\hyperlink{namespacekpoints__mod_adae5a4d3d0db3188cde58ee1ca82bfb1}{00735}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_adae5a4d3d0db3188cde58ee1ca82bfb1}{sum\_kpoints\_scalar\_real16}}(ps,\ comm,\ root)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00736}00736\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00737}00737\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ comm,\ root}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00738}00738\ \textcolor{keywordtype}{\ \ \ \ \ \ \ \ real}(qp),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ps}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00739}00739\ \ \ \ \ \ \ \ \ real*8\ ::\ ps\_tmp,\ ps\_double}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00740}00740\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00741}00741\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00742}00742\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00743}00743\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00744}00744\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00745}00745\ \ \ \ \ \ \ \ \ ps\_tmp\ =\ ps*\mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(\mbox{\hyperlink{namespacekpoints__mod_a8b7bf058a0c124efaf63964626d41adb}{ikpoint}})}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00746}00746\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00747}00747\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps\_tmp,\ ps\_double,\ 1,\ mpi\_real8,\ mpi\_sum,\ comm,\ ierr)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00748}00748\ \ \ \ \ \ \ \ \ ps\ =\ ps\_double}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00749}00749\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00750}00750\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ ps\ =\ ps\_tmp}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00751}00751\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00752}00752\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00753}00753\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacekpoints__mod_adae5a4d3d0db3188cde58ee1ca82bfb1}{sum\_kpoints\_scalar\_real16}}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00754}00754\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00755}00755\ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00756}00756\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Search\ for\ a\ section\ in\ input\ file}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00757}00757\ \textcolor{comment}{\ \ \ \ !>\ @details\ Searches\ the\ input\ file\ for\ a\ specified\ section\ name.\ Reads\ line\ by\ line}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00758}00758\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ until\ the\ section\ is\ found\ or\ end\ of\ file\ is\ reached.\ Sets\ iflag\ to\ 1\ if}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00759}00759\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ section\ is\ not\ found.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00760}00760\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ funit\ File\ unit\ number}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00761}00761\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ section\_name\ Name\ of\ the\ section\ to\ search\ for}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00762}00762\ \textcolor{comment}{\ \ \ \ !>\ @param[inout]\ iflag\ Error\ flag\ (0=found,\ 1=not\ found)}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00763}00763\ \textcolor{comment}{\ \ \ \ !>\ @return\ Logical\ true\ if\ section\ found,\ false\ otherwise}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00764}00764\ \textcolor{comment}{\ \ \ \ !>\ @note\ Writes\ warning\ to\ stdout\ if\ section\ is\ not\ found.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00765}00765\ \textcolor{comment}{\ \ \ \ !>\ @see\ get\_kpoints}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00766}00766\ \ \ \ \ \textcolor{keyword}{logical\ }\textcolor{keyword}{function\ }found\_sec(funit,\ section\_name,\ iflag)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00767}00767\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00768}00768\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00769}00769\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ This\ function\ search\ in\ the\ input\ file\ for\ section\ "{}section\_name"{}.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00770}00770\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ If\ the\ section\ is\ not\ found\ then\ iflag\ is\ set\ to\ one.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00771}00771\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00772}00772\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00773}00773\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00774}00774\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ funit,\ iflag}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00775}00775\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{character(len=*)},\ \textcolor{keywordtype}{intent(in)}\ ::\ section\_name}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00776}00776\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{character(20)}\ ::\ line}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00777}00777\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00778}00778\ \ \ \ \ \ \ \ \ found\_sec\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00779}00779\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00780}00780\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (.not.\ found\_sec)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00781}00781\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (funit,\ \textcolor{stringliteral}{'(a)'},\ \textcolor{keyword}{end}=122)\ line}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00782}00782\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00783}00783\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(line)\ ==\ trim(section\_name))\ found\_sec\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00784}00784\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00785}00785\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00786}00786\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00787}00787\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ error}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00788}00788\ 122\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'section\ \ '},\ section\_name,\ \textcolor{stringliteral}{'\ \ not\ found'}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00789}00789\ \ \ \ \ \ \ \ \ iflag\ =\ 1}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00790}00790\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00791}00791\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00792}00792\ \ \ \ \ \textcolor{keyword}{end\ function\ }found\_sec}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00793}00793\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00794}00794\ \ \ \ \ \textcolor{comment}{!\ initialize\ seed\ for\ random\ k-\/points\ generation}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00795}00795\ \ \ \ \ \textcolor{comment}{!\ based\ on\ system\ time.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00796}00796\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00797}00797\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ random\ seed\ for\ k-\/points\ generation}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00798}00798\ \textcolor{comment}{\ \ \ \ !>\ @details\ Initializes\ the\ random\ number\ generator\ seed\ based\ on\ the\ current\ system\ time.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00799}00799\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Used\ for\ generating\ random\ k-\/points\ when\ kp\_type\ =\ 4.\ Ensures\ different\ runs}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00800}00800\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ produce\ different\ random\ k-\/point\ grids.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00801}00801\ \textcolor{comment}{\ \ \ \ !>\ @note\ Uses\ system\_clock\ to\ get\ current\ time\ for\ seed\ generation.\ Allocates\ and\ deallocates}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00802}00802\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ the\ seed\ array\ as\ needed.}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00803}00803\ \textcolor{comment}{\ \ \ \ !>\ @see\ get\_kpoints}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00804}00804\ \ \ \ \ \textcolor{keyword}{subroutine\ }init\_random\_seed}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00805}00805\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00806}00806\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ n,\ clock}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00807}00807\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ seed}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00808}00808\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_seed(size=n)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00809}00809\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (seed(n))}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00810}00810\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }system\_clock(count=clock)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00811}00811\ \ \ \ \ \ \ \ \ seed\ =\ clock\ +\ 37*(/(i\ -\/\ 1,\ i=1,\ n)/)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00812}00812\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }random\_seed(put=seed)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00813}00813\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (seed)}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00814}00814\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00815}00815\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }init\_random\_seed}
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00816}00816\ }
+\DoxyCodeLine{\Hypertarget{kpoints_8f90_source_l00817}00817\ \textcolor{keyword}{end\ module\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}}}
+
+\end{DoxyCode}

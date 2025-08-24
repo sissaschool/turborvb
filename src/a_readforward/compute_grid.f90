@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for grid generation and management
+!> @details This module provides functionality for generating and managing
+!>          computational grids used in correlation function calculations.
+!>          It supports both regular grid generation and external grid
+!>          reading from files, with various centering options.
 module grid_module
 
     real*8, allocatable :: out_grid(:, :)
@@ -25,6 +30,16 @@ module grid_module
 
 contains
 
+    !> @brief Computes and sets up the computational grid
+    !> @details This subroutine generates or reads a computational grid
+    !>          for correlation function calculations. It can either read
+    !>          grid points from an external file (turbo_grid.dat) or
+    !>          generate a regular grid with various centering options.
+    !>          The grid can be centered on the coordinate origin, the
+    !>          barycenter of atoms, or a specified point in space.
+    !> @param[in] ngrid_l Local grid dimensions (3)
+    !> @param[in] ell System dimensions (3)
+    !> @param[out] vell Grid velocity vectors (3)
     subroutine compute_grid(ngrid_l, ell, vell)
 
         use allio, only: rank, nion, rion

@@ -13,6 +13,50 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Error handling and reporting utilities for TurboRVB
+!>
+!> This module provides comprehensive error handling and reporting functionality
+!> for the TurboRVB quantum Monte Carlo code. It includes subroutines for
+!> warning messages, fatal error termination, and parallel error synchronization.
+!>
+!> The module supports both serial and parallel execution modes, with proper
+!> MPI coordination for error handling across multiple processes.
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Report errors and warnings with MPI-aware handling
+!>
+!> This subroutine provides centralized error reporting for TurboRVB calculations.
+!> It handles both warnings (ierror < 0) and fatal errors (ierror > 0) with
+!> appropriate MPI coordination for parallel execution.
+!>
+!> @param[in] routin Name of the calling routine for error identification
+!> @param[in] messag Error or warning message to display
+!> @param[in] ierror Error code:
+!>                   - ierror < 0: Warning (program continues)
+!>                   - ierror = 0: No error (subroutine returns immediately)
+!>                   - ierror > 0: Fatal error (program terminates)
+!> @param[in] rank MPI rank of the calling process
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. For warnings (ierror < 0):
+!>    - Displays warning message with routine name and error code
+!>    - Only rank 0 outputs the message
+!>    - Program continues execution
+!> 2. For fatal errors (ierror > 0):
+!>    - Displays error message with routine name and error code
+!>    - For ierror = 3, all ranks output their rank number
+!>    - Otherwise, only rank 0 outputs the error
+!>    - Terminates all MPI processes and stops the program
+!>
+!> @note The subroutine uses formatted output with separator lines for
+!>       clear visual distinction of error messages
+!> @note For parallel execution, MPI_ABORT is called to ensure all processes
+!>       terminate when a fatal error occurs
+!> @note Error code 3 is special and causes all ranks to output their rank number
 subroutine error(routin, messag, ierror, rank)
     use allio, only: iflagerr
     implicit none
@@ -70,6 +114,25 @@ subroutine error(routin, messag, ierror, rank)
 
 end subroutine error
 
+!> @brief Simple error reporting subroutine for serial execution
+!>
+!> This subroutine provides basic error reporting functionality for serial
+!> execution mode. It displays error information and terminates the program
+!> when an error occurs.
+!>
+!> @param[in] a First error message string
+!> @param[in] b Second error message string  
+!> @param[in] ierr Error code (program terminates if > 0)
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Checks if ierr > 0 (error condition)
+!> 2. If error exists, outputs both message strings and error code
+!> 3. Terminates program execution
+!>
+!> @note This subroutine is designed for serial execution and does not
+!>       include MPI coordination
+!> @note The subroutine returns immediately if ierr <= 0 (no error)
 subroutine errore(a, b, ierr)
     implicit none
     character(LEN=*) :: A
@@ -84,13 +147,30 @@ subroutine errore(a, b, ierr)
     stop
 end subroutine errore
 
-!------------------ checkiflagerr -----------------
-! This is a subroutine very easy to use.
-! It's been designed to stop the whole program if there's any error.
-! It is both parallel and serial supported.
-! In parallel, it should be called by all mpi processes not only master.
-! REMINDER: Don't use it inside rank.eq.0 region.
-!--------------------------------------------------
+!> @brief Global error checking and synchronization for parallel execution
+!>
+!> This subroutine provides global error checking across all MPI processes
+!> and ensures proper synchronization for error handling in parallel
+!> quantum Monte Carlo calculations.
+!>
+!> @param[in] iflagerr Local error flag for current process
+!> @param[in] rank MPI rank of the calling process
+!> @param[in] messag Error message to display if global error exists
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Performs global reduction of error flags across all MPI processes
+!> 2. If any process has an error (iflagerrall != 0):
+!>    - Rank 0 displays the error message
+!>    - For unreliable networks, synchronizes with barrier
+!>    - Frees MPI communicators if k-point averaging is active
+!>    - Finalizes MPI and terminates all processes
+!> 3. If no global errors, subroutine returns normally
+!>
+!> @note This subroutine must be called by ALL MPI processes, not just rank 0
+!> @note Do not use this subroutine inside rank.eq.0 regions
+!> @note The subroutine handles both reliable and unreliable network configurations
+!> @note For k-point averaging calculations, it properly cleans up MPI communicators
 subroutine checkiflagerr(iflagerr, rank, messag)
     use kpoints_mod, only: kaverage
     use allio, only: commcolrep_mpi, commrep_mpi

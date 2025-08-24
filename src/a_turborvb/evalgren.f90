@@ -13,6 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Find zero crossings of Green's function using bisection method
+!> @details This subroutine implements a bisection algorithm to find the zero crossings
+!> of the Green's function. It iteratively refines the interval [eig_min, eig_max] by
+!> evaluating the Green's function at the midpoint and updating the interval bounds
+!> based on the sign of the function value. The algorithm uses a maximum of 50 iterations
+!> to ensure convergence.
+!> @param[in] eig_min Minimum eigenvalue bound
+!> @param[in] eig_max Maximum eigenvalue bound
+!> @param[in] npm Leading dimension of matrix psi
+!> @param[in] ndim Dimension of the problem
+!> @param[in] psi Eigenvector matrix
+!> @param[in] eig Eigenvalue array
+!> @param[in,out] emin Array of minimum bounds for each dimension
+!> @param[in,out] emax Array of maximum bounds for each dimension
+!> @param[in,out] green Green's function values
+!> @param[in,out] e Energy values for Green's function evaluation
 subroutine findzero(eig_min, eig_max, npm, ndim, psi, eig         &
         &, emin, emax, green, e)
     integer npm, ndim, k, i, maxit
@@ -38,6 +54,17 @@ subroutine findzero(eig_min, eig_max, npm, ndim, psi, eig         &
     return
 end
 
+!> @brief Evaluate Green's function for given energy values
+!> @details This subroutine computes the Green's function values for given energy points e.
+!> The Green's function is calculated as a sum over eigenstates using the formula:
+!> G(e) = sum_l |psi(k,l)|^2 / (eig(l) - e(k)), where psi(k,l) are the eigenvector
+!> components and eig(l) are the eigenvalues.
+!> @param[in] npm Leading dimension of matrix psi
+!> @param[in] ndim Dimension of the problem
+!> @param[in] psi Eigenvector matrix
+!> @param[in] eig Eigenvalue array
+!> @param[in] e Energy values for evaluation
+!> @param[out] green Green's function values
 subroutine evalgreen(npm, ndim, psi, eig, e, green)
     implicit none
     integer npm, ndim, k_no, i, j, k, l

@@ -25,6 +25,12 @@ contains
     ! the constant vector with reciprocal cell dimensions
     ! used in z_N caluculations
     ! nel: # of electrons
+    !> @brief Initializes Berry phase calculation vectors
+    !> @details This subroutine allocates and initializes the constant vector
+    !>          with reciprocal cell dimensions used in z_N calculations.
+    !>          It creates nel copies of the 3D vector made by the orthogonal
+    !>          dimensions of the reciprocal cell.
+    !> @param[in] nel Number of electrons
     subroutine init_berry_phase(nel)
 
         use cell, only: cellscale
@@ -63,6 +69,12 @@ contains
     ! wconf:      walker's weight
     ! berry_exp:  z_N
 
+    !> @brief Updates Berry phase calculation for a walker
+    !> @details This subroutine computes z_N according to Resta & Sorella
+    !>          PRL 82, 370 (1999). It computes k.x, the argument of the
+    !>          exponential, and evaluates e^{i*k.x} for each direction.
+    !> @param[in] kelw Electronic positions for a single walker (3*nel)
+    !> @param[in] nel Number of electrons
     subroutine berry_phase_update(kelw, nel)
 
         implicit none

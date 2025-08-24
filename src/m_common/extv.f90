@@ -13,6 +13,32 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file extv.f90
+!> @brief External potential and QMC/MM interface for quantum Monte Carlo calculations.
+!>
+!> This file provides a comprehensive interface for handling external potentials
+!> in quantum Monte Carlo (QMC) calculations, particularly for QMC/molecular
+!> mechanics (MM) hybrid approaches. It includes routines for reading and
+!> interpolating 3D potential grids (cube files), computing van der Waals
+!> interactions, managing link atoms, and handling molecular mechanics restraints.
+!>
+!> @author E. Coccia and L. Guidoni (13/1/11), TurboRVB group
+!> @date 2022
+!>
+!> @section Usage
+!> The module supports various external potential types:
+!>   - 3D potential grids from cube files
+!>   - van der Waals interactions between QM and MM regions
+!>   - Link atom management for QM/MM boundaries
+!>   - Molecular mechanics restraints (bonds, angles, dihedrals)
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call extpot_read()           ! Read potential from cube file
+!>   call extpot_ene(coord, nel, ext_ene, sum_ext)  ! Evaluate potential
+!>   call vdw_ene(rion, nion, sum_vdw)              ! Evaluate vdW energy
+!> @endcode
+
 !****************************************
 ! by E. Coccia and L. Guidoni (13/1/11) !
 !****************************************
@@ -52,7 +78,25 @@
 ! - r_dimp
 ! - write_traj
 
-!*********************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Read external potential data from a cube file and set up interpolation.
+!>
+!> This subroutine reads a 3D potential grid from a Gaussian cube file format
+!> and prepares it for interpolation. The cube file contains atomic positions,
+!> grid dimensions, and potential values on a regular 3D grid. The routine
+!> allocates memory for the potential array and coordinate grids, then calls
+!> the interpolation routine to set up spline coefficients for smooth evaluation.
+!>
+!> @note The cube file must be named 'potential.cube' and follow the standard
+!>       Gaussian cube file format with atomic positions and 3D potential grid.
+!>
+!> @note This routine initializes statistical accumulators for energy averaging
+!>       in QMC calculations.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call extpot_read()
+!> @endcode
 subroutine extpot_read
     !*********************************************************************
 
@@ -119,7 +163,23 @@ subroutine extpot_read
     return
 end subroutine extpot_read
 
-!*********************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Set up 3D spline interpolation for the external potential.
+!>
+!> This subroutine prepares the interpolation parameters for the 3D potential
+!> grid using B-splines of order 5 in all three dimensions. It generates
+!> knot sequences and computes the B-spline coefficients for smooth evaluation
+!> of the potential at arbitrary points within the grid domain.
+!>
+!> @note Uses B-spline interpolation with order 5 for all dimensions.
+!>       The interpolation provides smooth derivatives for force calculations.
+!>
+!> @note Must be called after extpot_read to set up the interpolation.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call interpolate()
+!> @endcode
 subroutine interpolate
     !*********************************************************************
     ! set up the interpolation parameters of the splines
@@ -177,7 +237,30 @@ subroutine interpolate
     return
 end subroutine interpolate
 
-!*********************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Evaluate the interpolated 3D potential at given points.
+!>
+!> @param[in] nxvec Number of x-coordinates
+!> @param[in] nyvec Number of y-coordinates
+!> @param[in] nzvec Number of z-coordinates
+!> @param[in] xvec Array of x-coordinates
+!> @param[in] yvec Array of y-coordinates
+!> @param[in] zvec Array of z-coordinates
+!> @param[out] value Array of interpolated potential values
+!>
+!> This subroutine evaluates the 3D B-spline interpolated potential at
+!> the specified grid of points. It uses the B-spline coefficients
+!> computed in the interpolate routine to provide smooth potential
+!> values and derivatives.
+!>
+!> @note The interpolation provides smooth derivatives for force calculations
+!>       in QMC/MM simulations.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: xvec(10), yvec(10), zvec(10), value(10,10,10)
+!>   call evaluate(10, 10, 10, xvec, yvec, zvec, value)
+!> @endcode
 subroutine evaluate(nxvec, nyvec, nzvec, xvec, yvec, zvec, value)
     !*********************************************************************
     ! evaluate the function on the points
@@ -200,7 +283,27 @@ subroutine evaluate(nxvec, nyvec, nzvec, xvec, yvec, zvec, value)
     return
 end subroutine evaluate
 
-!*********************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Evaluate external potential energy for electrons in QMC calculations.
+!>
+!> @param[in] coord Electron coordinates (3, nelec)
+!> @param[in] nelec Number of electrons
+!> @param[out] ext_ene External potential energy for each electron
+!> @param[out] sum_ext Total external potential energy
+!>
+!> This subroutine evaluates the external potential energy for each electron
+!> by interpolating the 3D potential grid at their positions. It checks if
+!> electrons are within the potential box boundaries and accumulates
+!> statistical data for energy averaging in QMC calculations.
+!>
+!> @note Electrons outside the potential box are counted but assigned zero energy.
+!>       The routine updates statistical accumulators for energy averaging.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: coord(3, 10), ext_ene(10), sum_ext
+!>   call extpot_ene(coord, 10, ext_ene, sum_ext)
+!> @endcode
 subroutine extpot_ene(coord, nelec, ext_ene, sum_ext)
     !*********************************************************************
 
@@ -241,7 +344,22 @@ subroutine extpot_ene(coord, nelec, ext_ene, sum_ext)
     return
 end subroutine extpot_ene
 
-!*********************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Print final statistics for external potential calculations.
+!>
+!> @param[in] nelec Number of electrons
+!>
+!> This subroutine computes and prints final statistical results for the
+!> external potential calculations, including the average energy, error
+!> estimates, and the rate of electrons found outside the potential box.
+!>
+!> @note Uses MPI-averaged statistics (t_* variables) for parallel runs.
+!>       The error is computed as the standard deviation of the mean.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call extpot_final(10)
+!> @endcode
 subroutine extpot_final(nelec)
     !*********************************************************************
 
@@ -272,7 +390,20 @@ subroutine extpot_final(nelec)
     return
 end subroutine extpot_final
 
-!*******************************
+!-------------------------------------------------------------------------------
+!> @brief Deallocate memory used by external potential arrays.
+!>
+!> This subroutine deallocates all arrays associated with the external
+!> potential, including B-spline coefficients, knot sequences, potential
+!> grid, coordinate arrays, and atomic information.
+!>
+!> @note Should be called at the end of calculations to free memory.
+!>       All MPI processes should call this routine.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call deallocate_extpot()
+!> @endcode
 subroutine deallocate_extpot()
     !*******************************
 
@@ -290,7 +421,27 @@ subroutine deallocate_extpot()
 
 end subroutine deallocate_extpot
 
-!**************************************************
+!-------------------------------------------------------------------------------
+!> @brief Evaluate external potential energy for ions in QMC calculations.
+!>
+!> @param[in] rion Ion coordinates (3, nion)
+!> @param[in] zeta Ion charges (length nion)
+!> @param[in] nion Number of ions
+!> @param[out] ext_ion External potential energy for each ion
+!> @param[out] sum_ion Total external potential energy for ions
+!>
+!> This subroutine evaluates the external potential energy for each ion
+!> by interpolating the 3D potential grid at their positions. The energy
+!> is weighted by the ion charge and accumulated for statistical analysis.
+!>
+!> @note The potential is evaluated at all ion positions without boundary checks.
+!>       The energy is accumulated for averaging in QMC calculations.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: rion(3, 5), zeta(5), ext_ion(5), sum_ion
+!>   call ion_ene(rion, zeta, 5, ext_ion, sum_ion)
+!> @endcode
 subroutine ion_ene(rion, zeta, nion, ext_ion, sum_ion)
     !**************************************************
 
@@ -323,7 +474,24 @@ subroutine ion_ene(rion, zeta, nion, ext_ion, sum_ion)
 
 end subroutine ion_ene
 
-!*******************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Print final statistics for ion external potential calculations.
+!>
+!> @param[in] nion Number of ions
+!>
+!> This subroutine computes and prints final statistical results for the
+!> ion external potential calculations, including the average energy and
+!> error estimates. It also computes the total QMC/MM energy combining
+!> electronic and nuclear contributions.
+!>
+!> @note Uses MPI-averaged statistics (t_* variables) for parallel runs.
+!>       The nuclear term is treated as a constant in wave function optimization.
+!>       Error handling prevents NaN values in statistical calculations.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call ion_final(5)
+!> @endcode
 subroutine ion_final(nion)
     !*********************************************************************
 
@@ -375,7 +543,27 @@ subroutine ion_final(nion)
     return
 end subroutine ion_final
 
-!*******************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Read van der Waals parameters and atom information from vdw.dat file.
+!>
+!> This subroutine reads van der Waals interaction parameters (C12, C6) and
+!> atom information from the vdw.dat file. It sets up the data structures
+!> needed for computing van der Waals interactions between QM and MM regions
+!> in QMC/MM calculations.
+!>
+!> @note The file must contain:
+!>       - Number of Gromos vdW types and QM atoms
+!>       - C12 and C6 parameters for each atom type pair
+!>       - Atom information including coordinates and types
+!>       - Special parameters for 1-4 interactions if link atoms are used
+!>
+!> @note The number of QM atoms in the file must match nion.
+!>       The routine allocates memory for vdW arrays and coordinates.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call vdw_read()
+!> @endcode
 subroutine vdw_read()
     !*******************************************************************
 
@@ -497,7 +685,21 @@ subroutine vdw_read()
 
 end subroutine vdw_read
 
-!*******************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Deallocate memory used by van der Waals arrays.
+!>
+!> This subroutine deallocates all arrays associated with van der Waals
+!> interactions, including coordinates, interaction parameters (C12, C6),
+!> atom type mappings, and special 1-4 interaction parameters if link atoms
+!> are used.
+!>
+!> @note Should be called at the end of calculations to free memory.
+!>       Conditionally deallocates cs12 and cs6 arrays if link_atom is true.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call deallocate_vdw()
+!> @endcode
 subroutine deallocate_vdw()
     !*******************************************************************
 
@@ -514,7 +716,20 @@ subroutine deallocate_vdw()
 
 end subroutine deallocate_vdw
 
-!*****************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Deallocate memory used by link atom arrays.
+!>
+!> This subroutine deallocates all arrays associated with link atoms,
+!> including capping atoms, angle and dihedral parameters, and exclusion
+!> lists used in QMC/MM calculations with link atoms.
+!>
+!> @note Should be called at the end of calculations to free memory.
+!>       Deallocates arrays from link_atoms, link_angle, and exc_list modules.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call deallocate_link()
+!> @endcode
 subroutine deallocate_link()
     !*****************************************************************
 
@@ -535,7 +750,29 @@ subroutine deallocate_link()
 
 end subroutine deallocate_link
 
-!*******************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Calculate van der Waals interaction energy between QM and MM atoms.
+!>
+!> @param[in] rion Ion coordinates (3, nion)
+!> @param[in] nion Number of ions
+!> @param[in,out] sum_vdw Total van der Waals energy
+!>
+!> This subroutine computes the van der Waals interaction between QM and
+!> MM (classical) atoms using the Lennard-Jones formula:
+!> V_QMC_NN = \sum_QMC \sum_NN [ C12_QMC_NN/(R_QMC_NN)**12 - C6_QMC_NN/(R_QMC_NN)**6 ]
+!>
+!> The routine handles exclusion lists for link atoms and special 1-4
+!> interactions when link atoms are present. It accumulates statistical
+!> data for energy averaging in QMC calculations.
+!>
+!> @note Supports both simple QM/MM and link atom scenarios.
+!>       Uses different parameters for 1-4 interactions when link atoms are present.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   real(8) :: rion(3, 5), sum_vdw
+!>   call vdw_ene(rion, 5, sum_vdw)
+!> @endcode
 subroutine vdw_ene(rion, nion, sum_vdw)
     !*******************************************************************
     ! Calculation of the vdW interaction between QMC and NN (classical) atoms
@@ -628,7 +865,21 @@ subroutine vdw_ene(rion, nion, sum_vdw)
 
 end subroutine vdw_ene
 
-!*******************************************************************
+!-------------------------------------------------------------------------------
+!> @brief Print final statistics for van der Waals and MM restraint calculations.
+!>
+!> This subroutine computes and prints final statistical results for van der
+!> Waals interactions and molecular mechanics restraints (bonds, angles,
+!> dihedrals, impropers). It handles both simple QM/MM and link atom scenarios.
+!>
+!> @note Uses MPI-averaged statistics (t_* variables) for parallel runs.
+!>       Error handling prevents NaN values in statistical calculations.
+!>       Different output formats depending on whether link atoms or MM restraints are used.
+!>
+!> @section Examples
+!> @code{.f90}
+!>   call vdw_final()
+!> @endcode
 subroutine vdw_final()
     !*******************************************************************
 
@@ -756,6 +1007,15 @@ subroutine vdw_final()
 end subroutine vdw_final
 
 !*****************************************************************************
+!> @brief Position capping atoms in QM/MM link atom framework
+!> @details This subroutine positions capping atoms along the QM-link/MM-link bond
+!>          according to the specified scaling factor alpha. The capping atom is
+!>          positioned at a fraction alpha of the distance from QM-link to MM-link atom.
+!>          This implementation uses a constant alpha value rather than the original
+!>          distance-based approach.
+!> @note The capping atom is not an independent variable but is constrained to lie
+!>       on the QM-link/MM-link bond vector.
+!> @note Based on the method described in Theor. Chem. Acc., vol. 100, 307 (1998)
 subroutine r_capping()
     !*****************************************************************************
 
@@ -801,6 +1061,17 @@ subroutine r_capping()
 end subroutine r_capping
 
 !********************************************************
+!> @brief Read link atom configuration and parameters from link.dat file
+!> @details This subroutine reads the link.dat file which contains the configuration
+!>          for QM/MM link atoms including capping atoms, QM-link atoms, and MM-link atoms.
+!>          It also reads angular, dihedral, and improper dihedral parameters for
+!>          molecular mechanics restraints in the QM/MM framework.
+!> @note The link.dat file format includes:
+!>       - Number of link atoms
+!>       - Gromos indices for capping, QM-link, and MM-link atoms
+!>       - Angular contribution parameters (K_theta, cos(theta_eq))
+!>       - Proper dihedral parameters (K_phi, multiplicity, cos(phi_eq))
+!>       - Improper dihedral parameters (K_qhi, cos(qhi_eq))
 subroutine link_read()
     !********************************************************
 
@@ -823,9 +1094,9 @@ subroutine link_read()
     read (902, *) latoms
     if (rank .eq. 0) then
         write (*, *) ''
-        write (6, *) '|****************************************|'
-        write (6, *) '| Link atoms in the QMC/MM framework     |'
-        write (6, *) '|****************************************|'
+        write (*, *) '|****************************************|'
+        write (*, *) '| Link atoms in the QMC/MM framework     |'
+        write (*, *) '|****************************************|'
         write (*, *) ''
         write (*, *) 'Number of link atoms:', latoms
         write (*, *) ''
@@ -963,6 +1234,13 @@ subroutine link_read()
 end subroutine link_read
 
 !******************************************************************
+!> @brief Define logical arrays and indices for capping atoms in QM/MM framework
+!> @details This subroutine creates logical arrays to identify capping atoms and
+!>          sets up index arrays for capping atoms, QM-link atoms, and MM-link atoms.
+!>          It maps the Gromos indices to the internal TurboRVB/CPMD indices for
+!>          efficient access during QM/MM calculations.
+!> @note Creates log_cap array to identify which atoms are capping atoms
+!> @note Sets up cap, qm, and prt arrays for direct index access
 subroutine define_link()
     !******************************************************************
 
@@ -1011,6 +1289,14 @@ subroutine define_link()
 end subroutine define_link
 
 !******************************************************************
+!> @brief Calculate molecular mechanics bond angle contributions in QM/MM framework
+!> @details This subroutine calculates the bond angle potential energy contribution
+!>          for triplets involving QM-link and MM-link atoms. The potential follows
+!>          the harmonic form: 1/2 * k_theta * (cos(theta) - cos(theta_eq))**2
+!>          where theta is the angle between three atoms (I-J-K).
+!> @note Handles both QM and MM atoms in the angle calculations
+!> @note Accumulates statistics for bond angle potential energy
+!> @note Based on Gromos force field implementation (see Gromos manual II-17)
 subroutine mm_angle()
     !******************************************************************
 
@@ -1105,6 +1391,14 @@ subroutine mm_angle()
 end subroutine mm_angle
 
 !******************************************************************
+!> @brief Calculate molecular mechanics proper dihedral contributions in QM/MM framework
+!> @details This subroutine calculates the proper dihedral potential energy contribution
+!>          for quadruplets involving QM-link and MM-link atoms. The potential follows
+!>          the form: k_phi * (1 + cos(phi_eq) * cos(mult * phi)) where phi is the
+!>          dihedral angle between four atoms (I-J-K-L).
+!> @note Handles both QM and MM atoms in the dihedral calculations
+!> @note Accumulates statistics for proper dihedral potential energy
+!> @note Based on Gromos force field implementation (see Gromos manual II-26)
 subroutine mm_dihed()
     !******************************************************************
 
@@ -1206,7 +1500,15 @@ subroutine mm_dihed()
 end subroutine mm_dihed
 
 !****************************************************************
+!> @brief Calculate cos(mult*phi) using Chebyshev polynomials
+!> @details This subroutine efficiently calculates cos(mult*phi) using
+!>          Chebyshev polynomial expansions for multiplicities 0-6.
+!>          This is used in proper dihedral potential calculations.
+!> @param[in] phi Dihedral angle in radians
+!> @param[in] mult Multiplicity factor (0-6)
+!> @param[out] cosine Result of cos(mult*phi)
 subroutine cos_mult(phi, mult, cosine)
+    !****************************************************************
 
     implicit none
 
@@ -1235,6 +1537,12 @@ subroutine cos_mult(phi, mult, cosine)
 
 end subroutine cos_mult
 !****************************************************************
+!> @brief Calculate cross product of two 3D vectors
+!> @details This subroutine computes the cross product c = a × b
+!>          for two 3-dimensional vectors a and b.
+!> @param[in] a First input vector (3D)
+!> @param[in] b Second input vector (3D)
+!> @param[out] c Cross product result (3D)
 subroutine cross(a, b, c)
     !****************************************************************
 
@@ -1252,6 +1560,14 @@ subroutine cross(a, b, c)
 end subroutine cross
 
 !*************************************************************
+!> @brief Calculate molecular mechanics improper dihedral contributions in QM/MM framework
+!> @details This subroutine calculates the improper dihedral potential energy contribution
+!>          for quadruplets involving QM-link and MM-link atoms. The potential follows
+!>          the harmonic form: 1/2 * k_qhi * (phi - phi_eq)^2 where phi is the
+!>          improper dihedral angle between four atoms (I-J-K-L).
+!> @note Handles both QM and MM atoms in the improper dihedral calculations
+!> @note Accumulates statistics for improper dihedral potential energy
+!> @note Uses modulo function to handle periodicity in dihedral angles
 subroutine mm_improper()
     !*************************************************************
 
@@ -1332,6 +1648,24 @@ subroutine mm_improper()
 end subroutine mm_improper
 
 !***************************************************************
+!> @brief Calculate dihedral angle and related vectors for four atoms
+!> @details This subroutine computes the dihedral angle phi and cosine of phi
+!>          for four atoms (I-J-K-L) along with various intermediate vectors
+!>          needed for dihedral potential calculations.
+!> @param[in] ai Coordinates of first atom (I)
+!> @param[in] aj Coordinates of second atom (J)
+!> @param[in] ak Coordinates of third atom (K)
+!> @param[in] al Coordinates of fourth atom (L)
+!> @param[out] phi Dihedral angle in radians
+!> @param[out] cosphi Cosine of the dihedral angle
+!> @param[out] rij Vector from atom I to J
+!> @param[out] rkj Vector from atom K to J
+!> @param[out] rkl Vector from atom K to L
+!> @param[out] rmj2 Square of cross product magnitude
+!> @param[out] rnk2 Square of cross product magnitude
+!> @param[out] rnk Cross product vector
+!> @param[out] rmj Cross product vector
+!> @note Based on Gromos manual (II-21) implementation
 subroutine compute_dihed(ai, aj, ak, al, phi, cosphi, rij, rkj, rkl, rmj2, rnk2, rnk, rmj)
     !***************************************************************
 
@@ -1366,6 +1700,14 @@ subroutine compute_dihed(ai, aj, ak, al, phi, cosphi, rij, rkj, rkl, rmj2, rnk2,
 end subroutine compute_dihed
 
 !************************************************************
+!> @brief Read exclusion lists for van der Waals interactions from Gromos files
+!> @details This subroutine reads exclusion lists from exclusion.dat and 14.dat files
+!>          to determine which atom pairs should be excluded from van der Waals
+!>          interactions. It handles both first/second neighbor exclusions and
+!>          1-4 neighbor interactions with different scaling factors.
+!> @note Reads exclusion.dat for first and second neighbor exclusions
+!> @note Reads 14.dat for 1-4 neighbor interactions
+!> @note Only processes atoms that belong to the neighbor list (elist function)
 subroutine exclusion_list()
     !************************************************************
     use exc_list
@@ -1466,6 +1808,12 @@ subroutine exclusion_list()
 end subroutine exclusion_list
 
 !**********************************************************
+!> @brief Check if van der Waals interaction should be computed for atom pair
+!> @details This function checks if atoms i and j should be excluded from
+!>          van der Waals interactions based on the exclusion list.
+!> @param[in] i Index of first atom
+!> @param[in] j Index of second atom
+!> @return .true. if vdW should be computed, .false. if excluded
 logical function compute_vdw(i, j)
     !**********************************************************
 
@@ -1490,6 +1838,12 @@ logical function compute_vdw(i, j)
 end function compute_vdw
 
 !**********************************************************
+!> @brief Check if 1-4 interaction should be computed for atom pair
+!> @details This function checks if atoms i and j should be treated as
+!>          1-4 neighbors with special scaling factors.
+!> @param[in] i Index of first atom
+!> @param[in] j Index of second atom
+!> @return .true. if 1-4 interaction should be computed, .false. otherwise
 logical function compute_14(i, j)
     !**********************************************************
 
@@ -1514,6 +1868,11 @@ logical function compute_14(i, j)
 end function compute_14
 
 !**********************************************************
+!> @brief Check if atom belongs to the neighbor list
+!> @details This function checks if an atom with Gromos index dum
+!>          is present in the neighbor list for QM/MM calculations.
+!> @param[in] dum Gromos index of the atom to check
+!> @return .true. if atom is in neighbor list, .false. otherwise
 logical function elist(dum)
     !**********************************************************
 
@@ -1537,6 +1896,14 @@ logical function elist(dum)
 end function elist
 
 !***********************************************************
+!> @brief Read classical restraints for restrained wave function and geometry optimizations
+!> @details This subroutine reads classical molecular mechanics restraints from restr.dat
+!>          file for use in QM/MM calculations with mm_restr=.true. It reads bond, angle,
+!>          dihedral, and improper dihedral restraints with their force constants and
+!>          equilibrium values.
+!> @note Reads multiplicative factor for restraint scaling
+!> @note Converts angle values from degrees to radians and to cosine values
+!> @note Allocates force arrays for each restraint type
 subroutine restr_read()
     !***********************************************************
 
@@ -1635,7 +2002,12 @@ subroutine restr_read()
 end subroutine restr_read
 
 !**********************************************************************
+!> @brief Deallocate classical restraint arrays
+!> @details This subroutine deallocates all arrays related to classical
+!>          restraints including bond, angle, dihedral, and improper dihedral
+!>          restraints and their associated force arrays.
 subroutine deallocate_restr()
+    !**********************************************************************
 
     use cl_restr
     use link_angle, only: cl_bond, cl_angle, cl_dimp, cl_dihe
@@ -1650,6 +2022,11 @@ subroutine deallocate_restr()
 end subroutine deallocate_restr
 
 !****************************************************************
+!> @brief Calculate classical bond distance restraints
+!> @details This subroutine calculates harmonic bond distance restraints
+!>          around the equilibrium distance req. The potential follows
+!>          the form: 1/2 * mm_fact * k_bond * (r - r_eq)^2
+!> @note Accumulates statistics for bond restraint potential energy
 subroutine r_bond()
     !****************************************************************
 
@@ -1687,10 +2064,13 @@ subroutine r_bond()
 end subroutine r_bond
 
 !********************************************************************
+!> @brief Calculate classical bond angle restraints
+!> @details This subroutine calculates harmonic bond angle restraints
+!>          around the equilibrium angle. The potential follows the form:
+!>          1/2 * mm_fact * k_theta * (cos(theta) - cos(theta_eq))^2
+!> @note Accumulates statistics for bond angle restraint potential energy
 subroutine r_angle()
     !********************************************************************
-
-    ! Simple harmonic restraint aroun the bond angle
 
     use allio, only: rion
     use cl_restr, only: mm_fact, nth, restr_angle
@@ -1737,6 +2117,12 @@ subroutine r_angle()
 end subroutine r_angle
 
 !**********************************************************************************
+!> @brief Calculate classical proper dihedral restraints
+!> @details This subroutine calculates harmonic proper dihedral restraints
+!>          around the equilibrium dihedral angle. The potential follows
+!>          the form: 1/2 * mm_fact * k_phi * (cos(phi) - cos(phi_eq))^2
+!> @note Uses compute_dihed subroutine for dihedral angle calculation
+!> @note Accumulates statistics for proper dihedral restraint potential energy
 subroutine r_dihe()
     !**********************************************************************************
 
@@ -1795,6 +2181,13 @@ subroutine r_dihe()
 end subroutine r_dihe
 
 !*****************************************************************************
+!> @brief Calculate classical improper dihedral restraints
+!> @details This subroutine calculates harmonic improper dihedral restraints
+!>          around the equilibrium improper dihedral angle. The potential follows
+!>          the form: 1/2 * mm_fact * k_qhi * (phi - phi_eq)^2
+!> @note Uses compute_dihed subroutine for improper dihedral angle calculation
+!> @note Uses modulo function to handle periodicity in dihedral angles
+!> @note Accumulates statistics for improper dihedral restraint potential energy
 subroutine r_dimp()
     !*****************************************************************************
 
@@ -1836,6 +2229,18 @@ subroutine r_dimp()
 end subroutine r_dimp
 
 !***********************************************************
+!> @brief Write electron trajectory data for visualization
+!> @details This subroutine writes electron positions to trajectory file
+!>          for visualization purposes. It converts atomic units to Angstroms
+!>          and distinguishes between up and down electrons with 'N' and 'O'
+!>          labels respectively.
+!> @param[in] nel Total number of electrons
+!> @param[in] nelup Number of up-spin electrons
+!> @param[in] kel Electron coordinates (3, nel)
+!> @param[in] eloc Local energy value
+!> @note Only called when rank.eq.0 (first walker)
+!> @note Writes to unit 671 in XYZ format
+!> @note Converts coordinates from atomic units to Angstroms
 subroutine write_traj(nel, nelup, kel, eloc)
     !***********************************************************
 

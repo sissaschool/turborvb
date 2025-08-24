@@ -14,11 +14,29 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Matrix descriptor module for parallel block-cyclic distribution
+!>
+!> This module provides data structures and utility routines for describing
+!> and managing block-cyclic distributed matrices on a 2D processor grid.
+!> It is designed for use with Cannon's algorithm and other parallel matrix
+!> operations in scientific computing. The module supports both real and
+!> complex matrices, and provides routines for descriptor initialization,
+!> local/global index mapping, and parallel redistribution.
+!>
+!> @details
+!> The descriptor array encodes the local/global structure of a distributed
+!> matrix, including block sizes, processor grid coordinates, and MPI
+!> communicator information. This enables efficient parallel matrix
+!> multiplication and redistribution, especially in quantum chemistry and
+!> electronic structure calculations.
+!>
+!> @note This module is used throughout TurboRVB for distributed linear algebra.
 module descriptors
     !
     implicit none
     save
 
+    !> @brief External index and block size mapping functions
     integer ldim_cyclic, ldim_block_sca
     integer lind_block_sca
     integer gind_block_sca
@@ -26,53 +44,59 @@ module descriptors
     external lind_block_sca
     external gind_block_sca
 
-    !  Descriptor for Cannon's algorithm
+    !> @brief Descriptor array parameter indices for block-cyclic matrices
+    integer, parameter :: descla_siz_ = 16  !< Size of descriptor array
+    integer, parameter :: ilar_ = 1        !< Global index of first local row
+    integer, parameter :: nlar_ = 2        !< Number of local rows
+    integer, parameter :: ilac_ = 3        !< Global index of first local column
+    integer, parameter :: nlac_ = 4        !< Number of local columns
+    integer, parameter :: nlax_ = 5        !< Leading dimension of distributed matrix
+    integer, parameter :: lambda_node_ = 6 !< >0 if processor holds a block
+    integer, parameter :: la_n_ = 7        !< Global matrix dimension
+    integer, parameter :: la_nx_ = 8       !< Global leading dimension
+    integer, parameter :: la_npr_ = 9      !< Number of processor rows
+    integer, parameter :: la_npc_ = 10     !< Number of processor columns
+    integer, parameter :: la_myr_ = 11     !< Processor row index
+    integer, parameter :: la_myc_ = 12     !< Processor column index
+    integer, parameter :: la_comm_ = 13    !< MPI communicator
+    integer, parameter :: la_me_ = 14      !< Processor linear index
+    integer, parameter :: la_nrl_ = 15     !< Local rows for cyclic distribution
+    integer, parameter :: la_nrlx_ = 16    !< Leading dimension for row distribution
     !
-    !  Parameters to define and manage the Descriptor
-    !  of square matricxes block distributed on a square grid of processors
-    !  to be used with Cannon's algorithm for matrix multiplication
-    !
-    integer, parameter :: descla_siz_ = 16
-    integer, parameter :: ilar_ = 1
-    integer, parameter :: nlar_ = 2
-    integer, parameter :: ilac_ = 3
-    integer, parameter :: nlac_ = 4
-    integer, parameter :: nlax_ = 5
-    integer, parameter :: lambda_node_ = 6
-    integer, parameter :: la_n_ = 7
-    integer, parameter :: la_nx_ = 8
-    integer, parameter :: la_npr_ = 9
-    integer, parameter :: la_npc_ = 10
-    integer, parameter :: la_myr_ = 11
-    integer, parameter :: la_myc_ = 12
-    integer, parameter :: la_comm_ = 13
-    integer, parameter :: la_me_ = 14
-    integer, parameter :: la_nrl_ = 15
-    integer, parameter :: la_nrlx_ = 16
-    !
-    ! desc( ilar_ )  global index of the first row in the local block of lambda
-    ! desc( nlar_ )  number of row in the local block of lambda ( the "2" accounts for spin)
-    ! desc( ilac_ )  global index of the first column in the local block of lambda
-    ! desc( nlac_ )  number of column in the local block of lambda
-    ! desc( nlax_ )  leading dimension of the distribute lambda matrix
-    ! desc( lambda_node_ )  if > 0 the proc holds a block of the lambda matrix
-    ! desc( la_n_ )     global dimension of the matrix
-    ! desc( la_nx_ )    global leading dimension
-    ! desc( la_npr_ )   number of row processors
-    ! desc( la_npc_ )   number of column processors
-    ! desc( la_myr_ )   processor row index
-    ! desc( la_myc_ )   processor column index
-    ! desc( la_comm_ )  communicator
-    ! desc( la_me_ ) processor index ( from 0 to desc( la_npr_ ) * desc( la_npc_ ) - 1 )
-    ! desc( la_nrl_ ) number of local row, when the matrix is cyclically distributed across proc
-    ! desc( la_nrlx_ ) leading dimension, when the matrix is distributed by row
-
+    !> @brief Descriptor array for a distributed matrix
     integer :: descla(descla_siz_)
 
 contains
 
     !------------------------------------------------------------------------
-    !
+    !> @brief Compute local block indices and sizes for block-cyclic distribution
+    !>
+    !> Determines the global index of the first local element and the number of
+    !> local elements for a given processor in a block-cyclic distributed array.
+    !>
+    !> Parameters
+    !> ----------
+    !> i2g : integer, out
+    !>     Global index of the first local element.
+    !> nl : integer, out
+    !>     Number of local elements.
+    !> n : integer, in
+    !>     Number of actual elements in the global array.
+    !> nx : integer, in
+    !>     Dimension of the global array (nx >= n) to be distributed.
+    !> np : integer, in
+    !>     Number of processors.
+    !> me : integer, in
+    !>     Task ID for which i2g and nl are computed.
+    !>
+    !> Notes
+    !> -----
+    !> - Allows distributing a global array larger than the number of actual elements.
+    !> - Ensures equal partitioning for matrices of different sizes (e.g., spin-up/down).
+    !>
+    !> Example
+    !> -------
+    !> Used internally by descla_init to set up block-cyclic descriptors.
     subroutine descla_local_dims(i2g, nl, n, nx, np, me)
         implicit none
         integer, intent(OUT) :: i2g !  global index of the first local element
@@ -101,9 +125,40 @@ contains
         !
     end subroutine descla_local_dims
     !
-    !
+    !------------------------------------------------------------------------
+    !> @brief Initialize a block-cyclic matrix descriptor for parallel distribution
+    !>
+    !> Sets up the descriptor array for a block-cyclic distributed matrix on a
+    !> square processor grid. Handles both local and global matrix properties,
+    !> including block sizes, processor coordinates, and MPI communicator info.
+    !>
+    !> Parameters
+    !> ----------
+    !> desc : integer array, out
+    !>     Descriptor array to be initialized.
+    !> n : integer, in
+    !>     Size of the matrix (number of rows/columns).
+    !> nx : integer, in
+    !>     Maximum size among matrices sharing this descriptor.
+    !> np : integer array(2), in
+    !>     Number of processors in each grid dimension (must be square).
+    !> me : integer array(2), in
+    !>     Processor coordinates in the grid.
+    !> comm : integer, in
+    !>     MPI communicator.
+    !> includeme : integer, in
+    !>     If 1, include this processor in the distribution; else, set as inactive.
+    !>
+    !> Notes
+    !> -----
+    !> - Only square processor grids are supported.
+    !> - Handles both block and cyclic distributions for advanced parallelism.
+    !> - Performs error checking on all input parameters and computed values.
+    !>
+    !> Example
+    !> -------
+    !> Used to initialize matrix descriptors for distributed matrix-matrix multiplication.
     subroutine descla_init(desc, n, nx, np, me, comm, includeme)
-        !
         implicit none
         integer, intent(OUT) :: desc(:)
         integer, intent(IN) :: n !  the size of this matrix
@@ -114,6 +169,7 @@ contains
         integer :: ir, nr, ic, nc, lnode, nlax, nrl, nrlx
         integer :: ip, npp
 
+        !> @brief Error checking for processor grid and matrix sizes
         if (np(1) /= np(2)) &
             call errore(' descla_init ', ' only square grid of proc are allowed ', 2)
         if (n < 0) &
@@ -123,30 +179,21 @@ contains
         if (np(1) < 1) &
             call errore(' descla_init ', ' dummy argument np less than 1 ', 5)
 
-        ! find the block maximum dimensions
-
+        !> @brief Find the block maximum dimensions
         nlax = ldim_block_sca(nx, np(1), 0)
         !
-        ! find local block dimensions, if appropriate
-        ! only for processes involved in the distribution
-        !
+        !> @brief Find local block dimensions, if appropriate
+        !> Only for processes involved in the distribution
         if (includeme == 1) then
-            !
             call descla_local_dims(ir, nr, n, nx, np(1), me(1))
             call descla_local_dims(ic, nc, n, nx, np(2), me(2))
-            !
             lnode = 1
-            !
         else
-            !
             nr = 0
             nc = 0
-            !
             ir = 0
             ic = 0
-            !
             lnode = -1
-            !
         end if
 
         desc(ilar_) = ir
@@ -166,8 +213,7 @@ contains
 
         npp = np(1)*np(2)
 
-        !  Compute local dimension of the cyclically distributed matrix
-        !
+        !> @brief Compute local dimension of the cyclically distributed matrix
         if (includeme == 1) then
             nrl = ldim_cyclic(n, npp, desc(la_me_))
         else
@@ -178,6 +224,7 @@ contains
         desc(la_nrl_) = nrl
         desc(la_nrlx_) = nrlx
 
+        !> @brief Error checking for computed values
         if (nr < 0 .or. nc < 0) &
             call errore(' descla_init ', ' wrong valune for computed nr and nc ', 1)
         if (nlax < 1) &
@@ -191,13 +238,40 @@ contains
         if (nrl < 0) &
             call errore(' descla_init ', ' nrl < 0 ', abs(nrl))
 
-        ! WRITE(*,*) 'me1,me2,nr,nc,ir,ic= ', me(1), me(2), nr, nc, ir, ic
-
         return
     end subroutine descla_init
 
 #ifdef __SCALAPACK
 
+    !------------------------------------------------------------------------
+    !> @brief Symmetrize a distributed real square matrix in parallel
+    !>
+    !> This subroutine enforces symmetry (A = A^T) on a real square matrix
+    !> distributed in block-cyclic fashion across a 2D processor grid. It uses
+    !> MPI communication to exchange off-diagonal blocks and ensures that the
+    !> resulting matrix is symmetric on all processors.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : real*8 array, inout
+    !>     Local block of the distributed matrix (size lda × *).
+    !> lda : integer, in
+    !>     Leading dimension of the local block.
+    !> desc : integer array, in
+    !>     Descriptor array describing the matrix distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - For diagonal blocks, symmetry is enforced locally.
+    !> - For off-diagonal blocks, MPI is used to exchange and transpose blocks.
+    !> - Only active processors (desc(lambda_node_) > 0) participate.
+    !> - Error checking is performed for matrix dimensions and leading dimensions.
+    !>
+    !> Example
+    !> -------
+    !> Used in distributed matrix-matrix multiplication to ensure symmetric results.
     subroutine dsqmsym(n, a, lda, desc)
         !
         ! Double precision SQuare Matrix SYMmetrization
@@ -219,10 +293,12 @@ contains
 
 #if defined PARALLEL
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) <= 0) then
             return
         end if
 
+        !> @brief Error checking for matrix dimensions
         if (n /= desc(la_n_)) &
             call errore(" dsqmsym ", " wrong global dim n ", n)
         if (lda /= desc(nlax_)) &
@@ -232,39 +308,27 @@ contains
 
         nr = desc(nlar_)
         nc = desc(nlac_)
+        !> @brief Diagonal block: enforce symmetry locally
         if (desc(la_myc_) == desc(la_myr_)) then
-            !
-            !  diagonal block, procs work locally
-            !
             do j = 1, nc
                 do i = j + 1, nr
                     a(i, j) = a(j, i)
                 end do
             end do
-            !
+        !> @brief Super-diagonal block: send block to sub-diagonal processor
         else if (desc(la_myc_) > desc(la_myr_)) then
-            !
-            !  super diagonal block, procs send the block to sub diag.
-            !
             call GRID2D_RANK('R', desc(la_npr_), desc(la_npc_), &
                              desc(la_myc_), desc(la_myr_), dest)
             call mpi_isend(a, lda*lda, MPI_DOUBLE_PRECISION, dest, 1, comm, sreq, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" dsqmsym ", " in isend ", abs(ierr))
-            !
+        !> @brief Sub-diagonal block: receive block, transpose locally
         else if (desc(la_myc_) < desc(la_myr_)) then
-            !
-            !  sub diagonal block, procs receive the block from super diag,
-            !  then transpose locally
-            !
             call GRID2D_RANK('R', desc(la_npr_), desc(la_npc_), &
                              desc(la_myc_), desc(la_myr_), sour)
             call mpi_recv(a, lda*lda, MPI_DOUBLE_PRECISION, sour, 1, comm, istatus, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" dsqmsym ", " in recv ", abs(ierr))
-            !
             do j = 1, lda
                 do i = j + 1, lda
                     atmp = a(i, j)
@@ -272,35 +336,55 @@ contains
                     a(j, i) = atmp
                 end do
             end do
-            !
         end if
 
         if (desc(la_myc_) > desc(la_myr_)) then
-            !
             call MPI_Wait(sreq, istatus, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" dsqmsym ", " in wait ", abs(ierr))
-            !
         end if
 
 #else
-
+        !> @brief Serial: enforce symmetry locally for full matrix
         do j = 1, n
-            !
             do i = j + 1, n
-                !
                 a(i, j) = a(j, i)
-                !
             end do
-            !
         end do
-
 #endif
 
         return
     end subroutine dsqmsym
 
+    !------------------------------------------------------------------------
+    !> @brief Hermitianize a distributed complex square matrix in parallel
+    !>
+    !> This subroutine enforces Hermitian symmetry (A = A^†) on a complex
+    !> square matrix distributed in block-cyclic fashion across a 2D processor grid.
+    !> It uses MPI communication to exchange off-diagonal blocks and ensures that
+    !> the resulting matrix is Hermitian on all processors.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : complex*16 array, inout
+    !>     Local block of the distributed matrix (size lda × lda).
+    !> lda : integer, in
+    !>     Leading dimension of the local block.
+    !> desc : integer array, in
+    !>     Descriptor array describing the matrix distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - For diagonal blocks, Hermitian symmetry is enforced locally.
+    !> - For off-diagonal blocks, MPI is used to exchange and conjugate-transpose blocks.
+    !> - Only active processors (desc(lambda_node_) > 0) participate.
+    !> - Error checking is performed for matrix dimensions and leading dimensions.
+    !>
+    !> Example
+    !> -------
+    !> Used in distributed matrix-matrix multiplication to ensure Hermitian results.
     subroutine zsqmher(n, a, lda, desc)
         !
         ! double complex (Z) SQuare Matrix HERmitianize
@@ -322,10 +406,12 @@ contains
 
 #if defined PARALLEL
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) <= 0) then
             return
         end if
 
+        !> @brief Error checking for matrix dimensions
         if (n /= desc(la_n_)) &
             call errore(" zsqmher ", " wrong global dim n ", n)
         if (lda /= desc(nlax_)) &
@@ -335,40 +421,28 @@ contains
 
         nr = desc(nlar_)
         nc = desc(nlac_)
+        !> @brief Diagonal block: enforce Hermitian symmetry locally
         if (desc(la_myc_) == desc(la_myr_)) then
-            !
-            !  diagonal block, procs work locally
-            !
             do j = 1, nc
                 a(j, j) = DCMPLX(dble(a(j, j)))
                 do i = j + 1, nr
                     a(i, j) = conjg(a(j, i))
                 end do
             end do
-            !
+        !> @brief Super-diagonal block: send block to sub-diagonal processor
         else if (desc(la_myc_) > desc(la_myr_)) then
-            !
-            !  super diagonal block, procs send the block to sub diag.
-            !
             call GRID2D_RANK('R', desc(la_npr_), desc(la_npc_), &
                              desc(la_myc_), desc(la_myr_), dest)
             call mpi_isend(a, lda*lda, MPI_DOUBLE_COMPLEX, dest, 1, comm, sreq, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" zsqmher ", " in mpi_isend ", abs(ierr))
-            !
+        !> @brief Sub-diagonal block: receive block, transpose and conjugate locally
         else if (desc(la_myc_) > desc(la_myr_)) then
-            !
-            !  sub diagonal block, procs receive the block from super diag,
-            !  then transpose locally
-            !
             call GRID2D_RANK('R', desc(la_npr_), desc(la_npc_), &
                              desc(la_myc_), desc(la_myr_), sour)
             call mpi_recv(a, lda*lda, MPI_DOUBLE_COMPLEX, sour, 1, comm, istatus, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" zsqmher ", " in mpi_recv ", abs(ierr))
-            !
             do j = 1, lda
                 do i = j + 1, lda
                     atmp = a(i, j)
@@ -381,32 +455,22 @@ contains
                     a(i, j) = conjg(a(i, j))
                 end do
             end do
-            !
         end if
 
         if (desc(la_myc_) > desc(la_myr_)) then
-            !
             call MPI_Wait(sreq, istatus, ierr)
-            !
             if (ierr /= 0) &
                 call errore(" zsqmher ", " in MPI_Wait ", abs(ierr))
-            !
         end if
 
 #else
-
+        !> @brief Serial: enforce Hermitian symmetry locally for full matrix
         do j = 1, n
-            !
             a(j, j) = DCMPLX(dble(a(j, j)))
-            !
             do i = j + 1, n
-                !
                 a(i, j) = conjg(a(j, i))
-                !
             end do
-            !
         end do
-
 #endif
 
         return
@@ -415,6 +479,39 @@ contains
 #endif
     !
 
+    !------------------------------------------------------------------------
+    !> @brief Redistribute a real matrix from cyclic to block-cyclic distribution
+    !>
+    !> This subroutine redistributes a real matrix A, initially distributed
+    !> cyclically by rows across processors, into a block-cyclic distributed
+    !> matrix B on a 2D processor grid. It uses MPI communication to gather
+    !> and scatter matrix blocks as needed.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : real*8 array, in
+    !>     Input matrix, cyclically distributed by rows (size lda × *).
+    !> lda : integer, in
+    !>     Leading dimension of the input matrix.
+    !> b : real*8 array, out
+    !>     Output matrix, block-cyclic distributed (size ldb × *).
+    !> ldb : integer, in
+    !>     Leading dimension of the output matrix.
+    !> desc : integer array, in
+    !>     Descriptor array describing the block-cyclic distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - Only square processor grids are supported.
+    !> - Uses MPI_Allgather and MPI_Gather for communication.
+    !> - Performs error checking for block sizes and processor mesh.
+    !> - Serial fallback simply copies the matrix.
+    !>
+    !> Example
+    !> -------
+    !> Used to convert between different distributed matrix layouts in parallel algorithms.
     subroutine cyc2blk_redist(n, a, lda, b, ldb, desc)
         !
         !  Parallel square matrix redistribution.
@@ -447,6 +544,7 @@ contains
         !
 #if defined (PARALLEL)
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) < 0) then
             return
         end if
@@ -457,12 +555,11 @@ contains
         comm_a = desc(la_comm_)
         nproc = desc(la_npr_)*desc(la_npc_)
 
+        !> @brief Error checking for processor mesh and matrix size
         if (np /= desc(la_npc_)) &
             call errore(' cyc2blk_redist ', ' works only with square processor mesh ', 1)
         if (n < 1) &
             call errore(' cyc2blk_redist ', ' n less or equal zero ', 1)
-        !  IF( desc( la_n_ ) < nproc ) &
-        !  & CALL errore( ' cyc2blk_redist ', ' Dimension matrix less than the number of proc ', 1 )
 
         allocate (ip_desc(descla_siz_, nproc))
         ip_desc = 0
@@ -481,18 +578,15 @@ contains
         sndbuf = 0.d0
         rcvbuf = 0.d0
 
+        !> @brief Loop over all processors to gather and redistribute blocks
         do ip = 0, nproc - 1
-            !
             if (ip_desc(nlax_, ip + 1) /= nb) &
                 call errore(' cyc2blk_redist ', ' inconsistent block dim nb ', 1)
-            !
             if (ip_desc(lambda_node_, ip + 1) > 0) then
-
                 ip_nr = ip_desc(nlar_, ip + 1)
                 ip_nc = ip_desc(nlac_, ip + 1)
                 ip_ir = ip_desc(ilar_, ip + 1)
                 ip_ic = ip_desc(ilac_, ip + 1)
-                !
                 do j = 1, ip_nc
                     jj = j + ip_ic - 1
                     il = 1
@@ -505,25 +599,20 @@ contains
                         end if
                     end do
                 end do
-
             end if
-
             call mpi_barrier(comm_a, ierr)
-
             call mpi_gather(sndbuf, nbuf, mpi_double_precision, &
                             rcvbuf, nbuf, mpi_double_precision, ip, comm_a, ierr)
             if (ierr /= 0) &
                 call errore(" cyc2blk_redist ", " in mpi_gather ", abs(ierr))
-
         end do
 
-        !
         nr = desc(nlar_)
         nc = desc(nlac_)
         ir = desc(ilar_)
         ic = desc(ilac_)
-        !
 
+        !> @brief Unpack received blocks into the output matrix
         do ip = 0, nproc - 1
             do j = 1, nc
                 il = 1
@@ -537,16 +626,13 @@ contains
                 end do
             end do
         end do
-        !
-        !
         deallocate (ip_desc)
         deallocate (rcvbuf)
         deallocate (sndbuf)
 
 #else
-
+        !> @brief Serial: copy input matrix to output
         b(1:n, 1:n) = a(1:n, 1:n)
-
 #endif
 
         return
@@ -575,6 +661,39 @@ contains
 
     end subroutine cyc2blk_redist
 
+    !------------------------------------------------------------------------
+    !> @brief Redistribute a complex matrix from cyclic to block-cyclic distribution
+    !>
+    !> This subroutine redistributes a complex matrix A, initially distributed
+    !> cyclically by rows across processors, into a block-cyclic distributed
+    !> matrix B on a 2D processor grid. It uses MPI communication to gather
+    !> and scatter matrix blocks as needed.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : complex*16 array, in
+    !>     Input matrix, cyclically distributed by rows (size lda × *).
+    !> lda : integer, in
+    !>     Leading dimension of the input matrix.
+    !> b : complex*16 array, out
+    !>     Output matrix, block-cyclic distributed (size ldb × *).
+    !> ldb : integer, in
+    !>     Leading dimension of the output matrix.
+    !> desc : integer array, in
+    !>     Descriptor array describing the block-cyclic distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - Only square processor grids are supported.
+    !> - Uses MPI_Allgather and MPI_Gather for communication.
+    !> - Performs error checking for block sizes and processor mesh.
+    !> - Serial fallback simply copies the matrix.
+    !>
+    !> Example
+    !> -------
+    !> Used to convert between different distributed matrix layouts in parallel algorithms.
     subroutine cyc2blk_zredist(n, a, lda, b, ldb, desc)
         !
         !  Parallel square matrix redistribution.
@@ -607,6 +726,7 @@ contains
         !
 #if defined (PARALLEL)
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) < 0) then
             return
         end if
@@ -617,12 +737,11 @@ contains
         comm_a = desc(la_comm_)
         nproc = desc(la_npr_)*desc(la_npc_)
 
+        !> @brief Error checking for processor mesh and matrix size
         if (np /= desc(la_npc_)) &
             call errore(' cyc2blk_zredist ', ' works only with square processor mesh ', 1)
         if (n < 1) &
             call errore(' cyc2blk_zredist ', ' n less or equal zero ', 1)
-        !  IF( desc( la_n_ ) < nproc ) &
-        !  & CALL errore( ' cyc2blk_redist ', ' Dimension matrix less than the number of proc ', 1 )
 
         allocate (ip_desc(descla_siz_, nproc))
         ip_desc = 0
@@ -641,18 +760,15 @@ contains
         sndbuf = (0.d0, 0.d0)
         rcvbuf = (0.d0, 0.d0)
 
+        !> @brief Loop over all processors to gather and redistribute blocks
         do ip = 0, nproc - 1
-            !
             if (ip_desc(nlax_, ip + 1) /= nb) &
                 call errore(' cyc2blk_zredist ', ' inconsistent block dim nb ', 1)
-            !
             if (ip_desc(lambda_node_, ip + 1) > 0) then
-
                 ip_nr = ip_desc(nlar_, ip + 1)
                 ip_nc = ip_desc(nlac_, ip + 1)
                 ip_ir = ip_desc(ilar_, ip + 1)
                 ip_ic = ip_desc(ilac_, ip + 1)
-                !
                 do j = 1, ip_nc
                     jj = j + ip_ic - 1
                     il = 1
@@ -665,25 +781,20 @@ contains
                         end if
                     end do
                 end do
-
             end if
-
             call mpi_barrier(comm_a, ierr)
-
             call mpi_gather(sndbuf, nbuf, mpi_double_complex, &
                             rcvbuf, nbuf, mpi_double_complex, ip, comm_a, ierr)
             if (ierr /= 0) &
                 call errore(" cyc2blk_zredist ", " in mpi_gather ", abs(ierr))
-
         end do
 
-        !
         nr = desc(nlar_)
         nc = desc(nlac_)
         ir = desc(ilar_)
         ic = desc(ilac_)
-        !
 
+        !> @brief Unpack received blocks into the output matrix
         do ip = 0, nproc - 1
             do j = 1, nc
                 il = 1
@@ -697,16 +808,13 @@ contains
                 end do
             end do
         end do
-        !
-        !
         deallocate (ip_desc)
         deallocate (rcvbuf)
         deallocate (sndbuf)
 
 #else
-
+        !> @brief Serial: copy input matrix to output
         b(1:n, 1:n) = a(1:n, 1:n)
-
 #endif
 
         return
@@ -735,6 +843,39 @@ contains
 
     end subroutine cyc2blk_zredist
 
+    !------------------------------------------------------------------------
+    !> @brief Redistribute a real matrix from block-cyclic to cyclic distribution
+    !>
+    !> This subroutine redistributes a real matrix B, initially distributed
+    !> in block-cyclic fashion on a 2D processor grid, into a cyclically
+    !> distributed matrix A by rows across processors. It uses MPI communication
+    !> to gather and scatter matrix blocks as needed.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : real*8 array, out
+    !>     Output matrix, cyclically distributed by rows (size lda × *).
+    !> lda : integer, in
+    !>     Leading dimension of the output matrix.
+    !> b : real*8 array, in
+    !>     Input matrix, block-cyclic distributed (size ldb × *).
+    !> ldb : integer, in
+    !>     Leading dimension of the input matrix.
+    !> desc : integer array, in
+    !>     Descriptor array describing the block-cyclic distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - Only square processor grids are supported.
+    !> - Uses MPI_Allgather and MPI_Gather for communication.
+    !> - Performs error checking for block sizes and processor mesh.
+    !> - Serial fallback simply copies the matrix.
+    !>
+    !> Example
+    !> -------
+    !> Used to convert from block-cyclic to cyclic distribution for certain algorithms.
     subroutine blk2cyc_redist(n, a, lda, b, ldb, desc)
         !
         !  Parallel square matrix redistribution.
@@ -767,6 +908,7 @@ contains
         !
 #if defined (PARALLEL)
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) < 0) then
             return
         end if
@@ -777,15 +919,13 @@ contains
         comm_a = desc(la_comm_)
         nproc = desc(la_npr_)*desc(la_npc_)
 
+        !> @brief Error checking for processor mesh and matrix size
         if (np /= desc(la_npc_)) &
             call errore(' blk2cyc_redist ', ' works only with square processor mesh ', 1)
         if (n < 1) &
             call errore(' blk2cyc_redist ', ' n less or equal zero ', 1)
-        !  IF( desc( la_n_ ) < nproc ) &
-        ! & CALL errore( ' blk2cyc_redist ', ' Dimension matrix less than the number of proc ', 1 )
 
         allocate (ip_desc(descla_siz_, nproc))
-
         ip_desc = 0
 
         call mpi_barrier(comm_a, ierr)
@@ -807,6 +947,7 @@ contains
         ir = desc(ilar_)
         ic = desc(ilac_)
         !
+        !> @brief Pack local blocks into send buffer for redistribution
         do ip = 0, nproc - 1
             do j = 1, nc
                 il = 1
@@ -826,15 +967,13 @@ contains
         end do
         !
 
+        !> @brief Unpack received blocks into cyclic distribution
         do ip = 0, nproc - 1
-            !
             if (ip_desc(lambda_node_, ip + 1) > 0) then
-
                 ip_nr = ip_desc(nlar_, ip + 1)
                 ip_nc = ip_desc(nlac_, ip + 1)
                 ip_ir = ip_desc(ilar_, ip + 1)
                 ip_ic = ip_desc(ilac_, ip + 1)
-                !
                 do j = 1, ip_nc
                     jj = j + ip_ic - 1
                     il = 1
@@ -846,25 +985,53 @@ contains
                         end if
                     end do
                 end do
-
             end if
-
         end do
-        !
         deallocate (ip_desc)
         deallocate (rcvbuf)
         deallocate (sndbuf)
 
 #else
-
+        !> @brief Serial: copy input matrix to output
         a(1:n, 1:n) = b(1:n, 1:n)
-
 #endif
 
         return
-
     end subroutine blk2cyc_redist
 
+    !------------------------------------------------------------------------
+    !> @brief Redistribute a complex matrix from block-cyclic to cyclic distribution
+    !>
+    !> This subroutine redistributes a complex matrix B, initially distributed
+    !> in block-cyclic fashion on a 2D processor grid, into a cyclically
+    !> distributed matrix A by rows across processors. It uses MPI communication
+    !> to gather and scatter matrix blocks as needed.
+    !>
+    !> Parameters
+    !> ----------
+    !> n : integer, in
+    !>     Global matrix dimension (number of rows/columns).
+    !> a : complex*16 array, out
+    !>     Output matrix, cyclically distributed by rows (size lda × *).
+    !> lda : integer, in
+    !>     Leading dimension of the output matrix.
+    !> b : complex*16 array, in
+    !>     Input matrix, block-cyclic distributed (size ldb × *).
+    !> ldb : integer, in
+    !>     Leading dimension of the input matrix.
+    !> desc : integer array, in
+    !>     Descriptor array describing the block-cyclic distribution.
+    !>
+    !> Notes
+    !> -----
+    !> - Only square processor grids are supported.
+    !> - Uses MPI_Allgather and MPI_Gather for communication.
+    !> - Performs error checking for block sizes and processor mesh.
+    !> - Serial fallback simply copies the matrix.
+    !>
+    !> Example
+    !> -------
+    !> Used to convert from block-cyclic to cyclic distribution for certain algorithms.
     subroutine blk2cyc_zredist(n, a, lda, b, ldb, desc)
         !
         !  Parallel square matrix redistribution.
@@ -897,6 +1064,7 @@ contains
         !
 #if defined (PARALLEL)
 
+        !> @brief Only active processors participate
         if (desc(lambda_node_) < 0) then
             return
         end if
@@ -907,15 +1075,13 @@ contains
         comm_a = desc(la_comm_)
         nproc = desc(la_npr_)*desc(la_npc_)
 
+        !> @brief Error checking for processor mesh and matrix size
         if (np /= desc(la_npc_)) &
             call errore(' blk2cyc_zredist ', ' works only with square processor mesh ', 1)
         if (n < 1) &
             call errore(' blk2cyc_zredist ', ' n less or equal zero ', 1)
-        !  IF( desc( la_n_ ) < nproc ) &
-        ! & CALL errore( ' blk2cyc_zredist ', ' Dimension matrix less than the number of proc ', 1 )
 
         allocate (ip_desc(descla_siz_, nproc))
-
         ip_desc = 0
 
         call mpi_barrier(comm_a, ierr)
@@ -937,6 +1103,7 @@ contains
         ir = desc(ilar_)
         ic = desc(ilac_)
         !
+        !> @brief Pack local blocks into send buffer for redistribution
         do ip = 0, nproc - 1
             do j = 1, nc
                 il = 1
@@ -956,15 +1123,13 @@ contains
         end do
         !
 
+        !> @brief Unpack received blocks into cyclic distribution
         do ip = 0, nproc - 1
-            !
             if (ip_desc(lambda_node_, ip + 1) > 0) then
-
                 ip_nr = ip_desc(nlar_, ip + 1)
                 ip_nc = ip_desc(nlac_, ip + 1)
                 ip_ir = ip_desc(ilar_, ip + 1)
                 ip_ic = ip_desc(ilac_, ip + 1)
-                !
                 do j = 1, ip_nc
                     jj = j + ip_ic - 1
                     il = 1
@@ -976,23 +1141,18 @@ contains
                         end if
                     end do
                 end do
-
             end if
-
         end do
-        !
         deallocate (ip_desc)
         deallocate (rcvbuf)
         deallocate (sndbuf)
 
 #else
-
+        !> @brief Serial: copy input matrix to output
         a(1:n, 1:n) = b(1:n, 1:n)
-
 #endif
 
         return
-
     end subroutine blk2cyc_zredist
 
 end module descriptors

@@ -20,6 +20,12 @@
 ! It is used also molecorb_part dynamically.
 !
 
+!> @brief Improves diagonalization by orthogonalizing eigenvectors and recomputing eigenvalues
+!> @details This subroutine takes approximate eigenvectors and eigenvalues from Kohn-Sham
+!>          Hamiltonian diagonalization and improves them by orthogonalizing the eigenvectors
+!>          using Gram-Schmidt procedure, then recomputing the eigenvalues. Supports both
+!>          real and complex wavefunctions, and both serial and parallel (SCALAPACK) execution.
+!>          Handles both spin-up and spin-down components for LSDA calculations.
 subroutine improvediag
 
     use constants, only: ipc, zzero, zone

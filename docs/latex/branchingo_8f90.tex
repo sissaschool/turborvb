@@ -1,0 +1,105 @@
+\doxysection{src/a\+\_\+turborvb/branchingo.f90 File Reference}
+\hypertarget{branchingo_8f90}{}\label{branchingo_8f90}\index{src/a\_turborvb/branchingo.f90@{src/a\_turborvb/branchingo.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{branchingo_8f90_af7fdd5f94423f33619ef842fd377de00}{branchingo}} (nw, wconfn, weight, zeta, icdiff, ipip, jbra)
+\begin{DoxyCompactList}\small\item\em Optimized branching algorithm for DMC walker management. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{branchingo_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{branchingo_8f90_af7fdd5f94423f33619ef842fd377de00}\index{branchingo.f90@{branchingo.f90}!branchingo@{branchingo}}
+\index{branchingo@{branchingo}!branchingo.f90@{branchingo.f90}}
+\doxysubsubsection{\texorpdfstring{branchingo()}{branchingo()}}
+{\footnotesize\ttfamily \label{branchingo_8f90_af7fdd5f94423f33619ef842fd377de00} 
+subroutine branchingo (\begin{DoxyParamCaption}\item[{integer}]{nw}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{wconfn}{, }\item[{real(8)}]{weight}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{zeta}{, }\item[{integer}]{icdiff}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{ipip}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbra}{}\end{DoxyParamCaption})}
+
+
+
+Optimized branching algorithm for DMC walker management. 
+
+This subroutine implements an optimized branching algorithm for DMC walker management. It performs branching within each pool containing nw/nk walkers for decoupled VMC/\+DMC calculations. The algorithm uses optimized branching with or without sorting to efficiently redistribute walkers based on their weights. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in,out}}  & {\em wconfn} & Walker configuration weights \\
+\hline
+\mbox{\texttt{out}}  & {\em weight} & Total weight \\
+\hline
+\mbox{\texttt{in,out}}  & {\em zeta} & Branching parameters \\
+\hline
+\mbox{\texttt{out}}  & {\em icdiff} & Number of different configurations \\
+\hline
+\mbox{\texttt{in,out}}  & {\em ipip} & Integer work array \\
+\hline
+\mbox{\texttt{out}}  & {\em jbra} & Branching table \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{branchingo_8f90_source_l00029}{29}} of file \mbox{\hyperlink{branchingo_8f90_source}{branchingo.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nw,\ i,\ j,\ ipip(*),\ ind,\ icdiff,\ ni}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ jbra(*)}
+\DoxyCodeLine{00035\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ zeta(*),\ weight,\ try,\ tryp,\ wm,\ dstep,\ cost,\ wconfn(*)}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{!\ in\ case\ of\ decoupled\ VMC/DMC\ calculations,\ perform}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{!\ the\ branching\ within\ each\ pool\ which\ contains}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{!\ nw/nk\ walkers.}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00041\ \ \ \ \ weight\ =\ dabs(wconfn(1))}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nw}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ weight\ =\ weight\ +\ dabs(wconfn(i))}
+\DoxyCodeLine{00044\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ optimized\ branching\ with\ or\ without\ sorttf}}
+\DoxyCodeLine{00047\ \ \ \ \ dstep\ =\ zeta(nw\ +\ 1)/dble(nw)}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Optimized\ branching}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ zeta(i)\ =\ weight*(dstep\ +\ (i\ -\/\ 1)/dble(nw))}
+\DoxyCodeLine{00051\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00052\ \ \ \ \ zeta(nw\ +\ 1)\ =\ weight\ +\ 1.d0}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ ind\ =\ 1}
+\DoxyCodeLine{00055\ \ \ \ \ try\ =\ 0.d0}
+\DoxyCodeLine{00056\ \ \ \ \ icdiff\ =\ 0}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ tryp\ =\ try\ +\ dabs(wconfn(i))}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ ni\ =\ 0}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (zeta(ind)\ .lt.\ tryp\ .and.\ zeta(ind)\ .ge.\ try)}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ jbra(ind)\ =\ i}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ ni\ =\ ni\ +\ 1}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ try\ =\ tryp}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ni\ .ne.\ 0)\ icdiff\ =\ icdiff\ +\ 1}
+\DoxyCodeLine{00067\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ I\ have\ to\ permute\ the\ indices\ according\ to\ jbra}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ vectorized\ reshuffling}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ before\ I\ make\ a\ permutation\ to\ optimize\ the\ reshuffling}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{upjbra}}(nw,\ jbra,\ ipip,\ ipip(nw\ +\ 1))}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ wconfn(i)\ =\ 1.d0}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00077\ \ \ \ \ weight\ =\ weight/nw}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{upjbra_8f90_source_l00026}{upjbra()}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

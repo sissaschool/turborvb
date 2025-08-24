@@ -1,0 +1,360 @@
+\doxysection{src/m\+\_\+common/bconstraint.f90 File Reference}
+\hypertarget{bconstraint_8f90}{}\label{bconstraint_8f90}\index{src/m\_common/bconstraint.f90@{src/m\_common/bconstraint.f90}}
+
+
+Module containing constraint handling for wave function optimization.  
+
+
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{bconstraint_8f90_a3925980703b947f23eb96f9718432a55}{bconstraint}} (iessw, derl, nelorb, n, nozero, psip, econf, nw, jbradet, symmagp, yes\+\_\+update)
+\begin{DoxyCompactList}\small\item\em Translates changes back to the original unconstrained representation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Module containing constraint handling for wave function optimization. 
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2022 
+\end{DoxyDate}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+
+
+Definition in file \mbox{\hyperlink{bconstraint_8f90_source}{bconstraint.\+f90}}.
+
+
+
+\label{doc-func-members}
+\Hypertarget{bconstraint_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{bconstraint_8f90_a3925980703b947f23eb96f9718432a55}\index{bconstraint.f90@{bconstraint.f90}!bconstraint@{bconstraint}}
+\index{bconstraint@{bconstraint}!bconstraint.f90@{bconstraint.f90}}
+\doxysubsubsection{\texorpdfstring{bconstraint()}{bconstraint()}}
+{\footnotesize\ttfamily \label{bconstraint_8f90_a3925980703b947f23eb96f9718432a55} 
+subroutine bconstraint (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{iessw}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(inout)}]{derl}{, }\item[{integer, intent(in)}]{nelorb}{, }\item[{integer, intent(in)}]{n}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{nozero}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), intent(inout)}]{psip}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nw, \texorpdfstring{$\ast$}{*}), intent(in)}]{econf}{, }\item[{integer, intent(in)}]{nw}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*}), intent(in)}]{jbradet}{, }\item[{logical, intent(in)}]{symmagp}{, }\item[{logical, intent(in)}]{yes\+\_\+update}{}\end{DoxyParamCaption})}
+
+
+
+Translates changes back to the original unconstrained representation. 
+
+This subroutine handles the transformation of parameter changes from a constrained optimization space back to the original unconstrained representation used in the wave function. It supports both real and complex wave functions, as well as different types of constraints.
+
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Maps constrained parameter changes to their original positions
+\item Handles symmetry constraints for AGP (Antisymmetrized Geminal Power) matrices
+\item Updates either the derivative matrix or the parameter matrix based on yes\+\_\+update flag
+\item Supports both real (ipc=1) and complex (ipc=2) wave functions
+\item Handles EAGP (Extended AGP) Pfaffian matrices for complex wave functions
+\end{DoxyEnumerate}
+
+The algorithm uses a mapping array jbradet to translate between constrained and unconstrained parameter spaces, where positive values indicate direct mapping and negative values indicate sign-\/flipped mapping.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iessw} & Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em derl} & Derivative matrix or parameter matrix to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb} & Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em n} & Number of constrained parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & Array of non-\/zero element indices \\
+\hline
+\mbox{\texttt{in,out}}  & {\em psip} & Temporary workspace array \\
+\hline
+\mbox{\texttt{in}}  & {\em econf} & Configuration energy array \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em jbradet} & Mapping array from constrained to unconstrained parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em symmagp} & Logical flag for symmetric AGP matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em yes\+\_\+update} & Logical flag to determine update mode\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+If iessw = 0, the subroutine returns immediately without any operations
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+The subroutine modifies the derl array in-\/place based on the constraint mapping
+\end{DoxyWarning}
+\begin{DoxyParagraph}{Algorithm Details\+:}
+The subroutine implements a two-\/step process\+:
+\begin{DoxyEnumerate}
+\item {\bfseries{Parameter Mapping\+:}} Uses jbradet array to map constrained parameters back to original positions
+\item {\bfseries{Matrix Update\+:}} Updates either derivative matrix (upsim/upsimp) or parameter matrix based on yes\+\_\+update
+\end{DoxyEnumerate}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Real vs Complex Wave Functions\+:}
+
+\begin{DoxyItemize}
+\item {\bfseries{Real (ipc=1)\+:}} Direct parameter mapping with sign handling
+\item {\bfseries{Complex (ipc=2)\+:}} Complex parameter mapping with real/imaginary part handling
+\end{DoxyItemize}
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{EAGP Support\+:}
+For complex wave functions, the subroutine also handles EAGP Pfaffian matrices, which require special antisymmetric structure maintenance.
+\end{DoxyParagraph}
+\begin{DoxySeeAlso}{See also}
+\doxylink{namespaceconstants}{constants} module for ipc, ipf, deps parameters 
+
+\doxylink{namespacecell}{cell} module for cellscale, phase2pi parameters ~\newline
+ 
+
+\doxylink{namespaceallio}{allio} module for rank, yes\+\_\+correct, nnozero\+\_\+eagp, eagp\+\_\+pfaff, ndiff parameters 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iessw} & iessw Switch flag for constraint handling (0\+: no constraints, \texorpdfstring{$>$}{>}0\+: apply constraints) \\
+\hline
+\mbox{\texttt{in}}  & {\em nozero} & nozero Array of non-\/zero element indices \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorb} & nelorb Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em n} & n Number of constrained parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & nw Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em jbradet} & jbradet Mapping array from constrained to unconstrained parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em symmagp} & symmagp Logical flag for symmetric AGP matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em yes\+\_\+update} & yes\+\_\+update Logical flag to determine update mode \\
+\hline
+\mbox{\texttt{in}}  & {\em econf} & econf Configuration energy array \\
+\hline
+\mbox{\texttt{in,out}}  & {\em psip} & psip Temporary workspace array \\
+\hline
+\mbox{\texttt{in,out}}  & {\em derl} & derl Derivative matrix or parameter matrix to be updated \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{bconstraint_8f90_source_l00071}{71}} of file \mbox{\hyperlink{bconstraint_8f90_source}{bconstraint.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}},\ \mbox{\hyperlink{namespaceconstants_aab9f7289aa833c740ea33ee0ddf0cafe}{deps}}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}},\ \mbox{\hyperlink{namespacecell_a7f5817e32f0d66a0c85cadf35e2f27e8}{phase2pi}}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}},\ \mbox{\hyperlink{namespaceallio_a7124f5e8c597973a09c00b5f1120fc26}{yes\_correct}},\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}},\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}},\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ iessw\ Switch\ flag\ for\ constraint\ handling\ (0:\ no\ constraints,\ >0:\ apply\ constraints)}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ iessw}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nozero\ Array\ of\ non-\/zero\ element\ indices}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nozero(*)}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nelorb\ Number\ of\ orbitals}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelorb}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ n\ Number\ of\ constrained\ parameters}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ n}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ nw\ Number\ of\ walkers}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nw}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ jbradet\ Mapping\ array\ from\ constrained\ to\ unconstrained\ parameters}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ jbradet(*)}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ symmagp\ Logical\ flag\ for\ symmetric\ AGP\ matrix}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{intent(in)}\ ::\ symmagp}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ yes\_update\ Logical\ flag\ to\ determine\ update\ mode}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{intent(in)}\ ::\ yes\_update}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ econf\ Configuration\ energy\ array}}
+\DoxyCodeLine{00103\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(in)}\ ::\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(\mbox{\hyperlink{namespaceallio_aed38f0396db19fa20cbf1f2091f46fa7}{nw}},\ *)}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ \ \ \ !>\ @param[in,out]\ psip\ Temporary\ workspace\ array}}
+\DoxyCodeLine{00106\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(*)}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ !>\ @param[in,out]\ derl\ Derivative\ matrix\ or\ parameter\ matrix\ to\ be\ updated}}
+\DoxyCodeLine{00109\ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(inout)}\ ::\ derl(*)}
+\DoxyCodeLine{00110\ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{!\ Local\ variables}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ ix,\ iy,\ j,\ ind,\ iesswread}
+\DoxyCodeLine{00113\ \ \ \ \ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{!\ Early\ return\ if\ no\ constraints\ are\ applied}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_afae1d1374db33a03ff1e2aa992ee8f8d}{iessw}}\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{comment}{!\ Handle\ real\ wave\ functions\ (ipc\ =\ 1)}}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Initialize\ workspace\ array\ to\ zero}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(n\ +\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ 1)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Map\ constrained\ parameters\ back\ to\ original\ positions}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Positive\ jbradet\ values:\ direct\ mapping}}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Negative\ jbradet\ values:\ sign-\/flipped\ mapping}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ +\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(i)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(i)\ =\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ j)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(i)\ =\ -\/\mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ -\/j)}
+\DoxyCodeLine{00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00132\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ mode:\ add\ changes\ to\ existing\ matrix}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_update)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ determinant\ matrix\ elements}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(i)\ .ne.\ 0.d0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upsimp_8f90_a1173a9db6e1414165fbb61649ac80cc0}{upsimp}}(derl,\ \mbox{\hyperlink{namespaceallio_ac86e857e206c5431eace999df5ac0bf9}{nelorb}},\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(i),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(i),\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}})}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ EAGP\ Pfaffian\ matrix\ elements\ (antisymmetric\ structure)}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ i\ +\ n}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Convert\ linear\ index\ to\ 2D\ matrix\ indices}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}\ +\ 1}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(ind)}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ -\/\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00156\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ mode:\ replace\ matrix\ elements}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ determinant\ matrix\ elements}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(\mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(i))\ .ne.\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upsim_8f90_a76030e560d145a3c47dc9e3e55b4e6a8}{upsim}}(derl,\ \mbox{\hyperlink{namespaceallio_ac86e857e206c5431eace999df5ac0bf9}{nelorb}},\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(i),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(i),\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}})}
+\DoxyCodeLine{00164\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ EAGP\ Pfaffian\ matrix\ elements}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ i\ +\ n}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}\ +\ 1}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(ind)}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(ind)\ \ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00178\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00180\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{comment}{!\ Handle\ complex\ wave\ functions\ (ipc\ =\ 2)}}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Initialize\ workspace\ array\ to\ zero\ (complex:\ 2x\ larger)}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(2*n\ +\ 2*\mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}},\ 0.d0,\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ 1)}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Handle\ symmetric\ AGP\ with\ correction}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}}\ .and.\ \mbox{\hyperlink{namespaceallio_a7124f5e8c597973a09c00b5f1120fc26}{yes\_correct}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Map\ complex\ parameters\ with\ symmetry\ constraints}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ +\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(i)}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Real\ and\ imaginary\ parts\ for\ symmetric\ case}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1)\ =\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ 4*j\ -\/\ 3)\ \ \textcolor{comment}{!\ Real\ part}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i)\ =\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ 4*j\ -\/\ 1)\ \ \ \ \ \ \textcolor{comment}{!\ Imaginary\ part}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1)\ =\ -\/\mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ -\/4*j\ -\/\ 3)\ \ \textcolor{comment}{!\ Sign-\/flipped\ real\ part}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i)\ =\ -\/\mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ -\/4*j\ -\/\ 1)\ \ \ \ \ \ \textcolor{comment}{!\ Sign-\/flipped\ imaginary\ part}}
+\DoxyCodeLine{00199\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00200\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Standard\ complex\ parameter\ mapping}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ +\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(i)}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1)\ =\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ 2*j\ -\/\ 1)\ \ \textcolor{comment}{!\ Real\ part}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i)\ =\ \mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ 2*j)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Imaginary\ part}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1)\ =\ -\/\mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ -\/2*j\ -\/\ 1)\ \ \textcolor{comment}{!\ Sign-\/flipped\ real\ part}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i)\ =\ -\/\mbox{\hyperlink{namespaceallio_a343f2799ed0e77ed73c7c00b9c268d46}{econf}}(1,\ -\/2*j)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Sign-\/flipped\ imaginary\ part}}
+\DoxyCodeLine{00212\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00213\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00214\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ mode\ for\ complex\ wave\ functions}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yes\_update)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ complex\ determinant\ matrix\ elements}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sum(abs(\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1:2*i)))\ .ne.\ 0.d0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{call\ }\mbox{\hyperlink{upsimp_8f90_a36e04989e419358943206753c13c59fb}{upsimp\_complex}}(derl,\ \mbox{\hyperlink{namespaceallio_ac86e857e206c5431eace999df5ac0bf9}{nelorb}},\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(i),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1),\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}})}
+\DoxyCodeLine{00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Update\ complex\ EAGP\ Pfaffian\ matrix\ elements}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ i\ +\ n}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}\ +\ 1}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(ind)}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Add\ complex\ values\ maintaining\ antisymmetry}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind\ -\/\ 1)}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind)}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Subtract\ complex\ values\ maintaining\ antisymmetry}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ -\/\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind\ -\/\ 1)}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ -\/\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind)}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00242\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ mode\ for\ complex\ wave\ functions}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ complex\ determinant\ matrix\ elements}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(\mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(i))\ .ne.\ 0)\&}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \textcolor{keyword}{call\ }\mbox{\hyperlink{upsim_8f90_a50546423ce34f60541610ff46d5462a9}{upsim\_complex}}(derl,\ \mbox{\hyperlink{namespaceallio_ac86e857e206c5431eace999df5ac0bf9}{nelorb}},\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(i),\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*i\ -\/\ 1),\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}})}
+\DoxyCodeLine{00251\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ complex\ EAGP\ Pfaffian\ matrix\ elements}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a12f129fff97d31205fc6437cf1b53736}{nnozero\_eagp}}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ i\ +\ n}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}\ +\ 1}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a5134ca359f20246b54ff2fd5b0a03458}{nozero}}(ind)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ \mbox{\hyperlink{namespaceallio_ae27ffc35475e0397287d208da04b1f4c}{jbradet}}(ind)}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ complex\ values\ maintaining\ antisymmetry}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind\ -\/\ 1)}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind)}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Set\ sign-\/flipped\ complex\ values\ maintaining\ antisymmetry}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind\ -\/\ 1)}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(2*ind)}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ -\/\ 1,\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ =\ -\/\mbox{\hyperlink{namespaceallio_a0be3874e79bfb25446204a6c77f393ce}{eagp\_pfaff}}(2*\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Antisymmetric}}
+\DoxyCodeLine{00271\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00272\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00273\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ yesupdate}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ ipc=1}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00071}{cell\+::cellscale}}, \mbox{\hyperlink{constants_8f90_source_l00075}{constants\+::deps}}, \mbox{\hyperlink{dscalzero_8f90_source_l00036}{dscalzero()}}, \mbox{\hyperlink{allio_8f90_source_l01225}{allio\+::eagp\+\_\+pfaff}}, \mbox{\hyperlink{allio_8f90_source_l00924}{allio\+::econf}}, \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipc}}, \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipf}}, \mbox{\hyperlink{allio_8f90_source_l00483}{allio\+::ndiff}}, \mbox{\hyperlink{allio_8f90_source_l00417}{allio\+::nnozero\+\_\+eagp}}, \mbox{\hyperlink{cell_8f90_source_l00104}{cell\+::phase2pi}}, \mbox{\hyperlink{allio_8f90_source_l00922}{allio\+::psip}}, \mbox{\hyperlink{allio_8f90_source_l01119}{allio\+::rank}}, \mbox{\hyperlink{upsim_8f90_source_l00066}{upsim()}}, \mbox{\hyperlink{upsim_8f90_source_l00141}{upsim\+\_\+complex()}}, \mbox{\hyperlink{upsimp_8f90_source_l00066}{upsimp()}}, \mbox{\hyperlink{upsimp_8f90_source_l00133}{upsimp\+\_\+complex()}}, and \mbox{\hyperlink{allio_8f90_source_l01339}{allio\+::yes\+\_\+correct}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

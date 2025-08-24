@@ -13,6 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief External potential module for quantum Monte Carlo calculations
+!>
+!> This module provides functionality for handling external potentials in
+!> quantum Monte Carlo calculations, including cube file potentials, QM/MM
+!> interfaces, and various molecular mechanics interactions.
+!>
+!> @details
+!> The module contains variables for:
+!> - Cube file potential data (grid, atoms, charges)
+!> - Statistical averages and error estimates
+!> - MPI parallelization support
+!> - Link atom definitions for QM/MM interfaces
+!> - Molecular mechanics restraints and forces
+!>
+!> @note Used in VMC and DMC calculations with external potentials
+!> @note Supports QM/MM hybrid calculations and molecular mechanics
 module extpot
     character(len=80) :: filename_cube, title_cube(2)
     integer :: n_x, n_y, n_z
@@ -45,6 +61,20 @@ module extpot
     logical :: write_rwalk
 end module extpot
 
+!> @brief Link atoms module for QM/MM interface
+!>
+!> This module defines data structures and variables for handling link atoms
+!> in quantum mechanics/molecular mechanics (QM/MM) hybrid calculations.
+!> Link atoms are used to cap the QM region at the boundary with the MM region.
+!>
+!> @details
+!> The module contains:
+!> - Link atom definitions (cap, QM, MM atoms)
+!> - Capping atom parameters and flags
+!> - Arrays for managing link atom connectivity
+!>
+!> @note Used in QM/MM hybrid calculations
+!> @note Supports various capping schemes for different force fields
 module link_atoms
     ! link atoms
     integer :: maxcap
@@ -60,6 +90,22 @@ module link_atoms
     integer, dimension(:), allocatable :: qm, prt, cap
 end module link_atoms
 
+!> @brief Link angle module for molecular mechanics interactions
+!>
+!> This module provides data structures and variables for handling molecular
+!> mechanics interactions in QM/MM calculations, including bonds, angles,
+!> dihedrals, and improper dihedrals.
+!>
+!> @details
+!> The module contains:
+!> - Two-body radial (bond) contributions
+!> - Three-body angular contributions
+!> - Four-body dihedral contributions
+!> - Improper dihedral contributions
+!> - Restraint parameters for MM region
+!>
+!> @note Used in QM/MM calculations with molecular mechanics force fields
+!> @note Supports various force field types (GROMOS, AMBER, etc.)
 module link_angle
     use constants, only: pi
     character(20) :: filename_link
@@ -102,6 +148,21 @@ module link_angle
     type(isix), dimension(:), allocatable :: cl_dihe
 end module link_angle
 
+!> @brief Classical restraints module for QM/MM calculations
+!>
+!> This module provides variables for handling classical restraints in
+!> QM/MM calculations, including bond, angle, dihedral, and improper
+!> dihedral restraints.
+!>
+!> @details
+!> The module contains:
+!> - Number of different types of restraints
+!> - Restraint force constants and equilibrium values
+!> - Restraint forces for each type of interaction
+!> - Scaling factor for MM contributions
+!>
+!> @note Used in QM/MM calculations with restraint potentials
+!> @note Supports harmonic and other restraint functional forms
 module cl_restr
     integer :: nbonds, nth, ndihe, ndimp
     real*8 :: mm_fact
@@ -109,6 +170,20 @@ module cl_restr
     real*8, dimension(:, :), allocatable :: restr_f_bond, restr_f_angle, restr_f_dihe, restr_f_dimp
 end module cl_restr
 
+!> @brief Total angle module for molecular mechanics energy averages
+!>
+!> This module provides variables for accumulating and averaging molecular
+!> mechanics energy contributions in QM/MM calculations.
+!>
+!> @details
+!> The module contains:
+!> - Counters for different types of interactions
+!> - Running averages and squared averages
+!> - Error estimates for each interaction type
+!> - MPI parallelization support for statistics
+!>
+!> @note Used for statistical analysis of MM energy contributions
+!> @note Supports both serial and parallel calculations
 module tot_angle
     ! Potential energy average
     integer :: ncount_bond, ncount_angle, ncount_dihed, ncount_impr
@@ -118,6 +193,20 @@ module tot_angle
     real*8 :: err_bond, err_angle, err_dihed, err_impr
 end module tot_angle
 
+!> @brief Splines module for interpolation of external potentials
+!>
+!> This module provides data structures and variables for handling spline
+!> interpolation of external potentials on 3D grids.
+!>
+!> @details
+!> The module contains:
+!> - Spline orders and knot numbers for each dimension
+!> - Spline coefficients for 3D interpolation
+!> - Knot positions and grid spacing
+!> - Current position for interpolation
+!>
+!> @note Used for efficient evaluation of external potentials
+!> @note Supports cubic spline interpolation in 3D
 module splines
     integer :: kxord, kyord, kzord, nxknot, nyknot, nzknot
     integer :: nxcoef, nycoef, nzcoef
@@ -128,6 +217,20 @@ module splines
             &        xknot, yknot, zknot
 end module splines
 
+!> @brief Vector module for 3D vector field interpolation
+!>
+!> This module provides data structures and variables for handling 3D
+!> vector field interpolation and evaluation.
+!>
+!> @details
+!> The module contains:
+!> - Grid dimensions for vector field
+!> - Vector field values on 3D grid
+!> - Coordinate vectors for interpolation
+!> - First call flag for initialization
+!>
+!> @note Used for vector field potentials and forces
+!> @note Supports 3D vector interpolation
 module vector
     integer :: nxvec, nyvec, nzvecz
     logical :: first_call_vec
@@ -135,6 +238,21 @@ module vector
     real*8, dimension(:, :, :), allocatable :: value
 end module vector
 
+!> @brief External forces module for QM/MM calculations
+!>
+!> This module provides data structures and variables for handling external
+!> forces in QM/MM calculations, including spline-interpolated forces and
+!> van der Waals interactions.
+!>
+!> @details
+!> The module contains:
+!> - Spline parameters for force interpolation
+!> - External force coefficients and knots
+!> - Force arrays for different interaction types
+!> - QM/MM region force contributions
+!>
+!> @note Used in QM/MM calculations with external force fields
+!> @note Supports various force field types and interpolation schemes
 module ext_forces
     integer :: f_kx, f_ky, f_kz, f_nx, f_ny, f_nz
     real*8, dimension(:, :, :), allocatable :: f_coef
@@ -145,6 +263,21 @@ module ext_forces
     real*8, dimension(:, :), allocatable :: mm_f_theta, mm_f_dihed, mm_f_impr
 end module ext_forces
 
+!> @brief Van der Waals module for intermolecular interactions
+!>
+!> This module provides data structures and variables for handling van der
+!> Waals interactions in QM/MM calculations, including Lennard-Jones
+!> parameters and statistical averages.
+!>
+!> @details
+!> The module contains:
+!> - Lennard-Jones parameters (C12, C6)
+!> - Van der Waals coordinates and connectivity
+!> - Statistical averages and error estimates
+!> - Support for GROMOS and CPMD force fields
+!>
+!> @note Used in QM/MM calculations with van der Waals interactions
+!> @note Supports various force field parameter sets
 module van_der_waals
     logical :: vdw
     real*8, dimension(:, :), allocatable :: c12, c6, cs12, cs6
@@ -170,6 +303,20 @@ module van_der_waals
     type(gromos), dimension(:), allocatable :: grom
 end module van_der_waals
 
+!> @brief Exclusion list module for molecular mechanics
+!>
+!> This module provides data structures for handling exclusion lists in
+!> molecular mechanics calculations, including 1-2, 1-3, and 1-4 exclusions.
+!>
+!> @details
+!> The module contains:
+!> - Exclusion list data structures
+!> - Maximum numbers for different exclusion types
+!> - Arrays for storing excluded atom pairs
+!> - Support for 1-4 interactions with scaling
+!>
+!> @note Used in molecular mechanics force field calculations
+!> @note Supports standard exclusion rules for bonded interactions
 module exc_list
     integer, parameter :: nmax = 140, nmax14 = 60
     type list

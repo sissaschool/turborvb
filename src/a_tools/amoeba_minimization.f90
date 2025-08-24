@@ -69,6 +69,12 @@ module amoeba_minimization
 
 contains
 
+    !> @brief Allocates data vectors for amoeba minimization
+    !> @details This subroutine allocates memory for parameter arrays,
+    !>          points arrays, and sigma vectors used in amoeba
+    !>          minimization calculations.
+    !> @param[in] param_number_read Number of parameters
+    !> @param[in] points_number_read Number of data points
     subroutine alloc_datavec(param_number_read, points_number_read)
         integer, intent(in) :: param_number_read, points_number_read
         param_number = param_number_read
@@ -78,6 +84,10 @@ contains
         allocate (vecsigma(points_number))
     end subroutine alloc_datavec
 
+    !> @brief Deallocates data vectors for amoeba minimization
+    !> @details This subroutine deallocates memory for parameter arrays,
+    !>          points arrays, and sigma vectors used in amoeba
+    !>          minimization calculations.
     subroutine dealloc_datavec
         if (allocated(param0)) deallocate (param0)
         if (allocated(sel)) deallocate (sel)
@@ -85,6 +95,10 @@ contains
         if (allocated(vecsigma)) deallocate (vecsigma)
     end subroutine dealloc_datavec
 
+    !> @brief Deallocates simplex arrays
+    !> @details This subroutine deallocates memory for simplex arrays
+    !>          including y, p, x, and scratch arrays used in amoeba
+    !>          minimization.
     subroutine dealloc_simplex
         if (allocated(y)) deallocate (y)
         if (allocated(p)) deallocate (p)
@@ -93,6 +107,12 @@ contains
         if (allocated(vecscratch)) deallocate (vecscratch)
     end subroutine dealloc_simplex
 
+    !> @brief Updates parameters from simplex optimization
+    !> @details This subroutine updates the parameter array with optimized
+    !>          values obtained from amoeba simplex minimization.
+    !> @param[in] p Simplex parameter array
+    !> @param[in] sel Parameter selection array
+    !> @param[out] param0 Updated parameter array
     subroutine update_param(p, sel, param0)
 
         real(8), intent(in) :: p(simplex_dim + 1, *)
@@ -110,6 +130,13 @@ contains
 
     end subroutine update_param
 
+    !> @brief Constructs initial simplex for amoeba minimization
+    !> @details This subroutine initializes the simplex for amoeba
+    !>          minimization by setting up the initial parameter values
+    !>          and computing the cost function for each vertex.
+    !> @param[in] delta Step size for simplex construction
+    !> @param[in] vecsigma Sigma vector for cost function
+    !> @param[in] weights Weight factors for data points
     subroutine simplex_constructor(delta, vecsigma, weights)
 
 ! to be called at the beginning to initialize the simplex correctly!!!!!
@@ -191,6 +218,13 @@ contains
 
     end subroutine simplex_constructor
 
+    !> @brief Computes chi-square cost function for minimization
+    !> @details This function computes the chi-square cost function
+    !>          that measures the distance between fitted form and
+    !>          data points for amoeba minimization.
+    !> @param[in] x Parameter array for evaluation
+    !> @param[in] vecsigma Sigma vector for normalization
+    !> @return chi Chi-square cost function value
     function chi(x, vecsigma)
 
 ! chi: cost function for minimization
@@ -221,6 +255,15 @@ contains
 
     end function chi
 
+    !> @brief Performs amoeba simplex minimization
+    !> @details This subroutine implements the Nelder-Mead simplex
+    !>          algorithm for function minimization. It performs
+    !>          reflection, expansion, contraction, and reduction
+    !>          operations to find the minimum of the cost function.
+    !> @param[in,out] p Simplex parameter array
+    !> @param[in,out] y Function values at simplex vertices
+    !> @param[in] tolerance Convergence tolerance
+    !> @param[in] itmax Maximum number of iterations
     subroutine amoeba(p, y, tolerance, itmax)
 ! kernel of the minimization module
 

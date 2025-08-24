@@ -13,16 +13,29 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Jastrow factor zeroing program for TurboRVB
+!> @details This program reads a TurboRVB wave function (fort.10) and
+!> selectively zeros Jastrow factors while preserving the wave function
+!> structure. It can zero both charge and spin-dependent Jastrow factors,
+!> with an option to preserve one-body terms. The program outputs a new
+!> fort.10_new file with the modified Jastrow parameters.
+!>
+!> The program supports two modes:
+!> - Normal mode: zeros all Jastrow factors
+!> - leave1body mode: preserves one-body Jastrow terms
+!>
+!> @author TurboRVB group
+!> @date 2022
 program zerojasfort10
     use allio
     implicit none
-    real(8) Rx, Ry, Rz
-    integer i, j, inputyes
-    logical leave1body
+    real(8) Rx, Ry, Rz        !< Position coordinates (unused but kept for compatibility)
+    integer i, j, inputyes    !< Loop indices and user input flag
+    logical leave1body        !< Flag to preserve one-body Jastrow terms
 
     !   AAA    Lines to be added just after all definitions of variables.
-    character(100) name_tool
-    character(20) str
+    character(100) name_tool  !< Tool name for help system
+    character(20) str         !< Command line argument
 
     call getarg(1, str)
     if (str .eq. "--help" .or. str .eq. "-help" .or. str .eq. "help") then

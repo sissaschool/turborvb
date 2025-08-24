@@ -1,0 +1,183 @@
+\doxysection{zgemm\+\_\+my.\+f90}
+\hypertarget{zgemm__my_8f90_source}{}\label{zgemm__my_8f90_source}\index{src/m\_common/zgemm\_my.f90@{src/m\_common/zgemm\_my.f90}}
+\mbox{\hyperlink{zgemm__my_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Parallel\ complex\ matrix-\/matrix\ multiplication\ with\ MPI\ distribution}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ performs\ complex\ matrix-\/matrix\ multiplication\ C\ =\ α*A*B\ +\ β*C}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00019}00019\ \textcolor{comment}{!>\ in\ parallel\ using\ MPI.\ The\ K\ dimension\ is\ distributed\ across\ processors,}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00020}00020\ \textcolor{comment}{!>\ with\ each\ processor\ computing\ a\ partial\ result\ that\ is\ then\ reduced}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00021}00021\ \textcolor{comment}{!>\ to\ form\ the\ final\ result.\ Supports\ both\ transpose\ and\ conjugate\ transpose\ operations.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00023}00023\ \textcolor{comment}{!>\ Parameters}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00024}00024\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00025}00025\ \textcolor{comment}{!>\ TRANSA\ :\ character*1,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ Transpose\ flag\ for\ matrix\ A\ ('N'=no\ transpose,\ 'T'=transpose,\ 'C'=conjugate\ transpose).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00027}00027\ \textcolor{comment}{!>\ TRANSB\ :\ character*1,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ Transpose\ flag\ for\ matrix\ B\ ('N'=no\ transpose,\ 'T'=transpose,\ 'C'=conjugate\ transpose).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00029}00029\ \textcolor{comment}{!>\ M\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00030}00030\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ rows\ in\ matrices\ A\ and\ C.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00031}00031\ \textcolor{comment}{!>\ N\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ columns\ in\ matrices\ B\ and\ C.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00033}00033\ \textcolor{comment}{!>\ K\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ columns\ in\ A\ and\ rows\ in\ B\ (distributed\ dimension).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00035}00035\ \textcolor{comment}{!>\ ALPHA\ :\ complex*16,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \ \ \ \ Complex\ scalar\ multiplier\ for\ A*B.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00037}00037\ \textcolor{comment}{!>\ A\ :\ complex*16\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00038}00038\ \textcolor{comment}{!>\ \ \ \ \ Input\ complex\ matrix\ A\ (size\ depends\ on\ TRANSA).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00039}00039\ \textcolor{comment}{!>\ LDA\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ matrix\ A.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00041}00041\ \textcolor{comment}{!>\ B\ :\ complex*16\ array,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ \ Input\ complex\ matrix\ B\ (size\ depends\ on\ TRANSB).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00043}00043\ \textcolor{comment}{!>\ LDB\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ matrix\ B.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00045}00045\ \textcolor{comment}{!>\ BETA\ :\ complex*16,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ Complex\ scalar\ multiplier\ for\ C.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00047}00047\ \textcolor{comment}{!>\ C\ :\ complex*16\ array,\ inout}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00048}00048\ \textcolor{comment}{!>\ \ \ \ \ Input/output\ complex\ matrix\ C\ (M\ ×\ N).}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00049}00049\ \textcolor{comment}{!>\ LDC\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00050}00050\ \textcolor{comment}{!>\ \ \ \ \ Leading\ dimension\ of\ matrix\ C.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00051}00051\ \textcolor{comment}{!>\ nproc\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00052}00052\ \textcolor{comment}{!>\ \ \ \ \ Number\ of\ MPI\ processes.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00053}00053\ \textcolor{comment}{!>\ rank\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00054}00054\ \textcolor{comment}{!>\ \ \ \ \ MPI\ rank\ of\ current\ process.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00055}00055\ \textcolor{comment}{!>\ comm\_mpi\ :\ integer,\ in}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00056}00056\ \textcolor{comment}{!>\ \ \ \ \ MPI\ communicator.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00057}00057\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00058}00058\ \textcolor{comment}{!>\ Notes}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00059}00059\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00060}00060\ \textcolor{comment}{!>\ -\/\ The\ K\ dimension\ is\ distributed\ across\ processors\ for\ parallel\ computation.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00061}00061\ \textcolor{comment}{!>\ -\/\ Each\ processor\ computes\ a\ partial\ matrix\ multiplication\ with\ its\ local\ K\ slice.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00062}00062\ \textcolor{comment}{!>\ -\/\ Results\ are\ reduced\ using\ MPI\ to\ form\ the\ final\ matrix\ C.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00063}00063\ \textcolor{comment}{!>\ -\/\ Only\ rank\ 0\ applies\ the\ BETA\ scaling;\ other\ ranks\ start\ with\ zero.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00064}00064\ \textcolor{comment}{!>\ -\/\ Supports\ all\ combinations\ of\ transpose\ operations\ including\ conjugate\ transpose.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00065}00065\ \textcolor{comment}{!>\ -\/\ Complex\ matrices\ are\ handled\ as\ pairs\ of\ real\ numbers\ in\ MPI\ reduction.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00066}00066\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00067}00067\ \textcolor{comment}{!>\ Example}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00068}00068\ \textcolor{comment}{!>\ -\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00069}00069\ \textcolor{comment}{!>\ Used\ in\ distributed\ complex\ linear\ algebra\ operations\ throughout\ TurboRVB.}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00070}\mbox{\hyperlink{zgemm__my_8f90_a29d998d0fdce35cdcfb6b443842fc356}{00070}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{zgemm__my_8f90_a29d998d0fdce35cdcfb6b443842fc356}{zgemm\_my}}(TRANSA,\ TRANSB,\ M,\ N,\ K,\ ALPHA,\ A,\ LDA\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \&,\ B,\ LDB,\ BETA,\ C,\ LDC,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00073}00073\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00074}00074\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim2,\ i,\ nu,\ nm,\ indr}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00076}00076\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00077}00077\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{character*1}\ TRANSA,\ TRANSB}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordtype}{integer}\ M,\ N,\ K,\ LDA,\ LDB,\ LDC,\ nproc,\ rank,\ comm\_mpi}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ ALPHA,\ BETA}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ A(LDA,\ *),\ B(LDB,\ *),\ C(LDC,\ *)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00081}00081\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00082}00082\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_\_TEST}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00083}00083\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ dima,\ dimb,\ dimc\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00084}00084\ \textcolor{comment}{!>\ @brief\ Broadcast\ input\ matrices\ for\ testing\ consistency}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00085}00085\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ dima\ =\ lda*(k\ -\/\ 1)\ +\ m}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ dima\ =\ lda*(m\ -\/\ 1)\ +\ k}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00090}00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ dimb\ =\ ldb*(n\ -\/\ 1)\ +\ k}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ dimb\ =\ ldb*(k\ -\/\ 1)\ +\ n}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00095}00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ dimc\ =\ ldc*(n\ -\/\ 1)\ +\ m}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(a,\ dima,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(b,\ dimb,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(c,\ dimc,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00100}00100\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00101}00101\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00102}00102\ \textcolor{preprocessor}{}\ \ \ \ ndim2\ =\ 2*(ldc*(n\ -\/\ 1)\ +\ m)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .gt.\ 1)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00104}00104\ \textcolor{comment}{!>\ @brief\ Calculate\ local\ K\ dimension\ for\ this\ processor}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ nm\ =\ k/nproc}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nm*nproc\ .ne.\ k)\ nm\ =\ nm\ +\ 1}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ indr\ =\ rank*nm\ +\ 1}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ nu\ =\ nm}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indr\ +\ nm\ -\/\ 1\ .gt.\ k)\ nu\ =\ k\ -\/\ indr\ +\ 1}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00110}00110\ }
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nu\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00112}00112\ \textcolor{comment}{!>\ @brief\ Handle\ all\ transpose\ combinations\ with\ parallel\ computation}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00114}00114\ \textcolor{comment}{!>\ @brief\ A*B\ (no\ transpose\ for\ either\ matrix)}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'n'})\ .and.\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00123}00123\ \ \ \ \ \ \ \&(transb\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'C'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'c'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00124}00124\ \textcolor{comment}{!>\ @brief\ A*B\string^T\ or\ A*B\string^H\ (transpose\ or\ conjugate\ transpose\ of\ B)}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ transb,\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ transb,\ m,\ n,\ nu,\ alpha,\ a(1,\ indr),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'c'}\ .or\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00133}00133\ \ \ \ \ \ \ \&.\ transa\ .eq.\ \textcolor{stringliteral}{'C'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'N'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'n'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00134}00134\ \textcolor{comment}{!>\ @brief\ A\string^T*B\ or\ A\string^H*B\ (transpose\ or\ conjugate\ transpose\ of\ A)}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ \textcolor{stringliteral}{'N'},\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \&,\ b(indr,\ 1),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00141}00141\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ ((transa\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'t'}\ .or.\ transa\ .eq.\ \textcolor{stringliteral}{'c'}\ .or\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00143}00143\ \ \ \ \ \ \ \&.\ transa\ .eq.\ \textcolor{stringliteral}{'C'})\ .and.\ (transb\ .eq.\ \textcolor{stringliteral}{'T'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'t'}\ .or\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00144}00144\ \ \ \ \ \ \ \&.\ transb\ .eq.\ \textcolor{stringliteral}{'c'}\ .or.\ transb\ .eq.\ \textcolor{stringliteral}{'C'}))\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00145}00145\ \textcolor{comment}{!>\ @brief\ A\string^T*B\string^T,\ A\string^H*B\string^T,\ A\string^T*B\string^H,\ or\ A\string^H*B\string^H\ (transpose/conjugate\ transpose\ of\ both)}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ (0.d0,\ 0.d0),\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ nu,\ alpha,\ a(indr,\ 1),\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \&,\ b(1,\ indr),\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00152}00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00153}00153\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00155}00155\ \textcolor{comment}{!>\ @brief\ Zero\ out\ result\ matrix\ for\ processors\ with\ no\ work}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c(1:m,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00158}00158\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00159}00159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0\ .and.\ ldc\ .gt.\ m)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00161}00161\ \textcolor{comment}{!>\ @brief\ Zero\ out\ unused\ elements\ in\ leading\ dimension}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c(m\ +\ 1:ldc,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00164}00164\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00165}00165\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00166}00166\ \textcolor{comment}{!>\ @brief\ Reduce\ partial\ results\ from\ all\ processors\ (complex\ as\ real\ pairs)}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(ndim2,\ c,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00168}00168\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00169}00169\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00170}00170\ \textcolor{preprocessor}{}\textcolor{comment}{!>\ @brief\ Serial\ computation\ using\ standard\ BLAS\ ZGEMM}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(transa,\ transb,\ m,\ n,\ k,\ alpha,\ a,\ lda\&}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ b,\ ldb,\ beta,\ c,\ ldc)}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00173}00173\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00174}00174\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00175}00175\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00176}00176\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{zgemm__my_8f90_source_l00177}00177\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

@@ -1,0 +1,488 @@
+\doxysection{compute\+\_\+bands.\+f90}
+\hypertarget{compute__bands_8f90_source}{}\label{compute__bands_8f90_source}\index{src/a\_prep/compute\_bands.f90@{src/a\_prep/compute\_bands.f90}}
+\mbox{\hyperlink{compute__bands_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00016}00016\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Performs\ non-\/self-\/consistent\ band\ structure\ calculations}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @details\ This\ subroutine\ performs\ non-\/self-\/consistent\ calculations\ to\ compute}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ band\ structures\ and\ electronic\ properties.\ It\ reads\ the\ density\ from}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ a\ self-\/consistent\ calculation,\ diagonalizes\ the\ Hamiltonian\ at\ each}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ k-\/point,\ and\ saves\ eigenvalues\ and\ eigenvectors\ for\ post-\/processing.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Supports\ both\ real\ and\ complex\ wavefunctions\ with\ LSDA\ calculations.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00023}\mbox{\hyperlink{compute__bands_8f90_a638285418d33c2dcde0a867e4bdfbbb7}{00023}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a638285418d33c2dcde0a867e4bdfbbb7}{non\_self\_consistent\_run}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00024}00024\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a2916203bfe8ffa7d33272c7e4de480a4}{two\_pi}},\ \mbox{\hyperlink{namespaceconstants_abcaa01eb7904be79d79e8f2e1e0be496}{qp}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefreeelmod__complex}{freeelmod\_complex}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacefreeelmod__complex_ad1c2e1f2494e0a1d33d1105c651735cc}{diagonalize\_hamiltonian}},\ \mbox{\hyperlink{namespacefreeelmod__complex_a559603ec5e9e2532e20461b01f4fa6b9}{checksum}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefourier__module}{fourier\_module}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ indkp,\ mpi\_err,\ i}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ occs\_file\_e}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00035}00035\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ lworkr}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00036}00036\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00037}00037\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00038}00038\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00039}00039\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00040}00040\ \ \ \ \ \textcolor{comment}{!\ initialize\ vhartreeq\ in\ reciprocal\ space}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00041}00041\ \ \ \ \ \textcolor{comment}{!\ Ewald\ correction\ to\ Hartree\ potential.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00042}00042\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacefourier__module_ad7ba13ff09c0afa24583fdf174a6e3b6}{evalvhartreeq}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,2F15.8)'})\ \textcolor{stringliteral}{'\ Initial\ Hartree\ potential:\ '},\ sum(\mbox{\hyperlink{namespacefourier__module_ac7be4895619d0fabd590cc092ab4ede9}{vhartree}}(:)),\ sum(\mbox{\hyperlink{namespacefourier__module_aaa668758d2935ebc630a8eded06cc010}{vhartreeq}}(:))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,F15.8)'})\ \textcolor{stringliteral}{'\ Kappa\ found:\ \ \ \ \ \ \ \ \ '},\ kappa}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,F15.8)'})\ \textcolor{stringliteral}{'\ Ewald\ constant\ found:'},\ ewaldion1b\ +\ (1.d0\ -\/\ \mbox{\hyperlink{namespacesetup_a2fe3be6b24954a55ae60b554f3c33433}{weightvh}})*ewaldel1b}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,F15.8)'})\ \textcolor{stringliteral}{'\ eselfion\ =\ \ \ \ \ \ \ \ \ \ \ '},\ ewaldion1b}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,F15.8)'})\ \textcolor{stringliteral}{'\ eself1bel\ =\ \ \ \ \ \ \ \ \ \ '},\ ewaldel1b}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00052}00052\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ read\ electronic\ density\ from\ self-\/consistent\ run}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_a59b4de067a9ae67d49b9bd78fd5dba9a}{read\_density\_from\_file}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{!\ just\ to\ be\ sure\ initialize\ all\ to\ zero\ (again)}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00059}00059\ \ \ \ \ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00061}00061\ \ \ \ \ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00062}00062\ \ \ \ \ \mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a0b062402d14b2b73b7d4547140144c89}{molecorbdo\_sav}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00066}00066\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00068}00068\ \ \ \ \ k\_loop:\ \textcolor{keywordflow}{do}\ indkp\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ initialize\ k-\/point}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ phase(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ indkp)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ phase\_down(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_a99f47a0c69da551eb561aaf6a75933bd}{xkp\_down}}(:,\ indkp)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ rphase(:)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ phase2pi(:)\ =\ phase(:)*\mbox{\hyperlink{namespaceconstants_a2916203bfe8ffa7d33272c7e4de480a4}{two\_pi}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ phase2pi\_down(:)\ =\ phase\_down(:)*\mbox{\hyperlink{namespaceconstants_a2916203bfe8ffa7d33272c7e4de480a4}{two\_pi}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a227a7a311d99ba5bf3d7580db90af320}{indk}}\ =\ indkp}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ basis\ and\ Hamiltonian\ overlaps:}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ S\_ij\ =\ <\ \(\backslash\)phi\_i\ |\ \(\backslash\)phi\_j\ >}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ H\_ij\ =\ <\ \(\backslash\)phi\_i\ |\ H\ |\ \(\backslash\)phi\_j\ >}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ With\ the\ new\ basis\ set\ (yes\_crystal=.true.)\ they\ are\ both\ dependent}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ from\ the\ chosen\ k-\/point.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{initialize__matrices_8f90_a36d109657dabf879552204071465db10}{initialize\_mats\_new}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ update\ density-\/dependent\ part\ of\ the\ hamiltonian}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ starting\ from\ the\ density\ read\ from\ file}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }uphamilt\_new()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ diagonalize\ new\ hamiltonian}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ lworkr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacefreeelmod__complex_ad1c2e1f2494e0a1d33d1105c651735cc}{diagonalize\_hamiltonian}}(1,\ lworkr)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a6d02174dc1d6a4947eed14fb62abc67c}{orthodiag}})\ \textcolor{keyword}{call\ }\mbox{\hyperlink{improve__diag_8f90_af2c35602844583212b3368199c4757a9}{improvediag}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ check\ matrix\ elements\ sum\ in\ debug\ mode}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00100}00100\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00101}00101\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacefreeelmod__complex_a559603ec5e9e2532e20461b01f4fa6b9}{checksum}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00102}00102\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00103}00103\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A)'})\ \textcolor{stringliteral}{'\ Eigenvalues\ up/down:\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(I2,2X,2F10.6)'})\ i,\ \mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}}(i),\ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}}(i)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00109}00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ save\ eigenvalues/eigenvectors}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ for\ postprocessing\ tools}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}}(:,\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}(:,\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a4731cef2026b5d97592f5d411d09e1eb}{occupations\_sav}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_a492fd53816af450745f868143499d9a5}{occupations}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a0b062402d14b2b73b7d4547140144c89}{molecorbdo\_sav}}(:,\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}(:,\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ad5e0ae887e185eb2746391a3808e5d28}{occupationsdo\_sav}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ indkp)\ =\ \mbox{\hyperlink{namespacesetup_a8d02dd2045e3331b1df5a53c634ddff2}{occupationdo}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,2X,I4,A,3F10.6)'})\ \textcolor{stringliteral}{'\ k-\/point\ \#\ '},\ indkp,\ \textcolor{stringliteral}{'\ completed:\ '},\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ indkp)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ put\ to\ zero\ variables\ related\ to\ hamiltonian}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ which\ will\ be\ updated\ next\ iteration}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00131}00131\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00132}00132\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a2c26e7507e443760ef766c0a340cfbba}{molecorbl}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \mbox{\hyperlink{namespacesetup_a6ffc8719bfae0cf8701362dfb5884a93}{molecorbldo}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00134}00134\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00135}00135\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00136}00136\ \textcolor{keywordflow}{\ \ \ \ end\ do}\ k\_loop}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00137}00137\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00138}00138\ \ \ \ \ \textcolor{comment}{!\ compute\ relevant\ quantities\ such\ as\ band\ structure}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00139}00139\ \ \ \ \ \textcolor{comment}{!\ or\ DOS.\ The\ type\ of\ computation\ is\ selected\ with\ the}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00140}00140\ \ \ \ \ \textcolor{comment}{!\ input\ variable\ "{}task"{}:}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00141}00141\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ task=1\ -\/-\/>\ band\ structure\ calculation}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00142}00142\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ task=2\ -\/-\/>\ Density\ of\ states}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00143}00143\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ task=3\ -\/-\/>\ Fermi\ surface\ calculation\ (to\ be\ implemented)}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00144}00144\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00145}00145\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_a674ad0c08f9b0ba2078435f0aac67578}{postprocessing}}(\mbox{\hyperlink{namespacesetup_aa7b0933ff8dd2b288578fa9e4a2731f3}{task}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00148}00148\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00149}00149\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a638285418d33c2dcde0a867e4bdfbbb7}{non\_self\_consistent\_run}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00151}00151\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00152}00152\ \textcolor{comment}{!>\ @brief\ Reads\ electronic\ density\ from\ self-\/consistent\ calculation\ files}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00153}00153\ \textcolor{comment}{!>\ @details\ This\ subroutine\ reads\ the\ electronic\ density\ from\ files\ generated}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00154}00154\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ during\ a\ self-\/consistent\ calculation.\ It\ handles\ both\ charge\ and}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00155}00155\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ spin\ density,\ supports\ parallel\ I/O,\ and\ validates\ the\ total\ charge}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00156}00156\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ conservation.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00157}\mbox{\hyperlink{compute__bands_8f90_a59b4de067a9ae67d49b9bd78fd5dba9a}{00157}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a59b4de067a9ae67d49b9bd78fd5dba9a}{read\_density\_from\_file}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00158}00158\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00159}00159\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00160}00160\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00161}00161\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}},\ \mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}},\ nk,\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}},\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}},\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}},\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00162}00162\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacesetup_a5316333f0640e40fa3ceaf86c57f3a58}{nproco}},\ \mbox{\hyperlink{namespacesetup_adf94663ef9764a4e28d2d5975eaced2b}{nko}},\ \mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}},\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}},\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}},\ \mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}},\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ \mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00163}00163\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00164}00164\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00165}00165\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ k,\ proc,\ indmesh,\ mpi\_err,\ ierr}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00166}00166\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ dens\_grid,\ spint\_grid}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00167}00167\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ buffer\_grid}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00168}00168\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00169}00169\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00170}00170\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00171}00171\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}}/nk\ .ne.\ \mbox{\hyperlink{namespacesetup_a5316333f0640e40fa3ceaf86c57f3a58}{nproco}}/\mbox{\hyperlink{namespacesetup_adf94663ef9764a4e28d2d5975eaced2b}{nko}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'\ non\_self\_consistent\_run\ '},\ \textcolor{stringliteral}{'\ Number\ of\ processor\ per\ k-\/point\ \&}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00174}00174\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&different\ with\ respect\ to\ self-\/consistent\ run\ '},\ -\/1,\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00175}00175\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00176}00176\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00177}00177\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}}/nk\ .eq.\ \mbox{\hyperlink{namespacesetup_a5316333f0640e40fa3ceaf86c57f3a58}{nproco}}/\mbox{\hyperlink{namespacesetup_adf94663ef9764a4e28d2d5975eaced2b}{nko}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ same\ number\ of\ processors\ (per\ k-\/point)\ as\ SC,\ then\ read}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ usual\ scratch\ files\ "{}tmp0xxxxx"{}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ rewind(\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ first\ line(s)\ contains\ the\ overlap\ matrices}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}},\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00188}00188\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00190}00190\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ run\ with\ the\ same\ number\ of\ proc.!\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00192}00192\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00193}00193\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(ierr)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00194}00194\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00195}00195\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00196}00196\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00197}00197\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00198}00198\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00199}00199\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00200}00200\ \ \ \ \ \textcolor{comment}{!\ check\ if\ initial\ total\ charge\ read\ from\ file\ is\ OK}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00201}00201\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{elec__density_8f90_a0c154746845d4f938c09c01f2f1f13bc}{cutdens}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00202}00202\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00203}00203\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00204}00204\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a59b4de067a9ae67d49b9bd78fd5dba9a}{read\_density\_from\_file}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00205}00205\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00206}00206\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00207}\mbox{\hyperlink{compute__bands_8f90_a674ad0c08f9b0ba2078435f0aac67578}{00207}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a674ad0c08f9b0ba2078435f0aac67578}{postprocessing}}(task)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00208}00208\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00209}00209\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00211}00211\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ task}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00213}00213\ \ \ \ \ \textcolor{keywordflow}{select\ case}\ (task)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00215}00215\ \ \ \ \ \textcolor{keywordflow}{case}\ (1)\ \textcolor{comment}{!\ band\ structure\ calculation}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_acb966e06b3d19c501a83e5282cc772c3}{plot\_bands}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00217}00217\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00218}00218\ \ \ \ \ \textcolor{keywordflow}{case}\ (2)\ \textcolor{comment}{!\ DOS\ calculation}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_a0f3ad6438d6407a022fb9b5af911dff4}{evaluate\_dos}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00220}00220\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \textcolor{comment}{!case(3)\ !\ Fermi\ surface\ calculation\ (TO\ BE\ IMPLEMENTED)}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \textcolor{comment}{!if(rank.eq.0)\ call\ evaluate\_fermisurf}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00224}00224\ \ \ \ \ \textcolor{keywordflow}{case}\ (5)\ \textcolor{comment}{!\ evaluate\ all}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_acb966e06b3d19c501a83e5282cc772c3}{plot\_bands}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__bands_8f90_a0f3ad6438d6407a022fb9b5af911dff4}{evaluate\_dos}}()}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00228}00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00230}00230\ \ \ \ \ \textcolor{keywordflow}{case}\ (0)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'\ non\_sc\_postprocessing\ '},\ \textcolor{stringliteral}{'\ No\ tasks\ required\ '},\ -\/1,\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00232}00232\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00233}00233\ \textcolor{keywordflow}{\ \ \ \ case\ default}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'\ non\_sc\_postprocessing\ '},\ \textcolor{stringliteral}{'\ Task\ type\ not\ recognized\ '},\ -\/1,\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00235}00235\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00236}00236\ \textcolor{keywordflow}{\ \ \ \ end\ select}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00237}00237\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00238}00238\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00239}00239\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00240}00240\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a674ad0c08f9b0ba2078435f0aac67578}{postprocessing}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00241}00241\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00242}00242\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00243}\mbox{\hyperlink{compute__bands_8f90_acb966e06b3d19c501a83e5282cc772c3}{00243}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{compute__bands_8f90_acb966e06b3d19c501a83e5282cc772c3}{plot\_bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00244}00244\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00245}00245\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00246}00246\ \ \ \ \ \textcolor{comment}{!\ Routine\ for\ plotting\ band\ structures\ from\ NSC\ calculations.\ Adapted\ from\ the}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00247}00247\ \ \ \ \ \textcolor{comment}{!\ QuantumESPRESSO\ code.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00248}00248\ \ \ \ \ \textcolor{comment}{!\ kp\_type\ must\ be\ 2\ or\ 3\ in\ order\ to\ run\ this\ routine.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00249}00249\ \ \ \ \ \textcolor{comment}{!\ In\ the\ case\ of\ a\ kpoints\ path\ (kp\_type=3),\ one\ already\ knows\ the\ number\ of\ k-\/points\ and\ the}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00250}00250\ \ \ \ \ \textcolor{comment}{!\ number\ of\ lines\ in\ the\ path,\ which\ are\ "{}nk"{}\ and\ "{}nk1-\/1"{}\ respectively.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00251}00251\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00252}00252\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00253}00253\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}},\ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00254}00254\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}},\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}},\ \mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00255}00255\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}}\ \textcolor{comment}{!\ Ha\ to\ eV\ conversion}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00257}00257\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00258}00258\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ high\_symmetry,\ in\_range,\ in\_rangedo}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00259}00259\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ k}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00260}00260\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ kp\_path}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00261}00261\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ tmp\_norm,\ k1(3),\ k2(3),\ dkl,\ dkl\_sav,\ emin,\ emax}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00262}00262\ \ \ \ \ \textcolor{keywordtype}{character(len=80)}\ ::\ filename}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00263}00263\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00264}00264\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .lt.\ 2\ .or.\ \mbox{\hyperlink{namespacekpoints__mod_af5fa9a24b2b138774efc070a04ab55e0}{kp\_type}}\ .gt.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'\ postprocessing\ '},\ \textcolor{stringliteral}{'\ Use\ kp\_type=2\ or\ kp\_type=3\ for\ plotting\ \&}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00266}00266\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ the\ DFT\ band\ structure.\ '},\ -\/1,\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00268}00268\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00269}00269\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00270}00270\ \ \ \ \ \textcolor{comment}{!\ initialization}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00271}00271\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00272}00272\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Evaluating\ band\ structure\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00273}00273\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00274}00274\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00275}00275\ \ \ \ \ filename\ =\ \textcolor{stringliteral}{'band\_structure.dat'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00276}00276\ \ \ \ \ \textcolor{keyword}{allocate}\ (high\_symmetry(\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}),\ in\_range(\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00277}00277\ \ \ \ \ in\_range\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00278}00278\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (in\_rangedo(\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ in\_rangedo\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00281}00281\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00282}00282\ \ \ \ \ \textcolor{keyword}{allocate}\ (kp\_path(\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00283}00283\ \ \ \ \ high\_symmetry\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00284}00284\ \ \ \ \ kp\_path(1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00285}00285\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00286}00286\ \ \ \ \ \textcolor{comment}{!\ find\ high\ symmetry\ points\ in\ the\ 2D\ plot}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00287}00287\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00288}00288\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 1\ .or.\ k\ .eq.\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ high\_symmetry(k)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ k1(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k)\ -\/\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ k2(:)\ =\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k\ +\ 1)\ -\/\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ tmp\_norm\ =\ (k1(1)*k2(1)\ +\ k1(2)*k2(2)\ +\ k1(3)*k2(3))/\ \&}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dsqrt(k1(1)*k1(1)\ +\ k1(2)*k1(2)\ +\ k1(3)*k1(3))/\ \&}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dsqrt(k2(1)*k2(1)\ +\ k2(2)*k2(2)\ +\ k2(3)*k2(3))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ changing\ direction\ in\ the\ 1BZ,\ then\ it's\ a\ high\ symmetry\ point}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ high\_symmetry(k)\ =\ (abs(tmp\_norm\ -\/\ 1.d0)\ .gt.\ 1.0\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/4)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00299}00299\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sum(\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k)**2)\ .lt.\ 1.0\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/9)\ high\_symmetry(k)\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ distance\ between\ 2\ kps.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 2)\ dkl\_sav\ =\ dsqrt(k1(1)**2\ +\ k1(2)**2\ +\ k1(3)**2)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00303}00303\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00304}00304\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00305}00305\ \ \ \ \ \textcolor{comment}{!\ create\ 2D\ path}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00306}00306\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00307}00307\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 2,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00308}00308\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ dkl\ =\ dsqrt((\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(1,\ k)\ -\/\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(1,\ k\ -\/\ 1))**2\ +\ \&}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(2,\ k)\ -\/\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(2,\ k\ -\/\ 1))**2\ +\ \&}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(3,\ k)\ -\/\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(3,\ k\ -\/\ 1))**2)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00312}00312\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dkl\ .gt.\ 5.d0*dkl\_sav)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ kp\_path(k)\ =\ kp\_path(k\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (dkl\ .gt.\ 1.0\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ kp\_path(k)\ =\ kp\_path(k\ -\/\ 1)\ +\ dkl}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ dkl\_sav\ =\ dkl}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ kp\_path(k)\ =\ kp\_path(k\ -\/\ 1)\ +\ dkl}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00320}00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00321}00321\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00322}00322\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00323}00323\ \ \ \ \ \textcolor{comment}{!\ find\ minimum\ and\ maximum\ values}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00324}00324\ \ \ \ \ emin\ =\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00325}00325\ \ \ \ \ emax\ =\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00326}00326\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00328}00328\ \ \ \ \ \ \ \ \ \ \ \ \ emin\ =\ min(emin,\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00329}00329\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ emin\ =\ min(emin,\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00330}00330\ \ \ \ \ \ \ \ \ \ \ \ \ emax\ =\ max(emax,\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ emax\ =\ max(emax,\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00332}00332\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00333}00333\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00334}00334\ \ \ \ \ \textcolor{comment}{!\ find\ bands\ values\ which\ are\ in\ the\ specified\ energy\ range}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00335}00335\ \ \ \ \ in\_range\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00336}00336\ \ \ \ \ in\_rangedo\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00337}00337\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ in\_range(i)\ =\ any(\mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(i,\ 1:\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})\ >=\ emin\ .and.\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(i,\ 1:\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})\ <=\ emax)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ in\_rangedo(i)\ =\ any(\mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(i,\ 1:\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})\ >=\ emin\ .and.\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(i,\ 1:\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})\ <=\ emax)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00340}00340\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00341}00341\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00342}00342\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Band\ structures\ INFORMATION:\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00343}00343\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Minimum/maximum\ bands\ values:'},\ emin,\ emax}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00344}00344\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'High\ symmetry\ points:\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00345}00345\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (high\_symmetry(k))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(F10.6,3F10.6)'})\ kp\_path(k),\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}}(:,\ k)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00348}00348\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00349}00349\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00350}00350\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00351}00351\ \ \ \ \ \textcolor{comment}{!\ now\ draw\ bands}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00352}00352\ \ \ \ \ \textcolor{keyword}{open}\ (unit=80,\ file=trim(filename),\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00353}00353\ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)\ \textcolor{stringliteral}{'\ \#\ Spin\ up\ DFT\ bands\ (eV)\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00354}00354\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (in\_range(i))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(i,\ 2)\ /=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00357}00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ (kp\_path(j),\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}}*\mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(i,\ j),\ j=1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ (kp\_path(j),\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}}*\mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(i,\ j),\ j=\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ 1,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00360}00360\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00361}00361\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00362}00362\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00363}00363\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ add\ two\ carriage\ return\ for\ gnuplot}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)\ \textcolor{stringliteral}{'\ \#\ Spin\ down\ DFT\ bands\ (eV)'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (in\_rangedo(i))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(i,\ 2)\ /=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ (kp\_path(j),\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}}*\mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(i,\ j),\ j=1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ (kp\_path(j),\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}}*\mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(i,\ j),\ j=\mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ 1,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00374}00374\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00375}00375\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00376}00376\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00377}00377\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00378}00378\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00379}00379\ \ \ \ \ \textcolor{keyword}{close}\ (80)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00380}00380\ \ \ \ \ \textcolor{keyword}{deallocate}\ (high\_symmetry,\ kp\_path,\ in\_range)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00381}00381\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (in\_rangedo)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00382}00382\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00383}00383\ 100\ \textcolor{keyword}{format}(2f10.4)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00384}00384\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00385}00385\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00386}00386\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00387}00387\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{compute__bands_8f90_acb966e06b3d19c501a83e5282cc772c3}{plot\_bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00388}00388\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00389}00389\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00390}\mbox{\hyperlink{compute__bands_8f90_a0f3ad6438d6407a022fb9b5af911dff4}{00390}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a0f3ad6438d6407a022fb9b5af911dff4}{evaluate\_dos}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00391}00391\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00392}00392\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00393}00393\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00394}00394\ \ \ \ \ \textcolor{comment}{!\ Routine\ to\ calculate\ the\ density\ of\ states.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00395}00395\ \ \ \ \ \textcolor{comment}{!\ Use\ optocc>0\ and\ a\ non-\/zero\ value\ of\ the\ smearing\ (epsshell)}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00396}00396\ \ \ \ \ \textcolor{comment}{!\ in\ order\ to\ compute\ the\ density\ of\ states.}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00397}00397\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00398}00398\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00399}00399\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ \mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}},\ \mbox{\hyperlink{namespaceconstants_abcaa01eb7904be79d79e8f2e1e0be496}{qp}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00400}00400\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}},\ \mbox{\hyperlink{namespacekpoints__mod_ad6ebc6d7910955e9d154573a7c360b3f}{xkp}},\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00401}00401\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}},\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}},\ \mbox{\hyperlink{namespacesetup_a3b6c0186ef37a0a3985e2201b48f7da6}{epsshell}},\ \mbox{\hyperlink{namespacesetup_af7903fab272786e23f9bf25185416d53}{optocc}},\ \mbox{\hyperlink{namespacesetup_a80d645bf7be89d78abdc4133364e8f7e}{deltae}},\ \&}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}},\ \mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}},\ \mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00403}00403\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecompute__efermi}{compute\_efermi}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecompute__efermi_ac678e757aaf29e319c74525285fd685e}{smeard}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00404}00404\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00405}00405\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00406}00406\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ k,\ ibnd,\ indk,\ smear\_type}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00407}00407\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ndos\ \textcolor{comment}{!\ \#\ of\ points\ in\ the\ DOS}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00408}00408\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ tdos,\ dos\_up,\ dos\_down}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00409}00409\ \textcolor{keywordtype}{\ \ \ \ real}(qp)\ ::\ e,\ dt}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00410}00410\ \ \ \ \ \textcolor{keywordtype}{character(len=80)}\ ::\ filename}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00411}00411\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00412}00412\ \ \ \ \ \textcolor{comment}{!\ initialization}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00413}00413\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00414}00414\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Evaluating\ density\ of\ states\ '}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00415}00415\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00416}00416\ \ \ \ \ filename\ =\ \textcolor{stringliteral}{'density\_of\_states.dat'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00417}00417\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_af7903fab272786e23f9bf25185416d53}{optocc}}\ .eq.\ 0\ .or.\ \mbox{\hyperlink{namespacesetup_a3b6c0186ef37a0a3985e2201b48f7da6}{epsshell}}\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Warning:\ DOS\ must\ be\ updated\ with\ a\ smearing\ function!\ Setting\ default\ values.'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00419}00419\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_af7903fab272786e23f9bf25185416d53}{optocc}}\ =\ 1}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00420}00420\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a3b6c0186ef37a0a3985e2201b48f7da6}{epsshell}}\ =\ 0.01d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00421}00421\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00422}00422\ \ \ \ \ smear\_type\ =\ \mbox{\hyperlink{namespacesetup_af7903fab272786e23f9bf25185416d53}{optocc}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00423}00423\ \ \ \ \ dt\ =\ \mbox{\hyperlink{namespacesetup_a3b6c0186ef37a0a3985e2201b48f7da6}{epsshell}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00424}00424\ \ \ \ \ \textcolor{comment}{!\ setting\ min/max\ values\ of\ the\ energies}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00425}00425\ \ \ \ \ \textcolor{comment}{!\ if\ not\ chosen\ from\ the\ user}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00426}00426\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ .eq.\ 0.d0\ .and.\ \mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}}\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ =\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}}\ =\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ =\ min(\mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}},\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ =\ min(\mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}},\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}}\ =\ max(\mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}},\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}}\ =\ max(\mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}},\ \mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(j,\ k))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00435}00435\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00436}00436\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00437}00437\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00438}00438\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00439}00439\ \ \ \ \ ndos\ =\ int((\mbox{\hyperlink{namespacesetup_a1d62546a090a5022cbbd6cc8cd66ae45}{emax}}\ -\/\ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}})/\mbox{\hyperlink{namespacesetup_a80d645bf7be89d78abdc4133364e8f7e}{deltae}})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00440}00440\ \ \ \ \ \textcolor{keyword}{allocate}\ (dos\_up(ndos\ +\ 1),\ dos\_down(ndos\ +\ 1),\ tdos(ndos\ +\ 1))}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00441}00441\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00442}00442\ \ \ \ \ dos\_up\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00443}00443\ \ \ \ \ dos\_down\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00444}00444\ \ \ \ \ tdos\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00445}00445\ \ \ \ \ e\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00446}00446\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00447}00447\ \ \ \ \ \textcolor{keyword}{open}\ (unit=80,\ file=trim(filename),\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00448}00448\ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)\ \textcolor{stringliteral}{'\#\ \ energy\ (eV)\ \ \ \ \ \ \ Density\_of\_states\ (spin\ up)'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00449}00449\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 0,\ ndos}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00450}00450\ \ \ \ \ \ \ \ \ e\ =\ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ +\ \mbox{\hyperlink{namespacesetup_a80d645bf7be89d78abdc4133364e8f7e}{deltae}}*i}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ indk\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ibnd\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dos\_up(i\ +\ 1)\ =\ dos\_up(i\ +\ 1)\ +\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(indk)*\mbox{\hyperlink{namespacecompute__efermi_ac678e757aaf29e319c74525285fd685e}{smeard}}(\mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}}(ibnd,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}),\ dt,\ e,\ smear\_type)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00454}00454\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00455}00455\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00456}00456\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ e*\mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}},\ dos\_up(i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00457}00457\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00458}00458\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00459}00459\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00460}00460\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00461}00461\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00462}00462\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ *)\ \textcolor{stringliteral}{'\#\ \ energy\ (eV)\ \ \ \ \ \ \ Density\_of\_states\ (spin\ down)'}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 0,\ ndos}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \ \ \ \ e\ =\ \mbox{\hyperlink{namespacesetup_afdf34d5e26a9b3ad4ffdef649c5fd28c}{emin}}\ +\ \mbox{\hyperlink{namespacesetup_a80d645bf7be89d78abdc4133364e8f7e}{deltae}}*i}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00465}00465\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ indk\ =\ 1,\ \mbox{\hyperlink{namespacekpoints__mod_a596522f51024ced2ff9bb9185289bafa}{nk}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00466}00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ibnd\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dos\_down(i\ +\ 1)\ =\ dos\_down(i\ +\ 1)\ +\ \mbox{\hyperlink{namespacekpoints__mod_a432f0f53abb207ee1aa330d9eb65b34d}{wkp}}(indk)*\mbox{\hyperlink{namespacecompute__efermi_ac678e757aaf29e319c74525285fd685e}{smeard}}(\mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}}(ibnd,\ indk),\ dt,\ e,\ smear\_type)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00468}00468\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00469}00469\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00470}00470\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (80,\ 100)\ e*\mbox{\hyperlink{namespaceconstants_a5d8a736200ec6f3beac0cf38e2c7602d}{energy\_unit}},\ dos\_down(i\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00471}00471\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00472}00472\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00473}00473\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00474}00474\ \ \ \ \ \textcolor{keyword}{deallocate}\ (dos\_up,\ dos\_down,\ tdos)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00475}00475\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00476}00476\ \ \ \ \ \textcolor{keyword}{close}\ (80)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00477}00477\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00478}00478\ 100\ \textcolor{keyword}{format}(2f10.4)}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00479}00479\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00480}00480\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00481}00481\ }
+\DoxyCodeLine{\Hypertarget{compute__bands_8f90_source_l00482}00482\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{compute__bands_8f90_a0f3ad6438d6407a022fb9b5af911dff4}{evaluate\_dos}}}
+
+\end{DoxyCode}

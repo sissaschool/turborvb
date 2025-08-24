@@ -1,0 +1,590 @@
+\doxysection{src/a\+\_\+prep/lda.f90 File Reference}
+\hypertarget{lda_8f90}{}\label{lda_8f90}\index{src/a\_prep/lda.f90@{src/a\_prep/lda.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{lda_8f90_a3b0ff1c07499ac869ef6fedb518c55bd}{slater}} (rs, ex, vx)
+\begin{DoxyCompactList}\small\item\em Computes Slater exchange energy and potential. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_a15a391823b8addb92a5bcf589ed8de00}{pz}} (rs, iflagr, ec, vc)
+\begin{DoxyCompactList}\small\item\em Computes Perdew-\/\+Zunger correlation energy and potential. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_a338d902ce892cdd3c13d6bc2bb882ee8}{slaterkzk}} (rs, ex, vx, vol, iopt)
+\begin{DoxyCompactList}\small\item\em Computes Slater exchange with Kwee-\/\+Zhang-\/\+Krakauer kinetic energy correction. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_ac325a2adcafd549e5a64c35dade23f77}{pzkzk}} (rs, ec, vc, vol)
+\begin{DoxyCompactList}\small\item\em Computes Perdew-\/\+Zunger correlation with Kwee-\/\+Zhang-\/\+Krakauer corrections. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_a9112320a723bd9aac5ff585a5f77adf2}{pbex}} (rho, grho, iflagr, sx, v1x, v2x)
+\begin{DoxyCompactList}\small\item\em Computes PBE exchange energy and potential. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_ae6128562353e2ca3433eb1467fe558e4}{pbec}} (rho, grho, sc, v1c, v2c)
+\begin{DoxyCompactList}\small\item\em Computes PBE correlation energy and potential. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{lda_8f90_a4eadffdadb11f35bf8a7a93226ada1db}{pw}} (rs, iflag, ec, vc)
+\begin{DoxyCompactList}\small\item\em Computes Perdew-\/\+Wang correlation energy and potential. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{lda_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{lda_8f90_ae6128562353e2ca3433eb1467fe558e4}\index{lda.f90@{lda.f90}!pbec@{pbec}}
+\index{pbec@{pbec}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{pbec()}{pbec()}}
+{\footnotesize\ttfamily \label{lda_8f90_ae6128562353e2ca3433eb1467fe558e4} 
+subroutine pbec (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rho}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{grho}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{sc}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{v1c}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{v2c}{}\end{DoxyParamCaption})}
+
+
+
+Computes PBE correlation energy and potential. 
+
+This subroutine calculates the PBE (Perdew-\/\+Burke-\/\+Ernzerhof) correlation energy and potential without the LDA part. Based on the original PBE functional formulation. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rho} & Electron density \\
+\hline
+\mbox{\texttt{in}}  & {\em grho} & Squared gradient of electron density \\
+\hline
+\mbox{\texttt{out}}  & {\em sc} & Correlation energy density \\
+\hline
+\mbox{\texttt{out}}  & {\em v1c} & Correlation potential (density derivative) \\
+\hline
+\mbox{\texttt{out}}  & {\em v2c} & Correlation potential (gradient derivative) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00344}{344}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{comment}{!\ PBE\ correlation\ (without\ LDA\ part)}}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{comment}{!\ J.P.Perdew,\ K.Burke,\ M.Ernzerhof,\ PRL\ 77,\ 3865\ (1996).}}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00350\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00351\ \ \ \ \ real*8\ ::\ rho,\ grho,\ sc,\ v1c,\ v2c}
+\DoxyCodeLine{00352\ \ \ \ \ real*8\ ::\ ga,\ be}
+\DoxyCodeLine{00353\ \ \ \ \ parameter(ga=0.031091d0,\ be=0.066725d0)}
+\DoxyCodeLine{00354\ \ \ \ \ real*8\ ::\ third,\ pi34,\ xkf,\ xks}
+\DoxyCodeLine{00355\ \ \ \ \ parameter(third=1.d0/3.d0,\ pi34=0.6203504908994d0)}
+\DoxyCodeLine{00356\ \ \ \ \ parameter(xkf=1.919158292677513d0,\ xks=1.128379167095513d0)}
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{comment}{!\ pi34=(3/4pi)\string^(1/3),\ xkf=(9\ pi/4)\string^(1/3),\ xks=\ sqrt(4/pi)}}
+\DoxyCodeLine{00358\ \ \ \ \ real*8\ ::\ kf,\ ks,\ rs,\ ec,\ vc,\ t,\ expe,\ af,\ bf,\ y,\ xy,\ qy}
+\DoxyCodeLine{00359\ \ \ \ \ real*8\ ::\ s1,\ h0,\ dh0,\ ddh0}
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00361\ \ \ \ \ rs\ =\ pi34/rho**third}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{lda_8f90_a4eadffdadb11f35bf8a7a93226ada1db}{pw}}(rs,\ 1,\ ec,\ vc)}
+\DoxyCodeLine{00363\ \ \ \ \ kf\ =\ xkf/rs}
+\DoxyCodeLine{00364\ \ \ \ \ ks\ =\ xks*dsqrt(kf)}
+\DoxyCodeLine{00365\ \ \ \ \ t\ =\ dsqrt(grho)/(2.d0*ks*rho)}
+\DoxyCodeLine{00366\ \ \ \ \ expe\ =\ dexp(-\/ec/ga)}
+\DoxyCodeLine{00367\ \ \ \ \ af\ =\ be/ga*(1.d0/(expe\ -\/\ 1.d0))}
+\DoxyCodeLine{00368\ \ \ \ \ bf\ =\ expe*(vc\ -\/\ ec)}
+\DoxyCodeLine{00369\ \ \ \ \ y\ =\ af*t*t}
+\DoxyCodeLine{00370\ \ \ \ \ xy\ =\ (1.d0\ +\ y)/(1.d0\ +\ y\ +\ y*y)}
+\DoxyCodeLine{00371\ \ \ \ \ qy\ =\ y*y*(2.d0\ +\ y)/(1.d0\ +\ y\ +\ y*y)**2}
+\DoxyCodeLine{00372\ \ \ \ \ s1\ =\ 1.d0\ +\ be/ga*t*t*xy}
+\DoxyCodeLine{00373\ \ \ \ \ h0\ =\ ga*dlog(s1)}
+\DoxyCodeLine{00374\ \ \ \ \ dh0\ =\ be*t*t/s1*(-\/7.d0/3.d0*xy\ -\/\ qy*(af*bf/\ \&}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ be\ -\/\ 7.d0/3.d0))}
+\DoxyCodeLine{00376\ \ \ \ \ ddh0\ =\ be/(2.d0*ks*ks*rho)*(xy\ -\/\ qy)/s1}
+\DoxyCodeLine{00377\ \ \ \ \ sc\ =\ rho*h0}
+\DoxyCodeLine{00378\ \ \ \ \ v1c\ =\ h0\ +\ dh0}
+\DoxyCodeLine{00379\ \ \ \ \ v2c\ =\ ddh0}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{lda_8f90_source_l00394}{pw()}}.
+
+\Hypertarget{lda_8f90_a9112320a723bd9aac5ff585a5f77adf2}\index{lda.f90@{lda.f90}!pbex@{pbex}}
+\index{pbex@{pbex}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{pbex()}{pbex()}}
+{\footnotesize\ttfamily \label{lda_8f90_a9112320a723bd9aac5ff585a5f77adf2} 
+subroutine pbex (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rho}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{grho}{, }\item[{integer}]{iflagr}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{sx}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{v1x}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{v2x}{}\end{DoxyParamCaption})}
+
+
+
+Computes PBE exchange energy and potential. 
+
+This subroutine calculates the PBE (Perdew-\/\+Burke-\/\+Ernzerhof) exchange energy and potential without the Slater exchange part. Supports both standard PBE and revised PBE functionals. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rho} & Electron density \\
+\hline
+\mbox{\texttt{in}}  & {\em grho} & Squared gradient of electron density \\
+\hline
+\mbox{\texttt{in}}  & {\em iflagr} & Flag for functional choice (4\+: PBE, 5\+: revised PBE) \\
+\hline
+\mbox{\texttt{out}}  & {\em sx} & Exchange energy density \\
+\hline
+\mbox{\texttt{out}}  & {\em v1x} & Exchange potential (density derivative) \\
+\hline
+\mbox{\texttt{out}}  & {\em v2x} & Exchange potential (gradient derivative) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00271}{271}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{comment}{!\ PBE\ exchange\ (without\ Slater\ exchange):}}
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{comment}{!\ iflagr=4\ \ J.P.Perdew,\ K.Burke,\ M.Ernzerhof,\ PRL\ 77,\ 3865\ (1996)}}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{comment}{!\ iflagr=5\ \ "{}revised'\ PBE:\ Y.\ Zhang\ et\ al.,\ PRL\ 80,\ 890\ (1998)}}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00279\ \ \ \ \ real*8\ ::\ rho,\ grho,\ sx,\ v1x,\ v2x}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{comment}{!\ input:\ charge\ and\ squared\ gradient}}
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{comment}{!\ output:\ energy}}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{comment}{!\ output:\ potential}}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflag,\ iflagr}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00285\ \ \ \ \ real*8\ ::\ kf,\ agrho,\ s1,\ s2,\ ds,\ dsg,\ exunif,\ fx}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{comment}{!\ (3*pi2*|rho|)\string^(1/3)}}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{comment}{!\ |grho|}}
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{comment}{!\ |grho|/(2*kf*|rho|)}}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{comment}{!\ s\string^2}}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{comment}{!\ n*ds/dn}}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{!\ n*ds/d(gn)}}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{comment}{!\ exchange\ energy\ LDA\ part}}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{comment}{!\ exchange\ energy\ gradient\ part}}
+\DoxyCodeLine{00294\ \ \ \ \ real*8\ ::\ dxunif,\ dfx,\ f1,\ f2,\ f3,\ dfx1}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{comment}{!\ numerical\ coefficients\ (NB:\ c2=(3\ pi\string^2)\string^(1/3)\ )}}
+\DoxyCodeLine{00296\ \ \ \ \ real*8\ ::\ third,\ c1,\ c2,\ c5,\ pi}
+\DoxyCodeLine{00297\ \ \ \ \ parameter(pi=3.14159265358979323846d0)}
+\DoxyCodeLine{00298\ \ \ \ \ parameter(third=1.d0/3.d0,\ c1=0.75d0/pi,\ \&}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c2=3.093667726280136d0,\ c5=4.d0*third)}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{comment}{!\ parameters\ of\ the\ functional}}
+\DoxyCodeLine{00301\ \ \ \ \ real*8\ ::\ k(2),\ mu}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keyword}{data}\ k/0.804d0,\ 1.2450d0/,\ mu/0.21951d0/}
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00304\ \ \ \ \ iflag\ =\ iflagr\ -\/\ 9}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ agrho\ =\ dsqrt(grho)}
+\DoxyCodeLine{00307\ \ \ \ \ kf\ =\ c2*rho**third}
+\DoxyCodeLine{00308\ \ \ \ \ dsg\ =\ 0.5d0/kf}
+\DoxyCodeLine{00309\ \ \ \ \ s1\ =\ agrho*dsg/rho}
+\DoxyCodeLine{00310\ \ \ \ \ s2\ =\ s1*s1}
+\DoxyCodeLine{00311\ \ \ \ \ ds\ =\ -\/c5*s1}
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00313\ \ \ \ \ \textcolor{comment}{!\ \ \ Energy}}
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00315\ \ \ \ \ f1\ =\ s2*mu/k(iflag)}
+\DoxyCodeLine{00316\ \ \ \ \ f2\ =\ 1.d0\ +\ f1}
+\DoxyCodeLine{00317\ \ \ \ \ f3\ =\ k(iflag)/f2}
+\DoxyCodeLine{00318\ \ \ \ \ fx\ =\ k(iflag)\ -\/\ f3}
+\DoxyCodeLine{00319\ \ \ \ \ exunif\ =\ -\/c1*kf}
+\DoxyCodeLine{00320\ \ \ \ \ sx\ =\ exunif*fx}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{comment}{!\ \ \ Potential}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00324\ \ \ \ \ dxunif\ =\ exunif*third}
+\DoxyCodeLine{00325\ \ \ \ \ dfx1\ =\ f2*f2}
+\DoxyCodeLine{00326\ \ \ \ \ dfx\ =\ 2.d0*mu*s1/dfx1}
+\DoxyCodeLine{00327\ \ \ \ \ v1x\ =\ sx\ +\ dxunif*fx\ +\ exunif*dfx*ds}
+\DoxyCodeLine{00328\ \ \ \ \ v2x\ =\ exunif*dfx*dsg/agrho}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \ \ sx\ =\ sx*rho}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+\Hypertarget{lda_8f90_a4eadffdadb11f35bf8a7a93226ada1db}\index{lda.f90@{lda.f90}!pw@{pw}}
+\index{pw@{pw}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{pw()}{pw()}}
+{\footnotesize\ttfamily \label{lda_8f90_a4eadffdadb11f35bf8a7a93226ada1db} 
+subroutine pw (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rs}{, }\item[{integer}]{iflag}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ec}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vc}{}\end{DoxyParamCaption})}
+
+
+
+Computes Perdew-\/\+Wang correlation energy and potential. 
+
+This subroutine calculates the Perdew-\/\+Wang correlation energy and potential using parameterizations from quantum Monte Carlo data. Supports different parameterizations based on the iflag parameter. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rs} & Wigner-\/\+Seitz radius parameter \\
+\hline
+\mbox{\texttt{in}}  & {\em iflag} & Flag for parameterization choice (1\+: Perdew-\/\+Wang, 2\+: Ortiz-\/\+Ballone) \\
+\hline
+\mbox{\texttt{out}}  & {\em ec} & Correlation energy per particle \\
+\hline
+\mbox{\texttt{out}}  & {\em vc} & Correlation potential \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00393}{393}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=1:\ J.P.\ Perdew\ and\ Y.\ Wang,\ PRB\ 45,\ 13244\ (1992)}}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=2:\ G.\ Ortiz\ and\ P.\ Ballone,\ PRB\ 50,\ 1391\ (1994)}}
+\DoxyCodeLine{00397\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00399\ \ \ \ \ real*8\ ::\ rs,\ ec,\ vc}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflag}
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00402\ \ \ \ \ real*8\ ::\ a,\ b1,\ b2,\ c0,\ c1,\ c2,\ c3,\ d0,\ d1}
+\DoxyCodeLine{00403\ \ \ \ \ parameter(a=0.031091d0,\ b1=7.5957d0,\ b2=3.5876d0,\ c0=a,\ \&}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c1=0.046644d0,\ c2=0.00664d0,\ c3=0.01043d0,\ d0=0.4335d0,\ \&}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ d1=1.4408d0)}
+\DoxyCodeLine{00406\ \ \ \ \ real*8\ ::\ lnrs,\ rs12,\ rs32,\ rs2,\ om,\ dom,\ olog}
+\DoxyCodeLine{00407\ \ \ \ \ real*8\ ::\ a1(2),\ b3(2),\ b4(2)}
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{keyword}{data}\ a1/0.21370d0,\ 0.026481d0/,\ b3/1.6382d0,\ -\/0.46647d0/,\ \&}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ b4/0.49294d0,\ 0.13354d0/}
+\DoxyCodeLine{00410\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{comment}{!\ high-\/\ and\ low-\/density\ formulae\ implemented\ but\ not\ used\ in\ PW\ case}}
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{comment}{!\ (reason:\ inconsistencies\ in\ PBE/PW91\ functionals)}}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .lt.\ 1d0\ .and.\ iflag\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ high\ density\ formula}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ lnrs\ =\ dlog(rs)}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ ec\ =\ c0*lnrs\ -\/\ c1\ +\ c2*rs*lnrs\ -\/\ c3*rs}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ vc\ =\ c0*lnrs\ -\/\ (c1\ +\ c0/3.d0)\ +\ 2.d0/3.d0*c2*rs*\ \&}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ lnrs\ -\/\ (2.d0*c3\ +\ c2)/3.d0*rs}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rs\ .gt.\ 100.d0\ .and.\ iflag\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ low\ density\ formula}}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ ec\ =\ -\/d0/rs\ +\ d1/rs**1.5d0}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ vc\ =\ -\/4.d0/3.d0*d0/rs\ +\ 1.5d0*d1/rs**1.5d0}
+\DoxyCodeLine{00425\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ interpolation\ formula}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ rs12\ =\ dsqrt(rs)}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ rs32\ =\ rs*rs12}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ rs2\ =\ rs**2}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ om\ =\ 2.d0*a*(b1*rs12\ +\ b2*rs\ +\ b3(iflag)*rs32\ +\ b4(\ \&}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag)*rs2)}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ dom\ =\ 2.d0*a*(0.5d0*b1*rs12\ +\ b2*rs\ +\ 1.5d0*b3(\ \&}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag)*rs32\ +\ 2.d0*b4(iflag)*rs2)}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ olog\ =\ dlog(1.d0\ +\ 1.0d0/om)}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ ec\ =\ -\/2.d0*a*(1.d0\ +\ a1(iflag)*rs)*olog}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ vc\ =\ -\/2.d0*a*(1.d0\ +\ 2.d0/3.d0*a1(iflag)*rs)\ \&}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ *olog\ -\/\ 2.d0/3.d0*a*(1.d0\ +\ a1(iflag)*rs)*dom/\ \&}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ (om*(om\ +\ 1.d0))}
+\DoxyCodeLine{00439\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{lda_8f90_source_l00345}{pbec()}}.
+
+\Hypertarget{lda_8f90_a15a391823b8addb92a5bcf589ed8de00}\index{lda.f90@{lda.f90}!pz@{pz}}
+\index{pz@{pz}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{pz()}{pz()}}
+{\footnotesize\ttfamily \label{lda_8f90_a15a391823b8addb92a5bcf589ed8de00} 
+subroutine pz (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rs}{, }\item[{integer}]{iflagr}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ec}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vc}{}\end{DoxyParamCaption})}
+
+
+
+Computes Perdew-\/\+Zunger correlation energy and potential. 
+
+This subroutine calculates the LDA correlation energy and potential using parameterizations from Monte Carlo data. Supports two different parameterizations based on the iflagr parameter. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rs} & Wigner-\/\+Seitz radius parameter \\
+\hline
+\mbox{\texttt{in}}  & {\em iflagr} & Flag for parameterization choice (1\+: Perdew-\/\+Zunger, 2\+: Ortiz-\/\+Ballone) \\
+\hline
+\mbox{\texttt{out}}  & {\em ec} & Correlation energy per particle \\
+\hline
+\mbox{\texttt{out}}  & {\em vc} & Correlation potential \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00048}{48}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ LDA\ parameterization\ from\ Monte\ Carlo\ data}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=1:\ J.P.\ Perdew\ and\ A.\ Zunger,\ PRB\ 23,\ 5048\ (1981)}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=2:\ G.\ Ortiz\ and\ P.\ Ballone,\ PRB\ 50,\ 1391\ (1994)}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00055\ \ \ \ \ real*8\ ::\ rs,\ ec,\ vc}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflagr,\ iflag}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00058\ \ \ \ \ real*8\ ::\ a(2),\ b(2),\ c(2),\ d(2),\ gc(2),\ b1(2),\ b2(2),\ corr(2)}
+\DoxyCodeLine{00059\ \ \ \ \ real*8\ ::\ lnrs,\ rs12,\ ox,\ dox}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{data}\ a/0.0311d0,\ 0.031091d0/,\ b/-\/0.048d0,\ -\/0.046644d0/,\ \&}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ c/0.0020d0,\ 0.00419d0/,\ d/-\/0.0116d0,\ -\/0.00983d0/}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{data}\ gc/-\/0.1423d0,\ -\/0.103756d0/,\ b1/1.0529d0,\ 0.56371d0/,\ \&}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ b2/0.3334d0,\ 0.27358d0/,\ corr/1.d0,\ 1.d0/}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ iflag\ =\ abs(iflagr)}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{comment}{!\ corrected\ intepolation\ formula\ to\ allow\ continuity\ of\ ec\ at\ rs=1.}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{if}\ (iflagr\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ corr(iflag)\ =\ gc(iflag)/(b(iflag)\ +\ d(iflag))\ -\/\ b1(iflag)\ -\/\ b2(iflag)}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ corr(iflag)\ =\ 1.d0}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .lt.\ 1.0d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ high\ density\ formula}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ lnrs\ =\ dlog(rs)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ ec\ =\ a(iflag)*lnrs\ +\ b(iflag)\ +\ c(iflag)*rs*lnrs\ +\ d(\ \&}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag)*rs}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ vc\ =\ a(iflag)*lnrs\ +\ (b(iflag)\ -\/\ a(iflag)/3.d0)\ +\ 2.d0/\ \&}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ 3.d0*c(iflag)*rs*lnrs\ +\ (2.d0*d(iflag)\ -\/\ c(iflag))\ \&}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ /3.d0*rs}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ interpolation\ formula}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ rs12\ =\ dsqrt(rs)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ ox\ =\ corr(iflag)\ +\ b1(iflag)*rs12\ +\ b2(iflag)*rs}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ dox\ =\ corr(iflag)\ +\ 7.d0/6.d0*b1(iflag)*rs12\ +\ 4.d0/3.d0*\ \&}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b2(iflag)*rs}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ ec\ =\ gc(iflag)/ox}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ vc\ =\ ec*dox/ox}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{lsda_8f90_source_l00075}{pz\+\_\+spin()}}, and \mbox{\hyperlink{fourier__mod_8f90_source_l01328}{fourier\+\_\+module\+::upload\+\_\+vhartree()}}.
+
+\Hypertarget{lda_8f90_ac325a2adcafd549e5a64c35dade23f77}\index{lda.f90@{lda.f90}!pzkzk@{pzkzk}}
+\index{pzkzk@{pzkzk}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{pzkzk()}{pzkzk()}}
+{\footnotesize\ttfamily \label{lda_8f90_ac325a2adcafd549e5a64c35dade23f77} 
+subroutine pzkzk (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rs}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ec}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vc}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vol}{}\end{DoxyParamCaption})}
+
+
+
+Computes Perdew-\/\+Zunger correlation with Kwee-\/\+Zhang-\/\+Krakauer corrections. 
+
+This subroutine calculates the LDA correlation energy and potential with Kwee-\/\+Zhang-\/\+Krakauer kinetic energy corrections. It includes finite-\/size effects and volume-\/dependent corrections. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rs} & Wigner-\/\+Seitz radius parameter \\
+\hline
+\mbox{\texttt{out}}  & {\em ec} & Correlation energy per particle \\
+\hline
+\mbox{\texttt{out}}  & {\em vc} & Correlation potential \\
+\hline
+\mbox{\texttt{in}}  & {\em vol} & Volume of the system \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00170}{170}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ LDA\ parameterization\ form\ Monte\ Carlo\ data}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=1:\ J.P.\ Perdew\ and\ A.\ Zunger,\ PRB\ 23,\ 5048\ (1981)}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iflag=2:\ G.\ Ortiz\ and\ P.\ Ballone,\ PRB\ 50,\ 1391\ (1994)}}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00178\ \ \ \ \ real*8\ ::\ rs,\ ec,\ vc,\ ec0(2),\ vc0(2),\ ec0p}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflag,\ kr}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00181\ \ \ \ \ real*8\ ::\ a(2),\ b(2),\ c(2),\ d(2),\ gc(2),\ b1(2),\ b2(2)}
+\DoxyCodeLine{00182\ \ \ \ \ real*8\ ::\ lnrs,\ rs12,\ ox,\ dox,\ lnrsk,\ rsk}
+\DoxyCodeLine{00183\ \ \ \ \ real*8\ ::\ a1,\ grs,\ g1,\ g2,\ g3,\ g4,\ dl,\ vol,\ gh,\ gl,\ grsp}
+\DoxyCodeLine{00184\ \ \ \ \ real*8\ ::\ f3,\ f2,\ f1,\ f0,\ pi}
+\DoxyCodeLine{00185\ \ \ \ \ real*8\ ::\ d1,\ d2,\ d3,\ p1,\ p2,\ ry2h}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keyword}{data}\ a/0.0311d0,\ 0.031091d0/,\ b/-\/0.048d0,\ -\/0.046644d0/,\ \&}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ c/0.0020d0,\ 0.00419d0/,\ d/-\/0.0116d0,\ -\/0.00983d0/}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keyword}{data}\ gc/-\/0.1423d0,\ -\/0.103756d0/,\ b1/1.0529d0,\ 0.56371d0/,\ \&}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ b2/0.3334d0,\ 0.27358d0/}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keyword}{data}\ a1/-\/2.2037d0/,\ g1/0.1182d0/,\ g2/1.1656d0/,\ g3/-\/5.2884d0/,\ \&}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ g4/-\/1.1233d0/}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keyword}{data}\ ry2h/0.5d0/}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00195\ \ \ \ \ iflag\ =\ 1}
+\DoxyCodeLine{00196\ \ \ \ \ pi\ =\ 4.d0*atan(1.d0)}
+\DoxyCodeLine{00197\ \ \ \ \ dl\ =\ vol**(1.d0/3.d0)}
+\DoxyCodeLine{00198\ \ \ \ \ gh\ =\ 0.5d0*dl/(2.d0*pi)**(1.d0/3.d0)}
+\DoxyCodeLine{00199\ \ \ \ \ gl\ =\ dl*(3.d0/2.d0/pi)**(1.d0/3.d0)}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ rsk\ =\ gh}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{do}\ kr\ =\ 1,\ 2}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ lnrsk\ =\ dlog(rsk)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsk\ .lt.\ 1.0d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ high\ density\ formula}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ ec0(kr)\ =\ a(iflag)*lnrsk\ +\ b(iflag)\ +\ c(iflag)*rsk*lnrsk\ +\ d(\ \&}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iflag)*rsk}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ vc0(kr)\ =\ a(iflag)*lnrsk\ +\ (b(iflag)\ -\/\ a(iflag)/3.d0)\ +\ 2.d0/\ \&}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3.d0*c(iflag)*rsk*lnrsk\ +\ (2.d0*d(iflag)\ -\/\ c(iflag))\ \&}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ /3.d0*rsk}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ interpolation\ formula}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ rs12\ =\ dsqrt(rsk)}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ ox\ =\ 1.d0\ +\ b1(iflag)*rs12\ +\ b2(iflag)*rsk}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ dox\ =\ 1.d0\ +\ 7.d0/6.d0*b1(iflag)*rs12\ +\ 4.d0/3.d0*\ \&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b2(iflag)*rsk}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ ec0(kr)\ =\ gc(iflag)/ox}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ vc0(kr)\ =\ ec0(kr)*dox/ox}
+\DoxyCodeLine{00219\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ grs\ =\ g1*rsk*lnrsk\ +\ g2*rsk\ +\ g3*rsk**1.5d0\ +\ g4*rsk**2.d0}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ grsp\ =\ g1*lnrsk\ +\ g1\ +\ g2\ +\ 1.5d0*g3*rsk**0.5d0\ +\ \&}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2.d0*g4*rsk}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ ec0(kr)\ =\ ec0(kr)\ +\ (-\/a1*rsk/dl**2.d0\ +\ grs/dl**3.d0)*ry2h}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ vc0(kr)\ =\ vc0(kr)\ +\ (-\/2.d0*a1*rsk/dl**2.d0/3.d0\ +\ \&}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ grs/dl**3.d0\ -\/\ grsp*rsk/3.d0/dl**3.d0)*ry2h}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ rsk\ =\ rs}
+\DoxyCodeLine{00229\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ lnrs\ =\ dlog(rs)}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .le.\ gh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ ec\ =\ ec0(2)}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ vc\ =\ vc0(2)}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .le.\ gl)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ ec0p\ =\ 3.d0*(ec0(1)\ -\/\ vc0(1))/gh}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ p1\ =\ 3.d0*ec0(1)\ -\/\ gh*ec0p}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ p2\ =\ ec0p}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ d1\ =\ gl\ -\/\ gh}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ d2\ =\ gl**2.d0\ -\/\ gh**2.d0}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ d3\ =\ gl**3.d0\ -\/\ gh**3.d0}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ f2\ =\ 2.d0*gl**2.d0*p2*d1\ +\ d2*p1}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ f2\ =\ f2/(-\/(2.d0*gl*d1)**2.d0\ +\ 4.d0*gl*d1*d2\ -\/\ d2**2.d0)}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ f3\ =\ -\/(p2\ +\ 2.d0*d1*f2)/(3.d0*d2)}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ f1\ =\ -\/(p1\ +\ d2*f2)/(2.d0*d1)}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ f0\ =\ -\/gl*(gl*f2\ +\ 2.d0*f1)/3.d0}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ ec\ =\ f3*rs**3.d0\ +\ f2*rs**2.d0\ +\ f1*rs\ +\ f0}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ vc\ =\ f2*rs**2.d0/3.d0\ +\ f1*2.d0*rs/3.d0\ +\ f0}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ ec\ =\ 0.d0}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ vc\ =\ 0.d0}
+\DoxyCodeLine{00254\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00255\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{lsda_8f90_source_l00137}{pz\+\_\+spinkzk()}}.
+
+\Hypertarget{lda_8f90_a3b0ff1c07499ac869ef6fedb518c55bd}\index{lda.f90@{lda.f90}!slater@{slater}}
+\index{slater@{slater}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{slater()}{slater()}}
+{\footnotesize\ttfamily \label{lda_8f90_a3b0ff1c07499ac869ef6fedb518c55bd} 
+subroutine slater (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rs}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ex}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vx}{}\end{DoxyParamCaption})}
+
+
+
+Computes Slater exchange energy and potential. 
+
+This subroutine calculates the Slater exchange energy and potential using the standard LDA exchange functional with alpha=2/3. The exchange energy and potential are computed in atomic units. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rs} & Wigner-\/\+Seitz radius parameter \\
+\hline
+\mbox{\texttt{out}}  & {\em ex} & Exchange energy per particle \\
+\hline
+\mbox{\texttt{out}}  & {\em vx} & Exchange potential \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00024}{24}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Slater\ exchange\ with\ alpha=2/3}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00029\ \ \ \ \ real*8\ ::\ rs,\ ex,\ vx}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{comment}{!\ \ atom\ units:\ \ Hartree\ and\ Bohr\ radius.}}
+\DoxyCodeLine{00031\ \ \ \ \ real*8,\ \textcolor{keywordtype}{parameter}\ ::\ f\ =\ -\/0.687247939924714d0,\ alpha\ =\ 2.0d0/3.0d0}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{comment}{!\ f\ =\ -\/9/8*(3/2pi)\string^(2/3)}}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00034\ \ \ \ \ ex\ =\ f*alpha/rs}
+\DoxyCodeLine{00035\ \ \ \ \ vx\ =\ 4.d0/3.d0*f*alpha/rs}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+\Hypertarget{lda_8f90_a338d902ce892cdd3c13d6bc2bb882ee8}\index{lda.f90@{lda.f90}!slaterkzk@{slaterkzk}}
+\index{slaterkzk@{slaterkzk}!lda.f90@{lda.f90}}
+\doxysubsubsection{\texorpdfstring{slaterkzk()}{slaterkzk()}}
+{\footnotesize\ttfamily \label{lda_8f90_a338d902ce892cdd3c13d6bc2bb882ee8} 
+subroutine slaterkzk (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{rs}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ex}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vx}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vol}{, }\item[{integer}]{iopt}{}\end{DoxyParamCaption})}
+
+
+
+Computes Slater exchange with Kwee-\/\+Zhang-\/\+Krakauer kinetic energy correction. 
+
+This subroutine calculates the Slater exchange energy and potential with additional kinetic energy corrections from Kwee, Zhang and Krakauer. The correction depends on the volume and includes finite-\/size effects. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rs} & Wigner-\/\+Seitz radius parameter \\
+\hline
+\mbox{\texttt{out}}  & {\em ex} & Exchange energy per particle \\
+\hline
+\mbox{\texttt{out}}  & {\em vx} & Exchange potential \\
+\hline
+\mbox{\texttt{in}}  & {\em vol} & Volume of the system \\
+\hline
+\mbox{\texttt{in}}  & {\em iopt} & Option flag for different correction schemes \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{lda_8f90_source_l00108}{108}} of file \mbox{\hyperlink{lda_8f90_source}{lda.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ Slater\ exchange\ with\ alpha=2/3,\ Kwee,\ Zhang\ and\ Krakauer\ KE}}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ correction}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{comment}{!\ USE\ kinds}}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00115\ \ \ \ \ real*8\ ::\ rs,\ ex,\ vx,\ dl,\ vol,\ ga,\ a0,\ a3dl5\_true,\ ex\_t}
+\DoxyCodeLine{00116\ \ \ \ \ real*8,\ \textcolor{keywordtype}{parameter}\ ::\ a1\ =\ -\/2.2037d0,\ \&}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ value\ of\ a3\ published\ a3=-\/0.015\ e-\/mail\ Zhang\ 29/12/2008\ more\ accurate.}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ a2\ =\ 0.4710d0,\ a3\ =\ -\/0.01504001153d0,\ ry2h\ =\ 0.5d0}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a2\ =\ 0.4710d0,\ a3\ =\ -\/1.504002727495861d-\/2,\ ry2h\ =\ 0.5d0,\ a4\ =\ -\/2.530982213157182d-\/2}
+\DoxyCodeLine{00120\ \ \ \ \ real*8,\ \textcolor{keywordtype}{parameter}\ ::\ f\ =\ -\/0.687247939924714d0,\ alpha\ =\ 2.0d0/3.0d0,\ \&}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ pi\ =\ 3.14159265358979323846d0}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iopt}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{comment}{!\ f\ =\ -\/9/8*(3/2pi)\string^(2/3)}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{!\ \ vx\ =\ ex-\/\ 1/3\ d\ ex/dlog\ rs}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{comment}{!\ \ pi\ =\ 4.d0\ *\ atan(1.d0)}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{!\ \ a4=\ (ex-\/vx/3.d0)*ga**6/dl**5\ \ for\ rs-\/-\/>ga\string^-\/}}
+\DoxyCodeLine{00128\ \ \ \ \ a0\ =\ f*alpha*2.d0}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ dl\ =\ vol**(1.d0/3.d0)}
+\DoxyCodeLine{00131\ \ \ \ \ ga\ =\ 0.5d0*dl*(3.d0/pi)**(1.d0/3.d0)}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{if}\ (rs\ .le.\ ga)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ ex\ =\ a0/rs\ +\ a1*rs/dl**2.d0\ +\ a2*rs**2.d0/dl**3.d0}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ vx\ =\ (4.d0*a0/rs\ +\ 2.d0*a1*rs/dl**2.d0\ +\ \&}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a2*rs**2.d0/dl**3.d0)/3.d0}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .lt.\ 0)\ ex\ =\ ex\ -\/\ a4*dl**5/ga**9*rs**3\ \textcolor{comment}{!\ also\ the\ exchange\ is\ continuous}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ ex\ =\ a0/ga\ +\ a1*ga/dl**2.d0\ +\ a2*ga**2.d0/dl**3.d0\ \textcolor{comment}{!\ solids}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ vx\ =\ ex}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ ex\ =\ a3*dl**5.d0/rs**6.d0\ \textcolor{comment}{!\ molecules\ \&\ solids}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ vx\ =\ 3.d0*ex}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ ex\ =\ ry2h*ex\ \textcolor{comment}{!\ Ry\ to\ Hartree}}
+\DoxyCodeLine{00156\ \ \ \ \ vx\ =\ ry2h*vx}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

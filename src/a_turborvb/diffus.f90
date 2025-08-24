@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Calculate diffusion coefficient for real wave function
+!> @details    This subroutine computes the diffusion coefficient for the
+!>             quantum Monte Carlo walkers. It evaluates the quantity that
+!>             should be exactly one for perfect short-time diffusion.
+!> @param[in]  nel      Number of electrons
+!> @param[in]  indt     Number of time steps
+!> @param[in]  gamma    Diffusion parameter
+!> @param[in]  ivic     Velocity array (3, indt, nel)
+!> @param[in]  table    Wave function table
+!> @param[out] fun      Diffusion coefficient
+!> @param[in]  istart   Starting index for calculation
 subroutine diffus(nel, indt, gamma, ivic, table, fun, istart)
 
     implicit none
@@ -40,6 +51,17 @@ end subroutine diffus
 !--------------------------------------------------------------------------!
 !--------------------------------------------------------------------------!
 
+!> @brief      Calculate diffusion coefficient for complex wave function
+!> @details    This subroutine computes the diffusion coefficient for complex
+!>             wave functions in quantum Monte Carlo. Similar to diffus but
+!>             handles complex wave function tables.
+!> @param[in]  nel      Number of electrons
+!> @param[in]  indt     Number of time steps
+!> @param[in]  gamma    Diffusion parameter
+!> @param[in]  ivic     Velocity array (3, indt, nel)
+!> @param[in]  table    Complex wave function table
+!> @param[out] fun      Complex diffusion coefficient
+!> @param[in]  istart   Starting index for calculation
 subroutine diffus_complex(nel, indt, gamma, ivic, table, fun, istart)
 
     use Constants, only: zzero

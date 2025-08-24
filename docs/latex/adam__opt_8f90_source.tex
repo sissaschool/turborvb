@@ -1,0 +1,70 @@
+\doxysection{adam\+\_\+opt.\+f90}
+\hypertarget{adam__opt_8f90_source}{}\label{adam__opt_8f90_source}\index{src/a\_turborvb/adam\_opt.f90@{src/a\_turborvb/adam\_opt.f90}}
+\mbox{\hyperlink{adam__opt_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00016}00016\ \textcolor{comment}{!\ This\ module\ was\ implemented\ by\ K.Nakano\ in\ Sep.\ 2019}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00017}00017\ \textcolor{comment}{!\ to\ adust\ tpar\ automatically}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00018}00018\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00019}00019\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Adam\ optimizer\ for\ automatic\ parameter\ adjustment}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ implements\ the\ Adam\ (Adaptive\ Moment\ Estimation)}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ optimization\ algorithm\ for\ automatic\ parameter\ adjustment.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00023}00023\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ It\ was\ implemented\ by\ K.Nakano\ in\ Sep.\ 2019\ to\ adjust\ tpar\ automatically.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ The\ algorithm\ uses\ exponential\ moving\ averages\ of\ gradients\ and\ squared\ gradients}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ to\ adaptively\ adjust\ learning\ rates\ for\ each\ parameter.}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ \ i\_main\ \ \ \ \ \ \ \ Main\ iteration\ counter}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ \ nweight\ \ \ \ \ \ \ Number\ of\ weights}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ ndimp\ \ \ \ \ \ \ \ \ Number\ of\ dimensions/parameters}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in,out]\ first\_moment\ First\ moment\ (exponential\ moving\ average\ of\ gradients)}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in,out]\ second\_moment\ Second\ moment\ (exponential\ moving\ average\ of\ squared\ gradients)}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in,out]\ alphab\ \ \ \ \ Parameters\ to\ be\ optimized\ (input:\ gradients,\ output:\ updated\ parameters)}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00032}\mbox{\hyperlink{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08}{00032}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08}{adam\_opt}}(i\_main,\ nweight,\ ndimp,\ first\_moment,\ second\_moment,\ alphab)}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00035}00035\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndimp,\ ierr,\ rank,\ i,\ i\_main,\ nweight,\ iteration}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00037}00037\ \ \ \ \ real*8\ square\_force(ndimp),\ alphab(ndimp),\ first\_moment(ndimp),\ \&}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ second\_moment(ndimp),\ adam\_beta1,\ adam\_beta2,\ adam\_eps}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00040}00040\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00041}00041\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(mpi\_comm\_world,\ rank,\ ierr)}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00043}00043\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00044}00044\ \textcolor{preprocessor}{}\ \ \ \ rank\ =\ 0}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00045}00045\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00046}00046\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00047}00047\ \ \ \ \ adam\_beta1\ =\ 0.9d0}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00048}00048\ \ \ \ \ adam\_beta2\ =\ 0.999d0}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00049}00049\ \ \ \ \ adam\_eps\ =\ 0.00000001d0}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00051}00051\ \ \ \ \ first\_moment\ =\ adam\_beta1*first\_moment\ +\ (1\ -\/\ adam\_beta1)*alphab}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ndimp}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ square\_force(i)\ =\ alphab(i)**2}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00055}00055\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00057}00057\ \ \ \ \ second\_moment\ =\ adam\_beta2*second\_moment\ +\ (1\ -\/\ adam\_beta2)*square\_force}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00058}00058\ \ \ \ \ iteration\ =\ i\_main/nweight}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ndimp}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ alphab(i)\ =\ (first\_moment(i)*sqrt(1\ -\/\ adam\_beta2**iteration))/\ \&}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ((1\ -\/\ adam\_beta1**iteration)*(sqrt(second\_moment(i))\ +\ adam\_eps))}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00062}00062\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00063}00063\ }
+\DoxyCodeLine{\Hypertarget{adam__opt_8f90_source_l00064}00064\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{adam__opt_8f90_a2d01fc78d11c59c0539c369d94821b08}{adam\_opt}}}
+
+\end{DoxyCode}

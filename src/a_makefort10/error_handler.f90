@@ -16,6 +16,13 @@
 
 !
 !----------------------------------------------------------------------------
+!> @brief Write and handle error messages for parallel and serial execution
+!> @details This subroutine writes an error message to output. If ierr <= 0, it does nothing.
+!>          If ierr > 0, it prints the error and stops execution. In parallel execution,
+!>          it also writes to a crash file and aborts MPI if available.
+!> @param[in] calling_routine Name of the calling routine
+!> @param[in] message Error message to output
+!> @param[in] ierr Error flag (if > 0, triggers stop)
 subroutine errore(calling_routine, message, ierr)
     !----------------------------------------------------------------------------
     !
@@ -116,6 +123,10 @@ subroutine errore(calling_routine, message, ierr)
 end subroutine errore
 !
 !----------------------------------------------------------------------
+!> @brief Write an informational message from a given routine
+!> @details This subroutine writes an info message to output from the specified routine.
+!> @param[in] routine Name of the calling routine
+!> @param[in] message Informational message to output
 subroutine infomsg(routine, message)
     !----------------------------------------------------------------------
     !
@@ -141,6 +152,10 @@ subroutine infomsg(routine, message)
     !
 end subroutine infomsg
 !
+!> @brief Error handling utilities for routine call stack and memory errors
+!> @details This module provides utilities for tracking the call stack, reporting
+!>          memory errors, and issuing warnings. It supports traceback and
+!>          hierarchical error reporting for easier debugging.
 module error_handler
     implicit none
     private
@@ -156,6 +171,8 @@ module error_handler
 
 contains
 
+    !> @brief Initialize the error handler with the first routine name
+    !> @param[in] routine_name Name of the first routine in the call stack
     subroutine init_error(routine_name)
         implicit none
         character(len=*), intent(in) :: routine_name
@@ -168,6 +185,8 @@ contains
         return
     end subroutine init_error
 
+    !> @brief Add a routine name to the call stack
+    !> @param[in] routine_name Name of the routine to add
     subroutine add_name(routine_name)
         implicit none
         character(len=*), intent(in) :: routine_name
@@ -181,6 +200,7 @@ contains
         return
     end subroutine add_name
 
+    !> @brief Remove the most recent routine name from the call stack
     subroutine chop_name
         implicit none
         type(chain), pointer :: chopped_chain
@@ -192,6 +212,8 @@ contains
         return
     end subroutine chop_name
 
+    !> @brief Recursively print the call stack for error tracing
+    !> @param[in] error_code Error code to determine stop or return
     recursive subroutine trace_back(error_code)
 
         implicit none
@@ -214,6 +236,9 @@ contains
 
     end subroutine trace_back
 
+    !> @brief Report a memory error or warning with traceback
+    !> @param[in] message Error or warning message
+    !> @param[in] error_code (Optional) Error code (default 1: fatal, -1: warning)
     subroutine error_mem(message, error_code)
         character(len=*), intent(in) :: message
         integer, intent(in), optional :: error_code
@@ -249,6 +274,8 @@ contains
         return
     end subroutine error_mem
 
+    !> @brief Issue a warning message with traceback
+    !> @param[in] message Warning message
     subroutine warning(message)
         character(len=*), intent(in) :: message
         call error_mem(message, -1)

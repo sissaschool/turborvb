@@ -1,0 +1,217 @@
+\doxysection{dgelscut\+\_\+new.\+f90}
+\hypertarget{dgelscut__new_8f90_source}{}\label{dgelscut__new_8f90_source}\index{src/a\_turborvb/dgelscut\_new.f90@{src/a\_turborvb/dgelscut\_new.f90}}
+\mbox{\hyperlink{dgelscut__new_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Cut-\/off\ procedure\ for\ stochastic\ reconfiguration\ matrix\ using\ eigenvalue\ analysis}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ performs\ a\ cut-\/off\ procedure\ on\ the\ stochastic\ reconfiguration\ (SR)\ matrix}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00018}00018\ \textcolor{comment}{!>\ by\ eliminating\ parameters\ with\ eigenvalues\ below\ a\ threshold\ epsdgel.\ The\ algorithm\ diagonalizes}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00019}00019\ \textcolor{comment}{!>\ the\ SR\ matrix\ and\ iteratively\ removes\ parameters\ with\ the\ smallest\ eigenvalues\ until\ all\ remaining}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00020}00020\ \textcolor{comment}{!>\ eigenvalues\ are\ above\ the\ threshold.\ This\ helps\ stabilize\ the\ optimization\ process\ by\ removing}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00021}00021\ \textcolor{comment}{!>\ ill-\/conditioned\ parameters.}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in,out]\ sov\ SR\ matrix\ (input),\ transformed\ matrix\ (output)}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ nmat\ Dimension\ of\ the\ SR\ matrix}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ npm\ Leading\ dimension\ of\ matrix\ sov}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in,out]\ psip\ Work\ array\ for\ eigenvalue\ storage\ and\ temporary\ calculations}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ epsdgel\ Eigenvalue\ threshold\ for\ parameter\ elimination}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in,out]\ ipsip\ Parameter\ status\ array\ (1=active,\ 0=eliminated)}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ np\ Number\ of\ parameters}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[out]\ info\ Information\ flag\ from\ eigenvalue\ solver}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ scalpar\ Parameter\ scaling\ factors}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ lwork\ Size\ of\ work\ array\ for\ eigenvalue\ solver}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ epsmach\ Machine\ precision}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ indexpar\ Parameter\ index\ mapping}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ rank\ Current\ processor\ rank}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ nprocopt\ Number\ of\ processors\ for\ optimization}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ rankopt\ Rank\ for\ optimization}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[in]\ commopt\_mpi\ MPI\ communicator\ for\ optimization}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00038}\mbox{\hyperlink{dgelscut__new_8f90_ad948b4432f60db756ef8360af2b11fe4}{00038}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{dgelscut__new_8f90_ad948b4432f60db756ef8360af2b11fe4}{dgelscut}}(sov,\ nmat,\ npm,\ psip,\ epsdgel,\ ipsip,\ np,\ info\ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \&,\ scalpar,\ lwork,\ epsmach,\ indexpar,\ rank,\ nprocopt,\ rankopt,\ commopt\_mpi)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{integer}\ ip,\ nmat,\ i,\ j,\ npm,\ n1,\ n2,\ n3,\ n4,\ n5,\ info,\ rank,\ ipsip(*)\ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ind,\ lwork,\ iscra,\ k,\ ierr,\ imax,\ imaxg,\ indi,\ indj,\ np\ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ indexpar(*),\ indscali,\ nprocopt,\ rankopt,\ commopt\_mpi}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{real*8}\ sov(npm,\ npm,\ *),\ psip(*),\ epsdgel,\ cost,\ epsmach,\ ratoff\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ costmax,\ costmaxg,\ scalpar(*),\ eigmin,\ eigs,\ eigb,\ eigs\_min,\ eigb\_min,\ maxsr}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ epsmach=1d-\/12}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00049}00049\ \ \ \ \ n1\ =\ nmat\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00050}00050\ \ \ \ \ n2\ =\ n1\ +\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00051}00051\ \ \ \ \ n3\ =\ n2\ +\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00052}00052\ \ \ \ \ n4\ =\ n3\ +\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00053}00053\ \ \ \ \ n5\ =\ n4\ +\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ preconditioning\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00055}00055\ \ \ \ \ maxsr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ costmax\ =\ abs(sov(i,\ i,\ 1)*\mbox{\hyperlink{namespaceallio_a1eca4f4b55eeb7fe113a7105bb034596}{scalpar}}(i))}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (costmax\ .gt.\ maxsr)\ maxsr\ =\ costmax}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00059}00059\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00060}00060\ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(sov(i,\ i,\ 1)*\mbox{\hyperlink{namespaceallio_a1eca4f4b55eeb7fe113a7105bb034596}{scalpar}}(i))\ .gt.\ epsmach*maxsr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ psip(n1\ +\ i\ -\/\ 1)\ =\ 1.d0/dsqrt(dabs(sov(i,\ i,\ 1)))}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ '\ Warning\ eliminated\ =',i,sov(i,i,1)}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ psip(n1\ +\ i\ -\/\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(i)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00070}00070\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00072}00072\ \ \ \ \ indi\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(i)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ indi\ =\ indi\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(j)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sov(indi,\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}},\ 2)\ =\ sov(i,\ j,\ 1)*psip(n1\ +\ i\ -\/\ 1)*psip(n1\ +\ j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00082}00082\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00083}00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00086}00086\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ first\ step\ diagonalize\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00087}00087\ \ \ \ \ \textcolor{keywordflow}{if}\ (indi\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsyev_8f90_adf90d5315ae808f3dd170b1edbc190ed}{dsyev\_my}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'L'},\ indi,\ sov(1,\ 1,\ 2),\ npm,\ psip,\ info\ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_ac476b072421eeb1a8daa1ddcd5466546}{nprocopt}},\ \mbox{\hyperlink{namespaceallio_a8cfa9d6f06d58c920a363b4307a70f62}{rankopt}},\ \mbox{\hyperlink{namespaceallio_afd7ee76eb986e0e6dc3f74203c51c902}{commopt\_mpi}})}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'L'},\ indi,\ sov(1,\ 1,\ 2),\ npm,\ psip,\ psip(n2),\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ info)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Lowest/Max\ \ eigenvalues\ SR\ mat\ '},\ psip(1),\ psip(indi)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ eigs\ =\ psip(1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ eigb\ =\ psip(2)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ eigs\_min\ =\ psip(1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ eigb\_min\ =\ psip(2)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ eigmin\ =\ psip(1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ no\ par\ to\ eliminate\ ='},\ indi}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ eigmin\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00107}00107\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00109}00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (eigmin\ .lt.\ epsdgel\ .and.\ indi\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (eigmin\ .lt.\ epsdgel)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ definition\ matrix\ for\ the\ chosen\ raw}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ indi\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(i)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indi\ =\ indi\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(j)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sov(indi,\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}},\ 2)\ =\ sov(i,\ j,\ 1)*psip(n1\ +\ i\ -\/\ 1)*psip(n1\ +\ j\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00123}00123\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00125}00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ indi}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sov(j,\ j,\ 2)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00128}00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsyev_8f90_adf90d5315ae808f3dd170b1edbc190ed}{dsyev\_my}}(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ indi,\ sov(1,\ 1,\ 2),\ npm,\ psip,\ info\ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_ac476b072421eeb1a8daa1ddcd5466546}{nprocopt}},\ \mbox{\hyperlink{namespaceallio_a8cfa9d6f06d58c920a363b4307a70f62}{rankopt}},\ \mbox{\hyperlink{namespaceallio_afd7ee76eb986e0e6dc3f74203c51c902}{commopt\_mpi}})}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ indi,\ sov(1,\ 1,\ 2),\ npm,\ psip,\ psip(n2),\ \mbox{\hyperlink{namespaceallio_a847d5b92e949fa08a1861c6e3a64b11f}{lwork}},\ info)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00135}00135\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00136}00136\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ eigs\_min\ =\ psip(1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ eigb\_min\ =\ psip(2)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ before\ findzero\ '}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{evalgren_8f90_a3ce4f1202226b311be5e9f3719e53924}{findzero}}(eigs\_min,\ eigb\_min,\ npm,\ indi,\ sov(1,\ 1,\ 2),\ psip\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ psip(n2),\ psip(n3),\ psip(n4),\ psip(n5))}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ after\ findzero\ '}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ costmax\ =\ eigs\_min}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ imax\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Eigenvalues\ inside\ new\ '}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ In\ principle\ we\ can\ eliminate\ all\ parameters\ <\ epsdgel}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ with\ the\ constraint\ that\ they\ are\ independent}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(k)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ =\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (psip(n5\ +\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ -\/\ 1)\ .ge.\ costmax)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ imax\ =\ k}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costmax\ =\ psip(n5\ +\ \mbox{\hyperlink{namespaceallio_ac5fa8eeed81ca715a8c0ba4acb0160b2}{indj}}\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00159}00159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ indj,psip(n5+indj-\/1)}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00161}00161\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00162}00162\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00163}00163\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ indscali\ =\ indexpar(imax)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00165}00165\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indscali\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'eliminated\ collective\ par'},\ imax}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'eliminated\ normal\ \ par'},\ indscali}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00171}00171\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00172}00172\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00173}00173\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imax\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Some\ error\ in\ findzero\ '},\ eigs\_min,\ eigb\_min}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00176}00176\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00177}00177\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(\mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00178}00178\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00179}00179\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(imax)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigmin\ =\ costmax}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00185}00185\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ New\ \ Lowest\ eigenval\ '},\ eigmin}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00188}00188\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00189}00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixed\ parameters\ '}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00190}00190\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00191}00191\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nmat}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ ipsip(i\ +\ \mbox{\hyperlink{namespaceallio_abb3bb67e678351a21faffc09182f75a1}{np}})\ =\ ipsip(i)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipsip(i)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ indscali\ =\ indexpar(i)}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indscali\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ ind,\ i}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ ind,\ indscali}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00201}00201\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00203}00203\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ only\ the\ regul}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a1eca4f4b55eeb7fe113a7105bb034596}{scalpar}}(i)\ .gt.\ 0.d0\ .and.\ ipsip(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ \ \ \ \ ipsip(i\ +\ \mbox{\hyperlink{namespaceallio_abb3bb67e678351a21faffc09182f75a1}{np}})\ =\ 2}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00207}00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00209}00209\ }
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dgelscut__new_8f90_source_l00211}00211\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

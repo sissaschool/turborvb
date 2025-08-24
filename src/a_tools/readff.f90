@@ -225,6 +225,11 @@ program erread
     deallocate (eav, wav, gapjack, gap, gaps, gapav, gapt, gapst, error)
     stop
 contains
+    !> @brief Performs bootstrap error analysis
+    !> @details This subroutine computes bootstrap error estimates for
+    !>          energy measurements. It performs multiple bootstrap
+    !>          resampling iterations to estimate statistical errors
+    !>          and confidence intervals for the energy values.
     subroutine boot
         implicit none
         integer nmis, kmain, k

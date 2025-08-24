@@ -13,6 +13,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Apply energy cutoff using arctangent function
+!> @details    This function applies a smooth energy cutoff using an arctangent
+!>             function. If cut=0, it returns the original energy. Otherwise,
+!>             it applies the transformation: etry + cut*atan((ener-etry)/cut).
+!> @param[in]  ener     Input energy value
+!> @param[in]  etry     Reference energy for cutoff
+!> @param[in]  cut      Cutoff parameter (0 for no cutoff)
+!> @return     enercut  Energy value after cutoff transformation
 function enercut(ener, etry, cut)
     implicit none
     real*8 enercut, ener, etry, cut, datan, argtan

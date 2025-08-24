@@ -1,0 +1,131 @@
+\doxysection{eval\+\_\+pulay.\+f90}
+\hypertarget{eval__pulay_8f90_source}{}\label{eval__pulay_8f90_source}\index{src/a\_turborvb/eval\_pulay.f90@{src/a\_turborvb/eval\_pulay.f90}}
+\mbox{\hyperlink{eval__pulay_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Evaluate\ Pulay\ forces\ for\ orbital\ derivatives\ in\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ Pulay\ forces\ (orbital\ derivatives)\ needed\ for}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00018}00018\ \textcolor{comment}{!>\ wave\ function\ optimization\ in\ quantum\ Monte\ Carlo\ calculations.\ It\ evaluates\ the}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00019}00019\ \textcolor{comment}{!>\ derivatives\ of\ the\ orbitals\ with\ respect\ to\ nuclear\ positions,\ taking\ into\ account}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00020}00020\ \textcolor{comment}{!>\ the\ inverse\ matrices\ for\ up\ and\ down\ electrons,\ and\ handles\ both\ regular\ and}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00021}00021\ \textcolor{comment}{!>\ spin-\/dependent\ Jastrow\ factors.\ The\ calculation\ includes\ contributions\ from}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00022}00022\ \textcolor{comment}{!>\ orbital\ derivatives\ and\ Jastrow\ factor\ derivatives.}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ winv\ Inverse\ of\ orbital\ matrix\ for\ all\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ nelorb\ Number\ of\ orbitals}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ nel\ Total\ number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ nelup\ Number\ of\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ neldo\ Number\ of\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ indt\ Number\ of\ derivatives}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ ainvup\ Inverse\ of\ orbital\ matrix\ for\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ ainvdo\ Inverse\ of\ orbital\ matrix\ for\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ winvj\ Inverse\ of\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ nelorbj\ Number\ of\ Jastrow\ orbitals}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ winvjbar\ Inverse\ of\ Jastrow\ matrix\ (bar)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[out]\ orbderiv\ Orbital\ derivatives\ (3\ components\ per\ orbital)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ winvjbarsz\ Inverse\ of\ spin-\/dependent\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ iessz\ Flag\ for\ spin-\/dependent\ Jastrow}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[in]\ add\_pulay\ Flag\ for\ additional\ Pulay\ terms}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @param[in,out]\ psip\ Work\ array\ for\ temporary\ calculations}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[in]\ nelorbh\ Number\ of\ orbitals\ (half)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[in]\ nelorbjh\ Number\ of\ Jastrow\ orbitals\ (half)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00041}\mbox{\hyperlink{eval__pulay_8f90_afb3b049ce55212dbd9c026a6790c9598}{00041}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{eval__pulay_8f90_afb3b049ce55212dbd9c026a6790c9598}{eval\_pulay}}(winv,\ nelorb,\ nel,\ nelup,\ neldo,\ indt\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \&,\ ainvup,\ ainvdo,\ winvj,\ nelorbj,\ winvjbar,\ orbderiv\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \&,\ winvjbarsz,\ iessz,\ add\_pulay,\ psip,\ nelorbh,\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a6fe7914eaaab88d424f7f30c21429cf1}{ip4}}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ nelorb,\ nelup,\ indt,\ neldo,\ i,\ l,\ nelorbj,\ j,\ m,\ d\ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ add\_pulay,\ nelorbj5,\ nelorbh,\ nelorbjh,\ indt5,\ nelorb5}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordtype}{real(8)}\ winv(nelorb,\ 0:indt\ +\ ip4,\ *),\ orbderiv(3,\ *)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ainvup(nelup,\ *),\ ainvdo(neldo,\ *),\ ddot,\ winvjbar(nelorbjh,\ *)\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ winvjbarsz(*),\ winvj(nelorbj,\ 0:indt\ +\ ip4,\ *),\ tmp1,\ tmp2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ psip(nelorbjh,\ *)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keywordtype}{logical}\ iessz}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(3*(nelorb\ +\ nelorbj),\ 0.d0,\ orbderiv,\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00056}00056\ \ \ \ \ indt5\ =\ indt\ +\ ip4\ +\ 1}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00057}00057\ \ \ \ \ nelorbj5\ =\ nelorbj*indt5}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00058}00058\ \ \ \ \ nelorb5\ =\ nelorb*indt5}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordflow}{if}\ (add\_pulay\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ nelorbh}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ d\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ orbderiv(d,\ l)\ =\ orbderiv(d,\ l)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ ddot(nelup,\ winv(l,\ indt\ +\ d,\ 1),\ nelorb5,\ ainvup(1,\ l),\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ orbderiv(d,\ l)\ =\ orbderiv(d,\ l)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ ddot(neldo,\ winv(l,\ indt\ +\ d,\ 1\ +\ nelup),\ nelorb5,\ ainvdo(1,\ l),\ 1)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00067}00067\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00068}00068\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbjh}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ psip(i,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ psip(i,\ 2)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ psip(i,\ 3)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ psip(i,\ 4)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 1)\ =\ psip(i,\ 1)\ +\ winvj(i,\ indt\ +\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 2)\ =\ psip(i,\ 2)\ +\ winvj(i,\ indt\ +\ 2,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 3)\ =\ psip(i,\ 3)\ +\ winvj(i,\ indt\ +\ 3,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 4)\ =\ psip(i,\ 4)\ +\ winvjbar(i,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00082}00082\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00083}00083\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00084}00084\ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ nelorbjh}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ orbderiv(1,\ nelorb\ +\ l)\ =\ orbderiv(1,\ nelorb\ +\ l)\ -\/\ psip(l,\ 1)*psip(l,\ 4)\ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 1,\ 1),\ nelorbj5,\ winvjbar(l,\ 1),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ orbderiv(2,\ nelorb\ +\ l)\ =\ orbderiv(2,\ nelorb\ +\ l)\ -\/\ psip(l,\ 2)*psip(l,\ 4)\ \ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 2,\ 1),\ nelorbj5,\ winvjbar(l,\ 1),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ orbderiv(3,\ nelorb\ +\ l)\ =\ orbderiv(3,\ nelorb\ +\ l)\ -\/\ psip(l,\ 3)*psip(l,\ 4)\ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 3,\ 1),\ nelorbj5,\ winvjbar(l,\ 1),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbjh}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 2)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 3)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 4)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 1)\ =\ psip(i,\ 1)\ +\ winvj(i,\ indt\ +\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 2)\ =\ psip(i,\ 2)\ +\ winvj(i,\ indt\ +\ 2,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 3)\ =\ psip(i,\ 3)\ +\ winvj(i,\ indt\ +\ 3,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 4)\ =\ psip(i,\ 4)\ +\ winvjbarsz(i\ +\ (j\ -\/\ 1)*nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00104}00104\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelup\ +\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 1)\ =\ psip(i,\ 1)\ -\/\ winvj(i,\ indt\ +\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 2)\ =\ psip(i,\ 2)\ -\/\ winvj(i,\ indt\ +\ 2,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 3)\ =\ psip(i,\ 3)\ -\/\ winvj(i,\ indt\ +\ 3,\ j)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i,\ 4)\ =\ psip(i,\ 4)\ -\/\ winvjbarsz(i\ +\ (j\ -\/\ 1)*nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ nelorbjh}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ tmp1=ddot(nelorbj,jasmatsz(l),nelorbj,winvj(1,0,j),1)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ tmp2=ddot(nelorbj,jasmatsz(l),nelorbj,winvj(1,0,i),1)}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ orbderiv(1,\ nelorb\ +\ l)\ =\ orbderiv(1,\ nelorb\ +\ l)\ -\/\ psip(l,\ 1)*psip(l,\ 4)\ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 1,\ 1),\ nelorbj5,\ winvjbarsz(l),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ orbderiv(2,\ nelorb\ +\ l)\ =\ orbderiv(2,\ nelorb\ +\ l)\ -\/\ psip(l,\ 2)*psip(l,\ 4)\ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 2,\ 1),\ nelorbj5,\ winvjbarsz(l),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ orbderiv(3,\ nelorb\ +\ l)\ =\ orbderiv(3,\ nelorb\ +\ l)\ -\/\ psip(l,\ 3)*psip(l,\ 4)\ \&}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ ddot(nel,\ winvj(l,\ indt\ +\ 3,\ 1),\ nelorbj5,\ winvjbarsz(l),\ nelorbjh)}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00124}00124\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{eval__pulay_8f90_source_l00125}00125\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

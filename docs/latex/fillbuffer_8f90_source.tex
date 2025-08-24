@@ -1,0 +1,95 @@
+\doxysection{fillbuffer.\+f90}
+\hypertarget{fillbuffer_8f90_source}{}\label{fillbuffer_8f90_source}\index{src/a\_prep/fillbuffer.f90@{src/a\_prep/fillbuffer.f90}}
+\mbox{\hyperlink{fillbuffer_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Fills\ buffer\ with\ complex\ wavefunction\ values\ for\ Hamiltonian\ calculations}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ buffer\ array\ for\ complex\ wavefunctions\ by\ combining}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ potential\ energy\ contributions,\ non-\/local\ potential\ terms,\ and\ kinetic\ energy.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ It\ handles\ complex\ arithmetic\ and\ uses\ BLAS\ operations\ for\ matrix-\/vector\ products.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ nelorb\ Number\ of\ orbitals}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ indt\ Maximum\ angular\ momentum\ index}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ istart\ Starting\ index\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ indtms\ Ending\ index\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ tcost\ Array\ of\ cost\ factors\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ vpots\ Scalar\ potential\ value}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ winv\_c\ Complex\ wavefunction\ inverse\ matrix}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ buffer\ Output\ buffer\ array\ to\ be\ filled}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00028}\mbox{\hyperlink{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a}{00028}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a}{fillbuff\_complex}}(nelorb,\ indt,\ istart,\ indtms,\ tcost,\ vpots,\ winv\_c,\ buffer)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00029}00029\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a7c52fca9cdf95ea5a6727ad4e9a4fb77}{zhalf}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00034}00034\ \ \ \ \ \textcolor{comment}{!\ input\ variables}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelorb,\ indt,\ istart,\ indtms}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00036}00036\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ tcost(*),\ vpots}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(in)}\ ::\ winv\_c(nelorb,\ 0:indt\ +\ 4)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(out)}\ ::\ buffer(nelorb)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00040}00040\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ dims,\ i}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00043}00043\ \ \ \ \ dims\ =\ indtms\ -\/\ istart\ +\ 1}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00044}00044\ \ \ \ \ buffer(1:nelorb)\ =\ \mbox{\hyperlink{namespaceconstants_a7c52fca9cdf95ea5a6727ad4e9a4fb77}{zhalf}}*dcmplx(vpots)*winv\_c(1:nelorb,\ 0)\ \textcolor{comment}{!\ unit\ Hartree}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordflow}{if}\ (dims\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ adding\ non\ local\ part\ if\ any}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ 2*nelorb,\ dims,\ -\/0.5d0,\ winv\_c(1,\ istart),\ 2*nelorb,\ tcost(istart)\&}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 1,\ 1.d0,\ buffer,\ 1)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00050}00050\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ SSTEST}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00052}00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ buffer(1:nelorb)=0.d0\ !\ disregard\ potential\ for\ tests}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ kinetic\ energy\ unit\ Hartree}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00054}00054\ \ \ \ \ buffer(1:nelorb)\ =\ buffer(1:nelorb)\ -\/\ 0.5d0*winv\_c(1:nelorb,\ indt\ +\ 4)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00057}00057\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fillbuffer_8f90_aa2f8649e11f2e27cd75a3cb8cd26813a}{fillbuff\_complex}}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00058}00058\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00059}00059\ \textcolor{comment}{!>\ @brief\ Fills\ buffer\ with\ real\ wavefunction\ values\ for\ Hamiltonian\ calculations}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00060}00060\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ buffer\ array\ for\ real\ wavefunctions\ by\ combining}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00061}00061\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ potential\ energy\ contributions,\ non-\/local\ potential\ terms,\ and\ kinetic\ energy.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00062}00062\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ It\ uses\ real\ arithmetic\ and\ BLAS\ operations\ for\ efficient\ matrix-\/vector\ products.}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @param[in]\ nelorb\ Number\ of\ orbitals}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00064}00064\ \textcolor{comment}{!>\ @param[in]\ indt\ Maximum\ angular\ momentum\ index}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00065}00065\ \textcolor{comment}{!>\ @param[in]\ istart\ Starting\ index\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00066}00066\ \textcolor{comment}{!>\ @param[in]\ indtms\ Ending\ index\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00067}00067\ \textcolor{comment}{!>\ @param[in]\ tcost\ Array\ of\ cost\ factors\ for\ non-\/local\ potential}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00068}00068\ \textcolor{comment}{!>\ @param[in]\ vpots\ Scalar\ potential\ value}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00069}00069\ \textcolor{comment}{!>\ @param[in]\ winv\ Real\ wavefunction\ inverse\ matrix}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00070}00070\ \textcolor{comment}{!>\ @param[out]\ buffer\ Output\ buffer\ array\ to\ be\ filled}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00071}\mbox{\hyperlink{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d}{00071}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d}{fillbuff}}(nelorb,\ indt,\ istart,\ indtms,\ tcost,\ vpots,\ winv,\ buffer)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorb,\ indt,\ istart,\ indtms,\ dims,\ i}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00074}00074\ \ \ \ \ real*8\ tcost(*),\ vpots,\ winv(nelorb,\ 0:indt\ +\ 4),\ buffer(*)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00075}00075\ \ \ \ \ dims\ =\ indtms\ -\/\ istart\ +\ 1}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00076}00076\ \ \ \ \ buffer(1:nelorb)\ =\ 0.5d0*vpots*winv(1:nelorb,\ 0)\ \textcolor{comment}{!\ unit\ Hartree}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (dims\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ non\ local\ part\ if\ any}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nelorb,\ dims,\ -\/0.5d0,\ winv(1,\ istart),\ nelorb,\ tcost(istart)\&}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 1,\ 1.d0,\ buffer,\ 1)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ buffer\ inside\ fillbuf\ ',sum(buffer(1:nelorb))}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00082}00082\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00083}00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ SSTEST}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00084}00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ buffer(1:nelorb)=0.d0\ !\ disregard\ potential\ for\ tests}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00085}00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ adding\ kinetic\ energy\ unit\ Hartree}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00086}00086\ \ \ \ \ buffer(1:nelorb)\ =\ buffer(1:nelorb)\ -\/\ 0.5d0*winv(1:nelorb,\ indt\ +\ 4)}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00088}00088\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{fillbuffer_8f90_aa0340874ddfa480e353797671dbe4c1d}{fillbuff}}}
+\DoxyCodeLine{\Hypertarget{fillbuffer_8f90_source_l00089}00089\ }
+
+\end{DoxyCode}

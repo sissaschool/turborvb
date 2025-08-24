@@ -13,6 +13,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Gather averages and weights from all processes
+!> @details    This subroutine gathers energy, weights, and correlation
+!>             functions from all MPI processes to the root process.
+!>             Used for parallel QMC calculations.
+!> @param[in]  wbra      Local walker weight
+!> @param[in]  ener      Local energy
+!> @param[in]  wtotf     Local total weights (array)
+!> @param[in]  etot      Local correlation function array
+!> @param[inout] ener_t  Gathered energies (root only)
+!> @param[inout] wbra_t  Gathered weights (root only)
+!> @param[inout] wtotf_t Gathered total weights (root only)
+!> @param[inout] etot_t  Gathered correlation functions (root only)
+!> @param[in]  np3       Number of correlation functions
+!> @param[in]  pdim      Number of processes
 subroutine gather_avgs(wbra, ener, etot, wtotf, wbra_t, &
                        ener_t, etot_t, wtotf_t, np3, pdim)
 
@@ -52,6 +66,15 @@ subroutine gather_avgs(wbra, ener, etot, wtotf, wbra_t, &
 
 end subroutine gather_avgs
 
+!> @brief      Gather walker configuration weights from all processes
+!> @details    This subroutine gathers walker configuration weights from all
+!>             MPI processes to the root process for each k-point pool.
+!> @param[in]  ist       Start index for local walkers
+!> @param[in]  ien       End index for local walkers
+!> @param[in]  w_tot     Local walker weights
+!> @param[inout] w_loc_kp Local weights for k-point pool
+!> @param[in]  nw        Total number of walkers
+!> @param[in]  nk        Number of k-points
 subroutine gather_wconfn(ist, ien, w_tot, w_loc_kp, nw, nk)
 
     use allio, only: rankrep, nprocrep, commrep_mpi, in1, psip
@@ -82,6 +105,15 @@ subroutine gather_wconfn(ist, ien, w_tot, w_loc_kp, nw, nk)
 
 end subroutine gather_wconfn
 
+!> @brief      Scatter walker configuration weights to all processes
+!> @details    This subroutine scatters walker configuration weights from the
+!>             root process to all MPI processes for each k-point pool.
+!> @param[in]  ist       Start index for local walkers
+!> @param[in]  ien       End index for local walkers
+!> @param[inout] w_tot   Walker weights (scattered)
+!> @param[inout] w_loc_kp Local weights for k-point pool
+!> @param[in]  nw        Total number of walkers
+!> @param[in]  nk        Number of k-points
 subroutine scatter_wconfn(ist, ien, w_tot, w_loc_kp, nw, nk)
 
     use allio, only: rankrep, nprocrep, commrep_mpi, psip, in1

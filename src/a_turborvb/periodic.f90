@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Apply periodic boundary conditions to ion positions
+!> @details    This subroutine applies periodic boundary conditions to all
+!>             ion positions using the periodic function. It updates ion
+!>             coordinates and accumulates the sum of squared displacements
+!>             weighted by mass for each ion.
+!> @param[in,out] rion      Ion positions (3, nion)
+!> @param[in]     nion      Number of ions
+!> @param[in]     cellscale Cell dimensions
+!> @param[in]     dt4       Time step parameter
+!> @param[in]     mass      Ion masses (3, nion)
+!> @param[out]    sumx2     Sum of squared displacements weighted by mass
 subroutine Apply_periodic(rion, nion, cellscale, dt4, mass, sumx2)
     implicit none
     real*8 rion(3, nion), mass(3, nion), cellscale(3), dt4, sumx2&
@@ -29,6 +40,16 @@ subroutine Apply_periodic(rion, nion, cellscale, dt4, mass, sumx2)
     end do
     return
 end
+!> @brief      Apply periodic boundary condition to a single coordinate
+!> @details    This subroutine applies periodic boundary conditions to a
+!>             single coordinate using a Gaussian-weighted sum over periodic
+!>             images. It finds the representative in [-L/2, L/2] and
+!>             computes both the periodic coordinate and its square.
+!> @param[in]  x          Input coordinate
+!> @param[in]  L          Period length
+!> @param[in]  dt4        Time step parameter for Gaussian weighting
+!> @param[out] periodicx  Periodic coordinate
+!> @param[out] periodicx2 Square of periodic coordinate
 subroutine periodic(x, L, dt4, periodicx, periodicx2)
     implicit none
     real*8 periodicx, x, L, dt4, arg, xval, maxerror, num, den, num2&

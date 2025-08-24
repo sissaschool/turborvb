@@ -1,0 +1,233 @@
+\doxysection{src/a\+\_\+turborvb/gather\+\_\+avgs.f90 File Reference}
+\hypertarget{gather__avgs_8f90}{}\label{gather__avgs_8f90}\index{src/a\_turborvb/gather\_avgs.f90@{src/a\_turborvb/gather\_avgs.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{gather__avgs_8f90_aa767de6c89e6a767179787fdeb755af3}{gather\+\_\+avgs}} (wbra, ener, etot, wtotf, wbra\+\_\+t, ener\+\_\+t, etot\+\_\+t, wtotf\+\_\+t, np3, pdim)
+\begin{DoxyCompactList}\small\item\em Gather averages and weights from all processes. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{gather__avgs_8f90_a8919e37b842b51acc013abd5ef07ca32}{gather\+\_\+wconfn}} (ist, ien, w\+\_\+tot, w\+\_\+loc\+\_\+kp, nw, nk)
+\begin{DoxyCompactList}\small\item\em Gather walker configuration weights from all processes. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{gather__avgs_8f90_a9cc887c412501e381c40dce7c8406ec7}{scatter\+\_\+wconfn}} (ist, ien, w\+\_\+tot, w\+\_\+loc\+\_\+kp, nw, nk)
+\begin{DoxyCompactList}\small\item\em Scatter walker configuration weights to all processes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{gather__avgs_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{gather__avgs_8f90_aa767de6c89e6a767179787fdeb755af3}\index{gather\_avgs.f90@{gather\_avgs.f90}!gather\_avgs@{gather\_avgs}}
+\index{gather\_avgs@{gather\_avgs}!gather\_avgs.f90@{gather\_avgs.f90}}
+\doxysubsubsection{\texorpdfstring{gather\_avgs()}{gather\_avgs()}}
+{\footnotesize\ttfamily \label{gather__avgs_8f90_aa767de6c89e6a767179787fdeb755af3} 
+subroutine gather\+\_\+avgs (\begin{DoxyParamCaption}\item[{real(8), intent(in)}]{wbra}{, }\item[{real(8), intent(in)}]{ener}{, }\item[{real(8), dimension(np3), intent(in)}]{etot}{, }\item[{real(8), dimension(2), intent(in)}]{wtotf}{, }\item[{real(8), dimension(pdim), intent(inout)}]{wbra\+\_\+t}{, }\item[{real(8), dimension(pdim), intent(inout)}]{ener\+\_\+t}{, }\item[{real(8), dimension(np3, pdim), intent(inout)}]{etot\+\_\+t}{, }\item[{real(8), dimension(2, pdim), intent(inout)}]{wtotf\+\_\+t}{, }\item[{integer, intent(in)}]{np3}{, }\item[{integer, intent(in)}]{pdim}{}\end{DoxyParamCaption})}
+
+
+
+Gather averages and weights from all processes. 
+
+This subroutine gathers energy, weights, and correlation functions from all MPI processes to the root process. Used for parallel QMC calculations. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em wbra} & Local walker weight \\
+\hline
+\mbox{\texttt{in}}  & {\em ener} & Local energy \\
+\hline
+\mbox{\texttt{in}}  & {\em wtotf} & Local total weights (array) \\
+\hline
+\mbox{\texttt{in}}  & {\em etot} & Local correlation function array \\
+\hline
+\mbox{\texttt{in,out}}  & {\em ener\+\_\+t} & Gathered energies (root only) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em wbra\+\_\+t} & Gathered weights (root only) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em wtotf\+\_\+t} & Gathered total weights (root only) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em etot\+\_\+t} & Gathered correlation functions (root only) \\
+\hline
+\mbox{\texttt{in}}  & {\em np3} & Number of correlation functions \\
+\hline
+\mbox{\texttt{in}}  & {\em pdim} & Number of processes \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{gather__avgs_8f90_source_l00030}{30}} of file \mbox{\hyperlink{gather__avgs_8f90_source}{gather\+\_\+avgs.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}},\ \mbox{\hyperlink{namespacekpoints__mod_abbf7a560edcce2a70b976f43ce566402}{decoupled\_run}}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ np3,\ pdim}
+\DoxyCodeLine{00037\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ wbra,\ ener,\ wtotf(2),\ etot(np3)}
+\DoxyCodeLine{00038\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ ener\_t(pdim),\ wbra\_t(pdim),\ wtotf\_t(2,\ pdim),\ etot\_t(np3,\ pdim)}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierr}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00045\ \ \ \ \ ener\_t\ =\ 0.d0}
+\DoxyCodeLine{00046\ \ \ \ \ wbra\_t\ =\ 0.d0}
+\DoxyCodeLine{00047\ \ \ \ \ wtotf\_t\ =\ 0.d0}
+\DoxyCodeLine{00048\ \ \ \ \ etot\_t\ =\ 0.d0}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ correlation\ functions}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespaceallio_abc7aae9dfa540c64c6f3ba56abbb4537}{etot}},\ \mbox{\hyperlink{namespaceallio_a2c4a4ecbc6ddcb5fdddf131c16938804}{np3}},\ mpi\_double\_precision,\ etot\_t,\ \&}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a2c4a4ecbc6ddcb5fdddf131c16938804}{np3}},\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ weights}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespaceallio_a21eae41321afc29959ab1f826c259903}{wtotf}},\ 2,\ mpi\_double\_precision,\ wtotf\_t,\ \&}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2,\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ energy\ (real\ part)}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespaceallio_afbf02daf6b64509a21490ecf85df7f62}{ener}},\ 1,\ mpi\_double\_precision,\ ener\_t,\ \&}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1,\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ wbra\ (total\ weight)}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespaceallio_a12a57de96cf76a297fea48e0ed9c49ab}{wbra}},\ 1,\ mpi\_double\_precision,\ wbra\_t,\ \&}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1,\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00066\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00392}{allio\+::commcolrep\+\_\+mpi}}, \mbox{\hyperlink{kpoints_8f90_source_l00074}{kpoints\+\_\+mod\+::decoupled\+\_\+run}}, and \mbox{\hyperlink{kpoints_8f90_source_l00062}{kpoints\+\_\+mod\+::kaverage}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{gather__avgs_8f90_a8919e37b842b51acc013abd5ef07ca32}\index{gather\_avgs.f90@{gather\_avgs.f90}!gather\_wconfn@{gather\_wconfn}}
+\index{gather\_wconfn@{gather\_wconfn}!gather\_avgs.f90@{gather\_avgs.f90}}
+\doxysubsubsection{\texorpdfstring{gather\_wconfn()}{gather\_wconfn()}}
+{\footnotesize\ttfamily \label{gather__avgs_8f90_a8919e37b842b51acc013abd5ef07ca32} 
+subroutine gather\+\_\+wconfn (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{ist}{, }\item[{integer, intent(in)}]{ien}{, }\item[{real(8), dimension(nw), intent(in)}]{w\+\_\+tot}{, }\item[{real(8), dimension(nw/nk), intent(inout)}]{w\+\_\+loc\+\_\+kp}{, }\item[{integer, intent(in)}]{nw}{, }\item[{integer, intent(in)}]{nk}{}\end{DoxyParamCaption})}
+
+
+
+Gather walker configuration weights from all processes. 
+
+This subroutine gathers walker configuration weights from all MPI processes to the root process for each k-\/point pool. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ist} & Start index for local walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em ien} & End index for local walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em w\+\_\+tot} & Local walker weights \\
+\hline
+\mbox{\texttt{in,out}}  & {\em w\+\_\+loc\+\_\+kp} & Local weights for k-\/point pool \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Total number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em nk} & Number of k-\/points \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{gather__avgs_8f90_source_l00078}{78}} of file \mbox{\hyperlink{gather__avgs_8f90_source}{gather\+\_\+avgs.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}},\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nw,\ nk,\ ien,\ ist}
+\DoxyCodeLine{00084\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ w\_tot(nw)}
+\DoxyCodeLine{00085\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ w\_loc\_kp(nw/nk)}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordtype}{integer}\ ist\_loc,\ ien\_loc,\ nw\_rep,\ ierr}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00091\ \ \ \ \ nw\_rep\ =\ \mbox{\hyperlink{namespaceallio_aed38f0396db19fa20cbf1f2091f46fa7}{nw}}/nk}
+\DoxyCodeLine{00092\ \ \ \ \ ist\_loc\ =\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}*(nw\_rep/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})\ +\ 1}
+\DoxyCodeLine{00093\ \ \ \ \ ien\_loc\ =\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ +\ 1)*(nw\_rep/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{!\ collect\ local\ weights\ on\ each\ pool}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{!\ in1\ =\ \#\ of\ walkers\ per\ process\ must\ always\ be\ equal\ to\ 1}}
+\DoxyCodeLine{00097\ \ \ \ \ w\_loc\_kp(ist\_loc:ien\_loc)\ =\ w\_tot(\mbox{\hyperlink{namespaceallio_afc07a5ac0a3161bbb58c6bccc7a1bda0}{ist}}:\mbox{\hyperlink{namespaceallio_a02d22e52c8489d21dd4fa29a9f6a8ea3}{ien}})}
+\DoxyCodeLine{00098\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(1:\mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}})\ =\ w\_loc\_kp(ist\_loc:ien\_loc)}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}},\ mpi\_double\_precision,\ w\_loc\_kp,\ \&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}},\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00105\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00386}{allio\+::commrep\+\_\+mpi}}, \mbox{\hyperlink{allio_8f90_source_l01126}{allio\+::in1}}, \mbox{\hyperlink{allio_8f90_source_l00387}{allio\+::nprocrep}}, \mbox{\hyperlink{allio_8f90_source_l00922}{allio\+::psip}}, and \mbox{\hyperlink{allio_8f90_source_l00388}{allio\+::rankrep}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{gather__avgs_8f90_a9cc887c412501e381c40dce7c8406ec7}\index{gather\_avgs.f90@{gather\_avgs.f90}!scatter\_wconfn@{scatter\_wconfn}}
+\index{scatter\_wconfn@{scatter\_wconfn}!gather\_avgs.f90@{gather\_avgs.f90}}
+\doxysubsubsection{\texorpdfstring{scatter\_wconfn()}{scatter\_wconfn()}}
+{\footnotesize\ttfamily \label{gather__avgs_8f90_a9cc887c412501e381c40dce7c8406ec7} 
+subroutine scatter\+\_\+wconfn (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{ist}{, }\item[{integer, intent(in)}]{ien}{, }\item[{real(8), dimension(nw), intent(inout)}]{w\+\_\+tot}{, }\item[{real(8), dimension(nw/nk), intent(inout)}]{w\+\_\+loc\+\_\+kp}{, }\item[{integer, intent(in)}]{nw}{, }\item[{integer, intent(in)}]{nk}{}\end{DoxyParamCaption})}
+
+
+
+Scatter walker configuration weights to all processes. 
+
+This subroutine scatters walker configuration weights from the root process to all MPI processes for each k-\/point pool. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ist} & Start index for local walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em ien} & End index for local walkers \\
+\hline
+\mbox{\texttt{in,out}}  & {\em w\+\_\+tot} & Walker weights (scattered) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em w\+\_\+loc\+\_\+kp} & Local weights for k-\/point pool \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Total number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em nk} & Number of k-\/points \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{gather__avgs_8f90_source_l00117}{117}} of file \mbox{\hyperlink{gather__avgs_8f90_source}{gather\+\_\+avgs.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nw,\ nk,\ ien,\ ist}
+\DoxyCodeLine{00123\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ w\_tot(nw),\ w\_loc\_kp(nw/nk)}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{integer}\ ist\_loc,\ ien\_loc,\ nw\_rep,\ ierr}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00129\ \ \ \ \ nw\_rep\ =\ \mbox{\hyperlink{namespaceallio_aed38f0396db19fa20cbf1f2091f46fa7}{nw}}/nk}
+\DoxyCodeLine{00130\ \ \ \ \ ist\_loc\ =\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}*(nw\_rep/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})\ +\ 1}
+\DoxyCodeLine{00131\ \ \ \ \ ien\_loc\ =\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ +\ 1)*(nw\_rep/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#\ if\ defined\ PARALLEL}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_scatter(w\_loc\_kp(ist\_loc),\ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}},\ mpi\_double\_precision,\ \&}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}},\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{}\ \ \ \ w\_loc\_kp(ist\_loc:ien\_loc)\ =\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}}(1:\mbox{\hyperlink{namespaceallio_afa79d4ce00294c6e048a9c4232deb9e3}{in1}})}
+\DoxyCodeLine{00138\ \ \ \ \ w\_tot(\mbox{\hyperlink{namespaceallio_afc07a5ac0a3161bbb58c6bccc7a1bda0}{ist}}:\mbox{\hyperlink{namespaceallio_a02d22e52c8489d21dd4fa29a9f6a8ea3}{ien}})\ =\ w\_loc\_kp(ist\_loc:ien\_loc)}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00141\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00386}{allio\+::commrep\+\_\+mpi}}, \mbox{\hyperlink{allio_8f90_source_l01126}{allio\+::in1}}, \mbox{\hyperlink{allio_8f90_source_l00387}{allio\+::nprocrep}}, \mbox{\hyperlink{allio_8f90_source_l00922}{allio\+::psip}}, and \mbox{\hyperlink{allio_8f90_source_l00388}{allio\+::rankrep}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

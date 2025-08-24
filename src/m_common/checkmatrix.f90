@@ -13,6 +13,49 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Sparse matrix validation and checking utilities
+!>
+!> This module provides subroutines for validating and checking sparse matrix
+!> structures used in quantum Monte Carlo calculations. It includes functions
+!> for checking matrix element ranges, finding correspondences between different
+!> sparse matrix representations, and detecting duplicate matrix elements.
+!>
+!> The module handles both standard sparse matrix formats and specialized
+!> formats used in TurboRVB for orbital and molecular orbital matrices.
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
+
+!> @brief Check and validate sparse matrix with row-column indexing
+!>
+!> This subroutine validates a sparse matrix stored in row-column format and
+!> finds correspondences between two different sparse matrix representations.
+!> It uses a 2D indexing scheme where matrix elements are stored as (row, col) pairs.
+!>
+!> @param[in] nnozero Number of non-zero elements in the reference matrix
+!> @param[in] nnozeron Number of non-zero elements in the target matrix
+!> @param[in] nelorb Number of orbitals (matrix dimension)
+!> @param[in] nozero Array containing reference matrix indices (2*nnozero elements)
+!> @param[in] nozeron Array containing target matrix indices (2*nnozeron elements)
+!> @param[out] index_out Output array mapping reference indices to target indices
+!> @param[in] rank MPI rank for parallel execution
+!> @param[in] nelorb_c Number of orbitals in the contracted basis
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Validates that all matrix indices are within the valid range [1, nelorb_c*nelorb]
+!> 2. Sorts both sparse matrix representations for efficient searching
+!> 3. Finds correspondences between reference and target matrix elements
+!> 4. Creates a mapping array index_out where:
+!>    - index_out(j) = i if reference element j corresponds to target element i
+!>    - index_out(j) = -i if reference element j corresponds to target element -i (sign change)
+!>    - index_out(j) = 0 if no correspondence is found
+!>
+!> @note The input arrays nozero and nozeron are expected to be in the format:
+!>       nozero(1:nnozero) = row indices, nozero(nnozero+1:2*nnozero) = column indices
+!> @note This subroutine is designed for parallel execution with MPI.
+!> @note The subroutine terminates the program if matrix elements are out of range.
 subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
         &, index_out, rank, nelorb_c)
     implicit none
@@ -112,6 +155,35 @@ subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
     return
 end
 
+!> @brief Check and validate sparse matrix with linear indexing
+!>
+!> This subroutine validates a sparse matrix stored in linear format and
+!> finds correspondences between two different sparse matrix representations.
+!> It uses a 1D indexing scheme where matrix elements are stored as linear indices.
+!>
+!> @param[in] nnozero Number of non-zero elements in the reference matrix
+!> @param[in] nnozeron Number of non-zero elements in the target matrix
+!> @param[in] nelorb Number of orbitals (matrix dimension)
+!> @param[in] nozero Array containing reference matrix linear indices (nnozero elements)
+!> @param[in] nozeron Array containing target matrix linear indices (nnozeron elements)
+!> @param[out] index_out Output array mapping reference indices to target indices
+!> @param[in] rank MPI rank for parallel execution
+!> @param[in] nelorb_c Number of orbitals in the contracted basis
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Validates that all matrix indices are within the valid range [1, nelorb_c*nelorb]
+!> 2. Sorts both sparse matrix representations for efficient searching
+!> 3. Finds correspondences between reference and target matrix elements
+!> 4. Creates a mapping array index_out where:
+!>    - index_out(j) = i if reference element j corresponds to target element i
+!>    - index_out(j) = -i if reference element j corresponds to target element -i (sign change)
+!>    - index_out(j) = 0 if no correspondence is found
+!>
+!> @note The input arrays nozero and nozeron contain linear indices where
+!>       element (i,j) in the matrix corresponds to index (j-1)*nelorb + i
+!> @note This subroutine is designed for parallel execution with MPI.
+!> @note The subroutine terminates the program if matrix elements are out of range.
 subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
         &, index_out, rank, nelorb_c)
     implicit none
@@ -198,6 +270,30 @@ subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
     return
 end
 
+!> @brief Check for duplicate matrix elements in sparse matrix
+!>
+!> This subroutine detects and reports duplicate matrix elements in a sparse
+!> matrix representation. It is used for validation to ensure that each
+!> matrix element appears only once in the sparse format.
+!>
+!> @param[in] nnozero Number of non-zero elements in the matrix
+!> @param[in] nelorb Number of orbitals (matrix dimension)
+!> @param[in] nozero Array containing matrix linear indices (nnozero elements)
+!> @param[in] rank MPI rank for parallel execution
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Sorts the matrix indices in ascending order
+!> 2. Scans through the sorted array to find consecutive identical elements
+!> 3. Reports the location (row, column) and frequency of each duplicate
+!> 4. Terminates the program if duplicates are found (in parallel mode)
+!>
+!> @note The subroutine converts linear indices back to (row, column) format
+!>       for reporting: row = (index - 1) % nelorb + 1, column = (index - 1) / nelorb + 1
+!> @note This subroutine is designed for parallel execution with MPI.
+!> @note The subroutine terminates the program if duplicate elements are found.
+!> @note Only rank 0 performs the checking and reporting, but all ranks are
+!>       synchronized for termination.
 subroutine checkrepeat(nnozero, nelorb, nozero, rank)
     implicit none
     integer nnozero, nelorb, nozero(*), rank&

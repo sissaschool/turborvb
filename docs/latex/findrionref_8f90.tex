@@ -1,0 +1,219 @@
+\doxysection{src/m\+\_\+common/findrionref.f90 File Reference}
+\hypertarget{findrionref_8f90}{}\label{findrionref_8f90}\index{src/m\_common/findrionref.f90@{src/m\_common/findrionref.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{findrionref_8f90_add770c40c671fe652ad579c15d3650a8}{findrionfref}} (nion, a, rion, ref, mindist)
+\begin{DoxyCompactList}\small\item\em Ion reference position optimization for periodic boundary conditions. \end{DoxyCompactList}\item 
+real \texorpdfstring{$\ast$}{*}8 function \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}} (x, a)
+\begin{DoxyCompactList}\small\item\em Compute periodic modulo operation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{findrionref_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{findrionref_8f90_add770c40c671fe652ad579c15d3650a8}\index{findrionref.f90@{findrionref.f90}!findrionfref@{findrionfref}}
+\index{findrionfref@{findrionfref}!findrionref.f90@{findrionref.f90}}
+\doxysubsubsection{\texorpdfstring{findrionfref()}{findrionfref()}}
+{\footnotesize\ttfamily \label{findrionref_8f90_add770c40c671fe652ad579c15d3650a8} 
+subroutine findrionfref (\begin{DoxyParamCaption}\item[{integer}]{nion}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{a}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, nion)}]{rion}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ref}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{mindist}{}\end{DoxyParamCaption})}
+
+
+
+Ion reference position optimization for periodic boundary conditions. 
+
+This module provides functionality for finding optimal reference positions for ions in periodic systems, particularly useful for quantum Monte Carlo calculations with periodic boundary conditions.
+
+The module includes\+:
+\begin{DoxyItemize}
+\item Subroutine for finding optimal reference positions that maximize minimum distances between ions
+\item Function for computing periodic modulo operations
+\item Algorithms for gap analysis in periodic coordinate systems
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Find optimal reference position for ions in periodic system
+
+This subroutine determines an optimal reference position that maximizes the minimum distance between ions in a periodic system. It analyzes the gaps between ion positions along a given direction and shifts the reference to the center of the largest gap.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nion} & Number of ions in the system \\
+\hline
+\mbox{\texttt{in}}  & {\em a} & Periodicity length along the direction of interest \\
+\hline
+\mbox{\texttt{in}}  & {\em rion} & Array of ion positions (3, nion) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em ref} & Reference position (updated to optimal position) \\
+\hline
+\mbox{\texttt{out}}  & {\em mindist} & Minimum distance between ions after optimization\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Computes periodic coordinates for all ions using setint function
+\item Sorts ions by their periodic coordinates
+\item Calculates gaps between consecutive ions in periodic space
+\item Handles the wrap-\/around gap between the last and first ion
+\item Finds the largest gap and its center position
+\item Shifts the reference position to the center of the largest gap
+\item Updates mindist to half the largest gap size
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The subroutine works in 1D along the x-\/direction of ion positions 
+
+For single ion systems, the gap is set to the full periodicity length 
+
+The optimal reference maximizes the minimum distance between any two ions 
+
+The subroutine modifies the input ref parameter to the optimal position 
+
+mindist represents the radius of the largest possible sphere around any ion that doesn\textquotesingle{}t contain other ions 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{findrionref_8f90_source_l00061}{61}} of file \mbox{\hyperlink{findrionref_8f90_source}{findrionref.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ nion}
+\DoxyCodeLine{00064\ \ \ \ \ real*8\ rion(3,\ nion),\ ref,\ a,\ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}},\ shiftref,\ mindist}
+\DoxyCodeLine{00065\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ gap,\ psip}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ipsip}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{allocate}\ (gap(nion),\ ipsip(nion),\ psip(nion))}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Find\ modulo\ 0,a\ ',0,a}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ psip(i)\ =\ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}}(rion(1,\ i)\ +\ ref,\ a)}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,psip(i)}}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (nion\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ gap(1)\ =\ a}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ ipsip(1)\ =\ 1}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(psip,\ 1,\ nion,\ ipsip)}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ gap\ '}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion\ -\/\ 1}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ gap(ipsip(i))\ =\ psip(i\ +\ 1)\ -\/\ psip(i)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,ipsip(i),gap(ipsip(i))}}
+\DoxyCodeLine{00089\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ gap(ipsip(nion))\ =\ a\ -\/\ psip(nion)\ +\ psip(1)}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ nion,ipsip(nion),gap(ipsip(nion))}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ find\ the\ maximum\ gap}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ recompute\ psip}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i)\ =\ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}}(rion(1,\ i)\ +\ ref,\ a)}
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(gap,\ 1,\ nion,\ ipsip)}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ Ordered\ coordinate/gap\ '}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nion}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ i,ipsip(i),psip(ipsip(i)),gap(i)}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ shiftref\ =\ a\ -\/\ psip(ipsip(nion))\ -\/\ gap(nion)/2.d0}
+\DoxyCodeLine{00108\ \ \ \ \ shiftref\ =\ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}}(shiftref,\ a)}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(shiftref\ -\/\ a)\ .lt.\ shiftref)\ shiftref\ =\ shiftref\ -\/\ a}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ mindist\ =\ gap(nion)/2.d0}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ shiftref/mindist\ \ inside\ =',shiftref,mindist}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ ref\ =\ ref\ +\ shiftref}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{deallocate}\ (gap,\ psip,\ ipsip)}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00046}{dsortx()}}, and \mbox{\hyperlink{findrionref_8f90_source_l00144}{setint()}}.
+
+
+
+Referenced by \mbox{\hyperlink{initialize__environment_8f90_source_l00715}{initialize\+\_\+mesh()}}, \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, \mbox{\hyperlink{convertmod_8f90_source_l00060}{convertmod\+::shift\+\_\+originref()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}\index{findrionref.f90@{findrionref.f90}!setint@{setint}}
+\index{setint@{setint}!findrionref.f90@{findrionref.f90}}
+\doxysubsubsection{\texorpdfstring{setint()}{setint()}}
+{\footnotesize\ttfamily \label{findrionref_8f90_a1c593c90374efeb69fa7519223897e27} 
+real\texorpdfstring{$\ast$}{*}8 function setint (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8}]{x}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{a}{}\end{DoxyParamCaption})}
+
+
+
+Compute periodic modulo operation. 
+
+This function computes the periodic modulo operation, mapping any real number to the interval \mbox{[}0, a) where a is the periodicity length. It handles both positive and negative input values correctly.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em x} & Input value to be mapped to periodic interval \\
+\hline
+\mbox{\texttt{in}}  & {\em a} & Periodicity length \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Real value in the interval \mbox{[}0, a)
+\end{DoxyReturn}
+The function performs the following operations\+:
+\begin{DoxyEnumerate}
+\item For positive x\+: computes x mod a using integer division
+\item For negative x\+: computes (x + n\texorpdfstring{$\ast$}{*}a + a) mod a where n = floor(-\/x/a)
+\item Ensures the result is always in the interval \mbox{[}0, a)
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The function is equivalent to fmod(x, a) but handles negative values correctly for periodic boundary conditions 
+
+For x ≥ 0\+: result = x -\/ floor(x/a) \texorpdfstring{$\ast$}{*} a 
+
+For x \texorpdfstring{$<$}{<} 0\+: result = x + floor(-\/x/a) \texorpdfstring{$\ast$}{*} a + a 
+
+The result is always non-\/negative and less than a 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{findrionref_8f90_source_l00143}{143}} of file \mbox{\hyperlink{findrionref_8f90_source}{findrionref.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00144\ \ \ \ \ real*8\ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}},\ x,\ a}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordtype}{integer}\ n}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{if}\ (x\ .ge.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ n\ =\ x/a}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}}\ =\ x\ -\/\ n*a}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ n\ =\ -\/x/a}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{findrionref_8f90_a1c593c90374efeb69fa7519223897e27}{setint}}\ =\ x\ +\ n*a\ +\ a}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{findrionref_8f90_source_l00144}{setint()}}.
+
+
+
+Referenced by \mbox{\hyperlink{findrionref_8f90_source_l00062}{findrionfref()}}, and \mbox{\hyperlink{findrionref_8f90_source_l00144}{setint()}}.
+

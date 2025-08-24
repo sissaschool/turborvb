@@ -13,6 +13,24 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update potential energy with periodic boundary conditions and exponential Jastrow
+!> @details    Computes potential energy contributions for electron-electron interactions
+!>             with various Jastrow factor types. Supports periodic boundary conditions
+!>             and handles different Jastrow parameterizations (iesd types). Implements
+!>             exponential and rational Jastrow functions with spin-dependent interactions.
+!> @param[in]  npar         Number of parameters
+!> @param[in]  iesdr        Jastrow parameter type
+!> @param[in]  nw           Number of walkers
+!> @param[in]  nel          Number of electrons
+!> @param[in]  nelup        Number of up electrons
+!> @param[in]  rcart        Cartesian coordinates
+!> @param[out] econf        Energy configuration array
+!> @param[in]  vj           Jastrow parameters
+!> @param[in]  rion         Ion positions
+!> @param[in]  nion         Number of ions
+!> @param[in]  costz        Cost z array
+!> @param[in]  costz3       Cost z3 array
+!> @param[in]  LBox         Box length for periodic boundary conditions
 subroutine upvpot(npar, iesdr, nw, nel, nelup, rcart, econf, vj          &
         &, rion, nion, costz, costz3, LBox)
     use Constants

@@ -1,0 +1,100 @@
+\doxysection{ratio\+\_\+psi.\+f90}
+\hypertarget{ratio__psi_8f90_source}{}\label{ratio__psi_8f90_source}\index{src/a\_turborvb/ratio\_psi.f90@{src/a\_turborvb/ratio\_psi.f90}}
+\mbox{\hyperlink{ratio__psi_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Compute\ regularization\ values\ for\ wave\ function\ ratio}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ function\ computes\ several\ values\ related\ to\ regularization}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ which\ is\ defined\ as\ \(\backslash\)psi\_g(x)=R\_\(\backslash\)epsilon(x)*[\(\backslash\)psi\_T(x)/R(x)].}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ R\_\(\backslash\)epsilon(x)\ is\ explicitly\ expressed\ here\ as\ Max(\(\backslash\)epsilon,\ R(x)).}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ \ Rold\ \ \ \ \ \ \ \ Old\ value\ of\ R(x)\ function\ computed\ in\ ratiovar()\ as\ ratiodetr}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ Rnew\ \ \ \ \ \ \ \ New\ (proposed\ move)\ value\ of\ R(x)\ function}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ parcut\ \ \ \ \ \ Regularization\ parameter\ (cutoff\ value)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[out]\ ratioreg\ \ \ \ New\ R\_\(\backslash\)epsilon(x)\ /\ old\ R\_\(\backslash\)epsilon(x)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[out]\ reweight\ \ \ \ [new\ \(\backslash\)psi\_T(x)\ /\ new\ \(\backslash\)psi\_g(x)]\string^2}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ epstl\ \ \ \ \ \ \ Precision\ control\ parameter\ (if\ zero\ not\ used)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00026}\mbox{\hyperlink{ratio__psi_8f90_aa124b5ea6933c16ace47fbf68f6ca126}{00026}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{ratio__psi_8f90_aa124b5ea6933c16ace47fbf68f6ca126}{ratio\_psi}}(Rold,\ Rnew,\ parcut,\ ratioreg,\ reweight,\ epstl)}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00028}00028\ \ \ \ \ real*8\ rold,\ rnew,\ parcut,\ ratioreg,\ reweight,\ epstl}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00029}00029\ \ \ \ \ real*8\ roldreg,\ rnewreg}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00031}00031\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ This\ function\ computes\ serveral\ values\ related\ to\ regularization}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00032}00032\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ which\ is\ defined\ as\ \(\backslash\)psi\_g(x)=R\_\(\backslash\)epsilon(x)*[\(\backslash\)psi\_T(x)/R(x)].}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00033}00033\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ R\_\(\backslash\)epsilon(x)\ is\ explicitly\ expressed\ here.}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00035}00035\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Input\ \ :\ Rold,Rnew,parcut,epstl}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00036}00036\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Rold\ and\ Rnew\ :\ old\ and\ new\ (a\ proposed\ move)\ value}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ R(x)\ function\ which\ is\ computed\ in\ ratiovar()}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ as\ ratiodetr}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parcut\ :\ regularization\ parameter}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00040}00040\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ epstl\ :\ precision\ control\ parameter\ (if\ zero\ not\ used)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00041}00041\ }
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00042}00042\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Output\ :\ ratioreg,reweight}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00043}00043\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ :\ new\ R\_\(\backslash\)epsilon(x)\ /\ old\ R\_\(\backslash\)epsilon(x)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00044}00044\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ :\ [new\ \(\backslash\)psi\_T(x)\ /\ new\ \(\backslash\)psi\_g(x)]\string^2}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordflow}{if}\ (rnew\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rnew\ .gt.\ epstl\ .or.\ epstl\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ OLD\ method\ \ C.\ \ Attaccalite\ \&\ S.\ Sorella\ 2008}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(Rnew.le.parcut.and.Rold.gt.parcut)\ then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ Rnewreg=parcut*(Rnew/parcut)**(Rnew/parcut)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reweight=(Rnew/Rnewreg)**2}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ratioreg=Rnewreg/Rold}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ elseif(Rnew.gt.parcut.and.Rold.le.parcut)\ then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ Roldreg=parcut*(Rold/parcut)**(Rold/parcut)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reweight=1.d0}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ratioreg=Rnew/Roldreg}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ elseif(Rnew.le.parcut.and.Rold.le.parcut)\ then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ Rnewreg=parcut*(Rnew/parcut)**(Rnew/parcut)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ Roldreg=parcut*(Rold/parcut)**(Rold/parcut)}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reweight=(Rnew/Rnewreg)**2}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ratioreg=Rnewreg/Roldreg}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ elseif(Rnew.gt.parcut.and.Rold.gt.parcut)\ then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ratioreg=Rnew/Rold}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reweight=1.d0}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ HERE\ R\_epsilon\ =\ Max(\ \(\backslash\)epsilon,\ R(x))}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rnew\ .le.\ parcut\ .and.\ rold\ .gt.\ parcut)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rnewreg\ =\ parcut}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ =\ (rnew/rnewreg)**2}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ =\ rnewreg/rold}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rnew\ .gt.\ parcut\ .and.\ rold\ .le.\ parcut)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ roldreg\ =\ parcut}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ =\ rnew/roldreg}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rnew\ .le.\ parcut\ .and.\ rold\ .le.\ parcut)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rnewreg\ =\ parcut}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ roldreg\ =\ parcut}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ =\ (rnew/rnewreg)**2}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (rnew\ .gt.\ parcut\ .and.\ rold\ .gt.\ parcut)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ =\ rnew/rold}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00083}00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ ratioreg\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ reweight\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00087}00087\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ ratioreg\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ reweight\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{ratio__psi_8f90_source_l00094}00094\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

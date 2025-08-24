@@ -40,6 +40,23 @@ module Spin2
     real(8), dimension(:, :), allocatable :: Lspin, ratiospin
 contains
     !------------------------------------------------------------------------------
+    !> @brief Prepares Jastrow spin matrix for spin-flip calculations
+    !> @details This subroutine prepares the JasSpin matrix for spin-flip
+    !>          calculations. It computes the spin-sensitive part of all
+    !>          Jastrow factors and handles both two-body and three-body
+    !>          Jastrow contributions for parallel and anti-parallel spins.
+    !> @param[in] kel Electron positions (3, nel)
+    !> @param[in] winvj Jastrow inverse matrix
+    !> @param[in] winvjbar Jastrow bar matrix
+    !> @param[in] winvjbarn Jastrow bar matrix (normalized)
+    !> @param[in] winvjbarsz Jastrow bar matrix (spin-dependent)
+    !> @param[out] JasSpin Spin-sensitive Jastrow matrix (nel, nel)
+    !> @param[out] aux Auxiliary array for spin calculations
+    !> @param[out] Jasupup Up-up Jastrow matrix
+    !> @param[out] Jasupdo Up-down Jastrow matrix
+    !> @param[out] Jasdoup Down-up Jastrow matrix
+    !> @param[out] Jasdodo Down-down Jastrow matrix
+    !> @param[out] dvet Diagonal elements vector
     subroutine prepare_jastrow_spin(kel, winvj, winvjbar, winvjbarn, winvjbarsz&
             &, JasSpin, aux, Jasupup, Jasupdo, Jasdoup, Jasdodo, dvet)
         !------------------------------------------------------------------------------
@@ -173,6 +190,15 @@ contains
     !The matrices use the name given by Tomonori in its notes with the suffix
     !spin.
     !------------------------------------------------------------------------------
+    !> @brief Prepares Pfaffian ratios for spin-flip calculations
+    !> @details This subroutine calculates the ratio for every possible flip
+    !>          of spin up and spin down couples of a given configuration.
+    !>          It computes Vspin, Wspin, and Dspin matrices for both real
+    !>          and complex wavefunctions to evaluate Pfaffian ratios.
+    !> @param[in] winv Inverse matrix (ipc*nelorbh, 0:indt4, nel)
+    !> @param[in] winvbar Bar matrix (ipf*ipc*nelorbh, nel_mat)
+    !> @param[in] ainv Inverse matrix (ipc*nelup_mat, nelup_mat)
+    !> @param[out] ratiopfaff Pfaffian ratios (ipc*nelup, neldo)
     subroutine preparepfaff(winv, winvbar, ainv, ratiopfaff)
         !------------------------------------------------------------------------------
         use constants, only: ipc, ipf, zone, zzero
@@ -251,6 +277,11 @@ contains
 
     !Initialization of the matrix Lspin for the uncontracted case
     !------------------------------------------------------------------------------
+    !> @brief Initializes Lspin matrix for uncontracted case
+    !> @details This subroutine initializes the Lspin matrix for the
+    !>          uncontracted case by computing the lambda matrix from
+    !>          the determinant matrix detmat_c.
+    !> @param[in] detmat_c Determinant matrix (ipc*2*nelorbh, 2*nelorbh)
     subroutine inits2pfaff(detmat_c)
         !------------------------------------------------------------------------------
         use constants, only: ipc, ipf, zone, zzero
@@ -274,6 +305,12 @@ contains
 
     !Initialization of the matrix Lspin for the contracted case
     !------------------------------------------------------------------------------
+    !> @brief Initializes Lspin matrix for contracted case
+    !> @details This subroutine initializes the Lspin matrix for the
+    !>          contracted case by computing the lambda matrix from
+    !>          the contracted determinant matrix and contraction matrix.
+    !> @param[in] detmat_c Contracted determinant matrix (ipc*nelorb_c, nelorb_c)
+    !> @param[in] mu_c Contraction matrix (2*ipc*nelorbh, nelorb_c)
     subroutine inits2pfaff_c(detmat_c, mu_c)
         !------------------------------------------------------------------------------
         use constants, only: ipc, ipf, zone, zzero
@@ -305,6 +342,22 @@ contains
     !------------------------------------------------------------------------------
 
     !------------------------------------------------------------------------------
+    !> @brief Computes S^2 operator for spin-flip calculations
+    !> @details This subroutine explores the spin-swaps of all anti-parallel
+    !>          e-e pairs and computes the S^2 operator. It handles both
+    !>          determinant and Jastrow contributions to the spin-squared
+    !>          expectation value for both contracted and uncontracted cases.
+    !> @param[in] kel Electron positions (3, nel)
+    !> @param[in] Ainv Inverse matrix (ipc*nelup_mat, nelup_mat)
+    !> @param[in] winv Inverse matrix (ipc*nelorb, 0:indt4, nel)
+    !> @param[in] winvj Jastrow inverse matrix
+    !> @param[in] winvbar Bar matrix (ipf*ipc*nelorb, nel_mat)
+    !> @param[in] winvjbar Jastrow bar matrix
+    !> @param[in] winvjbarsz Jastrow bar matrix (spin-dependent)
+    !> @param[in] detmat Determinant matrix (ipc*nelorbh, nelorbh)
+    !> @param[in] projm Projection matrix
+    !> @param[in] mu_c Contraction matrix
+    !> @param[in] nmol Number of molecular orbitals
     subroutine compute_spin2(kel, Ainv, winv, winvj, winvbar, winvjbar, winvjbarsz, detmat, projm, mu_c, nmol)
         !------------------------------------------------------------------------------
         !This subroutine explores the spin-swaps of all anti-parallel e-e pairs
@@ -625,6 +678,25 @@ contains
 #endif
 end module Spin2
 
+!> @brief Updates determinant for complex wavefunction spin-flip calculations
+!> @details This subroutine updates the determinant matrix for complex
+!>          wavefunction spin-flip calculations. It constructs update vectors
+!>          and computes the determinant change after spin interchange.
+!> @param[in] l Down-spin electron index
+!> @param[in] k Up-spin electron index
+!> @param[in] nelup Number of up-spin electrons
+!> @param[in] neldo Number of down-spin electrons
+!> @param[out] det_update_vec1 First update vector (nelup, 2)
+!> @param[out] det_update_vec2 Second update vector (nelup, 2)
+!> @param[in] DownDown Down-down matrix (neldo, nelup)
+!> @param[in] Amatrix A matrix (nelup, nelup)
+!> @param[in] Ainv Inverse A matrix (nelup, nelup)
+!> @param[in] Buu Up-up B matrix (nelup, nelup)
+!> @param[in] Bud Up-down B matrix (nelup, neldo)
+!> @param[in] Downup Down-up matrix (neldo, nelup)
+!> @param[in] UpUp Up-up matrix (nelup, nelup)
+!> @param[out] det_update_matrix Update matrix (2, 2)
+!> @param[out] spin2_det Determinant change for S^2 calculation
 subroutine det_update(l, k, nelup, neldo, det_update_vec1, det_update_vec2, DownDown, Amatrix, Ainv, Buu&
         &, Bud, Downup, UpUp, det_update_matrix, spin2_det)
     use constants, only: zzero, zone, zmone

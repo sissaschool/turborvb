@@ -13,6 +13,31 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Conjugate gradient method for matrix inversion with complex parameters
+!> @details    This subroutine implements the conjugate gradient method for solving
+!>             linear systems involving complex parameters. It handles both real and
+!>             complex variational parameters with proper matrix structure for
+!>             stochastic reconfiguration. The method includes regularization to
+!>             avoid noise in the inversion process.
+!> @param[in]  np          Number of parameters
+!> @param[in]  kp_complex  Number of complex parameters
+!> @param[in]  symmagp     Symmetry flag for AGP
+!> @param[in]  nbin        Number of bins
+!> @param[in]  rank_t      Target rank
+!> @param[in]  rank        Process rank
+!> @param[in]  comm_mpi    MPI communicator
+!> @param[in,out] mat      Input matrix (normalized on output)
+!> @param[in]  forza       Force vector
+!> @param[in,out] g        Gradient vector
+!> @param[in,out] h        Search direction vector
+!> @param[in,out] psip     Work array
+!> @param[in]  maxit       Maximum number of iterations
+!> @param[in]  eps         Convergence tolerance
+!> @param[in]  epsdgel     Regularization parameter
+!> @param[out] fkav        Diagonal elements of S matrix
+!> @param[out] x           Solution vector
+!> @param[in]  parcut      Parameter cutoff
+!> @param[in]  eps_umrigar Umrigar regularization parameter
 subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, forza&
         &, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, eps_umrigar)
     implicit none

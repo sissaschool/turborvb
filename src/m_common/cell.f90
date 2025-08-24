@@ -13,6 +13,23 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Crystal lattice and coordinate transformation module
+!>
+!> This module provides comprehensive functionality for handling crystal lattice
+!> operations, coordinate transformations between Cartesian and crystal coordinates,
+!> periodic boundary conditions, and mapping functions for quantum Monte Carlo
+!> calculations in periodic systems.
+!>
+!> The module manages:
+!> - Direct and reciprocal lattice vectors
+!> - Coordinate transformation matrices
+!> - Periodic boundary conditions
+!> - Mapping functions for smooth periodic functions
+!> - Cell parameters and volume calculations
+!>
+!> @author TurboRVB group
+!> @version 1.0
+!> @date 2022
 module Cell
 
     use constants
@@ -20,53 +37,85 @@ module Cell
 
     implicit none
 
-    ! cell(6) contains (a,b,c) and (alpha,beta,gamma) (in radians)
-    ! notice that cell(2)=b/a and cell(3)=c/a
-    ! by convention, a is placed parallel to x, and b lies on the xy plane
+    !> @brief Cell parameters array (a, b/a, c/a, alpha, beta, gamma)
+    !> @details Contains the six cell parameters where:
+    !> - celldm(1) = a (lattice constant)
+    !> - celldm(2) = b/a (ratio of b to a)
+    !> - celldm(3) = c/a (ratio of c to a)
+    !> - celldm(4:6) = alpha, beta, gamma (angles in radians)
     real(8), dimension(6) :: celldm(6), celldm2(3)
 
-    ! constant for pressure
+    !> @brief Pressure constant and minimum metric eigenvalue
     real(8) :: costpr, metric_min
 
-    ! r2s is the matrix for cartesian -> crystal conversion
-    ! s2r is the matrix for crystal -> cartesian conversion
-    ! metric is the metric matrix of the crystal
-    ! at are the direct lattice vectors
-    ! recip is the reciprocal lattice
+    !> @brief Coordinate transformation matrices
+    !> @details
+    !> - r2s: Cartesian to crystal coordinate transformation
+    !> - s2r: Crystal to Cartesian coordinate transformation
+    !> - metric: Metric matrix of the crystal
+    !> - at: Direct lattice vectors (unit vectors)
+    !> - recip: Reciprocal lattice vectors
+    !> - bg: Reciprocal lattice unit vectors
+    !> - car2cry: Cartesian to crystal transformation matrix
     real(8), dimension(3, 3) :: r2s, s2r, metric, at, recip, bg, car2cry
 
-    ! Vector used to rescale derivatives
+    !> @brief Cell scaling factors and related arrays
+    !> @details
+    !> - cellscale: Vector used to rescale derivatives
+    !> - cellpi: Cell parameters divided by Pi
+    !> - cellscalep: Per-ion cell scaling factors
+    !> - x_neigh: Neighbor positions for periodic boundary conditions
+    !> - rphasep: Phase factors for each ion
+    !> - s2rp: Transformation matrices for each ion
+    !> - dist_shift, distreg_shift, disto_shift, distrego_shift: Distance shifts
     real(8), dimension(12) :: cellscale
     real(8), dimension(3) :: cellpi
     real(8), allocatable :: cellscalep(:, :), x_neigh(:, :), rphasep(:, :)&
    &, s2rp(:, :, :), dist_shift(:), distreg_shift(:), disto_shift(:), distrego_shift(:)
-    ! celldm volume
+    
+    !> @brief Cell volume and unit volume
     real(8) :: omega, unit_volume
 
-    ! L min shorter side of the box
+    !> @brief Minimum side length of the simulation box
     real(8) :: LMin
 
-    ! flag to check if derivatives respect to cell are evaluated
+    !> @brief Control flags for cell operations
+    !> @details
+    !> - cellderiv: Flag for cell derivative evaluation
+    !> - givens2r: Flag indicating if s2r matrix is provided
+    !> - yes_tilted: Flag for tilted cell calculations
+    !> - chosen_map: Flag for chosen mapping function
     logical :: cellderiv, givens2r, yes_tilted, chosen_map
 
-    ! t_rev contains a flag which check if time reversal can be applied to each point group symmetry
+    !> @brief Mapping case and time reversal flags
+    !> @details
+    !> - case_map: Type of mapping function to use
+    !> - t_rev: Time reversal flags for point group symmetries
+    !> - neigh: Number of neighbors for periodic boundary conditions
     integer :: case_map, t_rev(48), neigh
 
-    ! various vectors which store the phase of the wave function
-    ! phase/phase_down = phase of the wave function in crystal coordinates for up/down electrons
-    ! phase2pi/phase2pi_down = 2*PI*phase/phase_down
-    ! cell_phase = (2*PI*phase)/L
-    ! cell_phase2 = sum(cell_phase(:)**2)
-    ! rphase = (2*PI*phase)/L used only in calculation with old PBC (not Crystal) basis set.
-    !          In the present version, only the Jastrow uses this old basis set.
+    !> @brief Phase factors for wave function periodicity
+    !> @details
+    !> - phase/phase_down: Phase of wave function in crystal coordinates for up/down electrons
+    !> - phase2pi/phase2pi_down: 2*PI*phase for up/down electrons
+    !> - cell_phase: (2*PI*phase)/L for complex wave functions
+    !> - cell_phase2: Sum of squared cell phases
+    !> - rphase: Phase factors for old PBC basis set (Jastrow only)
     real(8) :: phase(3), phase2pi(3), phase_down(3), phase2pi_down(3)
     real(8) :: rphase(3), cell_phase(3), cell_phase2
 
+    !> @brief Trigonometric phase factors for wave function evaluation
     real(8), allocatable :: cosphase(:, :), sinphase(:, :, :)
     real(8), allocatable :: cosphaseb(:, :), sinphaseb(:, :, :)
 
-    ! flag to check if we are doing a Gamma Point calculation
+    !> @brief Flags for special k-point calculations
+    !> @details
+    !> - gamma_point: Flag for Gamma point calculations
+    !> - yes2d: Flag for 2D systems
+    !> - yes1d: Flag for 1D systems
     logical :: gamma_point, yes2d, yes1d
+    
+    !> @brief Mapping function parameters
     double precision :: amap, bmap
     double precision, parameter :: x_c = 0.25d0
 
@@ -74,7 +123,28 @@ module Cell
 
 contains
     !=====================================================================
-    ! Given celldm(1:6), calculate the above matrices
+    !> @brief Initialize cell parameters and transformation matrices
+    !>
+    !> This subroutine sets up the crystal lattice parameters, computes
+    !> transformation matrices between Cartesian and crystal coordinates,
+    !> calculates reciprocal lattice vectors, and initializes periodic
+    !> boundary condition arrays.
+    !>
+    !> @param[in] nion Number of ions in the system
+    !> @param[in] nel Number of electrons
+    !> @param[in] yes_complex Flag for complex wave function calculations
+    !>
+    !> @details
+    !> The subroutine performs the following operations:
+    !> 1. Computes cell parameters from celldm array or uses provided s2r matrix
+    !> 2. Calculates direct and reciprocal lattice vectors
+    !> 3. Sets up coordinate transformation matrices
+    !> 4. Initializes periodic boundary condition neighbor arrays
+    !> 5. Computes phase factors for wave function periodicity
+    !> 6. Sets up mapping function parameters
+    !>
+    !> @note For orthorhombic cells, the subroutine assumes a is parallel to x-axis
+    !> and b lies in the xy-plane. For general cells, the s2r matrix must be provided.
     !=====================================================================
     subroutine InitCell(nion, nel, yes_complex)
         integer i, nion, nel, info, ipiv(3)
@@ -271,7 +341,17 @@ contains
         end if
     end subroutine InitCell
 
-    ! Perform the cross product between two vectors
+    !> @brief Compute the cross product of two 3D vectors
+    !>
+    !> @param[in] a First input vector (3 components)
+    !> @param[in] b Second input vector (3 components)
+    !> @return cross_product Resulting cross product vector (3 components)
+    !>
+    !> @details
+    !> Computes the cross product c = a × b where:
+    !> - c(1) = a(2)*b(3) - a(3)*b(2)
+    !> - c(2) = a(3)*b(1) - a(1)*b(3)
+    !> - c(3) = a(1)*b(2) - a(2)*b(1)
     !=====================================================================
     function cross_product(a, b)
         double precision, dimension(3), intent(in) :: a, b
@@ -282,7 +362,22 @@ contains
     end function cross_product
 
     !====================================================================
-    ! Convert cartesian coordinates to crystal
+    !> @brief Convert Cartesian coordinates to crystal coordinates
+    !>
+    !> This subroutine transforms a set of Cartesian coordinates to crystal
+    !> coordinates using the pre-computed transformation matrix car2cry.
+    !>
+    !> @param[in,out] r Array of coordinates to transform (3, howmany)
+    !> @param[in] howmany Number of coordinate sets to transform
+    !>
+    !> @details
+    !> The transformation is performed using the matrix equation:
+    !> r_crystal = car2cry * r_cartesian
+    !>
+    !> The subroutine uses OpenMP parallelization for efficiency when
+    !> transforming multiple coordinate sets.
+    !>
+    !> @note The input array r is modified in-place with the transformed coordinates.
     !====================================================================
     subroutine CartesianToCrystal(r, howmany)
         integer, intent(in) :: howmany
@@ -301,6 +396,25 @@ contains
         end do
 !$omp end parallel do
     end subroutine CartesianToCrystal
+
+    !> @brief Backward differentiation for Cartesian to crystal transformation
+    !>
+    !> This subroutine computes the backward differentiation (adjoint) of the
+    !> Cartesian to crystal coordinate transformation, used in automatic
+    !> differentiation frameworks.
+    !>
+    !> @param[in] rbefore Original Cartesian coordinates before transformation
+    !> @param[in,out] rb Adjoint variables for the transformed coordinates
+    !> @param[in,out] car2cryb Adjoint variables for the transformation matrix
+    !> @param[in] howmany Number of coordinate sets
+    !>
+    !> @details
+    !> The backward differentiation computes:
+    !> - car2cryb += rb * rbefore^T (matrix adjoint)
+    !> - rb = car2cry^T * rb (coordinate adjoint)
+    !>
+    !> @note This subroutine is used in automatic differentiation for gradient
+    !> calculations in optimization procedures.
     subroutine CartesianToCrystal_b(rbefore, rb, car2cryb, howmany)
         integer, intent(in) :: howmany
         double precision, dimension(3, howmany), intent(in) :: rbefore
@@ -320,7 +434,26 @@ contains
         end do
     end subroutine CartesianToCrystal_b
 
-    ! adapted from QuantumESPRESSO
+    !> @brief Transform coordinates between crystal and Cartesian systems
+    !>
+    !> This subroutine transforms atomic positions or k-point components between
+    !> crystallographic and Cartesian coordinates for a set of vectors.
+    !>
+    !> @param[in] nvec Number of vectors to transform
+    !> @param[in,out] vec Array of coordinates to transform (3, nvec)
+    !> @param[in] trmat Transformation matrix
+    !> @param[in] iflag Direction flag: 1 for crystal to Cartesian, -1 for Cartesian to crystal
+    !>
+    !> @details
+    !> The transformation is performed using the matrix equation:
+    !> - if iflag=1: vec_cart = trmat * vec_crystal
+    !> - if iflag=-1: vec_crystal = trmat^T * vec_cart
+    !>
+    !> For atomic positions, trmat should be the direct lattice matrix (at, s2r).
+    !> For k-points, trmat should be the reciprocal lattice matrix (bg, recip).
+    !>
+    !> @note Adapted from QuantumESPRESSO codebase for compatibility.
+    !> @note The input array vec is modified in-place with the transformed coordinates.
     subroutine cryst_to_cart(nvec, vec, trmat, iflag)
         !
         !     This routine transforms the atomic positions or the k-point
@@ -375,6 +508,28 @@ contains
         return
     end subroutine cryst_to_cart
 
+    !> @brief Apply periodic boundary conditions to coordinates
+    !>
+    !> This subroutine applies periodic boundary conditions to a set of coordinates
+    !> by finding the nearest image within the unit cell.
+    !>
+    !> @param[in,out] s Array of coordinates to apply PBC to (3, howmany)
+    !> @param[in] howmany Number of coordinate sets to process
+    !>
+    !> @details
+    !> The algorithm performs the following steps:
+    !> 1. Transform coordinates to crystal coordinates
+    !> 2. Round to nearest integer multiples of cell dimensions
+    !> 3. Subtract the integer multiples of lattice vectors
+    !>
+    !> This ensures all coordinates lie within the primary unit cell.
+    !> The method uses conventional distance calculations rather than
+    !> Wigner-Seitz cell boundaries, which is valid for most practical
+    !> purposes since differences only occur at cell boundaries where
+    !> contributions typically vanish.
+    !>
+    !> @note This subroutine is not designed for GPU execution.
+    !> @note The input array s is modified in-place.
     subroutine ApplyPBC(s, howmany)
         implicit none
         integer, intent(in) :: howmany
@@ -398,6 +553,25 @@ contains
         end do
     end subroutine ApplyPBC
 
+    !> @brief Apply periodic mapping function to a coordinate
+    !>
+    !> This function applies a periodic mapping function to a coordinate,
+    !> ensuring smooth periodicity over the cell period.
+    !>
+    !> @param[in] x Input coordinate
+    !> @param[in] cell_period Period of the cell in this direction
+    !> @return map Mapped coordinate
+    !>
+    !> @details
+    !> The mapping function ensures:
+    !> - Smooth periodicity over the cell period
+    !> - Continuous derivatives at cell boundaries
+    !> - Proper behavior for quantum Monte Carlo calculations
+    !>
+    !> If cell_period is zero, the function returns the input coordinate unchanged.
+    !> Otherwise, it applies the mapping function map0 scaled by the cell period.
+    !>
+    !> @see map0
     function map(x, cell_period)
         real(8) :: x, cell_period
         real(8) :: map
@@ -408,6 +582,22 @@ contains
         end if
     end function map
 
+    !> @brief First derivative of the periodic mapping function
+    !>
+    !> This function computes the first derivative of the periodic mapping function.
+    !>
+    !> @param[in] x Input coordinate
+    !> @param[in] cell_period Period of the cell in this direction
+    !> @return dmap First derivative of the mapped coordinate
+    !>
+    !> @details
+    !> The derivative is computed as:
+    !> - If cell_period = 0: dmap = 1.0
+    !> - Otherwise: dmap = dmap0(x/cell_period)
+    !>
+    !> This ensures proper gradient calculations for optimization procedures.
+    !>
+    !> @see dmap0
     function dmap(x, cell_period)
         real(8) :: x, cell_period
         real(8) :: dmap
@@ -419,6 +609,22 @@ contains
         end if
     end function dmap
 
+    !> @brief Second derivative of the periodic mapping function
+    !>
+    !> This function computes the second derivative of the periodic mapping function.
+    !>
+    !> @param[in] x Input coordinate
+    !> @param[in] cell_period Period of the cell in this direction
+    !> @return ddmap Second derivative of the mapped coordinate
+    !>
+    !> @details
+    !> The second derivative is computed as:
+    !> - If cell_period = 0: ddmap = 0.0
+    !> - Otherwise: ddmap = ddmap0(x/cell_period)/cell_period
+    !>
+    !> This is used for Hessian calculations and higher-order optimization methods.
+    !>
+    !> @see ddmap0
     function ddmap(x, cell_period)
         real(8) :: x, cell_period
         real(8) :: ddmap
@@ -429,6 +635,33 @@ contains
         end if
     end function ddmap
 
+    !> @brief Core periodic mapping function with multiple variants
+    !>
+    !> This function implements various periodic mapping schemes for smooth
+    !> periodic functions in quantum Monte Carlo calculations. The function
+    !> ensures f'(0) = 1 and f(1/2) = 0 for proper boundary behavior.
+    !>
+    !> @param[in] x Input coordinate (typically in [-0.5, 0.5] range)
+    !> @return map0 Mapped coordinate
+    !>
+    !> @details
+    !> The function supports multiple mapping schemes controlled by case_map:
+    !>
+    !> - case 0: Sine mapping - f(x) = sin(πx)/π
+    !> - case 1: Rational mapping with parameters amap, bmap
+    !> - case 2: Power law mapping with 1/6 threshold
+    !> - case 3: Double sine mapping - f(x) = sin(2πx)/(2π)
+    !> - case 4: Linear-rational mapping with 1/4 threshold
+    !> - case 5: Cubic-rational mapping with 1/4 threshold
+    !> - default: Exponential mapping with parameter p = case_map - 5
+    !>
+    !> Each mapping ensures:
+    !> - Smooth periodicity over the unit interval
+    !> - Continuous derivatives at boundaries
+    !> - Proper behavior for quantum Monte Carlo sampling
+    !>
+    !> @note The function first reduces x to the range [-0.5, 0.5] using
+    !> xc = x - anint(x), then applies the appropriate mapping.
     function map0(x)
         real(8) :: x, xc, map0
         integer p
@@ -489,6 +722,28 @@ contains
         end select
     end function map0
 
+    !> @brief First derivative of the core periodic mapping function
+    !>
+    !> This function computes the first derivative of the periodic mapping
+    !> function map0, maintaining the same case structure and mathematical
+    !> properties.
+    !>
+    !> @param[in] x Input coordinate (typically in [-0.5, 0.5] range)
+    !> @return dmap0 First derivative of the mapped coordinate
+    !>
+    !> @details
+    !> The derivative functions correspond to the mapping cases:
+    !>
+    !> - case 0: d/dx[sin(πx)/π] = cos(πx)
+    !> - case 1: Complex rational derivative with amap, bmap parameters
+    !> - case 2: Power law derivative with 1/6 threshold
+    !> - case 3: d/dx[sin(2πx)/(2π)] = cos(2πx)
+    !> - case 4: Linear-rational derivative with 1/4 threshold
+    !> - case 5: Cubic-rational derivative with 1/4 threshold
+    !> - default: Exponential derivative with parameter p = case_map - 5
+    !>
+    !> @note All derivatives are designed to be continuous at the mapping
+    !> boundaries and maintain the property f'(0) = 1.
     function dmap0(x)
         real(8) :: x, xc, dmap0, dummy, ddummy, dummy0
         integer p
@@ -555,6 +810,27 @@ contains
         end select
     end function dmap0
 
+    !> @brief Second derivative of the core periodic mapping function
+    !>
+    !> This function computes the second derivative of the periodic mapping
+    !> function map0, used for Hessian calculations and higher-order optimization.
+    !>
+    !> @param[in] x Input coordinate (typically in [-0.5, 0.5] range)
+    !> @return ddmap0 Second derivative of the mapped coordinate
+    !>
+    !> @details
+    !> The second derivative functions correspond to the mapping cases:
+    !>
+    !> - case 0: d²/dx²[sin(πx)/π] = -π*sin(πx)
+    !> - case 1: Complex rational second derivative with amap, bmap parameters
+    !> - case 2: Power law second derivative with 1/6 threshold
+    !> - case 3: d²/dx²[sin(2πx)/(2π)] = -2π*sin(2πx)
+    !> - case 4: Linear-rational second derivative with 1/4 threshold
+    !> - case 5: Cubic-rational second derivative with 1/4 threshold
+    !> - default: Exponential second derivative with parameter p = case_map - 5
+    !>
+    !> @note All second derivatives are designed to be continuous at the mapping
+    !> boundaries and maintain proper mathematical properties.
     function ddmap0(x)
         real(8) :: x, xc, ddmap0, dummy, ddummy, d2dummy, dummy0
         integer p
@@ -603,12 +879,13 @@ contains
             if (abs(xc) .le. 0.25d0) then
                 ddmap0 = 0.d0
             elseif (xc .gt. 0.25d0 .and. xc .lt. 0.5d0) then
-                ddmap0 = -0.5d0*(1.d0 - 4.d0*xc)**2*(5.d0 - 20.d0*xc + 24.d0*xc**2)/&
-              &(-1.d0 + 6.d0*xc - 16.d0*xc**2 + 16.d0*xc**3)**3
+                ddmap0 = 3.d0*(5.d0 - 112.d0*xc + 928.d0*xc**2 - 3840.d0*xc**3 + 8640.d0*xc**4&
+              &- 10240.d0*xc**5 + 5120.d0*xc**6)/&
+              &(-1.d0 + 6.d0*xc - 16.d0*xc**2 + 16.d0*xc**3)**4
             elseif (xc .gt. -0.5d0) then
-                ddmap0 = 0.5d0*(1.d0 + 4.d0*xc)**2*(5.d0 + 20.d0*xc + 24.d0*xc**2)/&
-              &(-1.d0 - 6.d0*xc - 16.d0*xc**2 - 16.d0*xc**3)**3
-            elseif (xc .gt. -0.5d0) then
+                ddmap0 = 3.d0*(5.d0 + 112.d0*xc + 928.d0*xc**2 + 3840.d0*xc**3 + 8640.d0*xc**4&
+              &+ 10240.d0*xc**5 + 5120.d0*xc**6)/&
+              &(-1.d0 - 6.d0*xc - 16.d0*xc**2 - 16.d0*xc**3)**4
             end if
         case default
             p = case_map - 5
@@ -626,6 +903,27 @@ contains
         end select
     end function ddmap0
 
+    !> @brief Third derivative of the core periodic mapping function
+    !>
+    !> This function computes the third derivative of the periodic mapping
+    !> function map0, used for higher-order optimization and analysis.
+    !>
+    !> @param[in] x Input coordinate (typically in [-0.5, 0.5] range)
+    !> @return dddmap0 Third derivative of the mapped coordinate
+    !>
+    !> @details
+    !> The third derivative functions correspond to the mapping cases:
+    !>
+    !> - case 0: d³/dx³[sin(πx)/π] = -π²*cos(πx)
+    !> - case 1: Complex rational third derivative with amap, bmap parameters
+    !> - case 2: Power law third derivative with 1/6 threshold
+    !> - case 3: d³/dx³[sin(2πx)/(2π)] = -4π²*cos(2πx)
+    !> - case 4: Linear-rational third derivative with 1/4 threshold
+    !> - case 5: Cubic-rational third derivative with 1/4 threshold
+    !> - default: Exponential third derivative with parameter p = case_map - 5
+    !>
+    !> @note This function is primarily used for advanced optimization algorithms
+    !> and mathematical analysis of the mapping functions.
     function dddmap0(x)
         real(8) :: x, xc, dddmap0, dummy0, dummy
         integer p
@@ -706,6 +1004,23 @@ contains
 
 end module Cell
 
+!> @brief Backward differentiation for map0 function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> map0 function, used in automatic differentiation frameworks for gradient
+!> calculations.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in,out] map0b Adjoint variable for the map0 function output
+!>
+!> @details
+!> The backward differentiation computes:
+!> xb += dmap0(x) * map0b
+!> where dmap0(x) is the derivative of map0 at x.
+!>
+!> @note This subroutine is used in automatic differentiation for optimization
+!> procedures that require gradients of the mapping functions.
 subroutine map0_b(x, xb, map0b)
     use Cell, only: dmap0
     implicit none
@@ -714,6 +1029,23 @@ subroutine map0_b(x, xb, map0b)
     map0b = 0.d0
 end subroutine map0_b
 
+!> @brief Backward differentiation for dmap0 function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> dmap0 function, used in automatic differentiation frameworks for second
+!> derivative calculations.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in,out] dmap0b Adjoint variable for the dmap0 function output
+!>
+!> @details
+!> The backward differentiation computes:
+!> xb += ddmap0(x) * dmap0b
+!> where ddmap0(x) is the second derivative of map0 at x.
+!>
+!> @note This subroutine is used in automatic differentiation for Hessian
+!> calculations and higher-order optimization methods.
 subroutine dmap0_b(x, xb, dmap0b)
     use Cell, only: ddmap0
     implicit none
@@ -722,6 +1054,23 @@ subroutine dmap0_b(x, xb, dmap0b)
     dmap0b = 0.d0
 end subroutine dmap0_b
 
+!> @brief Backward differentiation for ddmap0 function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> ddmap0 function, used in automatic differentiation frameworks for third
+!> derivative calculations.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in,out] ddmap0b Adjoint variable for the ddmap0 function output
+!>
+!> @details
+!> The backward differentiation computes:
+!> xb += dddmap0(x) * ddmap0b
+!> where dddmap0(x) is the third derivative of map0 at x.
+!>
+!> @note This subroutine is used in automatic differentiation for higher-order
+!> derivative calculations in advanced optimization algorithms.
 subroutine ddmap0_b(x, xb, ddmap0b)
     use Cell, only: dddmap0
     implicit none
@@ -730,6 +1079,29 @@ subroutine ddmap0_b(x, xb, ddmap0b)
     ddmap0b = 0.d0
 end subroutine ddmap0_b
 
+!> @brief Backward differentiation for map function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> map function, handling both the coordinate and cell period adjoints.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in] cell_period Period of the cell in this direction
+!> @param[in,out] cell_periodb Adjoint variable for the cell period
+!> @param[in,out] mapb Adjoint variable for the map function output
+!>
+!> @details
+!> The backward differentiation handles the chain rule for the composite function:
+!> map(x, cell_period) = cell_period * map0(x/cell_period)
+!>
+!> For cell_period = 0: xb += mapb
+!> For cell_period ≠ 0: 
+!> - cell_periodb += map0(x/cell_period) * mapb
+!> - xb += dmap0(x/cell_period) * mapb / cell_period
+!> - cell_periodb -= dmap0(x/cell_period) * x * mapb / cell_period²
+!>
+!> @note This subroutine is used in automatic differentiation for gradient
+!> calculations involving periodic mapping functions.
 subroutine map_b(x, xb, cell_period, cell_periodb, mapb)
     use Cell, only: map0
     implicit none
@@ -754,6 +1126,27 @@ subroutine map_b(x, xb, cell_period, cell_periodb, mapb)
     mapb = 0.d0
 end subroutine map_b
 
+!> @brief Backward differentiation for dmap function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> dmap function, handling both the coordinate and cell period adjoints.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in] cell_period Period of the cell in this direction
+!> @param[in,out] cell_periodb Adjoint variable for the cell period
+!> @param[in,out] dmapb Adjoint variable for the dmap function output
+!>
+!> @details
+!> The backward differentiation handles the chain rule for the derivative function:
+!> dmap(x, cell_period) = dmap0(x/cell_period)
+!>
+!> For cell_period ≠ 0:
+!> - xb += dmap0_b(x/cell_period) / cell_period
+!> - cell_periodb -= dmap0_b(x/cell_period) * x / cell_period²
+!>
+!> @note This subroutine is used in automatic differentiation for gradient
+!> calculations involving derivatives of periodic mapping functions.
 subroutine dmap_b(x, xb, cell_period, cell_periodb, dmapb)
     implicit none
     real*8 x, xb, y, yb, cell_period, cell_periodb, dmapb
@@ -770,6 +1163,28 @@ subroutine dmap_b(x, xb, cell_period, cell_periodb, dmapb)
     dmapb = 0.d0
 end subroutine dmap_b
 
+!> @brief Backward differentiation for ddmap function
+!>
+!> This subroutine computes the backward differentiation (adjoint) of the
+!> ddmap function, handling both the coordinate and cell period adjoints.
+!>
+!> @param[in] x Input coordinate
+!> @param[in,out] xb Adjoint variable for the input coordinate
+!> @param[in] cell_period Period of the cell in this direction
+!> @param[in,out] cell_periodb Adjoint variable for the cell period
+!> @param[in,out] ddmapb Adjoint variable for the ddmap function output
+!>
+!> @details
+!> The backward differentiation handles the chain rule for the second derivative function:
+!> ddmap(x, cell_period) = ddmap0(x/cell_period) / cell_period
+!>
+!> For cell_period ≠ 0:
+!> - cell_periodb -= ddmap0(x/cell_period) * ddmapb / cell_period²
+!> - xb += ddmap0_b(x/cell_period) / cell_period
+!> - cell_periodb -= ddmap0_b(x/cell_period) * x / cell_period²
+!>
+!> @note This subroutine is used in automatic differentiation for Hessian
+!> calculations involving second derivatives of periodic mapping functions.
 subroutine ddmap_b(x, xb, cell_period, cell_periodb, ddmapb)
     use Cell, only: ddmap0
     implicit none

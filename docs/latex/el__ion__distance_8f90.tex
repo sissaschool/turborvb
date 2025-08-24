@@ -1,0 +1,82 @@
+\doxysection{src/a\+\_\+readforward/el\+\_\+ion\+\_\+distance.f90 File Reference}
+\hypertarget{el__ion__distance_8f90}{}\label{el__ion__distance_8f90}\index{src/a\_readforward/el\_ion\_distance.f90@{src/a\_readforward/el\_ion\_distance.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{el__ion__distance_8f90_aaa25d68dc07d665b27db51a5cf4886c5}{el\+\_\+ion\+\_\+distance}} (eliond, kel, nel, rion, nion, iespbc)
+\begin{DoxyCompactList}\small\item\em Computes distances between electrons and ions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{el__ion__distance_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{el__ion__distance_8f90_aaa25d68dc07d665b27db51a5cf4886c5}\index{el\_ion\_distance.f90@{el\_ion\_distance.f90}!el\_ion\_distance@{el\_ion\_distance}}
+\index{el\_ion\_distance@{el\_ion\_distance}!el\_ion\_distance.f90@{el\_ion\_distance.f90}}
+\doxysubsubsection{\texorpdfstring{el\_ion\_distance()}{el\_ion\_distance()}}
+{\footnotesize\ttfamily \label{el__ion__distance_8f90_aaa25d68dc07d665b27db51a5cf4886c5} 
+subroutine el\+\_\+ion\+\_\+distance (\begin{DoxyParamCaption}\item[{real(8), dimension(nion, \texorpdfstring{$\ast$}{*})}]{eliond}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{kel}{, }\item[{integer}]{nel}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{integer}]{nion}{, }\item[{logical}]{iespbc}{}\end{DoxyParamCaption})}
+
+
+
+Computes distances between electrons and ions. 
+
+This subroutine calculates the distances between all electrons and all ions in the system. It handles both periodic and non-\/periodic boundary conditions using the Apply\+PBC routine when periodic boundary conditions are enabled. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{out}}  & {\em eliond} & Distance matrix between ions and electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em kel} & Electron positions (3, nel) \\
+\hline
+\mbox{\texttt{in}}  & {\em nel} & Number of electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em rion} & Ion positions (3, nion) \\
+\hline
+\mbox{\texttt{in}}  & {\em nion} & Number of ions \\
+\hline
+\mbox{\texttt{in}}  & {\em iespbc} & Flag for periodic boundary conditions \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{el__ion__distance_8f90_source_l00027}{27}} of file \mbox{\hyperlink{el__ion__distance_8f90_source}{el\+\_\+ion\+\_\+distance.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ nel,\ k,\ j}
+\DoxyCodeLine{00033\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ eliond(nion,\ *),\ rion(3,\ *),\ kel(3,\ *)}
+\DoxyCodeLine{00034\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ dist\_kel(3)}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{logical}\ iespbc}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_kel(:)\ =\ kel(:,\ j)\ -\/\ rion(:,\ k)}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_aba17aa76b83089553830ab955bff6686}{applypbc}}(dist\_kel,\ 1)}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max(sum(dist\_kel(:)**2),\ 1d-\/18))}
+\DoxyCodeLine{00044\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00045\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ eliond(k,\ j)\ =\ dsqrt(max((kel(1,\ j)\ -\/\ rion(1,\ k))**2\ +\ (kel(2,\ j)\ -\/\ rion(2,\ k))**2\ +\ (kel(3,\ j)\ -\/\ rion(3,\ k))**2,\ 1d-\/18))}
+\DoxyCodeLine{00052\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00053\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00056\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{cell_8f90_source_l00534}{cell\+::applypbc()}}.
+
+
+
+Referenced by \mbox{\hyperlink{compute__corr__fun_8f90_source_l00079}{compute\+\_\+corr\+\_\+fun()}}.
+

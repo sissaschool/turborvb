@@ -1,0 +1,337 @@
+\doxysection{src/c\+\_\+adjoint\+\_\+backward/upvpotdiag\+\_\+b.f90 File Reference}
+\hypertarget{upvpotdiag__b_8f90}{}\label{upvpotdiag__b_8f90}\index{src/c\_adjoint\_backward/upvpotdiag\_b.f90@{src/c\_adjoint\_backward/upvpotdiag\_b.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upvpotdiag__b_8f90_ac771769987480a2c765dcbd3c42a8570}{upvpotdiag\+\_\+b}} (rkel, rkelb, nel, zeta, rion, rionb, iond, iond\+\_\+cart, iond\+\_\+cartb, vpot, vpotb, nion, kappa, lbox, vpotreg, cutreg, costz, costz3, cellscaleb, s2rb)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upvpotdiag__b_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upvpotdiag__b_8f90_ac771769987480a2c765dcbd3c42a8570}\index{upvpotdiag\_b.f90@{upvpotdiag\_b.f90}!upvpotdiag\_b@{upvpotdiag\_b}}
+\index{upvpotdiag\_b@{upvpotdiag\_b}!upvpotdiag\_b.f90@{upvpotdiag\_b.f90}}
+\doxysubsubsection{\texorpdfstring{upvpotdiag\_b()}{upvpotdiag\_b()}}
+{\footnotesize\ttfamily \label{upvpotdiag__b_8f90_ac771769987480a2c765dcbd3c42a8570} 
+subroutine upvpotdiag\+\_\+b (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, nel)}]{rkel}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, nel)}]{rkelb}{, }\item[{integer}]{nel}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nion)}]{zeta}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, nion)}]{rion}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, nion)}]{rionb}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nion,nion)}]{iond}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3,nion, nion)}]{iond\+\_\+cart}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3,nion, nion)}]{iond\+\_\+cartb}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vpot}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vpotb}{, }\item[{integer}]{nion}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{kappa}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{lbox}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{vpotreg}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{cutreg}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{costz}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{costz3}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3)}]{cellscaleb}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(3, 3)}]{s2rb}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{upvpotdiag__b_8f90_source_l00009}{9}} of file \mbox{\hyperlink{upvpotdiag__b_8f90_source}{upvpotdiag\+\_\+b.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (28/1/11):\ external\ forces}}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceext__forces}{ext\_forces}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespaceext__forces_a33ebd19731e371b763e1a32ee5c16329}{forcext}},\ \mbox{\hyperlink{namespaceext__forces_acff26b79e7a869b5933f35f54290e67c}{forcext\_el}},\ \mbox{\hyperlink{namespaceext__forces_ab996511be24df6ce965541f7b306f754}{force\_vdw}},\ \mbox{\hyperlink{namespaceext__forces_a5402aa4964b5396437fd3f998a92b970}{mm\_f\_theta}},\ \mbox{\hyperlink{namespaceext__forces_a37d61790bbda11d1bfb70e0e9cd89c1d}{mm\_f\_dihed}},\ \mbox{\hyperlink{namespaceext__forces_ae9aebc959eaa5da0c17f2e4bf6c533c2}{mm\_f\_impr}}}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceextpot}{extpot}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespaceextpot_a68d98a7c4286fcd94d0798dd4b86f539}{ext\_pot}},\ \mbox{\hyperlink{namespaceextpot_ae337eadf0ff0c1ea676e724ed1bf6f35}{link\_atom}},\ \mbox{\hyperlink{namespaceextpot_a17227a1fc2ae357009745553f6a3be1f}{mm\_restr}}}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacevan__der__waals}{van\_der\_waals}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespacevan__der__waals_ae6fa7393fc1ae4ae381418d1cb42e15d}{vdw}}}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11):\ MM\ restraint\ forces}}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecl__restr}{cl\_restr}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespacecl__restr_a7b1c9484da9164d109a8b79a084bea92}{restr\_f\_bond}},\ \mbox{\hyperlink{namespacecl__restr_aa45ed1a1671f9ce2674b7728dde1d995}{restr\_f\_angle}},\ \mbox{\hyperlink{namespacecl__restr_a8cb1de388c72e16efbc06b1211ce9265}{restr\_f\_dihe}},\ \mbox{\hyperlink{namespacecl__restr_a22cf5aa4458cb9ea33a35387f4725f5f}{restr\_f\_dimp}}}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedielectric}{dielectric}}}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}},\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}},\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}},\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ nel,\ i,\ j,\ k,ii,\ nion}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{integer*8}\ maxll,ll}
+\DoxyCodeLine{00024\ \ \ \ \ real*8\ ::\ rkel(3,\ nel)}
+\DoxyCodeLine{00025\ \ \ \ \ real*8\ ::\ rkelb(3,\ nel)}
+\DoxyCodeLine{00026\ \ \ \ \ real*8\ ::\ zeta(nion),\ vpot,\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}},\ rion(3,\ nion),\ iond\_cart(3,nion,\ nion),\ cost\&}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tmp,\ kappa,\ lbox,\ pot\_ee,\ pot\_ea,\ pot\_aa,\ max,\ costz(*),\ \&}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ distb,\ vpotreg,\ potreg\_ea,\ costz3(*),\ cutreg,\ distbreg}
+\DoxyCodeLine{00029\ \ \ \ \ real*8\ ::\ vpotb,\ rionb(3,\ nion),iond(nion,nion),\ \ iond\_cartb(3,nion,\ nion)\&}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ costb,\ tmpb,\ pot\_eeb,\ pot\_eab,\ pot\_aab,\ distbb,\ cellscaleb(3)\&}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ s2rb(3,\ 3)}
+\DoxyCodeLine{00032\ \ \ \ \ real*8\ derfc}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}}
+\DoxyCodeLine{00034\ \ \ \ \ real*8\ ::\ result1,iondb,x\_shift(3),x\_shiftb(3)}
+\DoxyCodeLine{00035\ \ \ \ \ real*8\ ::\ result1b}
+\DoxyCodeLine{00036\ \ \ \ \ real*8\ ::\ arg1}
+\DoxyCodeLine{00037\ \ \ \ \ real*8\ ::\ arg1b}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from0}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ branch}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from1}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ ad\_from2}
+\DoxyCodeLine{00043\ \ \ \ \ real*8\ ::\ temp0}
+\DoxyCodeLine{00044\ \ \ \ \ real*8\ ::\ tempb3}
+\DoxyCodeLine{00045\ \ \ \ \ real*8\ ::\ tempb2}
+\DoxyCodeLine{00046\ \ \ \ \ real*8\ ::\ tempb1}
+\DoxyCodeLine{00047\ \ \ \ \ real*8\ ::\ tempb0}
+\DoxyCodeLine{00048\ \ \ \ \ real*8\ ::\ temp0b}
+\DoxyCodeLine{00049\ \ \ \ \ real*8\ ::\ tempb}
+\DoxyCodeLine{00050\ \ \ \ \ real*8\ ::\ temp}
+\DoxyCodeLine{00051\ \ \ \ \ real*8\ ::\ max1}
+\DoxyCodeLine{00052\ \ \ \ \ pot\_eeb\ =\ vpotb}
+\DoxyCodeLine{00053\ \ \ \ \ pot\_eab\ =\ vpotb}
+\DoxyCodeLine{00054\ \ \ \ \ pot\_aab\ =\ vpotb}
+\DoxyCodeLine{00055\ \ \ \ \ iondb=0.d0}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{IF}\ (lbox.le.0.d0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,tempb0,iondb)\ reduction(+:iond\_cartb)}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{00061\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb0\ =\ 2.d0\ *\ pot\_aab\ /\ iond(i,\ j)}}
+\DoxyCodeLine{00062\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(zeta(i)\ *\ zeta(j).ne.0.d0)\ \ \ \ \ iondb(i,\ j)\ =\ \&}}
+\DoxyCodeLine{00063\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&iondb(i,\ j)\ -\/\ zeta(i)\ *\ zeta(j)\ *\ tempb0\ /\ iond(i,\ j)}}
+\DoxyCodeLine{00064\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{00065\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ temp0=veps(iond(i,j))}}
+\DoxyCodeLine{00066\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ pot\_aa=pot\_aa+2.d0*zeta(i)*zeta(j)*temp0}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ tempb0=2.d0*pot\_aab*zeta(i)*zeta(j)}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(tempb0.ne.0.d0)\ \textcolor{keywordflow}{then}\ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_ad8102fd0413927605fdd42b5237a75ea}{veps\_b}}(iond(i,j),iondb,tempb0)}
+\DoxyCodeLine{00070\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ \ of\ iond=sqrt(iond\_cart**2)}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+iondb*iond\_cart(:,i,j)/iond(i,j)}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ iondb=0.d0}
+\DoxyCodeLine{00073\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j,result1,result1b,tempb0)\ reduction(+:rkelb)}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ j\ =\ i\ +\ 1,\ nel}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}
+\DoxyCodeLine{00081\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ -\/(2.d0\ *\ pot\_eeb\ /\ result1**2)}}
+\DoxyCodeLine{00082\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{00083\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0=veps(result1)}}
+\DoxyCodeLine{00084\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+2.d0*temp0\ }}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b=0.d0}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb0=2.d0*pot\_eeb}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_ad8102fd0413927605fdd42b5237a75ea}{veps\_b}}(result1,result1b,tempb0)}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{ngivej__b_8f90_aad21efd336c7b9ad13bde0fc543a56f5}{ngivej\_b}}(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ result1b,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00093\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,k,distb,distbb,tempb)\ reduction(+:rkelb,rionb)}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}(rion(1,\ k),\ rkel(1,\ i),\ lbox)}
+\DoxyCodeLine{00097\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb\ =\ -\/(2.d0\ *\ pot\_eab\ /\ distb)}}
+\DoxyCodeLine{00098\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ -\/(zeta(k)\ *\ tempb\ /\ distb)}}
+\DoxyCodeLine{00099\ \textcolor{comment}{!\ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{00100\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp=veps(distb)}}
+\DoxyCodeLine{00101\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)*temp}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb\ =-\/2.d0*pot\_eab*zeta(k)}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb=0.d0}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_ad8102fd0413927605fdd42b5237a75ea}{veps\_b}}(distb,distbb,tempb)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{ngivej__b_8f90_aad21efd336c7b9ad13bde0fc543a56f5}{ngivej\_b}}(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i),\ \&}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ distbb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(1:\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}})=0.d0}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ maxll=nion}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ maxll=(maxll*(nion-\/1))/2}
+\DoxyCodeLine{00114\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(ll,i,j,ii,temp0b,dist\_shift,distreg\_shift,cost)\ reduction(+:iond\_cartb)}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast_8f90_aa4f2ad040de30b9cea4666316e2760a5}{find\_j1j2}}(nion,ll,i,j)}
+\DoxyCodeLine{00117\ \textcolor{comment}{!\ \ \ \ \ \ \ DO\ i\ =\ 1,\ nion}}
+\DoxyCodeLine{00118\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ DO\ j\ =\ i\ +\ 1,\ nion}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ reverse\ of:}}
+\DoxyCodeLine{00120\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ temp0=rep\_erfc(iond(i,j),kappa)}}
+\DoxyCodeLine{00121\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ pot\_aa=pot\_aa+2.d0*zeta(i)*zeta(j)*temp0}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ temp0b=2.d0*zeta(i)*zeta(j)*pot\_aab}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(temp0b.ne.0.d0)\ \textcolor{keywordflow}{then}\ }
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=dsqrt((iond\_cart(1,i,j)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+(iond\_cart(2,i,j)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(iond\_cart(3,i,j)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2)}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_a9e5026973f41803c45a634d4a2cdde0a}{rep\_erfc\_b}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii),kappa,temp0b)}
+\DoxyCodeLine{00131\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reverse\ of\ iond=dsqrt(iond\_cart**2)}}
+\DoxyCodeLine{00132\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+distreg\_shift(ii)*iond\_cart(:,i,j)/iond(i,j)}}
+\DoxyCodeLine{00133\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ cost=sum(\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(1:\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}))}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ iond\_cartb(:,i,j)=iond\_cartb(:,i,j)+cost*iond\_cart(:,i,j)/iond(i,j)}
+\DoxyCodeLine{00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00137\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IF(zeta(i)\ *\ zeta(j).ne.0.d0)\ then}}
+\DoxyCodeLine{00138\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0\ =\ iond(i,\ j)}}
+\DoxyCodeLine{00139\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp\ =\ zeta(j)\ /\ temp0}}
+\DoxyCodeLine{00140\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ temp0b\ =\ 2.d0\ *\ temp\ *\ pot\_aab}}
+\DoxyCodeLine{00141\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ iond(i,\ j)}}
+\DoxyCodeLine{00142\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{00143\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb3\ =\ 2.d0\ *\ zeta(i)\ *\ result1\ *\ pot\_aab\ /\ temp0}}
+\DoxyCodeLine{00144\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ zeta(i)\ *\ temp0b}}
+\DoxyCodeLine{00145\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{00146\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{00147\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iondb(i,\ j)\ =\ iondb(i,\ j)\ +\ kappa\ *\ arg1b\ -\/\ temp\ *\ tempb3}}
+\DoxyCodeLine{00148\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ENDIF}}
+\DoxyCodeLine{00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00150\ \textcolor{comment}{!\ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ maxll=nel}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ maxll=(maxll*(nel-\/1))/2}
+\DoxyCodeLine{00153\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(ll,i,j,ii,x\_shift,x\_shiftb,result1b,dist\_shift,distreg\_shift)\ reduction(+:rkelb,cellscaleb,s2rb)}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast_8f90_aa4f2ad040de30b9cea4666316e2760a5}{find\_j1j2}}(nel,ll,i,j)}
+\DoxyCodeLine{00156\ \textcolor{comment}{!\ \ \ \ \ \ \ DO\ i\ =\ 1,\ nel}}
+\DoxyCodeLine{00157\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ DO\ j\ =\ i\ +\ 1,\ nel}}
+\DoxyCodeLine{00158\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmp\ =\ NGIVEJ(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ngivej_8f90_a77c04cb58ba5206b3c1169bbf8d47fbc}{dgivej}}(rkel(1,\ i),\ rkel(1,\ j),\ lbox,x\_shift)}
+\DoxyCodeLine{00160\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb2\ =\ 2.d0\ *\ pot\_eeb\ /\ tmp}}
+\DoxyCodeLine{00161\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ tempb2}}
+\DoxyCodeLine{00162\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ tmp}}
+\DoxyCodeLine{00163\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{00164\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{00165\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{00166\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmpb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ tempb2\ /\ tmp}}
+\DoxyCodeLine{00167\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ reverse\ of\ }}
+\DoxyCodeLine{00168\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmp=NGIVEJ(rkel(1,\ i),\ rkel(1,\ j),\ lbox)}}
+\DoxyCodeLine{00169\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1=rep\_erfc(tmp,kappa)}}
+\DoxyCodeLine{00170\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+2.d0*result1}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b=2.d0*pot\_eeb}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb=0.d0}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ =\ max(dsqrt((x\_shift(1)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+\&}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \&\ (x\_shift(2)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(x\_shift(3)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2),1d-\/9)}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_a9e5026973f41803c45a634d4a2cdde0a}{rep\_erfc\_b}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii),kappa,result1b)}
+\DoxyCodeLine{00180\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}}
+\DoxyCodeLine{00181\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ tmpb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{00184\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ reverse\ of\ dist\_shift=\ (as\ above)}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb(:)=x\_shiftb(:)+\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii)*(x\_shift(:)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,:))/\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)}
+\DoxyCodeLine{00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{ngivej__b_8f90_a718c6f6a73462e01a0bc7e8915753682}{dgivej\_b}}(rkel(1,\ i),\ rkelb(1,\ i),\ rkel(1,\ j),\ rkelb(1,\ j),\ \&}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lbox,\ x\_shiftb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{00189\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00190\ \textcolor{comment}{!\ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00191\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,k,ii,x\_shift,x\_shiftb,costb,dist\_shift,distreg\_shift)\ reduction(+:rkelb,rionb,cellscaleb,s2rb)}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00193\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ zreg2\ =\ costz(k)\ *\ costz3(k)}}
+\DoxyCodeLine{00194\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ IF\ (zreg2\ *\ cutreg\ .GT.\ 0)\ THEN}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ costb\ =\ -\/(2.d0\ *\ zeta(k)\ *\ pot\_eab)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ngivej_8f90_a77c04cb58ba5206b3c1169bbf8d47fbc}{dgivej}}(rion(1,\ k),\ rkel(1,\ i),\ lbox,x\_shift)}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00200\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{00201\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ distb}}
+\DoxyCodeLine{00202\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{00203\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ costb\ /\ distb}}
+\DoxyCodeLine{00204\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{00205\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{00206\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ costb\ /\ distb**2}}
+\DoxyCodeLine{00207\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Reverse\ of}}
+\DoxyCodeLine{00208\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb=NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{00209\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost=rep\_erfc(distb,kappa)}}
+\DoxyCodeLine{00210\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)*cost}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ =\ max(dsqrt((x\_shift(1)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+\&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \&\ (x\_shift(2)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(x\_shift(3)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2),1d-\/9)}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacedielectric_a9e5026973f41803c45a634d4a2cdde0a}{rep\_erfc\_b}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii),kappa,costb)}
+\DoxyCodeLine{00218\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb=0.d0}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ x\_shiftb(:)=x\_shiftb(:)+\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii)*(x\_shift(:)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,:))/\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)}
+\DoxyCodeLine{00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}}
+\DoxyCodeLine{00225\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ distbb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{ngivej__b_8f90_a718c6f6a73462e01a0bc7e8915753682}{dgivej\_b}}(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ x\_shiftb,\ cellscaleb,\ s2rb)}
+\DoxyCodeLine{00228\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00229\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ELSE}}
+\DoxyCodeLine{00230\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DO\ i\ =\ 1,\ nel}}
+\DoxyCodeLine{00231\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ NGIVEJ(rion(1,\ k),\ rkel(1,\ i),\ lbox)}}
+\DoxyCodeLine{00232\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tempb1\ =\ -\/(2.d0\ *\ zeta(k)\ *\ pot\_eab\ /\ distb)}}
+\DoxyCodeLine{00233\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1b\ =\ tempb1}}
+\DoxyCodeLine{00234\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1\ =\ kappa\ *\ distb}}
+\DoxyCodeLine{00235\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ result1\ =\ DERFC(arg1)}}
+\DoxyCodeLine{00236\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arg1b\ =\ 0.0\_8}}
+\DoxyCodeLine{00237\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ DERFC\_B(arg1,\ arg1b,\ result1b)}}
+\DoxyCodeLine{00238\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distbb\ =\ kappa\ *\ arg1b\ -\/\ result1\ *\ tempb1\ /\ distb}}
+\DoxyCodeLine{00239\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CALL\ NGIVEJ\_B(rion(1,\ k),\ rionb(1,\ k),\ rkel(1,\ i),\ rkelb(1,\ i)\&}}
+\DoxyCodeLine{00240\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ lbox,\ distbb,\ cellscaleb,\ s2rb)}}
+\DoxyCodeLine{00241\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00242\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ DO}}
+\DoxyCodeLine{00244\ \textcolor{keywordflow}{\ \ \ \ END\ IF}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \ \ \textcolor{comment}{!\ by.\ E.\ Coccia\ (28/1/11):}}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{comment}{!\ gradients\ of\ the\ external\ potential}}
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{comment}{!\ with\ respect\ to\ both\ the\ electronic}}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{comment}{!\ and\ nuclear\ coordinates.}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{comment}{!\ Analytic\ differentation\ of\ the\ interpolating}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{comment}{!\ polynomial.}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_a68d98a7c4286fcd94d0798dd4b86f539}{ext\_pot}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ electronic\ and\ nuclear\ gradients}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ae3092366e9710b0b7187a948ad9a1736}{ext\_force}}(nion,\ rion,\ zeta,\ nel,\ rkel)}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ electrons}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ rkelb(:,\ i)\ =\ rkelb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_acff26b79e7a869b5933f35f54290e67c}{forcext\_el}}(:,\ i)}
+\DoxyCodeLine{00258\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ nuclei}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_a33ebd19731e371b763e1a32ee5c16329}{forcext}}(:,\ i)}
+\DoxyCodeLine{00263\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (6/2/11):\ add\ the\ vdw\ forces\ acting\ on\ the\ nuclei}}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacevan__der__waals_ae6fa7393fc1ae4ae381418d1cb42e15d}{vdw}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ae039f254237a6a163b9a2aa41ab65ce1}{vdw\_force}}(nion,\ rion)}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_ab996511be24df6ce965541f7b306f754}{force\_vdw}}(:,\ i)}
+\DoxyCodeLine{00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00271\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (10/5/11):\ forces\ for\ the\ capping\ atom}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_ae337eadf0ff0c1ea676e724ed1bf6f35}{link\_atom}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (17/5/11):\ QM\ forces\ from\ mm\_pot\_theta}}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a099bf9f5ef6d9167f1fdc2f352a1c1db}{force\_angle}}()}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_a5402aa4964b5396437fd3f998a92b970}{mm\_f\_theta}}(:,\ i)}
+\DoxyCodeLine{00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (18/5/11):\ QM\ forces\ from\ mm\_pot\_dihed\ and\ mm\_pot\_impr}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a842dc59fac71d7ed567f517ffd433e06}{force\_dihed}}()}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_a37d61790bbda11d1bfb70e0e9cd89c1d}{mm\_f\_dihed}}(:,\ i)}
+\DoxyCodeLine{00284\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a0464dd98bb9a7ce3c12458f17de32262}{force\_improper}}()}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespaceext__forces_ae9aebc959eaa5da0c17f2e4bf6c533c2}{mm\_f\_impr}}(:,\ i)}
+\DoxyCodeLine{00288\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00289\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00290\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11):\ forces\ for\ the\ MM\ restraints}}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_a17227a1fc2ae357009745553f6a3be1f}{mm\_restr}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a6e9db2569498583b181fd2394fb4802a}{rf\_bond}}()}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespacecl__restr_a7b1c9484da9164d109a8b79a084bea92}{restr\_f\_bond}}(:,\ i)}
+\DoxyCodeLine{00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a2ee519a340fd7c57d69e90f760ffbba1}{rf\_angle}}()}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespacecl__restr_aa45ed1a1671f9ce2674b7728dde1d995}{restr\_f\_angle}}(:,\ i)}
+\DoxyCodeLine{00300\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_ac4f26f552c8a7d9c168d4b00f53a3026}{rf\_dihe}}()}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespacecl__restr_a8cb1de388c72e16efbc06b1211ce9265}{restr\_f\_dihe}}(:,\ i)}
+\DoxyCodeLine{00304\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{forces__ext_8f90_a11945950625692fa11d149d770ea9702}{rf\_dimp}}()}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ rionb(:,\ i)\ =\ rionb(:,\ i)\ -\/\ 2.d0\ *\ vpotb\ *\ \mbox{\hyperlink{namespacecl__restr_a22cf5aa4458cb9ea33a35387f4725f5f}{restr\_f\_dimp}}(:,\ i)}
+\DoxyCodeLine{00308\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00309\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ vpotb\ =\ 0.d0}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00314\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{ngivej_8f90_source_l00045}{dgivej()}}, \mbox{\hyperlink{ngivej__b_8f90_source_l00044}{dgivej\+\_\+b()}}, \mbox{\hyperlink{cell_8f90_source_l00073}{cell\+::dist\+\_\+shift}}, \mbox{\hyperlink{cell_8f90_source_l00073}{cell\+::distreg\+\_\+shift}}, \mbox{\hyperlink{forces__ext_8f90_source_l00205}{ext\+\_\+force()}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00048}{extpot\+::ext\+\_\+pot}}, \mbox{\hyperlink{compute__fast_8f90_source_l02990}{find\+\_\+j1j2()}}, \mbox{\hyperlink{forces__ext_8f90_source_l00466}{force\+\_\+angle()}}, \mbox{\hyperlink{forces__ext_8f90_source_l00597}{force\+\_\+dihed()}}, \mbox{\hyperlink{forces__ext_8f90_source_l00763}{force\+\_\+improper()}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00261}{ext\+\_\+forces\+::force\+\_\+vdw}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00260}{ext\+\_\+forces\+::forcext}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00260}{ext\+\_\+forces\+::forcext\+\_\+el}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00056}{extpot\+::link\+\_\+atom}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00263}{ext\+\_\+forces\+::mm\+\_\+f\+\_\+dihed}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00263}{ext\+\_\+forces\+::mm\+\_\+f\+\_\+impr}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00263}{ext\+\_\+forces\+::mm\+\_\+f\+\_\+theta}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00059}{extpot\+::mm\+\_\+restr}}, \mbox{\hyperlink{cell_8f90_source_l00095}{cell\+::neigh}}, \mbox{\hyperlink{ngivej_8f90_source_l00017}{ngivej()}}, \mbox{\hyperlink{ngivej__b_8f90_source_l00003}{ngivej\+\_\+b()}}, \mbox{\hyperlink{dielectric_8f90_source_l00238}{dielectric\+::rep\+\_\+erfc\+\_\+b()}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00170}{cl\+\_\+restr\+::restr\+\_\+f\+\_\+angle}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00170}{cl\+\_\+restr\+::restr\+\_\+f\+\_\+bond}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00170}{cl\+\_\+restr\+::restr\+\_\+f\+\_\+dihe}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00170}{cl\+\_\+restr\+::restr\+\_\+f\+\_\+dimp}}, \mbox{\hyperlink{forces__ext_8f90_source_l01005}{rf\+\_\+angle()}}, \mbox{\hyperlink{forces__ext_8f90_source_l00952}{rf\+\_\+bond()}}, \mbox{\hyperlink{forces__ext_8f90_source_l01076}{rf\+\_\+dihe()}}, \mbox{\hyperlink{forces__ext_8f90_source_l01181}{rf\+\_\+dimp()}}, \mbox{\hyperlink{mod__extpot_8f90_source_l00282}{van\+\_\+der\+\_\+waals\+::vdw}}, \mbox{\hyperlink{forces__ext_8f90_source_l00309}{vdw\+\_\+force()}}, \mbox{\hyperlink{dielectric_8f90_source_l00170}{dielectric\+::veps\+\_\+b()}}, and \mbox{\hyperlink{cell_8f90_source_l00073}{cell\+::x\+\_\+neigh}}.
+
+
+
+Referenced by \mbox{\hyperlink{compute__fast__b_8f90_source_l00563}{task9\+\_\+b()}}.
+

@@ -1,0 +1,1387 @@
+\doxysection{src/m\+\_\+common/dsortx.f90 File Reference}
+\hypertarget{dsortx_8f90}{}\label{dsortx_8f90}\index{src/m\_common/dsortx.f90@{src/m\_common/dsortx.f90}}
+
+
+Sorting and parallel grid utilities for scientific computing.  
+
+
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}} (count, inutile, n, index)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a88344593f5c69157bf9953919490ce75}{grid2d\+\_\+dims}} (grid\+\_\+shape, nproc, nprow, npcol)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_af16c1df3e395ef6492af53964e9893a3}{grid2d\+\_\+coords}} (order, rank, nprow, npcol, row, col)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_ad318c6935a29a5a075a11dffdf359551}{grid2d\+\_\+rank}} (order, nprow, npcol, row, col, rank)
+\item 
+integer function \mbox{\hyperlink{dsortx_8f90_ab5a6d7c49f6e13bfc22e9ea9aa1c7d7b}{ldim\+\_\+block\+\_\+sca}} (gdim, np, me)
+\item 
+integer function \mbox{\hyperlink{dsortx_8f90_acec12a420127516071a67bd20d85ee00}{lind\+\_\+block\+\_\+sca}} (ig, nx, np, me)
+\item 
+integer function \mbox{\hyperlink{dsortx_8f90_af0d7d9b2ec25a21bf0645b833a50a824}{gind\+\_\+block\+\_\+sca}} (lind, n, np, me)
+\item 
+integer function \mbox{\hyperlink{dsortx_8f90_af65d6fa8c055e8ef67a687a85fb4ab1f}{ldim\+\_\+cyclic}} (gdim, np, me)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\+\_\+base\+\_\+real}} (dim, ps, comm, root)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}{reduce\+\_\+base\+\_\+complex}} (dim, ps, comm, root)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a53edbd43d9699ce24776994c6ca5a7ed}{bcast\+\_\+integer}} (array, n, root, gid)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\+\_\+real}} (array, n, root, gid)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_afb6599e6467d1643272e139dd2ed6d88}{bcast\+\_\+complex}} (array, n, root, gid)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_a83ad9332f6aca1745a57b5c46d928fae}{reduce\+\_\+base\+\_\+real\+\_\+to}} (dim, ps, psout, comm, root)
+\item 
+subroutine \mbox{\hyperlink{dsortx_8f90_aa0a3a1776028b774237588d8df2e4eed}{reduce\+\_\+base\+\_\+complex\+\_\+to}} (dim, ps, psout, comm, root)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Sorting and parallel grid utilities for scientific computing. 
+
+This file provides a robust, double-\/precision sorting routine (DSORTX) and several grid/parallelization utilities for use in quantum Monte Carlo and electronic structure codes. The DSORTX subroutine implements a hybrid quicksort-\/ bubble sort algorithm for sorting arrays and returning the permutation indices. Additional routines support processor grid decomposition and distributed array indexing, as used in parallel linear algebra and FFTs.
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group, FPMD group, Quantum ESPRESSO group 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+\hypertarget{extv_8f90_Usage}{}\doxysubsection{\texorpdfstring{Usage}{Usage}}\label{extv_8f90_Usage}
+Typical usage involves sorting arrays of real\texorpdfstring{$\ast$}{*}8 values (e.\+g., reciprocal space vectors) and managing processor grids for distributed-\/memory parallelization.\hypertarget{extv_8f90_Examples}{}\doxysubsection{\texorpdfstring{Examples}{Examples}}\label{extv_8f90_Examples}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{real}(8)\ ::\ arr(100)}
+\DoxyCodeLine{\textcolor{keywordtype}{integer}\ ::\ idx(100)}
+\DoxyCodeLine{\textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(arr,\ 0,\ 100,\ idx)}
+
+\end{DoxyCode}
+ 
+
+Definition in file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+
+\label{doc-func-members}
+\Hypertarget{dsortx_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dsortx_8f90_afb6599e6467d1643272e139dd2ed6d88}\index{dsortx.f90@{dsortx.f90}!bcast\_complex@{bcast\_complex}}
+\index{bcast\_complex@{bcast\_complex}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{bcast\_complex()}{bcast\_complex()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_afb6599e6467d1643272e139dd2ed6d88} 
+subroutine bcast\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(n)}]{array}{, }\item[{integer}]{n}{, }\item[{integer}]{root}{, }\item[{integer}]{gid}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00866}{866}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00867\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ In\ most\ architectures\ the\ mpi\_allreduce\ is\ much\ more\ efficient\ than\ a\ bcast.}}
+\DoxyCodeLine{00868\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Thus\ I\ have\ replaced\ the\ bcast\ with\ an\ mpi\_allreduce,\ also\ safer\ because\ much}}
+\DoxyCodeLine{00869\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ more\ used.}}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim,\ buff\_reducec}
+\DoxyCodeLine{00871\ }
+\DoxyCodeLine{00872\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ n,\ root,\ gid,\ ierr}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ array(n)}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00877\ }
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00879\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nblk,\ blksiz,\ msgsiz,\ iblk,\ istart\textcolor{comment}{,\ i,\ myid,\ nproc}}
+\DoxyCodeLine{00880\ \textcolor{comment}{!\ \ \ \ \ \ \ common\ /mp\_base\_real/\ buff}}
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(gid,\ nproc,\ ierr)}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(gid,\ myid,\ ierr)}
+\DoxyCodeLine{00883\ }
+\DoxyCodeLine{00884\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00885\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(gid,\ ierr)}
+\DoxyCodeLine{00886\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'BCAST\_COMPLEX'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00888\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00889\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00890\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ge.\ 1024)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00892\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:n)\ =\ array(1:n\textcolor{comment}{)}}
+\DoxyCodeLine{00894\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:n)\ =\ (0.d0,\ 0\textcolor{comment}{.d0)}}
+\DoxyCodeLine{00896\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reducec,\textcolor{comment}{\ array,\ n,\ mpi\_complex16,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00898\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'bcast\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00899\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00901\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00902\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00903\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\textcolor{comment}{\ 1}}
+\DoxyCodeLine{00904\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00905\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\textcolor{comment}{\ array(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00906\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00907\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\textcolor{comment}{\ (0.d0,\ 0.d0)}}
+\DoxyCodeLine{00908\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reducec\textcolor{comment}{,\ array(istart),\ blksiz,\ mpi\_complex16,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00910\ \textcolor{comment}{}\textcolor{comment}{!\ \ \ CALL\ MPI\_BCAST(\ buff\_reduce,\ blksiz,\ MPI\_DOUBLE\_PRECISION,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00911\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00912\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_complex\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00913\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\textcolor{comment}{\ array(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00919\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00920\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\textcolor{comment}{\ (0.d0,\ 0.d0)}}
+\DoxyCodeLine{00921\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00922\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reducec\textcolor{comment}{,\ array(istart),\ blksiz,\ mpi\_complex16,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00923\ \textcolor{comment}{}\textcolor{comment}{!\ \ \ CALL\ MPI\_BCAST(\ buff\_reduce,\ blksiz,\ MPI\_DOUBLE\_PRECISION,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00924\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00925\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_complex\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00926\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00927\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00928\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00929\ }
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00931\ }
+\DoxyCodeLine{00932\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:n)\ =\ array(1:n)}
+\DoxyCodeLine{00933\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reducec,\ n,\ mpi\_complex16\textcolor{comment}{,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00934\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(1:n)\ =\ buff\_reducec(1:n)}
+\DoxyCodeLine{00935\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 1\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00936\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00939\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00940\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\textcolor{comment}{\ 1}}
+\DoxyCodeLine{00941\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\ array\textcolor{comment}{(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00942\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reducec,\textcolor{comment}{\ blksiz,\ mpi\_complex16,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00943\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\textcolor{comment}{\ -\/\ 1)\ =\ buff\_reducec(1:blksiz)}}
+\DoxyCodeLine{00944\ \textcolor{comment}{}}
+\DoxyCodeLine{00945\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00946\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00947\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00948\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00949\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00950\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:blksiz)\ =\ array\textcolor{comment}{(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00951\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reducec,\textcolor{comment}{\ blksiz,\ mpi\_complex16,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00952\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\textcolor{comment}{\ -\/\ 1)\ =\ buff\_reducec(1:blksiz)}}
+\DoxyCodeLine{00953\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00954\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00955\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00956\ }
+\DoxyCodeLine{00957\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00958\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00959\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00960\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{eval__hamilt__complex_8f90_source_l00048}{eval\+\_\+hamilt\+\_\+complex()}}.
+
+\Hypertarget{dsortx_8f90_a53edbd43d9699ce24776994c6ca5a7ed}\index{dsortx.f90@{dsortx.f90}!bcast\_integer@{bcast\_integer}}
+\index{bcast\_integer@{bcast\_integer}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{bcast\_integer()}{bcast\_integer()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a53edbd43d9699ce24776994c6ca5a7ed} 
+subroutine bcast\+\_\+integer (\begin{DoxyParamCaption}\item[{integer, dimension(n)}]{array}{, }\item[{integer}]{n}{, }\item[{integer}]{root}{, }\item[{integer}]{gid}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00671}{671}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ In\ most\ architectures\ the\ mpi\_allreduce\ is\ much\ more\ efficient\ than\ a\ bcast.}}
+\DoxyCodeLine{00673\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Thus\ I\ have\ replaced\ the\ bcast\ with\ an\ mpi\_allreduce,\ also\ safer\ because\ much}}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ more\ used.}}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim,\ buffi\_reduce}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ n,\ root,\ gid,\ ierr}
+\DoxyCodeLine{00678\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ array(n)}
+\DoxyCodeLine{00679\ \#if\ defined\ PARALLEL}
+\DoxyCodeLine{00680\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00681\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nblk,\ blksiz,\ msgsiz,\ iblk,\ istart,\ i,\ myid,\ nproc}
+\DoxyCodeLine{00682\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ common\ /mp\_base\_integer/\ buffi}}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(gid,\ myid,\ ierr)}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(gid,\ nproc,\ ierr)}
+\DoxyCodeLine{00685\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00686\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(gid,\ ierr)}
+\DoxyCodeLine{00687\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00688\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'BCAST\_INTEGER'},\ \textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00689\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00690\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00691\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{00692\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ge.\ 8)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00693\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00694\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ge.\ 128)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00695\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00697\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:n)\ =\ array(1:n)}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:n)\ =\ 0}
+\DoxyCodeLine{00701\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ CALL\ MPI\_BCAST(\ buffi\_reduce,\ n,\ MPI\_INTEGER,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ array(1:n)=buffi\_reduce(1:n)}}
+\DoxyCodeLine{00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buffi\_reduce,\ array,\ n,\ mpi\_integer\textcolor{comment}{,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00705\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 1\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00706\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00707\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00709\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00710\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\ 1}
+\DoxyCodeLine{00711\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ array(istart\textcolor{comment}{:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00713\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ 0}
+\DoxyCodeLine{00715\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00716\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ CALL\ MPI\_BCAST(\ buffi\_reduce,\ blksiz,\ MPI\_INTEGER,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00717\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buffi\_reduce(1:blksiz)}}
+\DoxyCodeLine{00718\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buffi\_reduce,\ array(istart\textcolor{comment}{),\ blksiz,\ mpi\_integer,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00719\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00720\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00723\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00725\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ array(istart\textcolor{comment}{:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00726\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00727\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ 0}
+\DoxyCodeLine{00728\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ CALL\ MPI\_BCAST(\ buffi\_reduce,\ blksiz,\ MPI\_INTEGER,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00730\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buffi\_reduce(1:blksiz)}}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buffi\_reduce,\ array(istart\textcolor{comment}{),\ blksiz,\ mpi\_integer,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00732\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00733\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00734\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:n)\ =\ array(1:n)}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buffi\_reduce,\ n,\ mpi\_integer,\textcolor{comment}{\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00741\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(1:n)\ =\ buffi\_reduce(1:n)}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 1\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00743\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00744\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00745\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00746\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00747\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\ 1}
+\DoxyCodeLine{00748\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ array(istart:istart\textcolor{comment}{\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00749\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buffi\_reduce,\ blksiz,\ mpi\_integer\textcolor{comment}{,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00750\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\ -\/\ 1)\ =\ buffi\_reduce\textcolor{comment}{(1:blksiz)}}
+\DoxyCodeLine{00751\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00752\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00753\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffi\_reduce(1:blksiz)\ =\ array(istart:istart\textcolor{comment}{\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00757\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buffi\_reduce,\ blksiz,\ mpi\_integer\textcolor{comment}{,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00758\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\ -\/\ 1)\ =\ buffi\_reduce\textcolor{comment}{(1:blksiz)}}
+\DoxyCodeLine{00759\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_integer\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00760\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00761\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00762\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00763\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00764\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{checkmatrix_8f90_source_l00189}{checkmatrix()}}, \mbox{\hyperlink{checkmatrix_8f90_source_l00061}{checkmatrix\+\_\+sparse()}}, \mbox{\hyperlink{read__datas_8f90_source_l00022}{read\+\_\+datasmin()}}, \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}\index{dsortx.f90@{dsortx.f90}!bcast\_real@{bcast\_real}}
+\index{bcast\_real@{bcast\_real}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{bcast\_real()}{bcast\_real()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e} 
+subroutine bcast\+\_\+real (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{array}{, }\item[{integer}]{n}{, }\item[{integer}]{root}{, }\item[{integer}]{gid}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00767}{767}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ In\ most\ architectures\ the\ mpi\_allreduce\ is\ much\ more\ efficient\ than\ a\ bcast.}}
+\DoxyCodeLine{00769\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Thus\ I\ have\ replaced\ the\ bcast\ with\ an\ mpi\_allreduce,\ also\ safer\ because\ much}}
+\DoxyCodeLine{00770\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ more\ used.}}
+\DoxyCodeLine{00771\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim,\ buff\_reduce}
+\DoxyCodeLine{00772\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00773\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ n,\ root,\ gid,\ ierr}
+\DoxyCodeLine{00774\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real*8\ ::\ array(n)}
+\DoxyCodeLine{00775\ \textcolor{preprocessor}{\#if\ defined\ PARALLEL}}
+\DoxyCodeLine{00776\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nblk,\ blksiz,\ msgsiz,\ iblk,\ istart,\ i\textcolor{comment}{,\ myid,\ nproc}}
+\DoxyCodeLine{00778\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !\ \ \ \ \ \ \ common\ /mp\_base\_real/\ buff}}
+\DoxyCodeLine{00779\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(gid,\ nproc,\ ierr)}
+\DoxyCodeLine{00780\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(gid,\ myid,\ ierr)}
+\DoxyCodeLine{00781\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00782\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(gid,\ ierr)}
+\DoxyCodeLine{00783\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00784\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'BCAST\_REAL'},\ \textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00785\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00786\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00787\ \textcolor{preprocessor}{\#if\ \_\_KCOMP}}
+\DoxyCodeLine{00788\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ge.\ 8)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00789\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00790\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ge.\ 128)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00791\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00792\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:n)\ =\ array(1:n)}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:n)\ =\ 0.d0}
+\DoxyCodeLine{00797\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00798\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ CALL\ MPI\_BCAST(\ buff\_reduce,\ n,\ MPI\_DOUBLE\_PRECISION,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00799\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ array(1:n)=buff\_reduce(1:n)}}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reduce,\ array\textcolor{comment}{,\ n,\ mpi\_double\_precision,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00801\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'bcast\_real'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00802\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00803\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00804\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\ 1}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00808\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ array\textcolor{comment}{(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00809\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ 0.d0}
+\DoxyCodeLine{00811\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reduce,\ array\textcolor{comment}{(istart),\ blksiz,\ mpi\_double\_precision,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00813\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ CALL\ MPI\_BCAST(\ buff\_reduce,\ blksiz,\ MPI\_DOUBLE\_PRECISION,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00816\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00817\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00818\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (myid\ .eq.\ root)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ array\textcolor{comment}{(istart:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00822\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00823\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ 0.d0}
+\DoxyCodeLine{00824\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reduce,\ array\textcolor{comment}{(istart),\ blksiz,\ mpi\_double\_precision,\ mpi\_sum,\ gid,\ ierr)}}
+\DoxyCodeLine{00826\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ CALL\ MPI\_BCAST(\ buff\_reduce,\ blksiz,\ MPI\_DOUBLE\_PRECISION,\ root,\ gid,\ ierr\ )}}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart+blksiz-\/1)=buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_allreduce\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00829\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00830\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00832\ }
+\DoxyCodeLine{00833\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <=\ bufdim)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00834\ }
+\DoxyCodeLine{00835\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:n)\ =\ array(1:n)}
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reduce,\ n,\ mpi\_double\_precision\textcolor{comment}{,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00837\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(1:n)\ =\ buff\_reduce(1:n)}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 1\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00839\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00840\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblk\ =\ n/bufdim}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ bufdim}
+\DoxyCodeLine{00842\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ iblk\ =\ 1,\ nblk}
+\DoxyCodeLine{00843\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ (iblk\ -\/\ 1)*bufdim\ +\ 1}
+\DoxyCodeLine{00844\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ array(istart\textcolor{comment}{:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00845\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reduce,\ blksiz\textcolor{comment}{,\ mpi\_double\_precision,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00846\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\ -\/\ 1\textcolor{comment}{)\ =\ buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00847\ \textcolor{comment}{}}
+\DoxyCodeLine{00848\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 2\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00849\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blksiz\ =\ mod(n,\ bufdim)}
+\DoxyCodeLine{00851\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (blksiz\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00852\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ istart\ =\ nblk*bufdim\ +\ 1}
+\DoxyCodeLine{00853\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:blksiz)\ =\ array(istart\textcolor{comment}{:istart\ +\ blksiz\ -\/\ 1)}}
+\DoxyCodeLine{00854\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(buff\_reduce,\ blksiz\textcolor{comment}{,\ mpi\_double\_precision,\ root,\ gid,\ ierr)}}
+\DoxyCodeLine{00855\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ array(istart:istart\ +\ blksiz\ -\/\ 1\textcolor{comment}{)\ =\ buff\_reduce(1:blksiz)}}
+\DoxyCodeLine{00856\ \textcolor{comment}{}}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ bcast\_real\ '}\textcolor{comment}{,\ }\textcolor{stringliteral}{'\ error\ in\ mpi\_bcast\ 3\ '}\textcolor{comment}{,\ ierr)}}
+\DoxyCodeLine{00858\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00859\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00861\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00862\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00863\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dspev__drv_8f90_source_l00016}{\+\_\+\+\_\+dspev\+\_\+drv\+\_\+f90\+\_\+\+\_\+()}}, \mbox{\hyperlink{compute__grid_8f90_source_l00044}{grid\+\_\+module\+::compute\+\_\+grid()}}, \mbox{\hyperlink{conjginv_8f90_source_l00043}{conjginv()}}, \mbox{\hyperlink{conjginv__prep_8f90_source_l00049}{conjginv\+\_\+prep()}}, \mbox{\hyperlink{conjginvs_8f90_source_l00042}{conjginvs()}}, \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{cutminzmaxz_8f90_source_l00040}{cutminzmaxz()}}, \mbox{\hyperlink{dgemm__my_8f90_source_l00071}{dgemm\+\_\+my()}}, \mbox{\hyperlink{dgesvd_8f90_source_l00018}{dgesvd\+\_\+my()}}, \mbox{\hyperlink{dsyev_8f90_source_l00018}{dsyev\+\_\+my()}}, \mbox{\hyperlink{convertfort10_8f90_source_l03924}{dsygv\+\_\+my()}}, \mbox{\hyperlink{eval__hamilt_8f90_source_l00044}{eval\+\_\+hamilt()}}, \mbox{\hyperlink{eval__hamilt__complex_8f90_source_l00048}{eval\+\_\+hamilt\+\_\+complex()}}, \mbox{\hyperlink{eval__molec__epsdgel_8f90_source_l00036}{eval\+\_\+molec\+\_\+epsdgel()}}, \mbox{\hyperlink{eval__molec__unpaired_8f90_source_l00039}{eval\+\_\+molec\+\_\+unpaired()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00264}{fourier\+\_\+module\+::evalvhartreeq()}}, \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, \mbox{\hyperlink{main_8f90_source_l00017}{main()}}, \mbox{\hyperlink{read__datas_8f90_source_l00022}{read\+\_\+datasmin()}}, \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l02535}{update\+\_\+index()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00639}{fourier\+\_\+module\+::update\+\_\+vhartree()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l01938}{fourier\+\_\+module\+::upload\+\_\+vhartree\+\_\+fromfp()}}, \mbox{\hyperlink{zgemm__my_8f90_source_l00072}{zgemm\+\_\+my()}}, \mbox{\hyperlink{zgesvd_8f90_source_l00017}{zgesvd\+\_\+my()}}, and \mbox{\hyperlink{zsyev_8f90_source_l00018}{zsyev\+\_\+my()}}.
+
+\Hypertarget{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}\index{dsortx.f90@{dsortx.f90}!dsortx@{dsortx}}
+\index{dsortx@{dsortx}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{dsortx()}{dsortx()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1} 
+subroutine dsortx (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(n)}]{count}{, }\item[{integer}]{inutile}{, }\item[{integer}]{n}{, }\item[{integer, dimension(n)}]{index}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00045}{45}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ Sorting\ routine\ for\ the\ reciprocal\ space\ vectors\ (g)\ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ KB07AD\ HANDLES\ DOUBLE\ PRECISION\ VARIABLES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ STANDARD\ FORTRAN\ 66\ (A\ VERIFIED\ PFORT\ SUBROUTINE)\ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ THE\ WORK-\/SPACE\ 'MARK'\ OF\ LENGTH\ 50\ PERMITS\ UP\ TO\ 2**(50/2)\ \ \ ==}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ NUMBERS\ TO\ BE\ SORTED.\ THIS\ IS\ MORE\ THAN\ THE\ IBM\ VIRTUAL\ \ \ \ \ \ ==}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ MEMORY\ SPACE\ WILL\ HOLD\ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordtype}{integer}\ N,\ I,\ M,\ IS,\ IA,\ LA,\ if,\ MLOOP,\ IFKA,\ IS1,\ J,\ INT,\ IY,\ INTEST,\ K,\ IFK,\ K1,\ IP,\ LNGTH}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{integer}\ index(N)}
+\DoxyCodeLine{00057\ \ \ \ \ real*8\ count(n),\ av,\ x}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{integer}\ INUTILE,\ MARK}
+\DoxyCodeLine{00059\ \ \ \ \ dimension\ mark(50)}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ \ SET\ INDEX\ ARRAY\ TO\ ORIGINAL\ ORDER\ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ index(i)\ =\ i}
+\DoxyCodeLine{00065\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ CHECK\ THAT\ A\ TRIVIAL\ CASE\ HAS\ NOT\ BEEN\ ENTERED.\ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ .eq.\ 1)\ \textcolor{keywordflow}{goto}\ 200}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ .ge.\ 1)\ \textcolor{keywordflow}{goto}\ 30}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{goto}\ 200}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ 'M'\ IS\ THE\ LENGTH\ OF\ SEGMENT\ WHICH\ IS\ SHORT\ ENOUGH\ TO\ ENTER\ \ ==}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ THE\ FINAL\ SORTING\ ROUTINE.\ IT\ MAY\ BE\ EASILY\ CHANGED.\ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00076\ 30\ \ m\ =\ 12}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ SET\ UP\ INITIAL\ VALUES.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00080\ \ \ \ \ la\ =\ 2}
+\DoxyCodeLine{00081\ \ \ \ \ is\ =\ 1}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}\ =\ n}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{do}\ 190\ mloop\ =\ 1,\ n}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ \ IF\ SEGMENT\ IS\ SHORT\ ENOUGH\ SORT\ WITH\ FINAL\ SORTING\ ROUTINE.\ ==}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ ifka\ =\ \textcolor{keywordflow}{if}\ -\/\ is}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((ifka\ +\ 1)\ .gt.\ m)\ \textcolor{keywordflow}{goto}\ 70}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ FINAL\ SORTING\ \ (\ A\ SIMPLE\ BUBBLE\ SORT\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ is1\ =\ is\ +\ 1}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 60\ j\ =\ is1,\ \textcolor{keywordflow}{if}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ j}
+\DoxyCodeLine{00095\ 40\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (count(i\ -\/\ 1)\ .lt.\ count(i))\ \textcolor{keywordflow}{goto}\ 60}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (count(i\ -\/\ 1)\ .gt.\ count(i))\ \textcolor{keywordflow}{goto}\ 50}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index(i\ -\/\ 1)\ .lt.\ index(i))\ \textcolor{keywordflow}{goto}\ 60}
+\DoxyCodeLine{00098\ 50\ \ \ \ \ \ \ \ \ \ av\ =\ count(i\ -\/\ 1)}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ count(i\ -\/\ 1)\ =\ count(i)}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ count(i)\ =\ av}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ int\ =\ index(i\ -\/\ 1)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ index(i\ -\/\ 1)\ =\ index(i)}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ index(i)\ =\ int}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ i\ -\/\ 1}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .gt.\ is)\ \textcolor{keywordflow}{goto}\ 40}
+\DoxyCodeLine{00106\ 60\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ la\ =\ la\ -\/\ 2}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 170}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ \ QUICKSORT\ \ \ \ \ \ \ \ **\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ SELECT\ THE\ NUMBER\ IN\ THE\ CENTRAL\ POSITION\ IN\ THE\ SEGMENT\ AS\ \ ==}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ THE\ TEST\ NUMBER.REPLACE\ IT\ WITH\ THE\ NUMBER\ FROM\ THE\ SEGMENT'S==}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ HIGHEST\ ADDRESS.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00115\ 70\ \ \ \ \ \ \ \ \ \ iy\ =\ (is\ +\ if)/2}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ x\ =\ count(iy)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ intest\ =\ index(iy)}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ count(iy)\ =\ count(if)}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ index(iy)\ =\ index(if)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ THE\ MARKERS\ 'I'\ AND\ 'IFK'\ ARE\ USED\ FOR\ THE\ BEGINNING\ AND\ END\ ==}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ OF\ THE\ SECTION\ NOT\ SO\ FAR\ TESTED\ AGAINST\ THE\ PRESENT\ VALUE\ \ \ ==}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ OF\ X\ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ k\ =\ 1}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ ifk\ =\ \textcolor{keywordflow}{if}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ WE\ ALTERNATE\ BETWEEN\ THE\ OUTER\ LOOP\ THAT\ INCREASES\ I\ AND\ THE\ ==}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ INNER\ LOOP\ THAT\ REDUCES\ IFK,\ MOVING\ NUMBERS\ AND\ INDICES\ AS\ \ \ ==}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ NECESSARY,\ UNTIL\ THEY\ MEET\ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 110\ i\ =\ is,\ \textcolor{keywordflow}{if}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x\ .gt.\ count(i))\ \textcolor{keywordflow}{goto}\ 110}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x\ .lt.\ count(i))\ \textcolor{keywordflow}{goto}\ 80}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (intest\ .gt.\ index(i))\ \textcolor{keywordflow}{goto}\ 110}
+\DoxyCodeLine{00136\ 80\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ ifk)\ \textcolor{keywordflow}{goto}\ 120}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count(ifk)\ =\ count(i)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index(ifk)\ =\ index(i)}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k1\ =\ k}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 100\ k\ =\ k1,\ ifka}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifk\ =\ \textcolor{keywordflow}{if}\ -\/\ k}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (count(ifk)\ .gt.\ x)\ \textcolor{keywordflow}{goto}\ 100}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (count(ifk)\ .lt.\ x)\ \textcolor{keywordflow}{goto}\ 90}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (intest\ .le.\ index(ifk))\ \textcolor{keywordflow}{goto}\ 100}
+\DoxyCodeLine{00145\ 90\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ge.\ ifk)\ \textcolor{keywordflow}{goto}\ 130}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count(i)\ =\ count(ifk)}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index(i)\ =\ index(ifk)}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{GO\ TO}\ 110}
+\DoxyCodeLine{00149\ 100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 120}
+\DoxyCodeLine{00151\ 110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ RETURN\ THE\ TEST\ NUMBER\ TO\ THE\ POSITION\ MARKED\ BY\ THE\ MARKER\ \ ==}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ WHICH\ DID\ NOT\ MOVE\ LAST.\ IT\ DIVIDES\ THE\ INITIAL\ SEGMENT\ INTO\ ==}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ 2\ PARTS.\ ANY\ ELEMENT\ IN\ THE\ FIRST\ PART\ IS\ LESS\ THAN\ OR\ EQUAL\ ==}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ TO\ ANY\ ELEMENT\ IN\ THE\ SECOND\ PART,\ AND\ THEY\ MAY\ NOW\ BE\ SORTED==}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ INDEPENDENTLY\ .\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00159\ 120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count(ifk)\ =\ x}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index(ifk)\ =\ intest}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ ifk}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 140}
+\DoxyCodeLine{00163\ 130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count(i)\ =\ x}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index(i)\ =\ intest}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ip\ =\ i}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ \ STORE\ THE\ LONGER\ SUBDIVISION\ IN\ WORKSPACE.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00169\ 140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((ip\ -\/\ is)\ .gt.\ (\textcolor{keywordflow}{if}\ -\/\ ip))\ \textcolor{keywordflow}{goto}\ 150}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mark(la)\ =\ \textcolor{keywordflow}{if}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mark(la\ -\/\ 1)\ =\ ip\ +\ 1}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ =\ ip\ -\/\ 1}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 160}
+\DoxyCodeLine{00174\ 150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mark(la)\ =\ ip\ -\/\ 1}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mark(la\ -\/\ 1)\ =\ is}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is\ =\ ip\ +\ 1}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ FIND\ THE\ LENGTH\ OF\ THE\ SHORTER\ SUBDIVISION.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ==}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00180\ 160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lngth\ =\ \textcolor{keywordflow}{if}\ -\/\ is}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (lngth\ .le.\ 0)\ \textcolor{keywordflow}{goto}\ 180}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ IF\ IT\ CONTAINS\ MORE\ THAN\ ONE\ ELEMENT\ SUPPLY\ IT\ WITH\ WORKSPACE==}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ la\ =\ la\ +\ 2}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{goto}\ 190}
+\DoxyCodeLine{00187\ 170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (la\ .le.\ 0)\ \textcolor{keywordflow}{goto}\ 200}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==\ OBTAIN\ THE\ ADDRESS\ OF\ THE\ SHORTEST\ SEGMENT\ AWAITING\ QUICKSORT==}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00191\ 180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ =\ mark(la)}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is\ =\ mark(la\ -\/\ 1)}
+\DoxyCodeLine{00193\ 190\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ==-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/==}}
+\DoxyCodeLine{00195\ 200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{checkmatrix_8f90_source_l00189}{checkmatrix()}}, \mbox{\hyperlink{checkmatrix_8f90_source_l00061}{checkmatrix\+\_\+sparse()}}, \mbox{\hyperlink{checkmatrix_8f90_source_l00298}{checkrepeat()}}, \mbox{\hyperlink{convertmod_8f90_source_l00123}{convertmod\+::convertmol\+\_\+fast()}}, \mbox{\hyperlink{readalles_8f90_source_l00638}{defyespar()}}, \mbox{\hyperlink{eval__molec__epsdgel_8f90_source_l00036}{eval\+\_\+molec\+\_\+epsdgel()}}, \mbox{\hyperlink{eval__molec__unpaired_8f90_source_l00039}{eval\+\_\+molec\+\_\+unpaired()}}, \mbox{\hyperlink{findrionref_8f90_source_l00062}{findrionfref()}}, \mbox{\hyperlink{plotlambda_8f90_source_l00025}{fort10toxyz()}}, \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}, \mbox{\hyperlink{pareff_8f90_source_l00657}{preprminmax()}}, \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, and \mbox{\hyperlink{fort10__io_8f90_source_l05770}{write\+\_\+fort10()}}.
+
+\Hypertarget{dsortx_8f90_af0d7d9b2ec25a21bf0645b833a50a824}\index{dsortx.f90@{dsortx.f90}!gind\_block\_sca@{gind\_block\_sca}}
+\index{gind\_block\_sca@{gind\_block\_sca}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{gind\_block\_sca()}{gind\_block\_sca()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_af0d7d9b2ec25a21bf0645b833a50a824} 
+integer function gind\+\_\+block\+\_\+sca (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{lind}{, }\item[{integer, intent(in)}]{n}{, }\item[{integer, intent(in)}]{np}{, }\item[{integer, intent(in)}]{me}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00365}{365}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ This\ function\ computes\ the\ global\ index\ of\ a\ distributed\ array\ entry}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ pointed\ to\ by\ the\ local\ index\ lind\ of\ the\ process\ indicated\ by\ me.}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ lind\ \ \ \ \ \ local\ index\ of\ the\ distributed\ matrix\ entry.}}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ N\ \ \ \ \ \ \ \ \ is\ the\ size\ of\ the\ global\ array.}}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ me\ \ \ \ \ \ \ \ The\ coordinate\ of\ the\ process\ whose\ local\ array\ row\ or}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ column\ is\ to\ be\ determined.}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ np\ \ \ \ \ \ \ \ The\ total\ number\ processes\ over\ which\ the\ distributed}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ matrix\ is\ distributed.}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ lind,\ n,\ me,\ np}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ nb}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\ >=\ np\ .or.\ me\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ **\ ldim\_block:\ arg\ no.\ 3\ out\ of\ range\ '}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00382\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nb\ =\ int(n/np)}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(n,\ np)\ /=\ 0)\ nb\ =\ nb\ +\ 1}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{dsortx_8f90_af0d7d9b2ec25a21bf0645b833a50a824}{gind\_block\_sca}}\ =\ lind\ +\ me*nb}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00390\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00366}{gind\+\_\+block\+\_\+sca()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dsortx_8f90_source_l00366}{gind\+\_\+block\+\_\+sca()}}.
+
+\Hypertarget{dsortx_8f90_af16c1df3e395ef6492af53964e9893a3}\index{dsortx.f90@{dsortx.f90}!grid2d\_coords@{grid2d\_coords}}
+\index{grid2d\_coords@{grid2d\_coords}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{grid2d\_coords()}{grid2d\_coords()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_af16c1df3e395ef6492af53964e9893a3} 
+subroutine grid2d\+\_\+coords (\begin{DoxyParamCaption}\item[{character, intent(in)}]{order}{, }\item[{integer, intent(in)}]{rank}{, }\item[{integer, intent(in)}]{nprow}{, }\item[{integer, intent(in)}]{npcol}{, }\item[{integer, intent(out)}]{row}{, }\item[{integer, intent(out)}]{col}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00235}{235}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ this\ subroutine\ compute\ the\ cartesian\ coordinetes\ "{}row"{}\ and\ "{}col"{}}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ of\ the\ processor\ whose\ MPI\ task\ id\ is\ "{}rank"{}.}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Note\ that\ if\ the\ rank\ is\ larger\ that\ the\ grid\ size}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ all\ processors\ whose\ MPI\ task\ id\ is\ greather\ or\ equal}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ than\ nprow\ *\ npcol\ are\ placed\ on\ the\ diagonal\ extension\ of\ the\ grid\ itself}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{character},\ \textcolor{keywordtype}{intent(IN)}\ ::\ order}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ rank\ \textcolor{comment}{!\ process\ index\ starting\ from\ 0}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ nprow,\ npcol\ \textcolor{comment}{!\ dimensions\ of\ the\ processor\ grid}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(OUT)}\ ::\ row,\ col}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ >=\ 0\ .and.\ rank\ <\ nprow*npcol)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (order\ ==\ \textcolor{stringliteral}{'C'}\ .or.\ order\ ==\ \textcolor{stringliteral}{'c'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ grid\ in\ COLUMN\ MAJOR\ ORDER}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ row\ =\ mod(rank,\ nprow)}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ col\ =\ rank/nprow}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ grid\ in\ ROW\ MAJOR\ ORDER}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ row\ =\ rank/npcol}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ col\ =\ mod(rank,\ npcol)}
+\DoxyCodeLine{00257\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ row\ =\ rank}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ col\ =\ rank}
+\DoxyCodeLine{00261\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{scal__lins_8f90_source_l00057}{scal\+\_\+lins\+::set\+\_\+env()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, and \mbox{\hyperlink{testdgemm_8f90_source_l00016}{testdgemm()}}.
+
+\Hypertarget{dsortx_8f90_a88344593f5c69157bf9953919490ce75}\index{dsortx.f90@{dsortx.f90}!grid2d\_dims@{grid2d\_dims}}
+\index{grid2d\_dims@{grid2d\_dims}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{grid2d\_dims()}{grid2d\_dims()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a88344593f5c69157bf9953919490ce75} 
+subroutine grid2d\+\_\+dims (\begin{DoxyParamCaption}\item[{character, intent(in)}]{grid\+\_\+shape}{, }\item[{integer, intent(in)}]{nproc}{, }\item[{integer, intent(out)}]{nprow}{, }\item[{integer, intent(out)}]{npcol}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00206}{206}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ This\ subroutine\ factorizes\ the\ number\ of\ processors\ (NPROC)}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ into\ NPROW\ and\ NPCOL\ according\ to\ the\ shape}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ Written\ by\ Carlo\ Cavazzoni}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{character},\ \textcolor{keywordtype}{intent(IN)}\ ::\ grid\_shape}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ nproc}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(OUT)}\ ::\ nprow,\ npcol}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ sqrtnp,\ i}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sqrtnp\ =\ int(sqrt(real(nproc)\ +\ 0.1))}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (grid\_shape\ ==\ \textcolor{stringliteral}{'S'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Square\ grid}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nprow\ =\ sqrtnp}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ npcol\ =\ sqrtnp}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Rectangular\ grid}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ sqrtnp\ +\ 1}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(nproc,\ i)\ ==\ 0)\ nprow\ =\ i}
+\DoxyCodeLine{00229\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ npcol\ =\ nproc/nprow}
+\DoxyCodeLine{00231\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{scal__lins_8f90_source_l00057}{scal\+\_\+lins\+::set\+\_\+env()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, and \mbox{\hyperlink{testdgemm_8f90_source_l00016}{testdgemm()}}.
+
+\Hypertarget{dsortx_8f90_ad318c6935a29a5a075a11dffdf359551}\index{dsortx.f90@{dsortx.f90}!grid2d\_rank@{grid2d\_rank}}
+\index{grid2d\_rank@{grid2d\_rank}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{grid2d\_rank()}{grid2d\_rank()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_ad318c6935a29a5a075a11dffdf359551} 
+subroutine grid2d\+\_\+rank (\begin{DoxyParamCaption}\item[{character, intent(in)}]{order}{, }\item[{integer, intent(in)}]{nprow}{, }\item[{integer, intent(in)}]{npcol}{, }\item[{integer, intent(in)}]{row}{, }\item[{integer, intent(in)}]{col}{, }\item[{integer, intent(out)}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00265}{265}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ this\ subroutine\ compute\ the\ processor\ MPI\ task\ id\ "{}rank"{}\ of\ the\ processor}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ whose\ cartesian\ coordinate\ are\ "{}row"{}\ and\ "{}col"{}.}}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Note\ that\ the\ subroutine\ assume\ cyclic\ indexing\ (\ row\ =\ nprow\ =\ 0\ )}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{character},\ \textcolor{keywordtype}{intent(IN)}\ ::\ order}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(OUT)}\ ::\ rank\ \textcolor{comment}{!\ process\ index\ starting\ from\ 0}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ nprow,\ npcol\ \textcolor{comment}{!\ dimensions\ of\ the\ processor\ grid}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ row,\ col}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (order\ ==\ \textcolor{stringliteral}{'C'}\ .or.\ order\ ==\ \textcolor{stringliteral}{'c'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ grid\ in\ COLUMN\ MAJOR\ ORDER}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank\ =\ mod(row\ +\ nprow,\ nprow)\ +\ mod(col\ +\ npcol,\ npcol\textcolor{comment}{)*nprow}}
+\DoxyCodeLine{00280\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ grid\ in\ ROW\ MAJOR\ ORDER}}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank\ =\ mod(col\ +\ npcol,\ npcol)\ +\ mod(row\ +\ nprow,\ nprow\textcolor{comment}{)*npcol}}
+\DoxyCodeLine{00283\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{descriptors_8f90_source_l00276}{descriptors\+::dsqmsym()}}, \mbox{\hyperlink{initialize__matrices_8f90_source_l00030}{initialize\+\_\+mats\+\_\+new()}}, \mbox{\hyperlink{scal__lins_8f90_source_l00057}{scal\+\_\+lins\+::set\+\_\+env()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, \mbox{\hyperlink{testdgemm_8f90_source_l00016}{testdgemm()}}, and \mbox{\hyperlink{descriptors_8f90_source_l00389}{descriptors\+::zsqmher()}}.
+
+\Hypertarget{dsortx_8f90_ab5a6d7c49f6e13bfc22e9ea9aa1c7d7b}\index{dsortx.f90@{dsortx.f90}!ldim\_block\_sca@{ldim\_block\_sca}}
+\index{ldim\_block\_sca@{ldim\_block\_sca}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{ldim\_block\_sca()}{ldim\_block\_sca()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_ab5a6d7c49f6e13bfc22e9ea9aa1c7d7b} 
+integer function ldim\+\_\+block\+\_\+sca (\begin{DoxyParamCaption}\item[{integer}]{gdim}{, }\item[{integer}]{np}{, }\item[{integer}]{me}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00296}{296}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ gdim\ =\ global\ dimension\ of\ distributed\ array}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ np\ \ \ =\ number\ of\ processors}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ me\ \ \ =\ index\ of\ the\ calling\ processor\ (starting\ from\ 0)}}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ this\ function\ return\ the\ number\ of\ elements\ of\ the\ distributed\ array}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ stored\ in\ the\ local\ memory\ of\ the\ processor\ "{}me"{}\ for\ equal\ block}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ data\ distribution,\ all\ block\ have\ the\ same\ size\ but\ the\ last\ one.}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Example\ of\ the\ block\ distribution\ of\ 10\ elements\ array\ a\ on\ 4\ processors}}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ array\ elements\ \ |\ \ PEs}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(1)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(2)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(3)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(4)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(5)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(6)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(7)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 2}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(8)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 2}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(9)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 2}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(10)\ \ \ \ \ \ \ \ \ \ |\ \ \ 3}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ gdim,\ np,\ me,\ nb}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\ >=\ np\ .or.\ me\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ **\ ldim\_block:\ arg\ no.\ 3\ out\ of\ range\ '}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00324\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nb\ =\ int(gdim/np)}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(gdim,\ np)\ /=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nb\ =\ nb\ +\ 1}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ last\ processor\ take\ the\ rest}}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\ ==\ (np\ -\/\ 1))\ nb\ =\ gdim\ -\/\ (np\ -\/\ 1)*nb}
+\DoxyCodeLine{00331\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{dsortx_8f90_ab5a6d7c49f6e13bfc22e9ea9aa1c7d7b}{ldim\_block\_sca}}\ =\ nb}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00297}{ldim\+\_\+block\+\_\+sca()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dsortx_8f90_source_l00297}{ldim\+\_\+block\+\_\+sca()}}.
+
+\Hypertarget{dsortx_8f90_af65d6fa8c055e8ef67a687a85fb4ab1f}\index{dsortx.f90@{dsortx.f90}!ldim\_cyclic@{ldim\_cyclic}}
+\index{ldim\_cyclic@{ldim\_cyclic}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{ldim\_cyclic()}{ldim\_cyclic()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_af65d6fa8c055e8ef67a687a85fb4ab1f} 
+integer function ldim\+\_\+cyclic (\begin{DoxyParamCaption}\item[{integer}]{gdim}{, }\item[{integer}]{np}{, }\item[{integer}]{me}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00393}{393}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ gdim\ =\ global\ dimension\ of\ distributed\ array}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ np\ \ \ =\ number\ of\ processors}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ me\ \ \ =\ index\ of\ the\ calling\ processor\ (starting\ from\ 0)}}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ this\ function\ return\ the\ number\ of\ elements\ of\ the\ distributed\ array}}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ stored\ in\ the\ local\ memory\ of\ the\ processor\ "{}me"{}\ for\ a\ cyclic}}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ data\ distribution.}}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Example\ of\ the\ cyclic\ distribution\ of\ a\ 10\ elements\ array\ on\ 4\ processors}}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ array\ elements\ \ |\ \ PEs}}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(1)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(2)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(3)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 2}}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(4)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 3}}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(5)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(6)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(7)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 2}}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(8)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 3}}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(9)\ \ \ \ \ \ \ \ \ \ \ |\ \ \ 0}}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ a(10)\ \ \ \ \ \ \ \ \ \ |\ \ \ 1}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ gdim,\ np,\ me,\ r,\ q}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\ >=\ np\ .or.\ me\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ **\ ldim\_cyclic:\ arg\ no.\ 3\ out\ of\ range\ '}}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00421\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ q\ =\ int(gdim/np)}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r\ =\ mod(gdim,\ np)}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (me\ .lt.\ r)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{dsortx_8f90_af65d6fa8c055e8ef67a687a85fb4ab1f}{ldim\_cyclic}}\ =\ q\ +\ 1}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{dsortx_8f90_af65d6fa8c055e8ef67a687a85fb4ab1f}{ldim\_cyclic}}\ =\ q}
+\DoxyCodeLine{00430\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00394}{ldim\+\_\+cyclic()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dsortx_8f90_source_l00394}{ldim\+\_\+cyclic()}}.
+
+\Hypertarget{dsortx_8f90_acec12a420127516071a67bd20d85ee00}\index{dsortx.f90@{dsortx.f90}!lind\_block\_sca@{lind\_block\_sca}}
+\index{lind\_block\_sca@{lind\_block\_sca}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{lind\_block\_sca()}{lind\_block\_sca()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_acec12a420127516071a67bd20d85ee00} 
+integer function lind\+\_\+block\+\_\+sca (\begin{DoxyParamCaption}\item[{integer}]{ig}{, }\item[{integer}]{nx}{, }\item[{integer}]{np}{, }\item[{integer}]{me}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00338}{338}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ INPUT\ :}}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ ig\ \ global\ index\ of\ the\ x\ dimension\ of\ array\ element}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ nx\ \ dimension\ of\ the\ global\ array}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ np\ \ number\ of\ processor\ in\ the\ x\ dimension\ of\ the\ processors\ grid}}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ me\ \ index\ of\ the\ local\ processor\ in\ the\ processor\ grid}}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (starting\ from\ zero)}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ OUTPUT\ :}}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ lind\_block\_sca\ return\ the\ local\ index\ corresponding\ to\ the}}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ global\ index\ "{}ig"{}\ for\ an\ equal\ block\ distribution}}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ig,\ nx,\ np,\ me,\ nb}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nb\ =\ int(nx/np)}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(nx,\ np)\ /=\ 0)\ nb\ =\ nb\ +\ 1}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{dsortx_8f90_acec12a420127516071a67bd20d85ee00}{lind\_block\_sca}}\ =\ ig\ -\/\ me*nb}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00339}{lind\+\_\+block\+\_\+sca()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dsortx_8f90_source_l00339}{lind\+\_\+block\+\_\+sca()}}.
+
+\Hypertarget{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}\index{dsortx.f90@{dsortx.f90}!reduce\_base\_complex@{reduce\_base\_complex}}
+\index{reduce\_base\_complex@{reduce\_base\_complex}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{reduce\_base\_complex()}{reduce\_base\_complex()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1} 
+subroutine reduce\+\_\+base\+\_\+complex (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{dim}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(dim), intent(inout)}]{ps}{, }\item[{integer, intent(in)}]{comm}{, }\item[{integer, intent(in)}]{root}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00551}{551}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim,\ buff\_reducec}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ sums\ a\ distributed\ variable\ ps(dim)\ over\ the\ processors.}}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ This\ version\ uses\ a\ fixed-\/length\ buffer\ of\ appropriate\ (?)\ dim}}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ \ \ \ \ \ \ \ \ \ \ \ \ \ uses\ SHMEM\ if\ available,\ MPI\ otherwhise}}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ dim}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(INOUT)}\ ::\ ps(dim)}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ comm\ \textcolor{comment}{!\ communicator}}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ root\ \textcolor{comment}{!\ if\ root\ <\ \ 0\ perform\ a\ reduction\ to\ all\ procs}}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ root\ >=\ 0\ perform\ a\ reduce\ only\ to\ root\ proc.}}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00567\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00568\ }
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ n,\ nbuf,\ nproc,\ myid,\ maxb}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxb\ =\ min(dim,\ bufdim)}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(comm,\ nproc,\ info)}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'},\ \textcolor{stringliteral}{'error\ in\ mpi\_comm\_size'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00578\ \textcolor{comment}{}}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(comm,\ myid,\ info)}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'},\ \textcolor{stringliteral}{'error\ in\ mpi\_comm\_rank'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00581\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ <=\ 0\ .or.\ nproc\ <=\ 1)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ trivial\ output}}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ synchronize\ processes}}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00586\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00587\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm,\ info)}
+\DoxyCodeLine{00588\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'},\ \textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00590\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00591\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ .eq.\ maxb)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00593\ }
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reducec(1:maxb)\ =\ ps(1:maxb)}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(buff\_reducec,\ ps,\ maxb,\ mpi\_complex16\textcolor{comment}{,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00597\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00598\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reducec,\ ps,\ maxb,\ mpi\_complex16\textcolor{comment}{,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00600\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00601\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nbuf\ =\ dim/maxb}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nbuf}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ (n\ -\/\ 1)*maxb),\ buff\_reducec\textcolor{comment}{,\ maxb,\ mpi\_complex16,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00611\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00612\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ (n\ -\/\ 1)*maxb),\ buff\_reducec\textcolor{comment}{,\ maxb,\ mpi\_complex16,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00614\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00615\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ (n\ -\/\ 1)*maxb):(n*maxb))\ =\ buff\_reducec\textcolor{comment}{(1:maxb)}}
+\DoxyCodeLine{00619\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (root\ ==\ myid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ (n\ -\/\ 1)*maxb):(n*maxb))\ =\ buff\_reducec\textcolor{comment}{(1:maxb)}}
+\DoxyCodeLine{00621\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00623\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ possible\ remaining\ elements\ <\ maxb}}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((dim\ -\/\ nbuf*maxb)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ nbuf*maxb),\ buff\_reducec\textcolor{comment}{,\ (dim\ -\/\ nbuf*maxb),\ mpi\_complex16,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00631\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00632\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ nbuf*maxb),\ buff\_reducec\textcolor{comment}{,\ (dim\ -\/\ nbuf*maxb),\ mpi\_complex16,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00634\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00635\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ nbuf*maxb):dim)\ =\ buff\_reducec(1:(dim\textcolor{comment}{\ -\/\ nbuf*maxb))}}
+\DoxyCodeLine{00639\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (root\ ==\ myid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ nbuf*maxb):dim)\ =\ buff\_reducec(1:(dim\textcolor{comment}{\ -\/\ nbuf*maxb))}}
+\DoxyCodeLine{00641\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00643\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00645\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dspev__drv_8f90_source_l00016}{\+\_\+\+\_\+dspev\+\_\+drv\+\_\+f90\+\_\+\+\_\+()}}, and \mbox{\hyperlink{graham__scalapack_8f90_source_l00235}{graham\+\_\+scalapack\+\_\+complex()}}.
+
+\Hypertarget{dsortx_8f90_aa0a3a1776028b774237588d8df2e4eed}\index{dsortx.f90@{dsortx.f90}!reduce\_base\_complex\_to@{reduce\_base\_complex\_to}}
+\index{reduce\_base\_complex\_to@{reduce\_base\_complex\_to}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{reduce\_base\_complex\_to()}{reduce\_base\_complex\_to()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_aa0a3a1776028b774237588d8df2e4eed} 
+subroutine reduce\+\_\+base\+\_\+complex\+\_\+to (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{dim}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(dim), intent(in)}]{ps}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(dim), intent(out)}]{psout}{, }\item[{integer, intent(in)}]{comm}{, }\item[{integer, intent(in)}]{root}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l01054}{1054}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{01055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ sums\ a\ distributed\ variable\ ps(dim)\ over\ the\ processors.}}
+\DoxyCodeLine{01058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ This\ version\ uses\ a\ fixed-\/length\ buffer\ of\ appropriate\ (?)\ dim}}
+\DoxyCodeLine{01059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ \ \ \ \ \ \ \ \ \ \ \ \ \ uses\ SHMEM\ if\ available,\ MPI\ otherwhise}}
+\DoxyCodeLine{01060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim}
+\DoxyCodeLine{01062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{01063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ dim}
+\DoxyCodeLine{01065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(IN)}\ ::\ ps(dim)}
+\DoxyCodeLine{01066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(OUT)}\ ::\ psout(dim)}
+\DoxyCodeLine{01067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ comm\ \textcolor{comment}{!\ communicator}}
+\DoxyCodeLine{01068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ root\ \textcolor{comment}{!\ if\ root\ <\ \ 0\ perform\ a\ reduction\ to\ all\ procs}}
+\DoxyCodeLine{01069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ root\ >=\ 0\ perform\ a\ reduce\ only\ to\ root\ proc.}}
+\DoxyCodeLine{01070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01071\ \#if\ defined\ (PARALLEL)}
+\DoxyCodeLine{01072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{01074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ n,\ nbuf,\ nproc,\ myid}
+\DoxyCodeLine{01076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ maxb}
+\DoxyCodeLine{01077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(comm,\ nproc,\ info)}
+\DoxyCodeLine{01079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_comm\_size'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01080\ \textcolor{comment}{}}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(comm,\ myid,\ info)}
+\DoxyCodeLine{01082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_comm\_rank'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01083\ \textcolor{comment}{}}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxb\ =\ min(bufdim,\ dim)}
+\DoxyCodeLine{01085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ <=\ 0\ .or.\ nproc\ <\ 1)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ ==\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psout\ =\ ps}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ synchronize\ processes}}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01095\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{01096\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm,\ info)}
+\DoxyCodeLine{01097\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{01098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01099\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01100\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nbuf\ =\ dim/maxb\ \textcolor{comment}{!\ >=\ 1}}
+\DoxyCodeLine{01102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nbuf}
+\DoxyCodeLine{01104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ (n\ -\/\ 1)*maxb\textcolor{comment}{),\ psout(1\ +\ (n\ -\/\ 1)*maxb),\ maxb,\ mpi\_complex16,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{01108\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01109\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ (n\ -\/\ 1\textcolor{comment}{)*maxb),\ psout(1\ +\ (n\ -\/\ 1)*maxb),\ maxb,\ mpi\_complex16,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{01111\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01112\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{01115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ possible\ remaining\ elements\ <\ maxb}}
+\DoxyCodeLine{01117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((dim\ -\/\ nbuf*maxb)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ nbuf*maxb\textcolor{comment}{),\ psout(1\ +\ nbuf*maxb),\ (dim\ -\/\ nbuf*maxb),\ mpi\_complex16,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{01122\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01123\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ nbuf*maxb\textcolor{comment}{),\ psout(1\ +\ nbuf*maxb),\ (dim\ -\/\ nbuf*maxb),\ mpi\_complex16,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{01125\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_complex\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01126\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01129\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01131\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01132\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psout\ =\ ps}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01134\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01135\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dspev__drv_8f90_source_l00016}{\+\_\+\+\_\+dspev\+\_\+drv\+\_\+f90\+\_\+\+\_\+()}}, and \mbox{\hyperlink{fill__matrix__scalapack_8f90_source_l00141}{fill\+\_\+matrix\+\_\+scalapack\+\_\+complex()}}.
+
+\Hypertarget{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}\index{dsortx.f90@{dsortx.f90}!reduce\_base\_real@{reduce\_base\_real}}
+\index{reduce\_base\_real@{reduce\_base\_real}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{reduce\_base\_real()}{reduce\_base\_real()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0} 
+subroutine reduce\+\_\+base\+\_\+real (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{dim}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(dim), intent(inout)}]{ps}{, }\item[{integer, intent(in)}]{comm}{, }\item[{integer, intent(in)}]{root}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00443}{443}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim,\ buff\_reduce}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ sums\ a\ distributed\ variable\ ps(dim)\ over\ the\ processors.}}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ This\ version\ uses\ a\ fixed-\/length\ buffer\ of\ appropriate\ (?)\ dim}}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ \ \ \ \ \ \ \ \ \ \ \ \ \ uses\ SHMEM\ if\ available,\ MPI\ otherwhise}}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ dim}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(INOUT)}\ ::\ ps(dim)}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ comm\ \textcolor{comment}{!\ communicator}}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ root\ \textcolor{comment}{!\ if\ root\ <\ \ 0\ perform\ a\ reduction\ to\ all\ procs}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ root\ >=\ 0\ perform\ a\ reduce\ only\ to\ root\ proc.}}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00459\ \#if\ defined\ (PARALLEL)}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ n,\ nbuf,\ nproc,\ myid,\ maxb}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxb\ =\ min(dim,\ bufdim)}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ allocate(buff\_reduce(maxb))}}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(comm,\ nproc,\ info)}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'},\ \textcolor{stringliteral}{'error\ in\ mpi\_comm\_size'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00472\ \textcolor{comment}{}}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(comm,\ myid,\ info)}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'},\ \textcolor{stringliteral}{'error\ in\ mpi\_comm\_rank'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00475\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ <=\ 0\ .or.\ nproc\ <=\ 1)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ synchronize\ processes}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm,\ info)}
+\DoxyCodeLine{00482\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'},\ \textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00484\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ .eq.\ maxb)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buff\_reduce(1:maxb)\ =\ ps(1:maxb)}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(buff\_reduce,\ ps,\ maxb,\ mpi\_double\_precision\textcolor{comment}{,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00491\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'},\ \textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00492\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(buff\_reduce,\ ps,\ maxb,\ mpi\_double\_precision\textcolor{comment}{,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00494\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'},\ \textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00495\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nbuf\ =\ dim/maxb}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nbuf}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ (n\ -\/\ 1)*maxb),\ buff\_reduce\textcolor{comment}{,\ maxb,\ mpi\_double\_precision,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00507\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00508\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ (n\ -\/\ 1)*maxb),\ buff\_reduce\textcolor{comment}{,\ maxb,\ mpi\_double\_precision,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00510\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00511\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ (n\ -\/\ 1)*maxb):(n*maxb))\ =\ buff\_reduce\textcolor{comment}{(1:maxb)}}
+\DoxyCodeLine{00515\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (root\ ==\ myid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ (n\ -\/\ 1)*maxb):(n*maxb))\ =\ buff\_reduce\textcolor{comment}{(1:maxb)}}
+\DoxyCodeLine{00517\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00519\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ possible\ remaining\ elements\ <\ maxb}}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((dim\ -\/\ nbuf*maxb)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ nbuf*maxb),\ buff\_reduce\textcolor{comment}{,\ (dim\ -\/\ nbuf*maxb),\ mpi\_double\_precision,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{00527\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00528\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ nbuf*maxb),\ buff\_reduce\textcolor{comment}{,\ (dim\ -\/\ nbuf*maxb),\ mpi\_double\_precision,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{00530\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00531\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ nbuf*maxb):dim)\ =\ buff\_reduce(1:(dim\textcolor{comment}{\ -\/\ nbuf*maxb))}}
+\DoxyCodeLine{00535\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (root\ ==\ myid)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ps((1\ +\ nbuf*maxb):dim)\ =\ buff\_reduce(1:(dim\textcolor{comment}{\ -\/\ nbuf*maxb))}}
+\DoxyCodeLine{00537\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00539\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00545\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dspev__drv_8f90_source_l00016}{\+\_\+\+\_\+dspev\+\_\+drv\+\_\+f90\+\_\+\+\_\+()}}, \mbox{\hyperlink{bootforcecov_8f90_source_l00040}{bootforcecov()}}, \mbox{\hyperlink{bootparameter_8f90_source_l00048}{bootparameter()}}, \mbox{\hyperlink{kpoints_8f90_source_l00543}{kpoints\+\_\+mod\+::check\+\_\+kpoints()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02443}{freeelmod\+\_\+complex\+::checksum()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00547}{parallel\+\_\+module\+::collect\+\_\+kpoints()}}, \mbox{\hyperlink{conjginv_8f90_source_l00043}{conjginv()}}, \mbox{\hyperlink{conjginv__prep_8f90_source_l00049}{conjginv\+\_\+prep()}}, \mbox{\hyperlink{conjginvs_8f90_source_l00042}{conjginvs()}}, \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{convertmod_8f90_source_l01940}{convertmod\+::convertmol\+\_\+c()}}, \mbox{\hyperlink{convertmod_8f90_source_l00123}{convertmod\+::convertmol\+\_\+fast()}}, \mbox{\hyperlink{elec__density_8f90_source_l00696}{cutdens()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l01382}{freeelmod\+\_\+complex\+::cycle\+\_\+complex()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02026}{freeelmod\+\_\+complex\+::cyclesteep\+\_\+complex()}}, \mbox{\hyperlink{dgemm__my_8f90_source_l00071}{dgemm\+\_\+my()}}, \mbox{\hyperlink{dgesvd_8f90_source_l00018}{dgesvd\+\_\+my()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l02607}{freeelmod\+\_\+complex\+::diagonalize\+\_\+hamiltonian()}}, \mbox{\hyperlink{dsyev_8f90_source_l00018}{dsyev\+\_\+my()}}, \mbox{\hyperlink{eval__hamilt__complex_8f90_source_l00048}{eval\+\_\+hamilt\+\_\+complex()}}, \mbox{\hyperlink{convertmod_8f90_source_l02961}{convertmod\+::evalovers()}}, \mbox{\hyperlink{graham__scalapack_8f90_source_l00033}{graham\+\_\+scalapack()}}, \mbox{\hyperlink{improve__diag_8f90_source_l00030}{improvediag()}}, \mbox{\hyperlink{initialize__matrices_8f90_source_l00030}{initialize\+\_\+mats\+\_\+new()}}, \mbox{\hyperlink{convertfort10_8f90_source_l02414}{load\+\_\+fort10in()}}, \mbox{\hyperlink{convertmod_8f90_source_l02730}{convertmod\+::ortho\+\_\+fast()}}, \mbox{\hyperlink{scal__lins_8f90_source_l00238}{scal\+\_\+lins\+::para\+\_\+syst()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}, \mbox{\hyperlink{kpoints_8f90_source_l00679}{kpoints\+\_\+mod\+::sum\+\_\+kpoints\+\_\+array\+\_\+real8()}}, \mbox{\hyperlink{kpoints_8f90_source_l00652}{kpoints\+\_\+mod\+::sum\+\_\+kpoints\+\_\+scalar\+\_\+real8()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l02535}{update\+\_\+index()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00639}{fourier\+\_\+module\+::update\+\_\+vhartree()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l01201}{fourier\+\_\+module\+::upload\+\_\+vector\+\_\+global()}}, \mbox{\hyperlink{write__corr__fun_8f90_source_l00073}{write\+\_\+corr\+\_\+fun()}}, \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}, \mbox{\hyperlink{write__corr__fun_8f90_source_l00260}{write\+\_\+rho()}}, \mbox{\hyperlink{zgemm__my_8f90_source_l00072}{zgemm\+\_\+my()}}, \mbox{\hyperlink{zgesvd_8f90_source_l00017}{zgesvd\+\_\+my()}}, and \mbox{\hyperlink{zsyev_8f90_source_l00018}{zsyev\+\_\+my()}}.
+
+\Hypertarget{dsortx_8f90_a83ad9332f6aca1745a57b5c46d928fae}\index{dsortx.f90@{dsortx.f90}!reduce\_base\_real\_to@{reduce\_base\_real\_to}}
+\index{reduce\_base\_real\_to@{reduce\_base\_real\_to}!dsortx.f90@{dsortx.f90}}
+\doxysubsubsection{\texorpdfstring{reduce\_base\_real\_to()}{reduce\_base\_real\_to()}}
+{\footnotesize\ttfamily \label{dsortx_8f90_a83ad9332f6aca1745a57b5c46d928fae} 
+subroutine reduce\+\_\+base\+\_\+real\+\_\+to (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{dim}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(dim), intent(in)}]{ps}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(dim), intent(out)}]{psout}{, }\item[{integer, intent(in)}]{comm}{, }\item[{integer, intent(in)}]{root}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsortx_8f90_source_l00967}{967}} of file \mbox{\hyperlink{dsortx_8f90_source}{dsortx.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00968\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00969\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00970\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ sums\ a\ distributed\ variable\ ps(dim)\ over\ the\ processors.}}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ This\ version\ uses\ a\ fixed-\/length\ buffer\ of\ appropriate\ (?)\ dim}}
+\DoxyCodeLine{00972\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ \ \ \ \ \ \ \ \ \ \ \ \ \ uses\ SHMEM\ if\ available,\ MPI\ otherwhise}}
+\DoxyCodeLine{00973\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00974\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{use\ }buffer,\ \textcolor{keywordtype}{only}:\ bufdim}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ dim}
+\DoxyCodeLine{00978\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(IN)}\ ::\ ps(dim)}
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ real*8,\ \textcolor{keywordtype}{intent(OUT)}\ ::\ psout(dim)}
+\DoxyCodeLine{00980\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ comm\ \textcolor{comment}{!\ communecator}}
+\DoxyCodeLine{00981\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(IN)}\ ::\ root\ \textcolor{comment}{!\ if\ root\ <\ \ 0\ perform\ a\ reduction\ to\ all\ procs}}
+\DoxyCodeLine{00982\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ root\ >=\ 0\ perform\ a\ reduce\ only\ to\ root\ proc.}}
+\DoxyCodeLine{00983\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00984\ \#if\ defined\ (PARALLEL)}
+\DoxyCodeLine{00985\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00986\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00987\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00988\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ n,\ nbuf,\ nproc,\ myid}
+\DoxyCodeLine{00989\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ maxb}
+\DoxyCodeLine{00990\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00991\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_size(comm,\ nproc,\ info)}
+\DoxyCodeLine{00992\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_comm\_size'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00993\ \textcolor{comment}{}}
+\DoxyCodeLine{00994\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_rank(comm,\ myid,\ info)}
+\DoxyCodeLine{00995\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_comm\_rank'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{00996\ \textcolor{comment}{}}
+\DoxyCodeLine{00997\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxb\ =\ min(bufdim,\ dim)}
+\DoxyCodeLine{00998\ }
+\DoxyCodeLine{00999\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01000\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dim\ <=\ 0\ .or.\ nproc\ <\ 1)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01001\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01002\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ ==\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01003\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psout\ =\ ps}
+\DoxyCodeLine{01004\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01005\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01006\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ synchronize\ processes}}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01009\ \textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{01010\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(comm,\ info)}
+\DoxyCodeLine{01011\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{01012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_barrier'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01013\ \textcolor{comment}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01014\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01015\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nbuf\ =\ dim/maxb}
+\DoxyCodeLine{01016\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nbuf}
+\DoxyCodeLine{01018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ (n\ -\/\ 1)*maxb\textcolor{comment}{),\ psout(1\ +\ (n\ -\/\ 1)*maxb),\ maxb,\ mpi\_double\_precision,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{01022\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01023\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ (n\ -\/\ 1\textcolor{comment}{)*maxb),\ psout(1\ +\ (n\ -\/\ 1)*maxb),\ maxb,\ mpi\_double\_precision,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{01025\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 1'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01026\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01028\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ...\ possible\ remaining\ elements\ <\ maxb}}
+\DoxyCodeLine{01031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((dim\ -\/\ nbuf*maxb)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\ >=\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{01035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_reduce(ps(1\ +\ nbuf*maxb\textcolor{comment}{),\ psout(1\ +\ nbuf*maxb),\ (dim\ -\/\ nbuf*maxb),\ mpi\_double\_precision,\ mpi\_sum,\ root,\ comm,\ info)}}
+\DoxyCodeLine{01036\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_reduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01037\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(ps(1\ +\ nbuf*maxb\textcolor{comment}{),\ psout(1\ +\ nbuf*maxb),\ (dim\ -\/\ nbuf*maxb),\ mpi\_double\_precision,\ mpi\_sum,\ comm,\ info)}}
+\DoxyCodeLine{01039\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ /=\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'reduce\_base\_real\_to'}\textcolor{comment}{,\ }\textcolor{stringliteral}{'error\ in\ mpi\_allreduce\ 2'}\textcolor{comment}{,\ info)}}
+\DoxyCodeLine{01040\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{01044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01045\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01046\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psout\ =\ ps}
+\DoxyCodeLine{01047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{01048\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01049\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{error__handler_8f90_source_l00027}{errore()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dspev__drv_8f90_source_l00016}{\+\_\+\+\_\+dspev\+\_\+drv\+\_\+f90\+\_\+\+\_\+()}}, \mbox{\hyperlink{conjginvs_8f90_source_l00042}{conjginvs()}}, \mbox{\hyperlink{elec__density_8f90_source_l00696}{cutdens()}}, \mbox{\hyperlink{fill__matrix__scalapack_8f90_source_l00039}{fill\+\_\+matrix\+\_\+scalapack()}}, \mbox{\hyperlink{main_8f90_source_l00017}{main()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l02535}{update\+\_\+index()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

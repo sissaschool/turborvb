@@ -13,6 +13,24 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Bootstrap method to evaluate pressure and its error bars
+!> @details    This subroutine implements the bootstrap method to evaluate pressure
+!>             and its error bars for each bin. It calculates pressure contributions
+!>             including Pulay corrections and Hartree-Fock contributions.
+!>             The method uses jackknife resampling to estimate statistical errors
+!>             for pressure calculations in VMC/DMC simulations.
+!> @param[in]  nbin        Number of bins
+!> @param[in]  efenergy    Energy and weight arrays
+!> @param[in]  e           Energy arrays for pressure calculation
+!> @param[out] eta         Average pressure
+!> @param[out] derr        Pressure error
+!> @param[out] etanp       Average pressure without Pulay contributions
+!> @param[out] derrnp      Pressure error without Pulay contributions
+!> @param[in]  LBox        Box length
+!> @param[in]  omega       Frequency parameter
+!> @param[in]  ris         Scaling factors
+!> @param[in]  rank        Process rank
+!> @param[in]  nproc       Number of processes
 subroutine bootpress(nbin, efenergy, e, eta, derr                     &
         &, etanp, derrnp, LBox, omega, ris, rank, nproc)
     use constants, only: ipc

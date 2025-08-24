@@ -1,0 +1,201 @@
+\doxysection{sub\+\_\+comm Module Reference}
+\hypertarget{namespacesub__comm}{}\label{namespacesub__comm}\index{sub\_comm@{sub\_comm}}
+
+
+MPI sub-\/communicator management for parallel quantum Monte Carlo.  
+
+
+\doxysubsubsection*{Data Types}
+\begin{DoxyCompactItemize}
+\item 
+type \mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\+\_\+sub\+\_\+comm}}
+\begin{DoxyCompactList}\small\item\em Derived type for MPI sub-\/communicator information. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749}{mpi\+\_\+sub\+\_\+comm\+\_\+create}} (parent\+\_\+comm, new\+\_\+size, child, ierror)
+\begin{DoxyCompactList}\small\item\em Create a new MPI sub-\/communicator from a parent communicator. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacesub__comm_a68f756638020505901020b6055e639a6}{mpi\+\_\+sub\+\_\+comm\+\_\+free}} (child, ierror)
+\begin{DoxyCompactList}\small\item\em Free an MPI sub-\/communicator. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+MPI sub-\/communicator management for parallel quantum Monte Carlo. 
+
+This module provides functionality for creating and managing MPI sub-\/communicators used in parallel quantum Monte Carlo calculations. It allows for dynamic creation of smaller communication groups from larger parent communicators, enabling efficient parallel processing with different group sizes.
+
+The module includes\+:
+\begin{DoxyItemize}
+\item Derived type for sub-\/communicator information
+\item Subroutine for creating sub-\/communicators
+\item Subroutine for freeing sub-\/communicators
+\item Support for both parallel and serial execution modes
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022 
+\end{DoxyDate}
+
+
+\label{doc-func-members}
+\Hypertarget{namespacesub__comm_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749}\index{sub\_comm@{sub\_comm}!mpi\_sub\_comm\_create@{mpi\_sub\_comm\_create}}
+\index{mpi\_sub\_comm\_create@{mpi\_sub\_comm\_create}!sub\_comm@{sub\_comm}}
+\doxysubsubsection{\texorpdfstring{mpi\_sub\_comm\_create()}{mpi\_sub\_comm\_create()}}
+{\footnotesize\ttfamily \label{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749} 
+subroutine sub\+\_\+comm\+::mpi\+\_\+sub\+\_\+comm\+\_\+create (\begin{DoxyParamCaption}\item[{integer}]{parent\+\_\+comm}{, }\item[{integer}]{new\+\_\+size}{, }\item[{type(\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\+\_\+sub\+\_\+comm}})}]{child}{, }\item[{integer}]{ierror}{}\end{DoxyParamCaption})}
+
+
+
+Create a new MPI sub-\/communicator from a parent communicator. 
+
+This subroutine creates a new MPI sub-\/communicator containing a subset of processes from the parent communicator. It is useful for creating smaller communication groups for specific parallel operations.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em parent\+\_\+comm} & Parent MPI communicator handle \\
+\hline
+\mbox{\texttt{in}}  & {\em new\+\_\+size} & Number of processes in the new sub-\/communicator \\
+\hline
+\mbox{\texttt{out}}  & {\em child} & Sub-\/communicator information structure \\
+\hline
+\mbox{\texttt{out}}  & {\em ierror} & MPI error code\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Allocates rank array for the new communicator
+\item Assigns ranks 0 to new\+\_\+size-\/1 to the sub-\/communicator
+\item Creates MPI group from the parent communicator
+\item Creates new group with specified ranks
+\item Creates new communicator from the group
+\item Determines rank and membership in the new communicator
+\item Frees temporary groups and deallocates arrays
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+In serial mode, new\+\_\+size is forced to 1 
+
+Processes not included in the sub-\/communicator have yesin = .false. 
+
+The subroutine handles both parallel and serial execution modes 
+
+Used for creating specialized communication groups in parallel QMC 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{sub__comm_8f90_source_l00076}{76}} of file \mbox{\hyperlink{sub__comm_8f90_source}{sub\+\_\+comm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ parent\_comm,\ new\_size,\ ierror}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(mpi\_sub\_comm)\ ::\ child}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ orig\_group,\ sub\_group,\ i}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ranks}
+\DoxyCodeLine{00086\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_size\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ changing\ number\ of\ processors\ to\ 1\ in\ serial\ '}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ new\_size\ =\ 1}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ new\_size}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ ranks(i)\ =\ i\ -\/\ 1}
+\DoxyCodeLine{00097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ child\%parent\ =\ parent\_comm}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_group(parent\_comm,\ orig\_group,\ ierror)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_incl(orig\_group,\ new\_size,\ ranks,\ sub\_group,\ ierror\textcolor{comment}{)}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_create(parent\_comm,\ sub\_group,\ child\%comm,\ ierror)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_rank(sub\_group,\ child\%rank,\ ierror)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%rank\ .eq.\ mpi\_undefined)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .false.}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ write(6,*)\ child\%rank,"{}xx"{},new\_size}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(orig\_group,\ ierror)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(sub\_group,\ ierror)}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ranks)}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{convertfort10mol_8f90_source_l00035}{convertfort10mol()}}, and \mbox{\hyperlink{setup_8f90_source_l00207}{setup\+::initializeall()}}.
+
+\Hypertarget{namespacesub__comm_a68f756638020505901020b6055e639a6}\index{sub\_comm@{sub\_comm}!mpi\_sub\_comm\_free@{mpi\_sub\_comm\_free}}
+\index{mpi\_sub\_comm\_free@{mpi\_sub\_comm\_free}!sub\_comm@{sub\_comm}}
+\doxysubsubsection{\texorpdfstring{mpi\_sub\_comm\_free()}{mpi\_sub\_comm\_free()}}
+{\footnotesize\ttfamily \label{namespacesub__comm_a68f756638020505901020b6055e639a6} 
+subroutine sub\+\_\+comm\+::mpi\+\_\+sub\+\_\+comm\+\_\+free (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\+\_\+sub\+\_\+comm}})}]{child}{, }\item[{integer}]{ierror}{}\end{DoxyParamCaption})}
+
+
+
+Free an MPI sub-\/communicator. 
+
+This subroutine properly frees an MPI sub-\/communicator and its associated resources. It ensures clean deallocation of MPI communicator handles to prevent memory leaks.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em child} & Sub-\/communicator structure to be freed \\
+\hline
+\mbox{\texttt{out}}  & {\em ierror} & MPI error code\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Checks if the current process is a member of the sub-\/communicator
+\item If yesin = .true., calls MPI\+\_\+\+COMM\+\_\+\+FREE to deallocate the communicator
+\item Handles both parallel and serial execution modes
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Only processes that are members of the sub-\/communicator participate in the MPI\+\_\+\+COMM\+\_\+\+FREE call 
+
+The subroutine is safe to call even if the communicator was not properly created 
+
+Used for cleanup after parallel operations are complete 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{sub__comm_8f90_source_l00147}{147}} of file \mbox{\hyperlink{sub__comm_8f90_source}{sub\+\_\+comm.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ierror}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(mpi\_sub\_comm)\ ::\ child}
+\DoxyCodeLine{00151\ \#ifdef\ PARALLEL}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%yesin)\ \textcolor{keyword}{call\ }mpi\_comm\_free(child\%comm,\ ierror)}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

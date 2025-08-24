@@ -1,0 +1,109 @@
+\doxysection{copy\+\_\+eagp.\+f90}
+\hypertarget{copy__eagp_8f90_source}{}\label{copy__eagp_8f90_source}\index{src/m\_common/copy\_eagp.f90@{src/m\_common/copy\_eagp.f90}}
+\mbox{\hyperlink{copy__eagp_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Copy\ and\ transform\ AGP\ (Antisymmetrized\ Geminal\ Power)\ matrices}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ handles\ copying\ and\ transformation\ between\ different}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00019}00019\ \textcolor{comment}{!>\ representations\ of\ AGP\ matrices.\ It\ can\ convert\ between\ a\ small\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00020}00020\ \textcolor{comment}{!>\ representation\ and\ a\ full\ matrix\ representation,\ including\ Pfaffian}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00021}00021\ \textcolor{comment}{!>\ matrix\ elements.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ small2big\ Direction\ flag\ for\ matrix\ transformation}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ ipc\ Parameter\ type\ flag\ (1=real,\ 2=complex)}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ nelorb\_c\ Number\ of\ orbitals\ in\ the\ core}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ nelcol\_c\ Number\ of\ columns\ in\ the\ full\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in,out]\ detmat\_small\ Small\ matrix\ representation\ (nelorb\_c\ ×\ nelcol\_c)}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in,out]\ eagp\_pfaff\ Pfaffian\ matrix\ elements\ ((nelcol\_c-\/nelorb\_c)\ ×\ (nelcol\_c-\/nelorb\_c))}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in,out]\ detmat\_big\ Full\ matrix\ representation\ (nelcol\_c\ ×\ nelcol\_c)}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00030}00030\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00032}00032\ \textcolor{comment}{!>\ The\ subroutine\ performs\ different\ operations\ based\ on\ the\ small2big\ flag:}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00033}00033\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00034}00034\ \textcolor{comment}{!>\ **small2big\ =\ .true.\ (Small\ to\ Big\ transformation):**}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00035}00035\ \textcolor{comment}{!>\ 1.\ Copy\ the\ small\ matrix\ to\ the\ upper-\/left\ block\ of\ the\ big\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00036}00036\ \textcolor{comment}{!>\ 2.\ Apply\ antisymmetry:\ detmat\_big(i,j)\ =\ -\/detmat\_small(j,i)\ for\ i\ >\ nelorb\_c,\ j\ ≤\ nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00037}00037\ \textcolor{comment}{!>\ 3.\ Copy\ Pfaffian\ elements\ to\ the\ lower-\/right\ block\ of\ the\ big\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00038}00038\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00039}00039\ \textcolor{comment}{!>\ **small2big\ =\ .false.\ (Big\ to\ Small\ transformation):**}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00040}00040\ \textcolor{comment}{!>\ 1.\ Copy\ the\ upper-\/left\ block\ of\ the\ big\ matrix\ to\ the\ small\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00041}00041\ \textcolor{comment}{!>\ 2.\ Extract\ Pfaffian\ elements\ from\ the\ lower-\/right\ block\ of\ the\ big\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00042}00042\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00043}00043\ \textcolor{comment}{!>\ **Matrix\ Structure:**}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00044}00044\ \textcolor{comment}{!>\ The\ full\ matrix\ (detmat\_big)\ has\ the\ structure:}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00046}00046\ \textcolor{comment}{!>\ [\ detmat\_small\ \ \ \ \ \ \ \ ]}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00047}00047\ \textcolor{comment}{!>\ [\ -\/detmat\_small\string^T\ \ \ \ \ eagp\_pfaff\ ]}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00048}00048\ \textcolor{comment}{!>\ \`{}\`{}\`{}}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00049}00049\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00050}00050\ \textcolor{comment}{!>\ **Parameter\ Handling:**}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00051}00051\ \textcolor{comment}{!>\ -\/\ ipc\ =\ 1:\ Real\ matrices\ (single\ precision\ elements)}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00052}00052\ \textcolor{comment}{!>\ -\/\ ipc\ =\ 2:\ Complex\ matrices\ (double\ precision\ elements,\ real/imaginary\ parts)}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00053}00053\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @note\ The\ subroutine\ assumes\ proper\ matrix\ dimensions\ and\ memory\ allocation.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @note\ For\ complex\ matrices\ (ipc=2),\ the\ transformation\ handles\ real\ and\ imaginary\ parts.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00056}00056\ \textcolor{comment}{!>\ @note\ The\ antisymmetry\ property\ is\ enforced\ during\ the\ transformation.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00057}00057\ \textcolor{comment}{!>\ @note\ This\ subroutine\ is\ essential\ for\ AGP\ wave\ function\ calculations.}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00058}\mbox{\hyperlink{copy__eagp_8f90_afa35f371183dfdb28495456f673548b5}{00058}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copy__eagp_8f90_afa35f371183dfdb28495456f673548b5}{copy\_eagp}}(small2big,\ ipc,\ nelorb\_c,\ nelcol\_c,\ detmat\_small,\ eagp\_pfaff,\ detmat\_big)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordtype}{logical}\ small2big}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipc,\ nelorb\_c,\ nelcol\_c,\ i,\ j}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00062}00062\ \ \ \ \ real*8\ detmat\_small(ipc*nelorb\_c,\ nelcol\_c),\ detmat\_big(ipc*nelcol\_c,\ nelcol\_c)\&}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ eagp\_pfaff(ipc*(nelcol\_c\ -\/\ nelorb\_c),\ nelcol\_c\ -\/\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00065}00065\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Transform\ from\ small\ to\ big\ matrix\ representation}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordflow}{if}\ (small2big)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Copy\ small\ matrix\ to\ upper-\/left\ block\ of\ big\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcol\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ipc*nelorb\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_big(i,\ j)\ =\ detmat\_small(i,\ j)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00071}00071\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00074}00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Apply\ antisymmetry\ and\ copy\ Pfaffian\ elements}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nelorb\_c\ +\ 1,\ nelcol\_c\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00076}00076\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Apply\ antisymmetry\ for\ upper-\/right\ block}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorb\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_big(ipc*(i\ -\/\ 1)\ +\ 1:ipc*i,\ j)\ =\ -\/detmat\_small(ipc*(j\ -\/\ 1)\ +\ 1:ipc*j,\ i)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00079}00079\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00080}00080\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Copy\ Pfaffian\ elements\ to\ lower-\/right\ block}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorb\_c\ +\ 1,\ nelcol\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_big(ipc*(i\ -\/\ 1)\ +\ 1:ipc*i,\ j)\ =\ \&}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&eagp\_pfaff(ipc*(i\ -\/\ 1\ -\/\ nelorb\_c)\ +\ 1:ipc*(i\ -\/\ nelorb\_c),\ j\ -\/\ nelorb\_c)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00087}00087\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Transform\ from\ big\ to\ small\ matrix\ representation}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00088}00088\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Copy\ upper-\/left\ block\ of\ big\ matrix\ to\ small\ matrix}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcol\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ipc*nelorb\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmat\_small(i,\ j)\ =\ detmat\_big(i,\ j)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00095}00095\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Extract\ Pfaffian\ elements\ from\ lower-\/right\ block}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ nelorb\_c\ +\ 1,\ nelcol\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ nelorb\_c\ +\ 1,\ nelcol\_c}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eagp\_pfaff(ipc*(i\ -\/\ nelorb\_c\ -\/\ 1)\ +\ 1:ipc*(i\ -\/\ nelorb\_c),\ j\ -\/\ nelorb\_c)\ =\ \&}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&detmat\_big(ipc*(i\ -\/\ 1)\ +\ 1:ipc*i,\ j)}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00100}00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00101}00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00102}00102\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copy__eagp_8f90_source_l00103}00103\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{copy__eagp_8f90_afa35f371183dfdb28495456f673548b5}{copy\_eagp}}}
+
+\end{DoxyCode}

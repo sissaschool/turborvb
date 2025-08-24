@@ -890,6 +890,9 @@ program main
     stop
 
 contains
+    !> @brief Update projection matrix for complex or real wave functions
+    !> @details This subroutine updates the projection matrix (projm) by performing matrix multiplication between mu_c and detmat_c matrices. It handles both complex and real wave functions using appropriate BLAS routines (zgemm_ or dgemm_). The operation is optimized for GPU offloading when _OFFLOAD is defined.
+    !> @param None (uses module variables)
     subroutine update_projm
         implicit none
 #ifdef _OFFLOAD
@@ -912,6 +915,9 @@ contains
         end if
 #endif
     end subroutine update_projm
+    !> @brief Update projection matrix outside target region
+    !> @details This subroutine performs the same operation as update_projm but outside the GPU target region. It updates the projection matrix using matrix multiplication between mu_c and detmat_c matrices, handling both complex and real wave functions.
+    !> @param None (uses module variables)
     subroutine update_projm_
         implicit none
         !  Outside the target region
@@ -923,6 +929,9 @@ contains
                  &, detmat_c, nelorb_c, 0.d0, projm, ipf*nelorbh, nprocu, rankrep, commrep_mpi)
         end if
     end subroutine update_projm_
+    !> @brief Perform single electron moves for quantum Monte Carlo
+    !> @details This subroutine updates electron coordinates of all walkers using single electron moves with various options (VMC, DMC, etc.). It computes all necessary tables for fast updates and handles different move types including diffusion, hopping, and heat bath moves. The routine implements detailed balance and supports various DMC algorithms with rejection and reweighting schemes.
+    !> @param None (uses module variables)
     subroutine makeqmcsingleel
 
         implicit none
@@ -1828,6 +1837,9 @@ contains
 
     end subroutine makeqmcsingleel
 
+    !> @brief Compute all correlation functions and measurements
+    !> @details This subroutine computes by scratch all correlation functions used for energy minimization or dynamics. It handles both complex and real wave functions, computes local energies, and manages various measurement types including forces and energy derivatives.
+    !> @param None (uses module variables)
     subroutine makeallmeas
 
         !----------------------------------------------------
@@ -2827,6 +2839,9 @@ contains
         return
     end subroutine makeallmeas
 
+    !> @brief Update wave function optimization parameters
+    !> @details This subroutine updates wave function parameters during optimization. It handles parameter updates, computes gradients, and manages the optimization process for both VMC and DMC calculations.
+    !> @param None (uses module variables)
     subroutine updatewfopt
 
         !By E. Coccia (13/12/11)
@@ -4892,6 +4907,9 @@ contains
 #endif
     end subroutine updatewfopt
 
+    !> @brief Write results and perform branching for DMC
+    !> @details This subroutine writes calculation results to output files and performs branching operations for DMC calculations. It handles walker population control and result output formatting.
+    !> @param None (uses module variables)
     subroutine writeandbranch
 
         implicit none
@@ -5442,6 +5460,9 @@ contains
 #endif
     end subroutine writeandbranch
 
+    !> @brief Initialize all variables and setup for calculations
+    !> @details This subroutine initializes all variables, reads input parameters, sets up MPI communicators, allocates memory, and prepares the system for quantum Monte Carlo calculations. It handles both serial and parallel execution modes.
+    !> @param None (uses module variables)
     subroutine Initializeall
         use allio
         ! by E. Coccia (9/11/10)
@@ -8705,6 +8726,9 @@ contains
         enerdiff = 0.d0 ! just to be sure it is initialized.
     end subroutine Initializeall
 
+    !> @brief Finalize calculations and cleanup resources
+    !> @details This subroutine performs final calculations, writes final results, deallocates memory, and performs cleanup operations. It handles proper termination of MPI processes and resource management.
+    !> @param None (uses module variables)
     subroutine Finalizeall
 
         ! by E. Coccia (30/12/10): deallocate arrays for ext_pot
@@ -9045,6 +9069,9 @@ contains
 
     end subroutine Finalizeall
 
+    !> @brief Fast version of correlation function computation
+    !> @details This subroutine is an optimized version of makeallmeas that computes correlation functions more efficiently. It uses pre-computed tables and optimized algorithms for faster execution.
+    !> @param None (uses module variables)
     subroutine makeallmeas_fast
         implicit none
 !        This subroutine compute by scratch all correlation functions
@@ -9198,6 +9225,9 @@ contains
 
     end subroutine makeallmeas_fast
 
+    !> @brief Project wave function onto variational parameters
+    !> @details This subroutine projects the wave function onto variational parameters for optimization. It handles the projection operation with optional matrix inversion.
+    !> @param[in] doinv      Flag to perform matrix inversion
     subroutine project_v(doinv)
         implicit none
         logical doinv
@@ -9249,6 +9279,9 @@ contains
 #endif
     end subroutine project_v
 
+    !> @brief Project wave function with maximum radius constraint
+    !> @details This subroutine projects the wave function with constraints on the maximum radius. It ensures that electron positions remain within specified boundaries.
+    !> @param None (uses module variables)
     subroutine project_rmax
         implicit none
         integer j, k, ind, iy, ix
@@ -9329,6 +9362,9 @@ contains
         end if
     end subroutine project_rmax
 
+    !> @brief Project wave function with alpha variational parameters
+    !> @details This subroutine projects the wave function using alpha variational parameters. It handles the projection for specific parameter types in the wave function.
+    !> @param None (uses module variables)
     subroutine project_alphavar
         implicit none
         integer i, j, k, indc
@@ -9416,6 +9452,9 @@ contains
         end if
     end subroutine project_alphavar
 
+    !> @brief Update ion positions for molecular dynamics
+    !> @details This subroutine updates ion positions during molecular dynamics simulations. It handles force calculations, position updates, and boundary conditions.
+    !> @param None (uses module variables)
     subroutine update_ionpos
         implicit none
         real*8 rc(3), r0
@@ -9592,6 +9631,13 @@ contains
 
     end subroutine update_ionpos
 
+    !> @brief Copy wave function inverse matrices
+    !> @details This subroutine copies wave function inverse matrices from one set to another. It handles the copying of orbital and determinant matrices.
+    !> @param[in] nelorb     Number of orbitals
+    !> @param[in] nel        Number of electrons
+    !> @param[in] indt4      Index for derivatives
+    !> @param[in] winv       Input wave function inverse
+    !> @param[out] winvfn     Output wave function inverse
     subroutine copywinv(nelorb, nel, indt4, winv, winvfn)
         implicit none
         integer nelorb, indt4, nel
@@ -9605,6 +9651,11 @@ contains
 !===================================
 ! wrappers for the main subroutines
 !===================================
+    !> @brief Compute global B matrices for wave function
+    !> @details This subroutine computes global B matrices used in wave function calculations. It handles the computation of matrices needed for energy and force calculations.
+    !> @param[in] js         Walker index
+    !> @param[in] yesfast    Flag for fast computation
+    !> @param[in] yesfastj   Flag for fast Jastrow computation
     subroutine computeb_global(js, yesfast, yesfastj&
      &, yeszagp, yesdodet, yeszj, yesforce, elocb, logpsib, membig, firstmol, nmolfn, detmat_c)
         implicit none
@@ -9835,6 +9886,9 @@ contains
         return
 
     end subroutine computeb_global
+    !> @brief Deallocate memory for B matrix computations
+    !> @details This subroutine deallocates memory that was allocated for B matrix computations. It performs cleanup of temporary arrays and matrices.
+    !> @param None (uses module variables)
     subroutine deallocate_computeb
         implicit none
         deallocate (winvjbarszb)
@@ -9853,6 +9907,11 @@ contains
            &, rmusinb, tmub, ivicb, tabpipsav)
     end subroutine deallocate_computeb
 
+    !> @brief Update scratch arrays globally
+    !> @details This subroutine updates scratch arrays used throughout the calculation. It handles the computation of various intermediate quantities needed for wave function evaluation.
+    !> @param[in] js         Walker index
+    !> @param[in] pseudologicr Pseudopotential logic flag
+    !> @param[in] iesrandomlr Random number seed for long range
     subroutine upscratch_global(js, pseudologicr, iesrandomlr)
 
         use allio, only: pseudologic, iesrandoml
@@ -9918,6 +9977,10 @@ contains
 
     end subroutine upscratch_global
 
+    !> @brief Update total tables globally
+    !> @details This subroutine updates total tables used for wave function calculations. It handles the computation of various tables needed for energy and force evaluation.
+    !> @param[in] js         Walker index
+    !> @param[in] pseudologic Pseudopotential logic flag
     subroutine uptabtot_global(js, pseudologic)
         implicit none
         logical pseudologic
@@ -9979,6 +10042,9 @@ contains
 
     end subroutine uptabtot_global
 
+    !> @brief Read alpha variational parameters
+    !> @details This subroutine reads alpha variational parameters from input files. It handles the input of parameters needed for wave function optimization.
+    !> @param None (uses module variables)
     subroutine read_alphavar
         implicit none
 !       put the initial parameter wavefunction in alphavar

@@ -13,6 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Compute regularized wave function ratio
+!> @details    Computes the ratio of regularized wave functions (wfnew/wfnewr)/(wfold/wfoldr)
+!>             where wf*r means the regularized wave function. The sign does not play any role
+!>             since Sign wf*r = Sign wf*. Different regularization types are supported.
+!> @param[in]  parcut      Regularization parameter (cutoff value)
+!> @param[in]  psiold      Log of old wave function amplitude: log(|wfold|)
+!> @param[in]  ratio       Ratio of new to old wave function: wfnew/wfold
+!> @param[out] tabler      Regularized ratio: (wfnew/wfnewr)/(wfold/wfoldr)
+!> @param[in]  typereg     Type of regularization:
+!>                         - 2: Hard cutoff regularization
+!>                         - 4: Soft regularization with sqrt(wf^2 + epsilon^2)
+!>                         - 8: Sign regularization (wfr = sgn(wf))
+!>                         - Other: Standard cutoff regularization
 subroutine ratiofn_psi(parcut, psiold, ratio, tabler, typereg)
     implicit none
     real*8 psiold, ratio, parcut, psinew, tabler, lpsinew, lpsiold

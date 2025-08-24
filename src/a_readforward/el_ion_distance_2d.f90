@@ -13,6 +13,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes electron-ion distances in 2D systems
+!> @details This subroutine calculates the distances between electrons
+!>          and ions in 2D systems. It projects the distances onto the
+!>          z=0 plane and handles out-of-plane filtering. For periodic
+!>          boundary conditions, it applies PBC to the distance vectors.
+!>          For non-periodic systems, it filters out electrons that are
+!>          too close to the z-plane.
+!> @param[out] eliond Distance matrix between ions and electrons (nion, nel)
+!> @param[in] kel Electron positions (3, nel)
+!> @param[in] nel Number of electrons
+!> @param[in] rion Ion positions (3, nion)
+!> @param[in] nion Number of ions
+!> @param[in] iespbc Flag for periodic boundary conditions
+!> @param[in] outofplane Out-of-plane threshold distance
 subroutine el_ion_distance_2d(eliond, kel, nel, rion, nion, iespbc, outofplane)
 
     use Cell

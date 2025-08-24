@@ -1,0 +1,270 @@
+\doxysection{src/m\+\_\+common/upsimp.f90 File Reference}
+\hypertarget{upsimp_8f90}{}\label{upsimp_8f90}\index{src/m\_common/upsimp.f90@{src/m\_common/upsimp.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upsimp_8f90_a1173a9db6e1414165fbb61649ac80cc0}{upsimp}} (amat, ndim, ind, value, symmagp, ipf)
+\begin{DoxyCompactList}\small\item\em Matrix increment utilities for quantum Monte Carlo calculations. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{upsimp_8f90_a36e04989e419358943206753c13c59fb}{upsimp\+\_\+complex}} (amat, ndim, ind, value, symmagp, ipf)
+\begin{DoxyCompactList}\small\item\em Increment complex matrix elements with symmetry handling. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upsimp_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upsimp_8f90_a1173a9db6e1414165fbb61649ac80cc0}\index{upsimp.f90@{upsimp.f90}!upsimp@{upsimp}}
+\index{upsimp@{upsimp}!upsimp.f90@{upsimp.f90}}
+\doxysubsubsection{\texorpdfstring{upsimp()}{upsimp()}}
+{\footnotesize\ttfamily \label{upsimp_8f90_a1173a9db6e1414165fbb61649ac80cc0} 
+subroutine upsimp (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ndim, \texorpdfstring{$\ast$}{*})}]{amat}{, }\item[{integer}]{ndim}{, }\item[{integer}]{ind}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{value}{, }\item[{logical}]{symmagp}{, }\item[{integer}]{ipf}{}\end{DoxyParamCaption})}
+
+
+
+Matrix increment utilities for quantum Monte Carlo calculations. 
+
+This module provides subroutines for incrementing matrix elements in quantum Monte Carlo calculations, supporting both real and complex matrices. It handles different matrix types including standard matrices and Pfaffian matrices for paired and unpaired electrons.
+
+The module includes\+:
+\begin{DoxyItemize}
+\item Real matrix increment with symmetry handling
+\item Complex matrix increment with Hermitian/transpose symmetry
+\item Support for Pfaffian matrices with up/down electron blocks
+\item Proper handling of paired and unpaired electron configurations
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Increment real matrix elements with symmetry handling
+
+This subroutine increments matrix elements in a real matrix, handling different matrix types and symmetry conditions. It supports both standard matrices and Pfaffian matrices for quantum Monte Carlo calculations.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em amat} & Matrix to be updated (ndim, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em ndim} & Leading dimension of the matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em ind} & Linear index of the matrix element to update \\
+\hline
+\mbox{\texttt{in}}  & {\em value} & Value to add to the matrix element \\
+\hline
+\mbox{\texttt{in}}  & {\em symmagp} & Flag for symmetric matrix updates \\
+\hline
+\mbox{\texttt{in}}  & {\em ipf} & Flag indicating matrix type\+:
+\begin{DoxyItemize}
+\item ipf = 1\+: Standard matrix
+\item ipf ≠ 1\+: Pfaffian matrix
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Converts linear index to (i,j) matrix coordinates
+\item For standard matrices (ipf = 1)\+:
+\begin{DoxyItemize}
+\item Adds value to amat(i,j)
+\item If symmagp is true and i ≠ j, adds value to amat(j,i)
+\end{DoxyItemize}
+\item For Pfaffian matrices (ipf ≠ 1)\+:
+\begin{DoxyItemize}
+\item Adds value to amat(i,j) and subtracts from amat(j,i)
+\item Handles up/down electron blocks with proper symmetry
+\item Manages paired and unpaired electron configurations
+\item Applies symmetry conditions based on ion types
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The subroutine handles antisymmetry of Pfaffian matrices 
+
+Up/down electron blocks are handled separately for paired electrons 
+
+The subroutine respects ion type constraints (kiontot) 
+
+Used in wave function optimization and gradient calculations 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{upsimp_8f90_source_l00065}{65}} of file \mbox{\hyperlink{upsimp_8f90_source}{upsimp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}},\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}},\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim,\ ndimh,\ ind,\ i,\ j,\ ipf}
+\DoxyCodeLine{00069\ \ \ \ \ real*8\ amat(\mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}},\ *),\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{logical}\ symmagp}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}\ +\ 1}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}*(j\ -\/\ 1)}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .ne.\ i\ .and.\ j\ .le.\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}\ .and.\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}})\ amat(j,\ i)\ =\ amat(j,\ i)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ ndimh\ =\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}}/2}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}\ +\ 1}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}*(j\ -\/\ 1)}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}})\ amat(j,\ i)\ =\ amat(j,\ i)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}}\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(i)\ .ne.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ \textcolor{keywordtype}{value}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=amat(j+ndimh,\ i-\/ndimh)+value}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=amat(i-\/ndimh,\ j+ndimh)-\/value}}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00094\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l01190}{allio\+::kiontot}}, \mbox{\hyperlink{allio_8f90_source_l00445}{allio\+::nelorb\+\_\+at}}, and \mbox{\hyperlink{allio_8f90_source_l01377}{allio\+::pfaffup}}.
+
+
+
+Referenced by \mbox{\hyperlink{bconstraint_8f90_source_l00073}{bconstraint()}}.
+
+\Hypertarget{upsimp_8f90_a36e04989e419358943206753c13c59fb}\index{upsimp.f90@{upsimp.f90}!upsimp\_complex@{upsimp\_complex}}
+\index{upsimp\_complex@{upsimp\_complex}!upsimp.f90@{upsimp.f90}}
+\doxysubsubsection{\texorpdfstring{upsimp\_complex()}{upsimp\_complex()}}
+{\footnotesize\ttfamily \label{upsimp_8f90_a36e04989e419358943206753c13c59fb} 
+subroutine upsimp\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ndim, \texorpdfstring{$\ast$}{*})}]{amat}{, }\item[{integer}]{ndim}{, }\item[{integer}]{ind}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(\texorpdfstring{$\ast$}{*})}]{value}{, }\item[{logical}]{symmagp}{, }\item[{integer}]{ipf}{}\end{DoxyParamCaption})}
+
+
+
+Increment complex matrix elements with symmetry handling. 
+
+This subroutine increments matrix elements in a complex matrix, handling different matrix types and symmetry conditions. It supports both standard matrices and Pfaffian matrices with proper handling of Hermitian and transpose symmetries.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em amat} & Complex matrix to be updated (ndim, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em ndim} & Leading dimension of the matrix \\
+\hline
+\mbox{\texttt{in}}  & {\em ind} & Linear index of the matrix element to update \\
+\hline
+\mbox{\texttt{in}}  & {\em value} & Array containing complex value to add to the matrix element \\
+\hline
+\mbox{\texttt{in}}  & {\em symmagp} & Flag for symmetric matrix updates \\
+\hline
+\mbox{\texttt{in}}  & {\em ipf} & Flag indicating matrix type\+:
+\begin{DoxyItemize}
+\item ipf = 1\+: Standard matrix
+\item ipf ≠ 1\+: Pfaffian matrix
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Converts linear index to (i,j) matrix coordinates
+\item For standard matrices (ipf = 1)\+:
+\begin{DoxyItemize}
+\item For diagonal elements with Hermitian symmetry, adds real part only
+\item For off-\/diagonal elements, adds value(1) to amat(i,j)
+\item If symmagp is true, applies Hermitian or transpose symmetry
+\end{DoxyItemize}
+\item For Pfaffian matrices (ipf ≠ 1)\+:
+\begin{DoxyItemize}
+\item Adds value(1) to amat(i,j) and subtracts from amat(j,i)
+\item Handles up/down electron blocks with proper symmetry
+\item Applies Hermitian or transpose symmetry based on yes\+\_\+hermite flag
+\item Manages paired and unpaired electron configurations
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+For Hermitian matrices (yes\+\_\+hermite = .true.), uses conjugate symmetry 
+
+For non-\/\+Hermitian matrices, uses transpose symmetry 
+
+Diagonal elements in Hermitian matrices are constrained to be real 
+
+The subroutine handles antisymmetry of Pfaffian matrices 
+
+Used in complex wave function optimization and gradient calculations 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{upsimp_8f90_source_l00132}{132}} of file \mbox{\hyperlink{upsimp_8f90_source}{upsimp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a041665f14b4a481fd7533a14debc45c0}{yes\_hermite}},\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}},\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}},\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim,\ ndimh,\ ind,\ ipf,\ i,\ j}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ amat(ndim,\ *),\ \textcolor{keywordtype}{value}(*)}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordtype}{logical}\ symmagp}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}\ +\ 1}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}*(j\ -\/\ 1)}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ j\ .and.\ \mbox{\hyperlink{namespaceallio_a041665f14b4a481fd7533a14debc45c0}{yes\_hermite}}\ .and.\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}}\ .and.\ j\ .le.\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i,\ i)\ =\ amat(i,\ i)\ +\ real(value(1))}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ value(1)}
+\DoxyCodeLine{00145\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .ne.\ i\ .and.\ j\ .le.\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}}\ .and.\ i\ .le.\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}}\ .and.\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a041665f14b4a481fd7533a14debc45c0}{yes\_hermite}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j,\ i)\ =\ amat(j,\ i)\ +\ dconjg(value(1))}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j,\ i)\ =\ amat(j,\ i)\ +\ value(1)}
+\DoxyCodeLine{00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ ndimh\ =\ \mbox{\hyperlink{namespaceallio_a0a8fa9090ab98efbb73d9f8f4e29e237}{nelorb\_at}}/2}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ j\ =\ (ind\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}\ +\ 1}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ i\ =\ ind\ -\/\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}}*(j\ -\/\ 1)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ amat(i,\ j)\ =\ amat(i,\ j)\ +\ value(1)}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{comment}{!if(j.le.2*nelorb\_at.and.i.le.2*nelorb\_at)}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ \mbox{\hyperlink{namespaceallio_ac15ef150a2f8dd179bddabc14acbcc57}{ndim}})\ amat(j,\ i)\ =\ amat(j,\ i)\ -\/\ value(1)\ \textcolor{comment}{!\ \ it\ has\ to\ be\ replicated\ even\ if\ it\ is\ unpaired}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}}\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(j)\ .ne.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a041665f14b4a481fd7533a14debc45c0}{yes\_hermite}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ conjg(value(1))}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ conjg(value(1))}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ conjg(value(1))}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ conjg(value(1))}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=conjg(value(1))}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=-\/conjg(value(1))}}
+\DoxyCodeLine{00172\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .le.\ ndimh\ .and.\ i\ .le.\ ndimh\ .and.\ .not.\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ +\ ndimh)\ +\ value(1)}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ +\ ndimh,\ i\ +\ ndimh)\ -\/\ value(1)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .gt.\ ndimh\ .and.\ i\ .le.\ ndimh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ =\ amat(j\ -\/\ ndimh,\ i\ +\ ndimh)\ +\ value(1)}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ =\ amat(i\ +\ ndimh,\ j\ -\/\ ndimh)\ -\/\ value(1)}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ elseif(j.le.ndimh.and.i.gt.ndimh)\ then}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(j+ndimh,\ i-\/ndimh)=value(1)}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ amat(i-\/ndimh,\ j+ndimh)=-\/value(1)}}
+\DoxyCodeLine{00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00185\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l01190}{allio\+::kiontot}}, \mbox{\hyperlink{allio_8f90_source_l00445}{allio\+::nelorb\+\_\+at}}, \mbox{\hyperlink{allio_8f90_source_l01377}{allio\+::pfaffup}}, and \mbox{\hyperlink{allio_8f90_source_l01337}{allio\+::yes\+\_\+hermite}}.
+
+
+
+Referenced by \mbox{\hyperlink{bconstraint_8f90_source_l00073}{bconstraint()}}.
+

@@ -13,6 +13,27 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Solve generalized eigenvalue problem for unpaired molecular orbitals
+!> @details This subroutine solves the generalized eigenvalue problem for molecular orbitals
+!> including unpaired electrons. It handles the case where some orbitals are occupied by
+!> unpaired electrons and need to be orthogonalized separately. The routine performs matrix
+!> preconditioning, diagonalization with constraints for unpaired orbitals, and proper
+!> eigenvector sorting with gauge fixing.
+!> @param[in] nelorb_c Number of contracted orbitals
+!> @param[in] overs Overlap matrix
+!> @param[in] mat_in Input matrix (Hamiltonian or other operator)
+!> @param[out] molecorb Molecular orbitals (eigenvectors)
+!> @param[out] eig Eigenvalues
+!> @param[in] lda Leading dimension of arrays
+!> @param[in] eps Tolerance for eigenvalue filtering
+!> @param[in] nproc Number of MPI processes
+!> @param[in] rank Rank of current process
+!> @param[in] rank_mpi Rank in MPI communicator
+!> @param[in] comm_mpi MPI communicator
+!> @param[in] ndiff Number of unpaired electrons
+!> @param[in] psi_unp Unpaired electron orbitals
+!> @param[in] orthoyes Orthogonalization flag
+!> @param[in] symmagp Symmetric AGP flag
 subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
         &, molecorb, eig, lda, eps, nproc, rank, rank_mpi, comm_mpi, ndiff, psi_unp, orthoyes, symmagp)
     use constants, only: ipc, ipf, zzero, zone, zmone

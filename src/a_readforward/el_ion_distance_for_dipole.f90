@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes electron-ion distances along Z-axis for dipole calculations
+!> @details This subroutine computes the electron-ion distances along the
+!>          Z-axis for dipole moment calculations. It handles periodic boundary
+!>          conditions and ensures minimum distance values to avoid numerical
+!>          issues.
+!> @param[out] eliond Electron-ion distances along Z-axis (nion, nel)
+!> @param[in] kel Electron positions (3, nel)
+!> @param[in] nel Number of electrons
+!> @param[in] rion Ion positions (3, nion)
+!> @param[in] nion Number of ions
+!> @param[in] iespbc Flag for periodic boundary conditions
 subroutine el_ion_distance_for_dipole(eliond, kel, nel, rion, nion, iespbc)
 
     use Cell

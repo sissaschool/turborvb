@@ -1,0 +1,116 @@
+\doxysection{src/m\+\_\+common/zsktrs\+\_\+qp.f90 File Reference}
+\hypertarget{zsktrs__qp_8f90}{}\label{zsktrs__qp_8f90}\index{src/m\_common/zsktrs\_qp.f90@{src/m\_common/zsktrs\_qp.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zsktrs__qp_8f90_aec8f36d33a5b0f29282960d589438464}{zsktrs}} (uplo, n, nhrs, a, b, ldb, x, info)
+\begin{DoxyCompactList}\small\item\em Solve complex skew-\/symmetric tridiagonal system A\texorpdfstring{$\ast$}{*}X = B with quad precision. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zsktrs__qp_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zsktrs__qp_8f90_aec8f36d33a5b0f29282960d589438464}\index{zsktrs\_qp.f90@{zsktrs\_qp.f90}!zsktrs@{zsktrs}}
+\index{zsktrs@{zsktrs}!zsktrs\_qp.f90@{zsktrs\_qp.f90}}
+\doxysubsubsection{\texorpdfstring{zsktrs()}{zsktrs()}}
+{\footnotesize\ttfamily \label{zsktrs__qp_8f90_aec8f36d33a5b0f29282960d589438464} 
+subroutine zsktrs (\begin{DoxyParamCaption}\item[{character, intent(in)}]{uplo}{, }\item[{integer, intent(in)}]{n}{, }\item[{integer, intent(in)}]{nhrs}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(\texorpdfstring{$\ast$}{*}), intent(inout)}]{a}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ldb, \texorpdfstring{$\ast$}{*}), intent(inout)}]{b}{, }\item[{integer, intent(in)}]{ldb}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(\texorpdfstring{$\ast$}{*}), intent(out)}]{x}{, }\item[{integer, intent(out)}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Solve complex skew-\/symmetric tridiagonal system A\texorpdfstring{$\ast$}{*}X = B with quad precision. 
+
+This subroutine solves the linear system A\texorpdfstring{$\ast$}{*}X = B where A is a non-\/singular complex skew-\/symmetric tridiagonal matrix of even dimension n. The matrix A is stored in packed format with A(i+1,i) = a(i) and A(i,i+1) = -\/a(i) for i = 1, ..., n-\/1. Uses quad-\/precision arithmetic for improved numerical stability.\hypertarget{zsktrs__qp_8f90_autotoc_md114}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{zsktrs__qp_8f90_autotoc_md114}
+UPLO \+: character, in Specifies which part of the matrix A is stored\+: \textquotesingle{}U\textquotesingle{} or \textquotesingle{}u\textquotesingle{}\+: Upper triangular part is stored (A(i,i+1) = a(i)). \textquotesingle{}L\textquotesingle{} or \textquotesingle{}l\textquotesingle{}\+: Lower triangular part is stored (A(i+1,i) = a(i)). N \+: integer, in Order of the matrix A (must be even). NHRS \+: integer, in Number of right-\/hand sides. A \+: complex\texorpdfstring{$\ast$}{*}16 array, in The complex skew-\/symmetric tridiagonal matrix stored in packed format. For UPLO = \textquotesingle{}U\textquotesingle{}\+: A(i,i+1) = a(i), i = 1, ..., n-\/1. For UPLO = \textquotesingle{}L\textquotesingle{}\+: A(i+1,i) = a(i), i = 1, ..., n-\/1. B \+: complex\texorpdfstring{$\ast$}{*}16 array, inout Right-\/hand side matrix (N × NHRS). On exit, contains the solution X. LDB \+: integer, in Leading dimension of array B. X \+: complex\texorpdfstring{$\ast$}{*}16 array, work Workspace array for storing intermediate results. INFO \+: integer, out = 0\+: successful exit. \texorpdfstring{$<$}{<} 0\+: if INFO = -\/i, the i-\/th argument had an illegal value. \texorpdfstring{$>$}{>} 0\+: if INFO = i, A(i,i+1) is exactly zero; the matrix is singular.\hypertarget{zsktrs__qp_8f90_autotoc_md115}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{zsktrs__qp_8f90_autotoc_md115}
+
+\begin{DoxyItemize}
+\item The matrix A must be of even dimension n.
+\item The solution is computed using forward and backward substitution.
+\item Even-\/indexed variables are solved forward, odd-\/indexed backward.
+\item The algorithm exploits the special structure of complex skew-\/symmetric matrices.
+\item For UPLO = \textquotesingle{}L\textquotesingle{}, the signs of the matrix elements are temporarily flipped.
+\item Uses quad-\/precision arithmetic for improved numerical accuracy.
+\item Processes each right-\/hand side separately for better cache performance.
+\end{DoxyItemize}\hypertarget{zsktrs__qp_8f90_autotoc_md116}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{zsktrs__qp_8f90_autotoc_md116}
+
+\begin{DoxyEnumerate}
+\item For UPLO = \textquotesingle{}L\textquotesingle{}, flip signs of matrix elements
+\item For each right-\/hand side\+: a. Solve even-\/indexed variables forward\+: x(2), x(4), ..., x(n) b. Solve odd-\/indexed variables backward\+: x(n-\/1), x(n-\/3), ..., x(1)
+\item Copy solution back to B
+\item Restore original matrix signs if needed
+\end{DoxyEnumerate}\hypertarget{zsktrs__qp_8f90_autotoc_md117}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{zsktrs__qp_8f90_autotoc_md117}
+Used in high-\/precision complex skew-\/symmetric matrix operations. Initialize INFO and flip signs for lower triangular storage
+
+Solve A\texorpdfstring{$\ast$}{*}X = B for complex skew-\/symmetric tridiagonal matrix A A is stored as A(i+1,i) = a(i), A(i,i+1) = -\/a(i), i = 1, ..., n-\/1 Matrix dimension n must be even Process each right-\/hand side separately
+
+Solve even-\/indexed variables forward with quad precision
+
+Solve odd-\/indexed variables backward with quad precision
+
+Copy solution back to B
+
+Restore original matrix signs
+
+Definition at line \mbox{\hyperlink{zsktrs__qp_8f90_source_l00071}{71}} of file \mbox{\hyperlink{zsktrs__qp_8f90_source}{zsktrs\+\_\+qp.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{!\ argument\ variables}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ n,\ nhrs,\ ldb}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(out)}\ ::\ info}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(inout)}\ ::\ a(*),\ b(ldb,\ *)}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{intent(out)}\ ::\ x(*)}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{character},\ \textcolor{keywordtype}{intent(in)}\ ::\ uplo}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{comment}{!\ local\ variables}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#ifdef\ \_\_PORT}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{complex*16}\ aq,\ a2q,\ xo}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{complex*32}\ aq,\ a2q,\ xo}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{}\textcolor{comment}{}}
+\DoxyCodeLine{00089\ \textcolor{comment}{!>\ @brief\ Initialize\ INFO\ and\ flip\ signs\ for\ lower\ triangular\ storage}}
+\DoxyCodeLine{00090\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'l'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'L'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ a(1:n\ -\/\ 1)\ =\ -\/a(1:n\ -\/\ 1)}
+\DoxyCodeLine{00093\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{00094\ \textcolor{comment}{!>\ @brief\ Solve\ A*X\ =\ B\ for\ complex\ skew-\/symmetric\ tridiagonal\ matrix\ A}}
+\DoxyCodeLine{00095\ \textcolor{comment}{!>\ A\ is\ stored\ as\ A(i+1,i)\ =\ a(i),\ A(i,i+1)\ =\ -\/a(i),\ i\ =\ 1,\ ...,\ n-\/1}}
+\DoxyCodeLine{00096\ \textcolor{comment}{!>\ Matrix\ dimension\ n\ must\ be\ even}}
+\DoxyCodeLine{00097\ \textcolor{comment}{!>\ @brief\ Process\ each\ right-\/hand\ side\ separately}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nhrs\textcolor{comment}{}}
+\DoxyCodeLine{00099\ \textcolor{comment}{!>\ @brief\ Solve\ even-\/indexed\ variables\ forward\ with\ quad\ precision}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ aq\ =\ a(1)}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ xo\ =\ b(1,\ j)/aq}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ x(2)\ =\ xo}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 4,\ n,\ 2}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ aq\ =\ a(i\ -\/\ 1)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ a2q\ =\ a(i\ -\/\ 2)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ xo\ =\ (a2q*xo\ +\ b(i\ -\/\ 1,\ j))/aq}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ xo}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00109\ \textcolor{comment}{!>\ @brief\ Solve\ odd-\/indexed\ variables\ backward\ with\ quad\ precision}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ aq\ =\ a(n\ -\/\ 1)}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ xo\ =\ -\/b(n,\ j)/aq}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ x(n\ -\/\ 1)\ =\ xo}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ n\ -\/\ 3,\ 1,\ -\/2}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ aq\ =\ a(i)}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ a2q\ =\ a(i\ +\ 1)}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ xo\ =\ -\/(-\/a2q*xo\ +\ b(i\ +\ 1,\ j))/aq}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ x(i)\ =\ xo}
+\DoxyCodeLine{00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!>\ @brief\ Copy\ solution\ back\ to\ B}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ x(i)}
+\DoxyCodeLine{00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00123\ \textcolor{keywordflow}{\ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00124\ \textcolor{comment}{!>\ @brief\ Restore\ original\ matrix\ signs}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'l'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'L'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ a(1:n\ -\/\ 1)\ =\ -\/a(1:n\ -\/\ 1)}
+\DoxyCodeLine{00127\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

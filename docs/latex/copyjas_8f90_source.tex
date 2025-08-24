@@ -1,0 +1,994 @@
+\doxysection{copyjas.\+f90}
+\hypertarget{copyjas_8f90_source}{}\label{copyjas_8f90_source}\index{src/a\_tools/copyjas.f90@{src/a\_tools/copyjas.f90}}
+\mbox{\hyperlink{copyjas_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @file\ copyjas.f90}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Program\ for\ copying\ and\ transferring\ Jastrow\ parameters\ between\ TurboRVB\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @details\ This\ program\ reads\ two\ TurboRVB\ wave\ functions\ (fort.10\ and\ fort.10\_new)\ and\ copies}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00019}00019\ \textcolor{comment}{!>\ Jastrow\ parameters\ from\ one\ to\ the\ other.\ It\ handles\ orbital\ mapping,\ parameter\ scaling,}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00020}00020\ \textcolor{comment}{!>\ and\ supports\ various\ modes\ including\ k-\/points\ calculations,\ ion\ position\ copying,\ and}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00021}00021\ \textcolor{comment}{!>\ contracted\ orbital\ parameter\ transfer.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00022}00022\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @brief\ Main\ program\ for\ copying\ Jastrow\ parameters\ between\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @details\ Reads\ source\ and\ target\ wave\ functions,\ maps\ orbitals\ between\ different\ bases,}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00025}00025\ \textcolor{comment}{!>\ copies\ Jastrow\ parameters\ with\ appropriate\ scaling,\ and\ supports\ multiple\ operation\ modes}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00026}00026\ \textcolor{comment}{!>\ including\ k-\/points,\ ion\ position\ copying,\ and\ parameter\ transfer.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00027}\mbox{\hyperlink{copyjas_8f90_a09432fd9942265e11aa06f4ac41dce1d}{00027}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{copyjas_8f90_a09432fd9942265e11aa06f4ac41dce1d}{copyjas}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00028}00028\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00031}00031\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ vj\_sav,\ vju\_sav,\ jasmat\_sav,\ jasmatsz\_sav,\ atom\_number\_sav,\ dup\_c\_store}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00032}00032\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ rion\_store}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00033}00033\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ rs\_store,\ celldm\_store(6),\ rdiff(3),\ rtry(3),\ distnew,\ distr,\ center(3),\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00034}00034\ \ \ \ \ \ \ \ \ center\_store(3)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ multj\_sav,\ nparamj\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ioptorbj\_sav,\ kionj\_sav,\ kionj\_new,\ ioccj\_sav,\ nozeroj\_sav,\ jbraj\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbrajn\_sav,\ jbraiesm\_savsav,\ map\_c,\ mapj}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ j,\ occj\_sav,\ nnozeroj\_sav,\ contractionj\_sav,\ nshellj\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dimjbraj,\ dimjbrajn,\ dimjbraiesm,\ dimvj,\ dimvju,\ iesmind\_sav,\ iesfreer\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iesdrr\_sav,\ npar3body\_sav,\ nelorbj\_sav,\ nion\_sav,\ iesdr\_sav,\ niesd\_sav,\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nshelljm,\ nion\_new,\ i,\ ipj\_sav,\ stat,\ dimdup,\ nmoltot,\ nmoldiff,\ nelorb\_old,\ ipj\_old}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ iessz\_sav,\ compatibility,\ yesghost,\ found,\ yeslbox\_store,\ iessz\_old}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ occupied}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{parameter}\ ::\ start\_index\ =\ 100}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nkpoints,\ ikp,\ nproc\_in,\ using\_kcomp,\ index\_file}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ do\_kpoints,\ eof,\ copyrion,\ copydup,\ copy\_jas,\ copy\_out,\ copy\_in}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel\_sav,\ case\_map\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00049}00049\ \ \ \ \ \textcolor{keywordtype}{logical}\ yes\_crystalj\_sav,\ chosen\_map\_sav,\ nomul}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ AAA\ \ \ \ Lines\ to\ be\ added\ just\ after\ all\ definitions\ of\ variables.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ ::\ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ ::\ str}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00054}00054\ \ \ \ \ real*8\ rcn(3)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keyword}{call\ }get\_command\_argument(1,\ str)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\ =\ \textcolor{stringliteral}{'copyjas'}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }help\_online(\mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00062}00062\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ AAA\ \ \ end\ lines\ to\ be\ added}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!\ k-\/points\ option\ as\ input\ line\ command}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00066}00066\ \ \ \ \ do\_kpoints\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00067}00067\ \ \ \ \ nkpoints\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00068}00068\ \ \ \ \ nproc\_in\ =\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00069}00069\ \ \ \ \ copyrion\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00070}00070\ \ \ \ \ copydup\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00071}00071\ \ \ \ \ copy\_jas\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00072}00072\ \ \ \ \ copy\_out\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00073}00073\ \ \ \ \ copy\_in\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}kpoints"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ do\_kpoints\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ using\_kcomp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}kpointsR"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ do\_kpoints\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ using\_kcomp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ copyrion\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ copying\ ion\ positions\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}copyR"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ do\_kpoints\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ using\_kcomp\ =\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ copyrion\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ copy\_jas\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ copying\ ONLY\ ion\ positions\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}kpointsRd"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ do\_kpoints\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ using\_kcomp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ copyrion\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ copydup\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ copying\ also\ contracted\ and\ ion\ positions\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00095}00095\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}kpointsK"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ using\_kcomp\ =\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Insert\ number\ of\ processors\ and\ number\ of\ k-\/points.\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *)\ nproc\_in,\ nkpoints}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00099}00099\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}copy\_out"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ copy\_out\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00101}00101\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}copy\_in"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ copy\_in\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00103}00103\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00104}00104\ \ \ \ \ \textcolor{comment}{!\ read\ the\ wavefunction\ with\ the\ new\ Jastrow}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00105}00105\ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00106}00106\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10\_new'},\ status=\textcolor{stringliteral}{'old'},\ form=\textcolor{stringliteral}{'formatted'},\ \mbox{\hyperlink{namespaceallio_a107e3604fd1b8c29119e59dd69bffd10}{err}}=101)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00107}00107\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(10)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00109}00109\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00110}00110\ \ \ \ \ \textcolor{comment}{!\ E\ perche'\ ???}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00111}00111\ \ \ \ \ \textcolor{comment}{!\ if(\ do\_kpoints\ .and.\ (.not.\ yes\_complex)\ )\ go\ to\ 102}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00112}00112\ \ \ \ \ \textcolor{comment}{!\ \ \ ndiff=nelup-\/neldo}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00113}00113\ \ \ \ \ nmoldiff\ =\ \mbox{\hyperlink{namespaceallio_a55a144ecbb8371f5c5a3ddf16df6d945}{nmol}}\ +\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00114}00114\ \ \ \ \ nmoltot\ =\ nmoldiff}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00115}00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}}\ .or.\ ipc\ .eq.\ 2)\ nmoltot\ =\ nmoltot\ +\ \mbox{\hyperlink{namespaceallio_a55a144ecbb8371f5c5a3ddf16df6d945}{nmol}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00116}00116\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00117}00117\ \ \ \ \ ipj\_sav\ =\ ipj}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00118}00118\ \ \ \ \ nion\_sav\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00119}00119\ \ \ \ \ nel\_sav\ =\ \mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00120}00120\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}}(i)\ .gt.\ 0)\ nion\_sav\ =\ nion\_sav\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00123}00123\ \ \ \ \ nshelljm\ =\ max(\mbox{\hyperlink{namespaceallio_a8acac68e4e215a83ae663fc3789d5377}{nshellj\_c}},\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00124}00124\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00125}00125\ \ \ \ \ \textcolor{keyword}{allocate}\ (kionj\_sav(nshelljm),\ nparamj\_sav(nshelljm),\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ioptorbj\_sav(nshelljm),\ multj\_sav(nshelljm),\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ioccj\_sav(max(\mbox{\hyperlink{namespaceallio_a391f5355012745890b266a2694f9c6e5}{occj\_c}},\ 1)),\ atom\_number\_sav(\mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}),\ rion\_store(3,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00128}00128\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00129}00129\ \ \ \ \ rion\_store(:,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(:,\ :)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00130}00130\ \ \ \ \ rs\_store\ =\ \mbox{\hyperlink{namespaceallio_a3e0d74cbe4eaa83f1ca22bda9eda636d}{rs}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00131}00131\ \ \ \ \ yeslbox\_store\ =\ \mbox{\hyperlink{namespaceallio_af0f2238361cafb2289e66e19834fbdb3}{yeslbox}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00132}00132\ \ \ \ \ celldm\_store(:)\ =\ celldm(:)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00134}00134\ \ \ \ \ iesdrr\_sav\ =\ \mbox{\hyperlink{namespaceallio_a3c1bb491880290de39a6a980986ff4a5}{iesdrr}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00135}00135\ \ \ \ \ iesdr\_sav\ =\ \mbox{\hyperlink{namespaceallio_ae772b8e8e16338d370ce9ec8eee00d2f}{iesdr}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00136}00136\ \ \ \ \ niesd\_sav\ =\ \mbox{\hyperlink{namespaceallio_a5a4833da0ec6249ef91c9802990f1a51}{niesd}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00137}00137\ \ \ \ \ npar3body\_sav\ =\ \mbox{\hyperlink{namespaceallio_adac993ef55f977153148a3c282aefd42}{npar3body\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00138}00138\ \ \ \ \ atom\_number\_sav\ =\ \mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00140}00140\ \ \ \ \ dimvj\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_ab1f454e60e12179addfe9aedadac49b3}{vj}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00141}00141\ \ \ \ \ dimdup\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}})\ -\/\ 2*ipc*\mbox{\hyperlink{namespaceallio_a2b03475ca405fe3eca7ab0a85d52eeaf}{nelorbh}}*nmoltot\ \textcolor{comment}{!\ do\ not\ change\ the\ molecular\ orbitals}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00142}00142\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00143}00143\ \ \ \ \ \textcolor{keyword}{allocate}\ (vj\_sav(dimvj))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keyword}{allocate}\ (dup\_c\_store(dimdup))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00145}00145\ \ \ \ \ vj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ab1f454e60e12179addfe9aedadac49b3}{vj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00146}00146\ \ \ \ \ dimvju\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a51efe4dfd238d229a2900bf7d9f32294}{vju\_c}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keyword}{allocate}\ (vju\_sav(dimvju))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00148}00148\ \ \ \ \ vju\_sav\ =\ \mbox{\hyperlink{namespaceallio_a51efe4dfd238d229a2900bf7d9f32294}{vju\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00149}00149\ \ \ \ \ dup\_c\_store(1:dimdup)\ =\ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(1:dimdup)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00151}00151\ \ \ \ \ nshellj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a8acac68e4e215a83ae663fc3789d5377}{nshellj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00152}00152\ \ \ \ \ occj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a391f5355012745890b266a2694f9c6e5}{occj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00153}00153\ \ \ \ \ yes\_crystalj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a2e35cac27cdeabe21b5aabf191b6be4b}{yes\_crystalj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00154}00154\ \ \ \ \ chosen\_map\_sav\ =\ chosen\_map}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00155}00155\ \ \ \ \ case\_map\_sav\ =\ case\_map}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00156}00156\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00157}00157\ \ \ \ \ kionj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ac0f87be5c20f57be2f56229a66407d8c}{kionj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00158}00158\ \ \ \ \ nparamj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a54c76e5231249a11a564dbdc32d16c47}{nparamj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00159}00159\ \ \ \ \ ioptorbj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ac06228e6278a65dcbdff2bd1c10c2f16}{ioptorbj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00160}00160\ \ \ \ \ multj\_sav\ =\ \mbox{\hyperlink{namespaceallio_af17d4880ba2c27834e59909530aecbb4}{multj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00161}00161\ \ \ \ \ ioccj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a3004627ca4848226903806124435dabf}{ioccj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00162}00162\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00163}00163\ \ \ \ \ contractionj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a3cac95dcc4454997148ae5e80bf07ae3}{contractionj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00164}00164\ \ \ \ \ iessz\_sav\ =\ \mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00165}00165\ \ \ \ \ nnozeroj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00166}00166\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3cac95dcc4454997148ae5e80bf07ae3}{contractionj}}\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ nelorbj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(ipj*ipj*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}},\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ \mbox{\hyperlink{namespaceallio_a45ca5c63b32fecd25679e1f46783c4fa}{jasmat\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (nozeroj\_sav(max(nnozeroj\_sav,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ nozeroj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmatsz\_sav(max(\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}},\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ jasmatsz\_sav\ =\ \mbox{\hyperlink{namespaceallio_a265ff5bc7e138b42e18bed0f4fc370b5}{jasmatsz\_c}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00175}00175\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00176}00176\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ nelorbj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(ipj*ipj*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}}*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ nnozeroj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a8918de5de1fa4b5fff994dd5941e11ef}{nnozeroj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ \mbox{\hyperlink{namespaceallio_ab6b92097207bb2a7bdb8804e7047833a}{jasmat}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (nozeroj\_sav(max(nnozeroj\_sav,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ nozeroj\_sav\ =\ \mbox{\hyperlink{namespaceallio_ad9b00e0158663d9e522a444e51d21a7d}{nozeroj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmatsz\_sav(max(\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}}*\mbox{\hyperlink{namespaceallio_a72ef8cf4c588dd745b11527861a4b08f}{nelorbjh}},\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ jasmatsz\_sav\ =\ \mbox{\hyperlink{namespaceallio_aca3c79ad2551c3661f079798f6989fb3}{jasmatsz}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00186}00186\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00187}00187\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00188}00188\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00189}00189\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ nelorbj\_sav\ here\ ='},\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00190}00190\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00191}00191\ \ \ \ \ iesfreer\_sav\ =\ \mbox{\hyperlink{namespaceallio_a6b66e3cec67985696e6b86ce68163251}{iesfreer}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00192}00192\ \ \ \ \ iesmind\_sav\ =\ \mbox{\hyperlink{namespaceallio_a92b8f9807f9284cd3d66ce58950956f4}{iesmind}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00193}00193\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00194}00194\ \ \ \ \ dimjbraj\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a03e455e8a01a6c77ff7fd14062d88b56}{jbraj}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00195}00195\ \ \ \ \ \textcolor{keyword}{allocate}\ (jbraj\_sav(dimjbraj))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00196}00196\ \ \ \ \ jbraj\_sav\ =\ \mbox{\hyperlink{namespaceallio_a03e455e8a01a6c77ff7fd14062d88b56}{jbraj}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00197}00197\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00198}00198\ \ \ \ \ dimjbrajn\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_acdc4e1b26d6f5046711974be87ec463d}{jbrajn}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00199}00199\ \ \ \ \ \textcolor{keyword}{allocate}\ (jbrajn\_sav(dimjbrajn))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00200}00200\ \ \ \ \ jbrajn\_sav\ =\ \mbox{\hyperlink{namespaceallio_acdc4e1b26d6f5046711974be87ec463d}{jbrajn}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00201}00201\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00202}00202\ \ \ \ \ dimjbraiesm\ =\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_a834cc938fd74aa95a16e8fbaf44f177d}{jbraiesm\_sav}})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00203}00203\ \ \ \ \ \textcolor{keyword}{allocate}\ (jbraiesm\_savsav(dimjbraiesm))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00204}00204\ \ \ \ \ jbraiesm\_savsav\ =\ \mbox{\hyperlink{namespaceallio_a834cc938fd74aa95a16e8fbaf44f177d}{jbraiesm\_sav}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00205}00205\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00206}00206\ \ \ \ \ \textcolor{comment}{!\ read\ the\ wavefunction}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00207}00207\ \ \ \ \ \textcolor{keywordflow}{if}\ (do\_kpoints)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ search\ for\ fort.10\_000xxx\ files}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }system(\textcolor{stringliteral}{'ls\ fort.10\_*\ >\ temporary\_list'})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ file=\textcolor{stringliteral}{'temporary\_list'},\ status=\textcolor{stringliteral}{'unknown'},\ form=\textcolor{stringliteral}{'formatted'})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00211}00211\ \ \ \ \ \ \ \ \ rewind(11)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ search\ the\ number\ of\ k-\/points\ automatically\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ not\ using\ K\ computer}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (using\_kcomp\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ \ \ eof\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ str\ =\ \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (.not.\ eof)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ *,\ \textcolor{keyword}{end}=104)\ str}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(str)\ .ne.\ \textcolor{stringliteral}{"{}fort.10\_new"{}})\ nkpoints\ =\ nkpoints\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00221}00221\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00222}00222\ 104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,I5/)'})\ \textcolor{stringliteral}{"{}\ Number\ of\ k-\/points\ found:\ "{}},\ nkpoints}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ nproc\_in\ =\ nkpoints}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00224}00224\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00225}00225\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ open\ all\ fort.10\_000xxx\ files\ related\ to\ different\ k-\/points.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Needed\ for\ writing\ afterwards.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ rewind(11)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ index\_file\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Wavefunctions\ found\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=start\_index,\ file=\textcolor{stringliteral}{'fort.10'},\ status=\textcolor{stringliteral}{'unknown'},\ form=\textcolor{stringliteral}{'formatted'},\ err=103)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,I6,2A)'})\ \textcolor{stringliteral}{'\ \ Wavefunction'},\ 0,\ \textcolor{stringliteral}{'\ =\ '},\ \textcolor{stringliteral}{'fort.10'}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nproc\_in}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ *)\ str}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod((i\ -\/\ 1),\ nproc\_in/nkpoints)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\_file\ =\ index\_file\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,I6,2A)'})\ \textcolor{stringliteral}{'\ \ Wavefunction'},\ i,\ \textcolor{stringliteral}{'\ =\ '},\ trim(str)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=start\_index\ +\ index\_file,\ file=trim(str),\ status=\textcolor{stringliteral}{'old'},\ form=\textcolor{stringliteral}{'formatted'})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00239}00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00240}00240\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (11,\ status=\textcolor{stringliteral}{'delete'})}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00242}00242\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00243}00243\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00244}00244\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=start\_index,\ file=\textcolor{stringliteral}{'fort.10'},\ status=\textcolor{stringliteral}{'unknown'},\ form=\textcolor{stringliteral}{'formatted'},\ err=103)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00246}00246\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00247}00247\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00248}00248\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00249}00249\ \ \ \ \ dimjbraiesm\ =\ \textcolor{keyword}{size}(jbraiesm\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00250}00250\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00251}00251\ \ \ \ \ \textcolor{comment}{!\ \ \ do\ ikp\ =\ 0,nkpoints}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00252}00252\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00253}00253\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ start\_index+ikp}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00254}00254\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ read(start\_index+ikp,*)\ str}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00255}00255\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ read(start\_index+ikp,*)\ str}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00256}00256\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00257}00257\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ str}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00258}00258\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00259}00259\ \ \ \ \ \textcolor{comment}{!\ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00260}00260\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00261}00261\ \ \ \ \ \textcolor{comment}{!\ \ \ stop}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00262}00262\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00263}00263\ \ \ \ \ \textcolor{keywordflow}{do}\ ikp\ =\ 0,\ nkpoints}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00264}00264\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ Copying\ Jastrow\ to\ wavefunction:\ ',start\_index+ikp}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00266}00266\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }deallocate\_all}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(start\_index\ +\ ikp)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00270}00270\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ nelorb\_old\ =\ nelorbj\_c*ipj}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00272}00272\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mapj(nelorb\_old),\ kionj\_new(nshellj\_sav))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ mapj\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_new\ =\ kionj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00277}00277\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ checking\ the\ atom\ order}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00278}00278\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nshellj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshellj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcn(:)\ =\ rion\_store(:,\ kionj\_new(j))\ -\/\ rion(:,\ kionj\_c(i))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keyword}{call\ }applypbc(rcn,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (((ioptorbj\_sav(j)\ .eq.\ 200\ .and.\ ioptorbj\_c(i)\ .eq.\ 200)\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (sum(rcn(:)**2)\ .lt.\ 1d-\/8\ .and.\ ioptorbj\_sav(j)\ .ne.\ 200\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ ioptorbj\_sav(j)\ .eq.\ ioptorbj\_c(i)))\ .and.\ .not.\ found)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_sav(j)\ =\ kionj\_c(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00289}00289\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00290}00290\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ found)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ fort.10\ and\ fort.10\_new\ should\ have\ the\ same\ ion\ positions\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00294}00294\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00295}00295\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ reshuff\ kionj\_sav\ =',j,kionj\_sav(j)}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (kionj\_new)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00298}00298\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .eq.\ 0\ .and.\ contractionj\_sav\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_ab636c0f866fd52570c043d78e04c3573}{mappingu}}(nshellj\_sav,\ multj\_sav,\ ioccj\_sav,\ kionj\_sav\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ioptorbj\_sav,\ nion\_sav,\ vju\_sav,\ nshellj\_c,\ multj\_c,\ ioccj\_c\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ kionj\_c,\ ioptorbj\_c,\ nion,\ vju\_c,\ mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00304}00304\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00306}00306\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}{mapping}}(nshellj\_sav,\ multj\_sav,\ ioccj\_sav,\ kionj\_sav\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ ioptorbj\_sav,\ nion\_sav,\ nshellj\_c,\ multj\_c\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ ioccj\_c,\ kionj\_c,\ ioptorbj\_c,\ nion,\ mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00310}00310\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00311}00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\_sav\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(nelorbj\_c\ +\ i)\ =\ mapj(i)\ +\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mapj(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(nelorbj\_c\ +\ i)\ =\ mapj(i)\ -\/\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00319}00319\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00320}00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(i\ +\ nelorbj\_c)\ =\ mapj(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00324}00324\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00325}00325\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00326}00326\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ new\ and\ old\ Jastrow\ not\ compatible\ with\ ipj=2\ !\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00328}00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00329}00329\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00330}00330\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ mapping\ found\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_c*ipj}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ mapj(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00333}00333\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ nelorb\_old\ =\ nelorbj\_sav*ipj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00335}00335\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (mapj(ipj\_sav*nelorbj\_sav),\ kionj\_new(nshellj\_c))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ mapj\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_new\ =\ kionj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00340}00340\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ checking\ the\ atom\ order}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nshellj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00343}00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshellj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcn(:)\ =\ rion\_store(:,\ kionj\_new(j))\ -\/\ rion(:,\ kionj\_sav(i))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keyword}{call\ }applypbc(rcn,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (((ioptorbj\_sav(j)\ .eq.\ 200\ .and.\ ioptorbj\_c(i)\ .eq.\ 200)\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (sum(rcn(:)**2)\ .lt.\ 1d-\/8\ .and.\ ioptorbj\_sav(j)\ .ne.\ 200\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.and.\ ioptorbj\_sav(j)\ .eq.\ ioptorbj\_c(i)))\ .and.\ .not.\ found)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_c(j)\ =\ kionj\_sav(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00351}00351\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00352}00352\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ found)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ fort.10\ and\ fort.10\_new\ should\ have\ the\ same\ ion\ positions\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00356}00356\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00357}00357\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (kionj\_new)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .eq.\ 0\ .and.\ contractionj\_sav\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_ab636c0f866fd52570c043d78e04c3573}{mappingu}}(nshellj\_c,\ multj\_c,\ ioccj\_c,\ kionj\_c,\ ioptorbj\_c\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion,\ vju\_c,\ nshellj\_sav,\ multj\_sav,\ ioccj\_sav,\ kionj\_sav\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ioptorbj\_sav,\ nion\_sav,\ vju\_sav,\ mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}{mapping}}(nshellj\_c,\ multj\_c,\ ioccj\_c,\ kionj\_c,\ ioptorbj\_c\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ nion\_sav,\ nshellj\_sav,\ multj\_sav,\ ioccj\_sav,\ kionj\_sav\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ ioptorbj\_sav,\ nion,\ mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00367}00367\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\_sav\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(nelorbj\_sav\ +\ i)\ =\ mapj(i)\ +\ nelorbj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mapj(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(nelorbj\_sav\ +\ i)\ =\ mapj(i)\ -\/\ nelorbj\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00375}00375\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00376}00376\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mapj(i\ +\ nelorbj\_sav)\ =\ mapj(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00380}00380\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00381}00381\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ new\ and\ old\ Jastrow\ not\ compatible\ with\ ipj=2\ !\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00385}00385\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ mapping\ found\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_sav*ipj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ mapj(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00389}00389\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00390}00390\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00391}00391\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ nion\_new\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ yesghost\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (atom\_number(i)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nion\_new\ =\ nion\_new\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yesghost\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00399}00399\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00400}00400\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ nomul\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nion\_sav\ .eq.\ nion\_new)\ nomul\ =\ .true.\ \textcolor{comment}{!\ no\ copy\ on\ different\ subsystems}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00403}00403\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nion\_sav\ .ne.\ nion\_new\ .and.\ .not.\ copy\_in)\ \textcolor{keywordflow}{go\ to}\ 105}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00405}00405\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_jas)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!replace\ the\ jastrow\ read\ in\ fort.10\_new}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ ipj\_old\ =\ ipj}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00409}00409\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nshellj\_c\ =\ nshellj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ case\_map\ =\ case\_map\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ chosen\_map\ =\ chosen\_map\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yes\_crystalj\ =\ yes\_crystalj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ipj\ =\ ipj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00416}00416\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ allocate(kionj\_sav(nshellj\_c),nparamj\_sav(nshellj\_c)\&}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \&,ioptorbj\_sav(nshellj\_c),multj\_sav(nshellj\_c),ioccj\_sav(occj\_c))}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00419}00419\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00420}00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00421}00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ do\ not\ change\ one-\/two\ body\ Jastrow\ corresponding\ to\ fort.10\ read}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ niesd\_sav\ =\ niesd}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00423}00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dimvj\ =\ \textcolor{keyword}{size}(vj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dimvj\ .gt.\ \textcolor{keyword}{size}(vj\_sav))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00425}00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (vj\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (vj\_sav(dimvj))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00427}00427\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vj\_sav(1:dimvj)\ =\ vj(1:dimvj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00429}00429\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ npar3body\_c\ =\ npar3body\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00431}00431\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ copy\_in}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (vj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (vj(dimvj))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00434}00434\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \ \ \ \ iesdrr\ =\ iesdrr\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ iesdr\ =\ iesdr\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ \ \ niesd\ =\ niesd\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ vj\ =\ vj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00439}00439\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00440}00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (vju\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00441}00441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (vju\_c(dimvju))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00442}00442\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vju\_c\ =\ vju\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00443}00443\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00444}00444\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ copy\_jas}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00445}00445\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00446}00446\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copyrion)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00447}00447\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center\_store(:)=0.d0}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00448}00448\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center(:)=0.d0}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00449}00449\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ j=1,nion}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00450}00450\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center\_store(:)=center\_store(:)+rion\_store(:,j)}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center(:)=center(:)+rion(:,j)}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center(:)=center(:)/nion}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00454}00454\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ center\_store(:)=center\_store(:)/nion}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00455}00455\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00456}00456\ \ \ \ \ \ \ \ \ \ \ \ \ center(:)\ =\ rion(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ center\_store(:)\ =\ rion\_store(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00458}00458\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00459}00459\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00460}00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rion(:,\ j)\ =\ rion(:,\ j)\ +\ center\_store(:)\ -\/\ center(:)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00461}00461\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00462}00462\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rdiff(:)\ =\ rion\_store(:,\ 1)\ -\/\ rion(:,\ j)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00465}00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keyword}{call\ }applypbc(rdiff,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00466}00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distr\ =\ sum(rdiff(:)**2)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rtry(:)\ =\ rion\_store(:,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00468}00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00469}00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rdiff(:)\ =\ rion\_store(:,\ i)\ -\/\ rion(:,\ j)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00470}00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keyword}{call\ }applypbc(rdiff,\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00471}00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distnew\ =\ sum(rdiff(:)**2)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00472}00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (distnew\ .lt.\ distr)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rtry(:)\ =\ rion\_store(:,\ i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distr\ =\ distnew}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00475}00475\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00476}00476\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ min\ dist\ ='},\ j,\ sqrt(distr)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00478}00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rion(:,\ j)\ =\ rtry(:)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00479}00479\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00480}00480\ \ \ \ \ \ \ \ \ \ \ \ \ celldm\ =\ celldm\_store}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00481}00481\ \ \ \ \ \ \ \ \ \ \ \ \ rs\ =\ rs\_store}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00482}00482\ \ \ \ \ \ \ \ \ \ \ \ \ yeslbox\ =\ yeslbox\_store}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00483}00483\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00484}00484\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copydup)\ dup\_c(1:dimdup)\ =\ dup\_c\_store(1:dimdup)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00485}00485\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_jas)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00487}00487\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00488}00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nshellj\_c\ =\ nshellj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ case\_map\ =\ case\_map\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00490}00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ chosen\_map\ =\ chosen\_map\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00491}00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yes\_crystalj\ =\ yes\_crystalj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00492}00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occj\_c\ =\ occj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00493}00493\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (kionj\_c,\ nparamj\_c,\ ioptorbj\_c,\ multj\_c,\ ioccj\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00494}00494\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00495}00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (kionj\_c(nshelljm),\ nparamj\_c(nshelljm),\ ioptorbj\_c(nshelljm),\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00496}00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ multj\_c(nshelljm),\ ioccj\_c(max(occj\_c,\ 1)),\ occupied(nion),\ map\_c(nion\_new))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00497}00497\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00498}00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesghost)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00499}00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00500}00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00501}00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00502}00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00503}00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (j\ .le.\ nion\ .and.\ found)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00504}00504\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (atom\_number\_sav(i)\ .eq.\ -\/atom\_number(j)\ .and.\ occupied(j))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(j)\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00507}00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map\_c(i)\ =\ j}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00508}00508\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00509}00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ j\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00510}00510\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00511}00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (found)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00512}00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00514}00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (j\ .le.\ nion\ .and.\ found)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00515}00515\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (atom\_number\_sav(i)\ .eq.\ atom\_number(j)\ .and.\ occupied(j))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00516}00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00517}00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ occupied(j)\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00518}00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map\_c(i)\ =\ j}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00519}00519\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00520}00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ j\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00521}00521\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00523}00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00524}00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (atom\_number(j)\ .eq.\ atom\_number\_sav(i))\ occupied(j)\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00525}00525\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00526}00526\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00527}00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (found)\ \textcolor{keywordflow}{go\ to}\ 106}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00528}00528\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00529}00529\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00530}00530\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00531}00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshelljm}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00532}00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_c(i)\ =\ map\_c(kionj\_sav(i))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00533}00533\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00534}00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00535}00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kionj\_c\ =\ kionj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00536}00536\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00537}00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ multj\_c\ =\ multj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00538}00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ioccj\_c\ =\ ioccj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00539}00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nparamj\_c\ =\ nparamj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00540}00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ioptorbj\_c\ =\ ioptorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00541}00541\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00542}00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ contractionj\ =\ contractionj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00543}00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iessz\_old\ =\ iessz}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00544}00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iessz\ =\ iessz\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00545}00545\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00546}00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nnozeroj\_c\ =\ nnozeroj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00547}00547\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00548}00548\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00549}00549\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00550}00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00551}00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00552}00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(nelorb\_old*nelorb\_old,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00553}00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ jasmat\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00554}00554\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00555}00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00556}00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbj\_c\ =\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00557}00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00558}00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_c(max(ipj*ipj*nelorbj\_c*nelorbj\_c,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00559}00559\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00560}00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out\ .or.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00561}00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\_old\ .eq.\ 1\ .and.\ ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00562}00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a52597e4e45d19486c02e988b5643d4ae}{copyin2to1}}(jasmat\_sav,\ nelorb\_old,\ jasmat\_c,\ nelorbj\_c*ipj,\ mapj,\ nelup,\ neldo,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00563}00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00564}00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{copyin}}(jasmat\_sav,\ nelorb\_old,\ nel\_sav,\ jasmat\_c,\ nelorbj\_c*ipj,\ nel,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00565}00565\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00566}00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ .eq.\ 2\ .and.\ iessz\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a433052fc2e0b63d9139a9787007cd706}{copyinsz}}(jasmatsz,\ nelorb\_old,\ jasmat\_c,\ nelorbj\_c*ipj,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00568}00568\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00569}00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00570}00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_c\ =\ jasmat\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00571}00571\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00572}00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00573}00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (nozeroj\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00574}00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (nozeroj\_c(max(nnozeroj\_c,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00575}00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nozeroj\_c\ =\ nozeroj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00576}00576\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00577}00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00578}00578\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(jasmatsz\_c)\ .and.\ .not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00579}00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00580}00580\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00581}00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(nelorb\_old*nelorb\_old,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00582}00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ jasmatsz\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00583}00583\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00584}00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmatsz\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00585}00585\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00586}00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keyword}{allocate}\ (jasmatsz\_c(max(nelorbj\_c*nelorbj\_c,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00587}00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out\ .or.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00588}00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{copyin}}(jasmat\_sav,\ nelorb\_old,\ nel\_sav,\ jasmatsz\_c,\ nelorbj\_c,\ nel,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00589}00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00590}00590\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmatsz\_c\ =\ jasmatsz\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00591}00591\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00592}00592\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00593}00593\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00594}00594\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00595}00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00596}00596\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00597}00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(nelorb\_old*nelorb\_old,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00598}00598\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ jasmat}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00599}00599\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00600}00600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00601}00601\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbjh\ =\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00602}00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbj\_c\ =\ nelorbj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00603}00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00604}00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat(max(ipj*ipj*nelorbjh*nelorbjh,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00605}00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nnozeroj\ =\ nnozeroj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00606}00606\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00607}00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out\ .or.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00608}00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\_old\ .eq.\ 1\ .and.\ ipj\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00609}00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a52597e4e45d19486c02e988b5643d4ae}{copyin2to1}}(jasmat\_sav,\ nelorb\_old,\ jasmat,\ nelorbjh*ipj,\ mapj,\ nelup,\ neldo,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00610}00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00611}00611\ \textcolor{comment}{!\ \ passes\ here\ in\ the\ normal\ case}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00612}00612\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{copyin}}(jasmat\_sav,\ nelorb\_old,\ nel\_sav,\ jasmat,\ nelorbjh*ipj,\ nel,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00613}00613\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00614}00614\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipj\ .eq.\ 2\ .and.\ iessz\_old)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00615}00615\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a433052fc2e0b63d9139a9787007cd706}{copyinsz}}(jasmatsz,\ nelorb\_old,\ jasmat,\ nelorbjh*ipj,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00616}00616\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00617}00617\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00618}00618\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\ =\ jasmat\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00619}00619\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00620}00620\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00621}00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00622}00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (nozeroj,\ nozeroj\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00623}00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (nozeroj(max(nnozeroj,\ 1)),\ nozeroj\_c(max(nnozeroj,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00624}00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nozeroj\ =\ nozeroj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00625}00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nozeroj\_c\ =\ nozeroj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00626}00626\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00627}00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iessz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00628}00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(jasmatsz)\ .and.\ .not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00629}00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmat\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00630}00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00631}00631\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jasmat\_sav(max(nelorb\_old*nelorb\_old,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00632}00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_sav\ =\ jasmatsz}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00633}00633\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00634}00634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jasmatsz)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00635}00635\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00636}00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keyword}{allocate}\ (jasmatsz(max(nelorbjh*nelorbjh,\ 1)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00637}00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out\ .or.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00638}00638\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{copyin}}(jasmat\_sav,\ nelorb\_old,\ nel\_sav,\ jasmatsz,\ nelorbjh,\ nel,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00639}00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00640}00640\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmatsz\ =\ jasmatsz\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00641}00641\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00642}00642\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00643}00643\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00644}00644\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00645}00645\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00646}00646\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iesfreer\ =\ iesfreer\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00647}00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iesmind\ =\ iesmind\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00648}00648\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00649}00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jbraj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00650}00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jbraj(dimjbraj))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00651}00651\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbraj\ =\ jbraj\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00652}00652\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00653}00653\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jbrajn)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00654}00654\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jbrajn(dimjbrajn))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00655}00655\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbrajn\ =\ jbrajn\_sav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00656}00656\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00657}00657\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (jbraiesm\_sav)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00658}00658\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (jbraiesm\_sav(dimjbraiesm))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00659}00659\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00660}00660\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbraiesm\_sav\ =\ jbraiesm\_savsav}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00661}00661\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00662}00662\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00663}00663\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ copy\_in)\ \textcolor{keyword}{deallocate}\ (occupied,\ map\_c)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00664}00664\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (copy\_out\ .or.\ copy\_in)\ \textcolor{keyword}{deallocate}\ (mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00665}00665\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00666}00666\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ copy\_jas}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00667}00667\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00668}00668\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }write\_fort10(start\_index\ +\ ikp)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00669}00669\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00670}00670\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (start\_index\ +\ ikp)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00671}00671\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00672}00672\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00673}00673\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(kionj\_sav))\ \textcolor{keyword}{deallocate}\ (kionj\_sav,\ nparamj\_sav\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00674}00674\ \ \ \ \ \&,\ ioptorbj\_sav,\ multj\_sav,\ ioccj\_sav,\ atom\_number\_sav,\ rion\_store)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00675}00675\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(mapj))\ \textcolor{keyword}{deallocate}\ (mapj)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00676}00676\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00677}00677\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00678}00678\ 101\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR:\ wavefunction\ fort.10\_new\ with\ the\ new\ Jastrow\ not\ found\ or\ wrong!\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00679}00679\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00680}00680\ 102\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR:\ the\ wavefunction\ must\ be\ complex\ in\ the\ case\ of\ k-\/points!'}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00681}00681\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00682}00682\ 103\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR:\ wavefunction\ fort.10\ not\ found\ or\ wrong!\ '}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00683}00683\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00684}00684\ 105\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR:\ fort.10\_new\ has\ a\ different\ number\ of\ ion,\ fort.10\ unchanged!'}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00685}00685\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00686}00686\ 106\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR:\ inconsistency\ found\ in\ the\ definition\ of\ ghost\ atoms!'}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00687}00687\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00688}00688\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00689}00689\ \textcolor{keyword}{end\ program\ }\mbox{\hyperlink{copyjas_8f90_a09432fd9942265e11aa06f4ac41dce1d}{copyjas}}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00690}00690\ \textcolor{comment}{!>\ @brief\ Maps\ orbitals\ between\ different\ basis\ sets\ for\ complex\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00691}00691\ \textcolor{comment}{!>\ @details\ Creates\ a\ mapping\ between\ orbitals\ in\ different\ basis\ sets,\ handling}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00692}00692\ \textcolor{comment}{!>\ complex\ wave\ functions\ and\ orbital\ type\ matching.\ Maps\ orbitals\ based\ on\ atom\ type,}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00693}00693\ \textcolor{comment}{!>\ orbital\ type,\ and\ parameter\ values.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00694}00694\ \textcolor{comment}{!>\ @param[in]\ nshell\_c\ Number\ of\ shells\ in\ the\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00695}00695\ \textcolor{comment}{!>\ @param[in]\ mult\_c\ Multiplicity\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00696}00696\ \textcolor{comment}{!>\ @param[in]\ ioccup\_c\ Occupation\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00697}00697\ \textcolor{comment}{!>\ @param[in]\ kion\_c\ Ion\ type\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00698}00698\ \textcolor{comment}{!>\ @param[in]\ ioptorb\_c\ Orbital\ type\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00699}00699\ \textcolor{comment}{!>\ @param[in]\ nion\_c\ Number\ of\ ions\ in\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00700}00700\ \textcolor{comment}{!>\ @param[in]\ nshell\ Number\ of\ shells\ in\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00701}00701\ \textcolor{comment}{!>\ @param[in]\ mult\ Multiplicity\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00702}00702\ \textcolor{comment}{!>\ @param[in]\ ioccup\ Occupation\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00703}00703\ \textcolor{comment}{!>\ @param[in]\ kion\ Ion\ type\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00704}00704\ \textcolor{comment}{!>\ @param[in]\ ioptorb\ Orbital\ type\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00705}00705\ \textcolor{comment}{!>\ @param[in]\ nion\ Number\ of\ ions\ in\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00706}00706\ \textcolor{comment}{!>\ @param[out]\ map\ Mapping\ array\ between\ orbitals}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00707}\mbox{\hyperlink{copyjas_8f90_ab636c0f866fd52570c043d78e04c3573}{00707}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copyjas_8f90_ab636c0f866fd52570c043d78e04c3573}{mappingu}}(nshell\_c,\ mult\_c,\ ioccup\_c,\ kion\_c,\ ioptorb\_c,\ nion\_c\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00708}00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ vju\_c,\ nshell,\ mult,\ ioccup,\ kion,\ ioptorb,\ nion,\ vju\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00709}00709\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ map)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00710}00710\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00711}00711\ \ \ \ \ \textcolor{keywordtype}{integer}\ nshell,\ nshell\_c,\ i,\ j,\ k,\ l,\ indorb,\ indorbnew,\ ind,\ indnew\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00712}00712\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion\_c,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00713}00713\ \ \ \ \ \textcolor{keywordtype}{integer}\ mult\_c(*),\ ioccup\_c(*),\ kion\_c(*),\ mult(*),\ ioccup(*),\ kion(*),\ map(*),\ ioptorb\_c(*),\ ioptorb(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00714}00714\ \ \ \ \ real*8\ vju\_c(*),\ vju(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00715}00715\ \ \ \ \ \textcolor{keywordtype}{integer}\ indp,\ indp\_c,\ indpu,\ indpu\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00716}00716\ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00717}00717\ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00718}00718\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00719}00719\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00720}00720\ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00721}00721\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00722}00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00723}00723\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00724}00724\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00725}00725\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00726}00726\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00727}00727\ \ \ \ \ indorb\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00728}00728\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00729}00729\ \ \ \ \ indp\_c\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00730}00730\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshell\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00731}00731\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb\_c(i)\ .ne.\ 200)\ indp\_c\ =\ indp\_c\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00732}00732\ \ \ \ \ \ \ \ \ indpu\_c\ =\ max(indp\_c,\ 1)\ \textcolor{comment}{!\ to\ avoid\ the\ first\ orbital\ is\ 200}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00733}00733\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mult\_c(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00734}00734\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00735}00735\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup\_c(ind)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00736}00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorb\ =\ indorb\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00737}00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00738}00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00739}00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00740}00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00741}00741\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .ne.\ 200)\ indp\ =\ indp\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00742}00742\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpu\ =\ max(indp,\ 1)\ \textcolor{comment}{!\ to\ avoid\ the\ first\ orbital\ is\ 200}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00743}00743\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00744}00744\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00745}00745\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00746}00746\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00747}00747\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((l\ .eq.\ j\ .and.\ kion(k)\ .eq.\ kion\_c(i)\ .and.\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00748}00748\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&(ioptorb(k)\ .eq.\ ioptorb\_c(i))\ .and.\ abs(vju(indpu)\ -\/\ vju\_c(indpu\_c))\ .le.\ 1d-\/4)\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00749}00749\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (ioptorb(k)\ .eq.\ 200\ .and.\ ioptorb\_c(i)\ .eq.\ 200))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00750}00750\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ indorb}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00751}00751\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .eq.\ 200)\ map(indorbnew)\ =\ -\/map(indorbnew)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00752}00752\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Match\ found\ =',kion(k),kion\_c(i),indorb,indorbnew,adr,adrnew}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00753}00753\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00754}00754\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00755}00755\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00756}00756\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00757}00757\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00758}00758\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00759}00759\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00760}00760\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00761}00761\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00762}00762\ \textcolor{comment}{!>\ @brief\ Maps\ orbitals\ between\ different\ basis\ sets\ for\ real\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00763}00763\ \textcolor{comment}{!>\ @details\ Creates\ a\ mapping\ between\ orbitals\ in\ different\ basis\ sets,\ handling}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00764}00764\ \textcolor{comment}{!>\ real\ wave\ functions\ and\ orbital\ type\ matching.\ Maps\ orbitals\ based\ on\ atom\ type,}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00765}00765\ \textcolor{comment}{!>\ orbital\ type,\ and\ parameter\ values.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00766}00766\ \textcolor{comment}{!>\ @param[in]\ nshell\_c\ Number\ of\ shells\ in\ the\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00767}00767\ \textcolor{comment}{!>\ @param[in]\ mult\_c\ Multiplicity\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00768}00768\ \textcolor{comment}{!>\ @param[in]\ ioccup\_c\ Occupation\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00769}00769\ \textcolor{comment}{!>\ @param[in]\ kion\_c\ Ion\ type\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00770}00770\ \textcolor{comment}{!>\ @param[in]\ ioptorb\_c\ Orbital\ type\ array\ for\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00771}00771\ \textcolor{comment}{!>\ @param[in]\ nion\_c\ Number\ of\ ions\ in\ source\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00772}00772\ \textcolor{comment}{!>\ @param[in]\ nshell\ Number\ of\ shells\ in\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00773}00773\ \textcolor{comment}{!>\ @param[in]\ mult\ Multiplicity\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00774}00774\ \textcolor{comment}{!>\ @param[in]\ ioccup\ Occupation\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00775}00775\ \textcolor{comment}{!>\ @param[in]\ kion\ Ion\ type\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00776}00776\ \textcolor{comment}{!>\ @param[in]\ ioptorb\ Orbital\ type\ array\ for\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00777}00777\ \textcolor{comment}{!>\ @param[in]\ nion\ Number\ of\ ions\ in\ target\ basis}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00778}00778\ \textcolor{comment}{!>\ @param[out]\ map\ Mapping\ array\ between\ orbitals}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00779}\mbox{\hyperlink{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}{00779}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copyjas_8f90_afc3b318b53ec3e58e02a17580b324952}{mapping}}(nshell\_c,\ mult\_c,\ ioccup\_c,\ kion\_c,\ ioptorb\_c,\ nion\_c,\ nshell,\ mult,\ ioccup,\ kion,\ ioptorb,\ nion,\ map)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00780}00780\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00781}00781\ \ \ \ \ \textcolor{keywordtype}{integer}\ nshell,\ nshell\_c,\ i,\ j,\ k,\ l,\ indorb,\ indorbnew,\ ind,\ indnew,\ adr,\ adrnew\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00782}00782\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nion\_c,\ nion}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00783}00783\ \ \ \ \ \textcolor{keywordtype}{integer}\ mult\_c(*),\ ioccup\_c(*),\ kion\_c(*),\ mult(*),\ ioccup(*),\ kion(*),\ map(*),\ ioptorb\_c(*),\ ioptorb(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00784}00784\ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00785}00785\ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00786}00786\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00787}00787\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00788}00788\ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00789}00789\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00790}00790\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion(k\ -\/\ 1)\ .ne.\ kion(k)\ .or.\ ioptorb(k\ -\/\ 1)\ .ne.\ ioptorb(k))\ adr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00791}00791\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00792}00792\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00793}00793\ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00794}00794\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00795}00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ adr\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00796}00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00797}00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00798}00798\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00799}00799\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00800}00800\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00801}00801\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ New\ basis\ inside\ ='},\ indorbnew}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00802}00802\ \ \ \ \ indorb\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00803}00803\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00804}00804\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nshell\_c}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00805}00805\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00806}00806\ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00807}00807\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00808}00808\ \textcolor{comment}{!\ \ \ \ if\ i-\/term\ points\ to\ different\ atom\ or\ orbital\ compared\ to\ the\ previous\ one}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00809}00809\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion\_c(i\ -\/\ 1)\ .ne.\ kion\_c(i)\ .or.\ ioptorb\_c(i\ -\/\ 1)\ .ne.\ ioptorb\_c(i))\ adr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00810}00810\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00811}00811\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mult\_c(i)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00812}00812\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00813}00813\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup\_c(ind)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00814}00814\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorb\ =\ indorb\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00815}00815\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adr\ =\ adr\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00816}00816\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00817}00817\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00818}00818\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nshell}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00819}00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00820}00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adrnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00821}00821\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00822}00822\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (kion(k)\ .ne.\ kion(k\ -\/\ 1)\ .or.\ ioptorb(k)\ .ne.\ ioptorb(k\ -\/\ 1))\ adrnew\ =\ 0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00823}00823\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00824}00824\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ mult(k)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00825}00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indnew\ =\ indnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00826}00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioccup(indnew)\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00827}00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ adrnew\ =\ adrnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00828}00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indorbnew\ =\ indorbnew\ +\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00829}00829\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((kion(k)\ .eq.\ kion\_c(i)\ .and.\ (adrnew\ .eq.\ adr\ .and.\ ioptorb(k)\ .eq.\ ioptorb\_c(i)))\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00830}00830\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .or.\ (ioptorb(k)\ .eq.\ 200\ .and.\ ioptorb\_c(i)\ .eq.\ 200))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00831}00831\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map(indorbnew)\ =\ indorb}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00832}00832\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ioptorb(k)\ .eq.\ 200)\ map(indorbnew)\ =\ -\/map(indorbnew)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00833}00833\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Match\ found\ =',kion(k),kion\_c(i),indorb,indorbnew,adr,adrnew}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00834}00834\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00835}00835\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00836}00836\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00837}00837\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00838}00838\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00839}00839\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00840}00840\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00841}00841\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00842}00842\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00843}00843\ \textcolor{comment}{!>\ @brief\ Copies\ Jastrow\ parameters\ between\ wave\ functions\ with\ scaling}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00844}00844\ \textcolor{comment}{!>\ @details\ Copies\ Jastrow\ matrix\ elements\ from\ old\ to\ new\ wave\ function\ with}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00845}00845\ \textcolor{comment}{!>\ appropriate\ scaling\ for\ different\ electron\ numbers.\ Handles\ subsystem\ mapping}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00846}00846\ \textcolor{comment}{!>\ and\ parameter\ scaling\ for\ contracted\ orbitals.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00847}00847\ \textcolor{comment}{!>\ @param[in]\ jastrow\_old\ Source\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00848}00848\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_old\ Number\ of\ Jastrow\ orbitals\ in\ source}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00849}00849\ \textcolor{comment}{!>\ @param[in]\ nel\_old\ Number\ of\ electrons\ in\ source}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00850}00850\ \textcolor{comment}{!>\ @param[out]\ jastrow\_new\ Target\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00851}00851\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_new\ Number\ of\ Jastrow\ orbitals\ in\ target}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00852}00852\ \textcolor{comment}{!>\ @param[in]\ nel\_new\ Number\ of\ electrons\ in\ target}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00853}00853\ \textcolor{comment}{!>\ @param[in]\ mapj\ Orbital\ mapping\ array}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00854}00854\ \textcolor{comment}{!>\ @param[in]\ nomul\ Logical\ flag\ for\ multiple\ subsystems}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00855}\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{00855}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copyjas_8f90_a0f32e8dbd919391f631d4737f90f4855}{copyin}}(jastrow\_old,\ nelorbj\_old,\ nel\_old\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00856}00856\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ jastrow\_new,\ nelorbj\_new,\ nel\_new\ \&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00857}00857\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00858}00858\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00859}00859\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nel\_new,\ nel\_old,\ nelorbu}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00860}00860\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ nelorbj\_new)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00861}00861\ \ \ \ \ real*8\ cost}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00862}00862\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00863}00863\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00864}00864\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00865}00865\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00866}00866\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00867}00867\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00868}00868\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00869}00869\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00870}00870\ \ \ \ \ cost\ =\ dble(nel\_old\ -\/\ 1)/dble(nel\_new\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00871}00871\ \ \ \ \ jastrow\_new\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00872}00872\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00873}00873\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00874}00874\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00875}00875\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0\ .or.\ mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00876}00876\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ +\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))*cost}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00877}00877\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00878}00878\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00879}00879\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00880}00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00881}00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00882}00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00883}00883\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00884}00884\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00885}00885\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00886}00886\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00887}00887\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00888}00888\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00889}00889\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00890}00890\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00891}00891\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00892}00892\ \textcolor{comment}{!>\ @brief\ Copies\ Jastrow\ parameters\ from\ 2-\/component\ to\ 1-\/component\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00893}00893\ \textcolor{comment}{!>\ @details\ Handles\ copying\ of\ Jastrow\ parameters\ when\ converting\ from\ a\ 2-\/component}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00894}00894\ \textcolor{comment}{!>\ (spin-\/up/spin-\/down)\ wave\ function\ to\ a\ 1-\/component\ wave\ function\ with\ appropriate\ scaling.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00895}00895\ \textcolor{comment}{!>\ @param[in]\ jastrow\_old\ Source\ Jastrow\ matrix\ (2-\/component)}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00896}00896\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_old\ Number\ of\ Jastrow\ orbitals\ in\ source}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00897}00897\ \textcolor{comment}{!>\ @param[out]\ jastrow\_new\ Target\ Jastrow\ matrix\ (1-\/component)}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00898}00898\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_new\ Number\ of\ Jastrow\ orbitals\ in\ target}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00899}00899\ \textcolor{comment}{!>\ @param[in]\ mapj\ Orbital\ mapping\ array}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00900}00900\ \textcolor{comment}{!>\ @param[in]\ nelup\ Number\ of\ spin-\/up\ electrons}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00901}00901\ \textcolor{comment}{!>\ @param[in]\ neldo\ Number\ of\ spin-\/down\ electrons}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00902}00902\ \textcolor{comment}{!>\ @param[in]\ nomul\ Logical\ flag\ for\ multiple\ subsystems}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00903}\mbox{\hyperlink{copyjas_8f90_a52597e4e45d19486c02e988b5643d4ae}{00903}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copyjas_8f90_a52597e4e45d19486c02e988b5643d4ae}{copyin2to1}}(jastrow\_old,\ nelorbj\_old,\ jastrow\_new,\ nelorbj\_new,\ mapj,\ nelup,\ neldo,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00904}00904\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00905}00905\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nelup,\ neldo,\ nelorbh,\ nelorbu}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00906}00906\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ *)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00907}00907\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00908}00908\ \ \ \ \ real*8\ cost(2,\ 2)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00909}00909\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00910}00910\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00911}00911\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00912}00912\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00913}00913\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00914}00914\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00915}00915\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00916}00916\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00917}00917\ \ \ \ \ cost\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00918}00918\ \ \ \ \ cost(1,\ 2)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(nelup)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00919}00919\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelup\ .gt.\ 1)\ cost(1,\ 1)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(nelup\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00920}00920\ \ \ \ \ \textcolor{keywordflow}{if}\ (neldo\ .gt.\ 1)\ cost(2,\ 2)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(neldo\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00921}00921\ \ \ \ \ \textcolor{keywordflow}{if}\ (neldo\ .gt.\ 0)\ cost(2,\ 1)\ =\ dble(nelup\ +\ neldo\ -\/\ 1)/dble(neldo)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00922}00922\ \ \ \ \ nelorbh\ =\ nelorbj\_new/2}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00923}00923\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00924}00924\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00925}00925\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00926}00926\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00927}00927\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0\ .or.\ mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00928}00928\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00929}00929\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00930}00930\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)*cost((i\ -\/\ 1)/nelorbh\ +\ 1,\ (j\ -\/\ 1)/nelorbh\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00931}00931\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mapj(j)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00932}00932\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)*cost((j\ -\/\ 1)/nelorbh\ +\ 1,\ (i\ -\/\ 1)/nelorbh\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00933}00933\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00934}00934\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00935}00935\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ i\ and\ j\ refer\ to\ the\ same\ subsystem}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00936}00936\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00937}00937\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00938}00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00939}00939\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00940}00940\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00941}00941\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00942}00942\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00943}00943\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00944}00944\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00945}00945\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00946}00946\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00947}00947\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00948}00948\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00949}00949\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00950}00950\ \textcolor{comment}{!>\ @brief\ Copies\ Jastrow\ parameters\ with\ spin-\/z\ component\ handling}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00951}00951\ \textcolor{comment}{!>\ @details\ Copies\ Jastrow\ matrix\ elements\ with\ special\ handling\ for\ spin-\/z\ components.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00952}00952\ \textcolor{comment}{!>\ Applies\ different\ signs\ for\ cross-\/spin\ terms\ and\ handles\ subsystem\ mapping.}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00953}00953\ \textcolor{comment}{!>\ @param[in]\ jastrow\_old\ Source\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00954}00954\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_old\ Number\ of\ Jastrow\ orbitals\ in\ source}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00955}00955\ \textcolor{comment}{!>\ @param[out]\ jastrow\_new\ Target\ Jastrow\ matrix}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00956}00956\ \textcolor{comment}{!>\ @param[in]\ nelorbj\_new\ Number\ of\ Jastrow\ orbitals\ in\ target}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00957}00957\ \textcolor{comment}{!>\ @param[in]\ mapj\ Orbital\ mapping\ array}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00958}00958\ \textcolor{comment}{!>\ @param[in]\ nomul\ Logical\ flag\ for\ multiple\ subsystems}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00959}\mbox{\hyperlink{copyjas_8f90_a433052fc2e0b63d9139a9787007cd706}{00959}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{copyjas_8f90_a433052fc2e0b63d9139a9787007cd706}{copyinsz}}(jastrow\_old,\ nelorbj\_old,\ jastrow\_new,\ nelorbj\_new,\ mapj,\ nomul)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00960}00960\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00961}00961\ \ \ \ \ \textcolor{keywordtype}{integer}\ nelorbj\_old,\ nelorbj\_new,\ i,\ j,\ nelorbjh,\ nelorbu}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00962}00962\ \ \ \ \ real*8\ jastrow\_old(nelorbj\_old,\ *),\ jastrow\_new(nelorbj\_new,\ *)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00963}00963\ \ \ \ \ \textcolor{keywordtype}{integer}\ mapj(*)}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00964}00964\ \ \ \ \ \textcolor{keywordtype}{logical}\ nomul,\ yescost}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00965}00965\ \ \ \ \ nelorbu\ =\ nelorbj\_old}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00966}00966\ \ \ \ \ yescost\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00967}00967\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00968}00968\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .lt.\ 0)\ yescost\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00969}00969\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00970}00970\ \ \ \ \ \textcolor{keywordflow}{if}\ (yescost)\ nelorbu\ =\ nelorbu\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00971}00971\ }
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00972}00972\ \ \ \ \ nelorbjh\ =\ nelorbj\_new/2}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00973}00973\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00974}00974\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbj\_new}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00975}00975\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mapj(i)\ .ne.\ 0\ .and.\ mapj(j)\ .ne.\ 0\ .and.\ ((i\ -\/\ 1)/nelorbu\ .eq.\ (j\ -\/\ 1)/nelorbu\ .or.\ nomul))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00976}00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .gt.\ nelorbjh\ .and.\ j\ .le.\ nelorbjh\ .or.\&}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00977}00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ i\ .le.\ nelorbjh\ .and.\ j\ .gt.\ nelorbjh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00978}00978\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ -\/\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00979}00979\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00980}00980\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,\ j)\ =\ jastrow\_new(i,\ j)\ +\ jastrow\_old(abs(mapj(i)),\ abs(mapj(j)))}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00981}00981\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00982}00982\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00983}00983\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ jastrow\_new(i,j)=0.d0}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00984}00984\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00985}00985\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00986}00986\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00987}00987\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{copyjas_8f90_source_l00988}00988\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

@@ -13,6 +13,56 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief 3D data visualization output in XCrySDen format for tilted cells
+!>
+!> This subroutine generates 3D data visualization files in XCrySDen (.xsf) format
+!> for quantum Monte Carlo calculations with tilted (non-orthogonal) unit cells.
+!> It outputs crystal structure information and 3D data grids that can be
+!> visualized using XCrySDen or similar software.
+!>
+!> The subroutine handles unit conversion from atomic units to Angstroms and
+!> supports both periodic and non-periodic systems with proper file naming
+!> conventions. Unlike plot_3d_data, this version supports general 3x3
+!> transformation matrices for tilted cells.
+!>
+!> @param[in] ipc Number of components per grid point (1 for scalar, 3 for vector)
+!> @param[in] s2r_loc Local transformation matrix for grid coordinates (3,3)
+!> @param[in] s2r Global transformation matrix for crystal structure (3,3)
+!> @param[in] natoms Number of atoms in the system
+!> @param[in] pos Atomic positions in atomic units (3, natoms)
+!> @param[in] zeta Atomic numbers or charges (natoms)
+!> @param[in] periodic Flag indicating periodic boundary conditions
+!> @param[in] mesh Grid dimensions (3)
+!> @param[in] origin Origin of the grid in atomic units (3)
+!> @param[in] datagrid 3D data grid to be plotted (ipc*mesh(1), mesh(2), mesh(3))
+!> @param[in] indmol Molecular index for file naming
+!> @param[in] word Identifier string for file naming
+!>
+!> @details
+!> The subroutine performs the following operations:
+!> 1. Checks file unit availability and opens output file
+!> 2. Converts all units from atomic units to Angstroms:
+!>    - Transformation matrices (s2r and s2r_loc)
+!>    - Origin and atomic positions
+!>    - Data grid values (divided by length_unit^3)
+!> 3. Writes XCrySDen format header:
+!>    - CRYSTAL section with primitive vectors from s2r matrix
+!>    - PRIMCOORD section with atomic positions and charges
+!> 4. Writes 3D data grid section:
+!>    - BEGIN_BLOCK_DATAGRID_3D header
+!>    - Grid dimensions and origin
+!>    - Primitive vectors for grid orientation from s2r_loc matrix
+!>    - Data values in optimized format (3 values per line)
+!> 5. Closes the output file
+!>
+!> @note Output filename format: output_<word><indmol>.xsf
+!> @note The subroutine handles both scalar (ipc=1) and vector (ipc=3) data
+!> @note Data is written in chunks of 3 values per line for efficiency
+!> @note Used for visualizing electron density, wave functions, and other
+!>       quantum mechanical properties in tilted cell geometries
+!> @note Compatible with XCrySDen, VESTA, and other visualization software
+!> @note The s2r matrix defines the crystal structure, while s2r_loc defines
+!>       the local grid coordinate system
 subroutine plot_3d_data_tilted(ipc, s2r_loc, s2r, natoms, pos, zeta, periodic, mesh, origin, datagrid, indmol, word)
 
     use constants, only: length_unit

@@ -13,6 +13,31 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Evaluate Pulay forces for orbital derivatives in quantum Monte Carlo
+!> @details This subroutine computes the Pulay forces (orbital derivatives) needed for
+!> wave function optimization in quantum Monte Carlo calculations. It evaluates the
+!> derivatives of the orbitals with respect to nuclear positions, taking into account
+!> the inverse matrices for up and down electrons, and handles both regular and
+!> spin-dependent Jastrow factors. The calculation includes contributions from
+!> orbital derivatives and Jastrow factor derivatives.
+!> @param[in] winv Inverse of orbital matrix for all electrons
+!> @param[in] nelorb Number of orbitals
+!> @param[in] nel Total number of electrons
+!> @param[in] nelup Number of up electrons
+!> @param[in] neldo Number of down electrons
+!> @param[in] indt Number of derivatives
+!> @param[in] ainvup Inverse of orbital matrix for up electrons
+!> @param[in] ainvdo Inverse of orbital matrix for down electrons
+!> @param[in] winvj Inverse of Jastrow matrix
+!> @param[in] nelorbj Number of Jastrow orbitals
+!> @param[in] winvjbar Inverse of Jastrow matrix (bar)
+!> @param[out] orbderiv Orbital derivatives (3 components per orbital)
+!> @param[in] winvjbarsz Inverse of spin-dependent Jastrow matrix
+!> @param[in] iessz Flag for spin-dependent Jastrow
+!> @param[in] add_pulay Flag for additional Pulay terms
+!> @param[in,out] psip Work array for temporary calculations
+!> @param[in] nelorbh Number of orbitals (half)
+!> @param[in] nelorbjh Number of Jastrow orbitals (half)
 subroutine eval_pulay(winv, nelorb, nel, nelup, neldo, indt           &
         &, ainvup, ainvdo, winvj, nelorbj, winvjbar, orbderiv                  &
         &, winvjbarsz, iessz, add_pulay, psip, nelorbh, nelorbjh)

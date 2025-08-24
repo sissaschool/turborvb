@@ -1,0 +1,145 @@
+\doxysection{src/m\+\_\+common/random.f90 File Reference}
+\hypertarget{random_8f90}{}\label{random_8f90}\index{src/m\_common/random.f90@{src/m\_common/random.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{random_8f90_aca3757dbd74d29a2ce4f8a75292e17ed}{random}} (l, lz, ztry, table, diag, iout, indvic, sign, npow, gamma, istart, indtm, ipc)
+\begin{DoxyCompactList}\small\item\em Random configuration selection for quantum Monte Carlo moves. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{random_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{random_8f90_aca3757dbd74d29a2ce4f8a75292e17ed}\index{random.f90@{random.f90}!random@{random}}
+\index{random@{random}!random.f90@{random.f90}}
+\doxysubsubsection{\texorpdfstring{random()}{random()}}
+{\footnotesize\ttfamily \label{random_8f90_aca3757dbd74d29a2ce4f8a75292e17ed} 
+subroutine random (\begin{DoxyParamCaption}\item[{integer}]{l}{, }\item[{integer}]{lz}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{ztry}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ipc, \texorpdfstring{$\ast$}{*})}]{table}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{diag}{, }\item[{integer}]{iout}{, }\item[{integer}]{indvic}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{sign}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{npow}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{gamma}{, }\item[{integer}]{istart}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{indtm}{, }\item[{integer}]{ipc}{}\end{DoxyParamCaption})}
+
+
+
+Random configuration selection for quantum Monte Carlo moves. 
+
+This subroutine implements a random configuration selection algorithm for quantum Monte Carlo calculations, particularly useful for non-\/diagonal moves in variational Monte Carlo and diffusion Monte Carlo. It uses a cumulative probability table to select configurations based on their transition probabilities.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em L} & Number of particles or components per configuration \\
+\hline
+\mbox{\texttt{in}}  & {\em Lz} & Total number of possible configurations \\
+\hline
+\mbox{\texttt{in}}  & {\em ztry} & Random number in \mbox{[}diag, wtot\mbox{]} for configuration selection \\
+\hline
+\mbox{\texttt{in}}  & {\em table} & Probability table containing transition weights (ipc, \texorpdfstring{$\ast$}{*}) \\
+\hline
+\mbox{\texttt{in}}  & {\em diag} & Diagonal element weight (lower bound for ztry) \\
+\hline
+\mbox{\texttt{out}}  & {\em iout} & Selected particle index within the configuration \\
+\hline
+\mbox{\texttt{out}}  & {\em indvic} & Selected configuration index \\
+\hline
+\mbox{\texttt{out}}  & {\em sign} & Sign of the selected transition (+1 or -\/1) \\
+\hline
+\mbox{\texttt{in}}  & {\em npow} & Power parameter for transition weight modification \\
+\hline
+\mbox{\texttt{in}}  & {\em gamma} & Gamma parameter for transition weight modification \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Starting index for configuration selection \\
+\hline
+\mbox{\texttt{in}}  & {\em indtm} & Array of maximum indices for each particle \\
+\hline
+\mbox{\texttt{in}}  & {\em ipc} & Leading dimension of table array\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Initializes cumulative probability with diagonal element
+\item Iterates through configurations until cumulative probability ≥ ztry\+:
+\begin{DoxyItemize}
+\item Calculates configuration and particle indices
+\item Applies power and gamma modifications to transition weights
+\item Accumulates modified weights in cumulative probability
+\end{DoxyItemize}
+\item Handles edge cases and roundoff errors\+:
+\begin{DoxyItemize}
+\item Adjusts index if final configuration has zero weight
+\item Ensures valid configuration selection
+\end{DoxyItemize}
+\item Determines sign based on transition weight sign
+\item Returns selected configuration and particle indices
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The algorithm assumes diag \texorpdfstring{$<$}{<} ztry ≤ wtot (non-\/diagonal move) 
+
+Configuration index is calculated as\+: index = (i-\/1)/L + 1 
+
+Particle index is calculated as\+: ipart = i -\/ (index-\/1)\texorpdfstring{$\ast$}{*}L 
+
+Negative indvic indicates unrecoverable error (zero weight) 
+
+The subroutine handles both positive and negative transition weights 
+
+Power and gamma parameters modify transition weights for optimization 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{random_8f90_source_l00057}{57}} of file \mbox{\hyperlink{random_8f90_source}{random.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipc,\ i,\ L,\ Lz,\ indvic,\ iout,\ index,\ ipart,\ istart,\ indtm(*)}
+\DoxyCodeLine{00061\ \ \ \ \ real*8\ diag,\ table(ipc,\ *),\ try,\ ztry,\ sign,\ gamma,\ cost,\ npow}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ choose\ a\ random\ configuration\ given\ the\ table,wtot}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ it\ is\ assumed\ that\ \ diag\ <\ ztry\ <=\ wtot\ ,i.e.\ non\ diagonal\ move}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ try\ =\ diag}
+\DoxyCodeLine{00067\ \ \ \ \ i\ =\ 0}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ztry\ .ge.\ try\ .and.\ i\ .lt.\ lz)}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/l\ +\ 1}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*l}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npow\ .ne.\ 0.d0\ .and.\ table(1,\ i)\ .gt.\ 0.d0\ .and.\ \&}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart)))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ table(1,\ i)*(1.d0\ -\/\ npow*(1.d0\ +\ gamma))}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (table(1,\ i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ table(1,\ i)}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ -\/gamma*table(1,\ i)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ cost}
+\DoxyCodeLine{00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ It\ is\ possible\ by\ chance\ and\ roundoff\ that\ the\ final\ i=Lz\ and\ table(Lz)=0}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if\ for\ roundoff\ i=Lz\ set\ i\ the\ maximum\ with\ table(i)=/0}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ lz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ ((table(1,\ i)\ .eq.\ 0.d0\ .or.\ (table(1,\ i)\ .lt.\ 0\ .and.\ gamma\ .eq.\ 0)\&}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (npow*(1.d0\ +\ gamma)\ .eq.\ 1.d0\ .and.\ index\ .ge.\ istart))\ .and.\ i\ .gt.\ 1)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ i\ -\/\ 1}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/l\ +\ 1}
+\DoxyCodeLine{00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(i.eq.0)\ i=1}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordflow}{if}\ (table(1,\ i)\ .lt.\ 0.)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ sign\ =\ -\/1.d0}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ sign\ =\ 1.d0}
+\DoxyCodeLine{00098\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ indvic\ =\ index}
+\DoxyCodeLine{00101\ \ \ \ \ iout\ =\ ipart}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ indvic=(i-\/1)/L+1}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ iout=i-\/(indvic-\/1)*L}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (table(1,\ i)\ .eq.\ 0.d0)\ indvic\ =\ -\/indvic\ \textcolor{comment}{!\ \ Unrecoverable\ error}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

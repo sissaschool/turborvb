@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Enforce detailed balance in wave function table
+!> @details    This subroutine enforces detailed balance by adjusting the
+!>             wave function table entries. It computes normalization factors
+!>             and applies corrections to maintain consistency between
+!>             positive and negative contributions.
+!> @param[in]  indt      Number of time steps
+!> @param[in]  nel       Number of electrons
+!> @param[in]  identity  Identity parameter for normalization
+!> @param[in]  gamma     Gamma parameter for detailed balance
+!> @param[in,out] tabler Wave function table
+!> @param[out] norm_tab  Normalization factor for the table
 subroutine enforce_detail(indt, nel, identity, gamma, tabler, norm_tab)
     implicit none
     integer i, j, nel, indt
@@ -39,6 +50,18 @@ subroutine enforce_detail(indt, nel, identity, gamma, tabler, norm_tab)
     return
 end
 
+!> @brief      Apply cutoff to wave function for DMC calculations
+!> @details    This subroutine applies energy cutoffs to the wave function
+!>             for diffusion Monte Carlo calculations. It can apply either
+!>             a simple energy cutoff or a position-dependent cutoff based
+!>             on electron-ion distances.
+!> @param[in]  yesalfe   Flag for simple energy cutoff
+!> @param[in]  nel       Number of electrons
+!> @param[in,out] wsto   Wave function value
+!> @param[in]  lambda    Lambda parameter
+!> @param[in,out] diffkin Kinetic energy difference
+!> @param[in]  vpotge    Potential energy array
+!> @param[in]  cutreg    Cutoff parameter
 subroutine cutwstodmc(yesalfe, nel, wsto, lambda, diffkin, vpotge, cutreg)
     use allio, only: zetamin, distmin
     implicit none

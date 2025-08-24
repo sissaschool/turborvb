@@ -1,0 +1,143 @@
+\doxysection{src/m\+\_\+common/constrbr.f90 File Reference}
+\hypertarget{constrbr_8f90}{}\label{constrbr_8f90}\index{src/m\_common/constrbr.f90@{src/m\_common/constrbr.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{constrbr_8f90_a2c0f2923a51effc2363a4596f8767f3d}{constrbr}} (iesfreer, n3body, jbraj, derjas, econf, nw, iopt)
+\begin{DoxyCompactList}\small\item\em Real wave function constraint builder for quantum Monte Carlo. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{constrbr_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{constrbr_8f90_a2c0f2923a51effc2363a4596f8767f3d}\index{constrbr.f90@{constrbr.f90}!constrbr@{constrbr}}
+\index{constrbr@{constrbr}!constrbr.f90@{constrbr.f90}}
+\doxysubsubsection{\texorpdfstring{constrbr()}{constrbr()}}
+{\footnotesize\ttfamily \label{constrbr_8f90_a2c0f2923a51effc2363a4596f8767f3d} 
+subroutine constrbr (\begin{DoxyParamCaption}\item[{integer}]{iesfreer}{, }\item[{integer}]{n3body}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbraj}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{derjas}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nw, \texorpdfstring{$\ast$}{*})}]{econf}{, }\item[{integer}]{nw}{, }\item[{integer}]{iopt}{}\end{DoxyParamCaption})}
+
+
+
+Real wave function constraint builder for quantum Monte Carlo. 
+
+This subroutine constructs constraints for real wave functions in quantum Monte Carlo calculations. It handles Jastrow factor derivatives and maps them to the appropriate wave function parameters using sign conventions.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iesfreer} & Number of free parameters in the wave function \\
+\hline
+\mbox{\texttt{in}}  & {\em n3body} & Number of three-\/body terms (Jastrow factors) \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraj} & Array mapping Jastrow terms to parameter indices \\
+\hline
+\mbox{\texttt{in}}  & {\em derjas} & Array of Jastrow derivatives \\
+\hline
+\mbox{\texttt{in,out}}  & {\em econf} & Energy configuration array to be updated \\
+\hline
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in}}  & {\em iopt} & Operation mode flag\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations based on the input parameters\+:
+
+{\bfseries{Operation Modes (iopt)\+:}}
+\begin{DoxyItemize}
+\item iopt = 0 or 3\+: Accumulate derivatives (add to existing values)
+\item iopt ≠ 0,3\+: Replace derivatives (set new values)
+\end{DoxyItemize}
+
+{\bfseries{Parameter Mapping (jbraj)\+:}}
+\begin{DoxyItemize}
+\item jbraj(i) \texorpdfstring{$>$}{>} 0\+: Add derivative to parameter jbraj(i)
+\item jbraj(i) \texorpdfstring{$<$}{<} 0\+: Subtract derivative from parameter \texorpdfstring{$\vert$}{|}jbraj(i)\texorpdfstring{$\vert$}{|}
+\end{DoxyItemize}
+
+{\bfseries{Algorithm\+:}}
+\begin{DoxyEnumerate}
+\item Early return if no free parameters (iesfreer = 0)
+\item Initialize energy configuration array to zero for non-\/accumulation modes
+\item Loop through all three-\/body terms (Jastrow factors)
+\item Apply parameter mapping with appropriate sign conventions
+\item Update energy configuration array accordingly
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+This subroutine is the real wave function version of constrbr\+\_\+complex. 
+
+The subroutine returns early if iesfreer = 0 (no free parameters). 
+
+For real wave functions, each parameter requires only one array element. 
+\end{DoxyNote}
+Early return if no free parameters
+
+Initialize energy configuration array for non-\/accumulation modes
+
+Accumulate derivatives (iopt = 0 or 3)
+
+Add derivative to positive parameter index
+
+Subtract derivative from absolute parameter index
+
+Replace derivatives (iopt ≠ 0,3)
+
+Set derivative for positive parameter index
+
+Set negative derivative for absolute parameter index
+
+Definition at line \mbox{\hyperlink{constrbr_8f90_source_l00051}{51}} of file \mbox{\hyperlink{constrbr_8f90_source}{constrbr.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesfreer,\ jbraj(*),\ nw,\ i,\ j,\ n3body,\ iopt}
+\DoxyCodeLine{00055\ \ \ \ \ real*8\ econf(nw,\ *),\ derjas(*)}
+\DoxyCodeLine{00056\ \textcolor{comment}{}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Early\ return\ if\ no\ free\ parameters}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (iesfreer\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00059\ \textcolor{comment}{}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ energy\ configuration\ array\ for\ non-\/accumulation\ modes}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .ne.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ iesfreer}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ 0.d0}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00065\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00066\ \textcolor{comment}{}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Accumulate\ derivatives\ (iopt\ =\ 0\ or\ 3)}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (iopt\ .eq.\ 0\ .or.\ iopt\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(*,*)\ '\ j\ =\ ',j,derjas(i)}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Add\ derivative\ to\ positive\ parameter\ index}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ econf(1,\ j)\ +\ derjas(i)}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Subtract\ derivative\ from\ absolute\ parameter\ index}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ econf(1,\ -\/j)\ -\/\ derjas(i)}
+\DoxyCodeLine{00079\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Replace\ derivatives\ (iopt\ ≠\ 0,3)}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n3body}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ jbraj(i)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\ .gt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ derivative\ for\ positive\ parameter\ index}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ j)\ =\ derjas(i)}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (j\ .lt.\ 0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Set\ negative\ derivative\ for\ absolute\ parameter\ index}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ econf(1,\ -\/j)\ =\ -\/derjas(i)}
+\DoxyCodeLine{00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

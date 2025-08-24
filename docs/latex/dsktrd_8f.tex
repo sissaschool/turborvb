@@ -1,0 +1,420 @@
+\doxysection{src/m\+\_\+pfapack/dsktrd.f File Reference}
+\hypertarget{dsktrd_8f}{}\label{dsktrd_8f}\index{src/m\_pfapack/dsktrd.f@{src/m\_pfapack/dsktrd.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dsktrd_8f_a0fd7d56ed291bb41df1b69a754f07001}{dsktrd}} (uplo, mode, n, a, lda, e, tau, work, lwork, info)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{dsktrd_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dsktrd_8f_a0fd7d56ed291bb41df1b69a754f07001}\index{dsktrd.f@{dsktrd.f}!dsktrd@{dsktrd}}
+\index{dsktrd@{dsktrd}!dsktrd.f@{dsktrd.f}}
+\doxysubsubsection{\texorpdfstring{dsktrd()}{dsktrd()}}
+{\footnotesize\ttfamily \label{dsktrd_8f_a0fd7d56ed291bb41df1b69a754f07001} 
+subroutine dsktrd (\begin{DoxyParamCaption}\item[{character}]{uplo}{, }\item[{character}]{mode}{, }\item[{integer}]{n}{, }\item[{double precision, dimension( lda, \texorpdfstring{$\ast$}{*} )}]{a}{, }\item[{integer}]{lda}{, }\item[{double precision, dimension( \texorpdfstring{$\ast$}{*} )}]{e}{, }\item[{double precision, dimension( \texorpdfstring{$\ast$}{*} )}]{tau}{, }\item[{double precision, dimension( \texorpdfstring{$\ast$}{*} )}]{work}{, }\item[{integer}]{lwork}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dsktrd_8f_source_l00029}{29}} of file \mbox{\hyperlink{dsktrd_8f_source}{dsktrd.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00031\ \textcolor{comment}{*}}
+\DoxyCodeLine{00032\ \textcolor{comment}{*\ \ -\/-\/\ Written\ on\ 10/22/2010}}
+\DoxyCodeLine{00033\ \textcolor{comment}{*\ \ \ \ \ Michael\ Wimmer}}
+\DoxyCodeLine{00034\ \textcolor{comment}{*}}
+\DoxyCodeLine{00035\ \textcolor{comment}{*\ \ -\/-\/\ derived\ from\ LAPACK\ routine\ ZHETRD\ (version\ 3.2,\ www.netlib.org)\ -\/-\/}}
+\DoxyCodeLine{00036\ \textcolor{comment}{*\ \ -\/-\/\ LAPACK\ is\ a\ software\ package\ provided\ by\ Univ.\ of\ Tennessee,\ \ \ \ -\/-\/}}
+\DoxyCodeLine{00037\ \textcolor{comment}{*\ \ -\/-\/\ Univ.\ of\ California\ Berkeley,\ Univ.\ of\ Colorado\ Denver\ and\ NAG\ Ltd..-\/-\/}}
+\DoxyCodeLine{00038\ \textcolor{comment}{*\ \ \ \ \ November\ 2006}}
+\DoxyCodeLine{00039\ \textcolor{comment}{*}}
+\DoxyCodeLine{00040\ \textcolor{comment}{*\ \ \ \ \ ..\ Scalar\ Arguments\ ..}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ \ \ \ \ \ \ \ \ \ UPLO,\ MODE}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ INFO,\ LDA,\ LWORK,\ N}
+\DoxyCodeLine{00043\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00044\ \textcolor{comment}{*\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ E(\ *\ )}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ A(\ LDA,\ *\ ),\ TAU(\ *\ ),\ WORK(\ *\ )}
+\DoxyCodeLine{00047\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00048\ \textcolor{comment}{*}}
+\DoxyCodeLine{00049\ \textcolor{comment}{*\ \ Purpose}}
+\DoxyCodeLine{00050\ \textcolor{comment}{*\ \ =======}}
+\DoxyCodeLine{00051\ \textcolor{comment}{*}}
+\DoxyCodeLine{00052\ \textcolor{comment}{*\ \ DSKTRD\ reduces\ a\ real\ skew-\/symmetric\ matrix\ A\ to\ skew-\/symmetric}}
+\DoxyCodeLine{00053\ \textcolor{comment}{*\ \ tridiagonal\ form\ T\ by\ an\ orthogonal\ similarity\ transformation:}}
+\DoxyCodeLine{00054\ \textcolor{comment}{*\ \ Q\string^T\ *\ A\ *\ Q\ =\ T.\ Alternatively,\ the\ routine\ can\ also\ compute}}
+\DoxyCodeLine{00055\ \textcolor{comment}{*\ \ a\ partial\ tridiagonal\ form\ useful\ for\ computing\ the\ Pfaffian.}}
+\DoxyCodeLine{00056\ \textcolor{comment}{*}}
+\DoxyCodeLine{00057\ \textcolor{comment}{*\ \ Arguments}}
+\DoxyCodeLine{00058\ \textcolor{comment}{*\ \ =========}}
+\DoxyCodeLine{00059\ \textcolor{comment}{*}}
+\DoxyCodeLine{00060\ \textcolor{comment}{*\ \ UPLO\ \ \ \ (input)\ CHARACTER*1}}
+\DoxyCodeLine{00061\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'U':\ \ Upper\ triangle\ of\ A\ is\ stored;}}
+\DoxyCodeLine{00062\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'L':\ \ Lower\ triangle\ of\ A\ is\ stored.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{*}}
+\DoxyCodeLine{00064\ \textcolor{comment}{*\ \ MODE\ \ \ \ (input)\ CHARACTER*1}}
+\DoxyCodeLine{00065\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'N':\ \ A\ is\ fully\ tridiagonalized}}
+\DoxyCodeLine{00066\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 'P':\ \ A\ is\ partially\ tridiagonalized\ for\ Pfaffian\ computation}}
+\DoxyCodeLine{00067\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (details\ see\ below)}}
+\DoxyCodeLine{00068\ \textcolor{comment}{*}}
+\DoxyCodeLine{00069\ \textcolor{comment}{*\ \ N\ \ \ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00070\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ order\ of\ the\ matrix\ A.\ \ N\ >=\ 0.\ N\ must\ be\ even\ if\ MODE\ =\ 'P'.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{*}}
+\DoxyCodeLine{00072\ \textcolor{comment}{*\ \ A\ \ \ \ \ \ \ (input/output)\ DOUBLE\ PRECISION\ array,\ dimension\ (LDA,N)}}
+\DoxyCodeLine{00073\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ On\ entry,\ the\ skew-\/symmetric\ matrix\ A.}}
+\DoxyCodeLine{00074\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'U',\ the\ leading\ N-\/by-\/N\ upper\ triangular\ part}}
+\DoxyCodeLine{00075\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ A\ contains\ the\ upper\ triangular\ part\ of\ the\ matrix\ A,}}
+\DoxyCodeLine{00076\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ and\ the\ strictly\ lower\ triangular\ part\ of\ A\ is\ not\ referenced.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'L',\ the\ leading\ N-\/by-\/N\ lower\ triangular\ part}}
+\DoxyCodeLine{00078\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ A\ contains\ the\ lower\ triangular\ part\ of\ the\ matrix\ A,}}
+\DoxyCodeLine{00079\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ and\ the\ strictly\ upper\ triangular\ part\ of\ A\ is\ not\ referenced.}}
+\DoxyCodeLine{00080\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ On\ exit,\ if\ MODE\ =\ 'N':}}
+\DoxyCodeLine{00081\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'U',\ the\ diagonal\ and\ first\ superdiagonal}}
+\DoxyCodeLine{00082\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ A\ are\ overwritten\ by\ the\ corresponding\ elements\ of\ the}}
+\DoxyCodeLine{00083\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ tridiagonal\ matrix\ T,\ and\ the\ elements\ above\ the\ first}}
+\DoxyCodeLine{00084\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ superdiagonal,\ with\ the\ array\ TAU,\ represent\ the\ unitary}}
+\DoxyCodeLine{00085\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ matrix\ Q\ as\ a\ product\ of\ elementary\ reflectors;}}
+\DoxyCodeLine{00086\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ If\ UPLO\ =\ 'L',\ the\ diagonal\ and\ first\ subdiagonal\ of\ A\ are\ over-\/}}
+\DoxyCodeLine{00087\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ written\ by\ the\ corresponding\ elements\ of\ the\ tridiagonal}}
+\DoxyCodeLine{00088\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ matrix\ T,\ and\ the\ elements\ below\ the\ first\ subdiagonal,\ with}}
+\DoxyCodeLine{00089\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ the\ array\ TAU,\ represent\ the\ unitary\ matrix\ Q\ as\ a\ product}}
+\DoxyCodeLine{00090\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ of\ elementary\ reflectors.}}
+\DoxyCodeLine{00091\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ See\ Further\ Details,\ also\ for\ information\ about\ MODE\ =\ 'P'.}}
+\DoxyCodeLine{00092\ \textcolor{comment}{*}}
+\DoxyCodeLine{00093\ \textcolor{comment}{*\ \ LDA\ \ \ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00094\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ leading\ dimension\ of\ the\ array\ A.\ \ LDA\ >=\ max(1,N).}}
+\DoxyCodeLine{00095\ \textcolor{comment}{*}}
+\DoxyCodeLine{00096\ \textcolor{comment}{*\ \ E\ \ \ \ \ \ \ (output)\ DOUBLE\ PRECISION\ array,\ dimension\ (N-\/1)}}
+\DoxyCodeLine{00097\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ off-\/diagonal\ elements\ of\ the\ tridiagonal\ matrix\ T:}}
+\DoxyCodeLine{00098\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ E(i)\ =\ A(i,i+1)\ if\ UPLO\ =\ 'U',\ E(i)\ =\ A(i+1,i)\ if\ UPLO\ =\ 'L'.}}
+\DoxyCodeLine{00099\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ If\ MODE\ =\ 'P',\ only\ the\ entries\ at\ i\ odd\ are\ well-\/defined}}
+\DoxyCodeLine{00100\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ (see\ Further\ Details)}}
+\DoxyCodeLine{00101\ \textcolor{comment}{*}}
+\DoxyCodeLine{00102\ \textcolor{comment}{*\ \ TAU\ \ \ \ \ (output)\ DOUBLE\ PRECISION\ array,\ dimension\ (N-\/1)}}
+\DoxyCodeLine{00103\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ scalar\ factors\ of\ the\ elementary\ reflectors\ (see\ Further}}
+\DoxyCodeLine{00104\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ Details).}}
+\DoxyCodeLine{00105\ \textcolor{comment}{*}}
+\DoxyCodeLine{00106\ \textcolor{comment}{*\ \ WORK\ \ \ \ (workspace/output)\ DOUBLE\ PRECISION\ array,\ dimension\ (MAX(1,LWORK))}}
+\DoxyCodeLine{00107\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ On\ exit,\ if\ INFO\ =\ 0,\ WORK(1)\ returns\ the\ optimal\ LWORK.}}
+\DoxyCodeLine{00108\ \textcolor{comment}{*}}
+\DoxyCodeLine{00109\ \textcolor{comment}{*\ \ LWORK\ \ \ (input)\ INTEGER}}
+\DoxyCodeLine{00110\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ The\ dimension\ of\ the\ array\ WORK.\ \ LWORK\ >=\ 1.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ For\ optimum\ performance\ LWORK\ >=\ N*NB,\ where\ NB\ is\ the}}
+\DoxyCodeLine{00112\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ optimal\ blocksize.}}
+\DoxyCodeLine{00113\ \textcolor{comment}{*}}
+\DoxyCodeLine{00114\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ If\ LWORK\ =\ -\/1,\ then\ a\ workspace\ query\ is\ assumed;\ the\ routine}}
+\DoxyCodeLine{00115\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ only\ calculates\ the\ optimal\ size\ of\ the\ WORK\ array,\ returns}}
+\DoxyCodeLine{00116\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ this\ value\ as\ the\ first\ entry\ of\ the\ WORK\ array,\ and\ no\ error}}
+\DoxyCodeLine{00117\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ message\ related\ to\ LWORK\ is\ issued\ by\ XERBLA.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{*}}
+\DoxyCodeLine{00119\ \textcolor{comment}{*\ \ INFO\ \ \ \ (output)\ INTEGER}}
+\DoxyCodeLine{00120\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ =\ 0:\ \ successful\ exit}}
+\DoxyCodeLine{00121\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ <\ 0:\ \ if\ INFO\ =\ -\/i,\ the\ i-\/th\ argument\ had\ an\ illegal\ value}}
+\DoxyCodeLine{00122\ \textcolor{comment}{*}}
+\DoxyCodeLine{00123\ \textcolor{comment}{*\ \ Further\ Details}}
+\DoxyCodeLine{00124\ \textcolor{comment}{*\ \ ===============}}
+\DoxyCodeLine{00125\ \textcolor{comment}{*}}
+\DoxyCodeLine{00126\ \textcolor{comment}{*\ \ The\ normal\ use\ for\ DSKTRD\ is\ to\ compute\ the\ tridiagonal\ form\ of}}
+\DoxyCodeLine{00127\ \textcolor{comment}{*\ \ a\ skew-\/symmetric\ matrix\ under\ an\ orthogonal\ similarity\ transformation,}}
+\DoxyCodeLine{00128\ \textcolor{comment}{*\ \ and\ chosen\ by\ setting\ MODE\ =\ 'N'\ ("{}normal"{}\ mode).\ The\ other}}
+\DoxyCodeLine{00129\ \textcolor{comment}{*\ \ use\ of\ DSKTRD\ is\ the\ computation\ the\ Pfaffian\ of\ a\ skew-\/symmetric\ matrix,}}
+\DoxyCodeLine{00130\ \textcolor{comment}{*\ \ which\ only\ requires\ a\ partial\ tridiagonalization,\ this\ mode\ is\ chosen}}
+\DoxyCodeLine{00131\ \textcolor{comment}{*\ \ by\ setting\ MODE\ =\ 'P'\ ("{}Pfaffian"{}\ mode).}}
+\DoxyCodeLine{00132\ \textcolor{comment}{*}}
+\DoxyCodeLine{00133\ \textcolor{comment}{*\ \ Normal\ mode\ (MODE\ =\ 'N'):}}
+\DoxyCodeLine{00134\ \textcolor{comment}{*\ \ ========================}}
+\DoxyCodeLine{00135\ \textcolor{comment}{*}}
+\DoxyCodeLine{00136\ \textcolor{comment}{*\ \ The\ routine\ computes\ a\ tridiagonal\ matrix\ T\ and\ an\ orthogonal\ Q\ such}}
+\DoxyCodeLine{00137\ \textcolor{comment}{*\ \ that\ A\ =\ Q\ *\ T\ *\ Q\string^T\ .}}
+\DoxyCodeLine{00138\ \textcolor{comment}{*}}
+\DoxyCodeLine{00139\ \textcolor{comment}{*\ \ If\ UPLO\ =\ 'U',\ the\ matrix\ Q\ is\ represented\ as\ a\ product\ of\ elementary}}
+\DoxyCodeLine{00140\ \textcolor{comment}{*\ \ reflectors}}
+\DoxyCodeLine{00141\ \textcolor{comment}{*}}
+\DoxyCodeLine{00142\ \textcolor{comment}{*\ \ \ \ \ Q\ =\ H(n-\/1)\ .\ .\ .\ H(2)\ H(1).}}
+\DoxyCodeLine{00143\ \textcolor{comment}{*}}
+\DoxyCodeLine{00144\ \textcolor{comment}{*\ \ Each\ H(i)\ has\ the\ form}}
+\DoxyCodeLine{00145\ \textcolor{comment}{*}}
+\DoxyCodeLine{00146\ \textcolor{comment}{*\ \ \ \ \ H(i)\ =\ I\ -\/\ tau\ *\ v\ *\ v'}}
+\DoxyCodeLine{00147\ \textcolor{comment}{*}}
+\DoxyCodeLine{00148\ \textcolor{comment}{*\ \ where\ tau\ is\ a\ real\ scalar,\ and\ v\ is\ a\ real\ vector\ with}}
+\DoxyCodeLine{00149\ \textcolor{comment}{*\ \ v(i+1:n)\ =\ 0\ and\ v(i)\ =\ 1;\ v(1:i-\/1)\ is\ stored\ on\ exit\ in}}
+\DoxyCodeLine{00150\ \textcolor{comment}{*\ \ A(1:i-\/1,i+1),\ and\ tau\ in\ TAU(i).}}
+\DoxyCodeLine{00151\ \textcolor{comment}{*}}
+\DoxyCodeLine{00152\ \textcolor{comment}{*\ \ If\ UPLO\ =\ 'L',\ the\ matrix\ Q\ is\ represented\ as\ a\ product\ of\ elementary}}
+\DoxyCodeLine{00153\ \textcolor{comment}{*\ \ reflectors}}
+\DoxyCodeLine{00154\ \textcolor{comment}{*}}
+\DoxyCodeLine{00155\ \textcolor{comment}{*\ \ \ \ \ Q\ =\ H(1)\ H(2)\ .\ .\ .\ H(n-\/1).}}
+\DoxyCodeLine{00156\ \textcolor{comment}{*}}
+\DoxyCodeLine{00157\ \textcolor{comment}{*\ \ Each\ H(i)\ has\ the\ form}}
+\DoxyCodeLine{00158\ \textcolor{comment}{*}}
+\DoxyCodeLine{00159\ \textcolor{comment}{*\ \ \ \ \ H(i)\ =\ I\ -\/\ tau\ *\ v\ *\ v'}}
+\DoxyCodeLine{00160\ \textcolor{comment}{*}}
+\DoxyCodeLine{00161\ \textcolor{comment}{*\ \ where\ tau\ is\ a\ real\ scalar,\ and\ v\ is\ a\ real\ vector\ with}}
+\DoxyCodeLine{00162\ \textcolor{comment}{*\ \ v(1:i)\ =\ 0\ and\ v(i+1)\ =\ 1;\ v(i+2:n)\ is\ stored\ on\ exit\ in\ A(i+2:n,i),}}
+\DoxyCodeLine{00163\ \textcolor{comment}{*\ \ and\ tau\ in\ TAU(i).}}
+\DoxyCodeLine{00164\ \textcolor{comment}{*}}
+\DoxyCodeLine{00165\ \textcolor{comment}{*\ \ The\ contents\ of\ A\ on\ exit\ are\ illustrated\ by\ the\ following\ examples}}
+\DoxyCodeLine{00166\ \textcolor{comment}{*\ \ with\ n\ =\ 5:}}
+\DoxyCodeLine{00167\ \textcolor{comment}{*}}
+\DoxyCodeLine{00168\ \textcolor{comment}{*\ \ if\ UPLO\ =\ 'U':\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ UPLO\ =\ 'L':}}
+\DoxyCodeLine{00169\ \textcolor{comment}{*}}
+\DoxyCodeLine{00170\ \textcolor{comment}{*\ \ \ \ (\ \ 0\ \ \ e\ \ \ v2\ \ v3\ \ v4\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00171\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ 0\ \ \ e\ \ \ v3\ \ v4\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ e\ \ \ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00172\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ 0\ \ \ e\ \ \ v4\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ v1\ \ e\ \ \ 0\ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00173\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ \ \ e\ \ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ v1\ \ v2\ \ e\ \ \ 0\ \ \ \ \ \ )}}
+\DoxyCodeLine{00174\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ \ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ (\ \ v1\ \ v2\ \ v3\ \ e\ \ \ 0\ \ )}}
+\DoxyCodeLine{00175\ \textcolor{comment}{*}}
+\DoxyCodeLine{00176\ \textcolor{comment}{*\ \ where\ d\ and\ e\ denote\ diagonal\ and\ off-\/diagonal\ elements\ of\ T,\ and\ vi}}
+\DoxyCodeLine{00177\ \textcolor{comment}{*\ \ denotes\ an\ element\ of\ the\ vector\ defining\ H(i).}}
+\DoxyCodeLine{00178\ \textcolor{comment}{*}}
+\DoxyCodeLine{00179\ \textcolor{comment}{*\ \ The\ LAPACK\ routine\ DORGTR\ can\ be\ used\ to\ form\ the\ transformation}}
+\DoxyCodeLine{00180\ \textcolor{comment}{*\ \ matrix\ explicitely,\ and\ DORMTR\ can\ be\ used\ to\ multiply\ another}}
+\DoxyCodeLine{00181\ \textcolor{comment}{*\ \ matrix\ without\ forming\ the\ transformation.}}
+\DoxyCodeLine{00182\ \textcolor{comment}{*}}
+\DoxyCodeLine{00183\ \textcolor{comment}{*\ \ Pfaffian\ mode\ (MODE\ =\ 'P'):}}
+\DoxyCodeLine{00184\ \textcolor{comment}{*\ \ ==========================}}
+\DoxyCodeLine{00185\ \textcolor{comment}{*}}
+\DoxyCodeLine{00186\ \textcolor{comment}{*\ \ For\ computing\ the\ Pfaffian,\ it\ is\ enough\ to\ bring\ A\ into\ a\ partial}}
+\DoxyCodeLine{00187\ \textcolor{comment}{*\ \ tridiagonal\ form.\ In\ particular,\ assuming\ n\ even,\ it\ is\ enough\ to}}
+\DoxyCodeLine{00188\ \textcolor{comment}{*\ \ bring\ A\ into\ a\ form\ with\ A(i,j)\ =\ A(j,i)\ =\ 0\ for\ i\ >\ j+1\ with\ j\ odd}}
+\DoxyCodeLine{00189\ \textcolor{comment}{*\ \ (this\ is\ computed\ if\ UPLO\ =\ 'L'),\ or\ A(i,j)\ =\ A(j,i)\ =\ 0\ for}}
+\DoxyCodeLine{00190\ \textcolor{comment}{*\ \ i\ >\ j-\/1\ with\ j\ even\ (this\ is\ computed\ if\ UPLO\ =\ 'U').\ Note\ that}}
+\DoxyCodeLine{00191\ \textcolor{comment}{*\ \ only\ the\ off-\/diagonal\ entries\ in\ the\ odd\ columns\ (if\ UPLO\ =\ 'L')}}
+\DoxyCodeLine{00192\ \textcolor{comment}{*\ \ or\ in\ the\ even\ columns\ (if\ UPLU\ =\ 'U')\ are\ properly\ computed\ by\ DSKTRD.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{*}}
+\DoxyCodeLine{00194\ \textcolor{comment}{*\ \ A\ is\ brought\ into\ this\ special\ form\ pT\ using\ an\ orthogonal\ matrix\ Q:}}
+\DoxyCodeLine{00195\ \textcolor{comment}{*\ \ A\ =\ Q\ *\ pT\ *\ Q\string^T}}
+\DoxyCodeLine{00196\ \textcolor{comment}{*}}
+\DoxyCodeLine{00197\ \textcolor{comment}{*\ \ If\ UPLO\ =\ 'U',\ the\ matrix\ Q\ is\ represented\ as\ a\ product\ of\ elementary}}
+\DoxyCodeLine{00198\ \textcolor{comment}{*\ \ reflectors}}
+\DoxyCodeLine{00199\ \textcolor{comment}{*}}
+\DoxyCodeLine{00200\ \textcolor{comment}{*\ \ \ \ \ Q\ =\ H(n-\/1)\ H(n-\/3)\ .\ .\ .\ H(3)\ H(1).}}
+\DoxyCodeLine{00201\ \textcolor{comment}{*}}
+\DoxyCodeLine{00202\ \textcolor{comment}{*\ \ Each\ H(i)\ has\ the\ form}}
+\DoxyCodeLine{00203\ \textcolor{comment}{*}}
+\DoxyCodeLine{00204\ \textcolor{comment}{*\ \ \ \ \ H(i)\ =\ I\ -\/\ tau\ *\ v\ *\ v\string^T}}
+\DoxyCodeLine{00205\ \textcolor{comment}{*}}
+\DoxyCodeLine{00206\ \textcolor{comment}{*\ \ where\ tau\ is\ a\ real\ scalar,\ and\ v\ is\ a\ real\ vector\ with}}
+\DoxyCodeLine{00207\ \textcolor{comment}{*\ \ v(i+1:n)\ =\ 0\ and\ v(i)\ =\ 1;\ v(1:i-\/1)\ is\ stored\ on\ exit\ in}}
+\DoxyCodeLine{00208\ \textcolor{comment}{*\ \ A(1:i-\/1,i+1),\ and\ tau\ in\ TAU(i).}}
+\DoxyCodeLine{00209\ \textcolor{comment}{*}}
+\DoxyCodeLine{00210\ \textcolor{comment}{*\ \ If\ UPLO\ =\ 'L',\ the\ matrix\ Q\ is\ represented\ as\ a\ product\ of\ elementary}}
+\DoxyCodeLine{00211\ \textcolor{comment}{*\ \ reflectors}}
+\DoxyCodeLine{00212\ \textcolor{comment}{*}}
+\DoxyCodeLine{00213\ \textcolor{comment}{*\ \ \ \ \ Q\ =\ H(1)\ H(3)\ .\ .\ .\ H(n-\/3)\ H(n-\/1).}}
+\DoxyCodeLine{00214\ \textcolor{comment}{*}}
+\DoxyCodeLine{00215\ \textcolor{comment}{*\ \ Each\ H(i)\ has\ the\ form}}
+\DoxyCodeLine{00216\ \textcolor{comment}{*}}
+\DoxyCodeLine{00217\ \textcolor{comment}{*\ \ \ \ \ H(i)\ =\ I\ -\/\ tau\ *\ v\ *\ v\string^T}}
+\DoxyCodeLine{00218\ \textcolor{comment}{*}}
+\DoxyCodeLine{00219\ \textcolor{comment}{*\ \ where\ tau\ is\ a\ real\ scalar,\ and\ v\ is\ a\ real\ vector\ with}}
+\DoxyCodeLine{00220\ \textcolor{comment}{*\ \ v(1:i)\ =\ 0\ and\ v(i+1)\ =\ 1;\ v(i+2:n)\ is\ stored\ on\ exit\ in\ A(i+2:n,i),}}
+\DoxyCodeLine{00221\ \textcolor{comment}{*\ \ and\ tau\ in\ TAU(i).}}
+\DoxyCodeLine{00222\ \textcolor{comment}{*}}
+\DoxyCodeLine{00223\ \textcolor{comment}{*\ \ The\ contents\ of\ A\ on\ exit\ are\ illustrated\ by\ the\ following\ examples}}
+\DoxyCodeLine{00224\ \textcolor{comment}{*\ \ with\ n\ =\ 6:}}
+\DoxyCodeLine{00225\ \textcolor{comment}{*}}
+\DoxyCodeLine{00226\ \textcolor{comment}{*\ \ if\ UPLO\ =\ 'U':\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ UPLO\ =\ 'L':}}
+\DoxyCodeLine{00227\ \textcolor{comment}{*}}
+\DoxyCodeLine{00228\ \textcolor{comment}{*\ \ \ \ (\ \ 0\ \ \ e\ \ \ x\ \ \ v3\ \ x\ \ \ v5\ )\ \ \ \ \ \ \ \ (\ \ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00229\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ 0\ \ \ x\ \ \ v3\ \ x\ \ \ v5\ )\ \ \ \ \ \ \ \ (\ \ e\ \ \ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00230\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ 0\ \ \ e\ \ \ x\ \ \ v5\ )\ \ \ \ \ \ \ \ (\ \ v1\ \ x\ \ \ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00231\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ \ \ x\ \ \ v5\ )\ \ \ \ \ \ \ \ (\ \ v1\ \ x\ \ \ e\ \ \ 0\ \ \ \ \ \ \ \ \ \ )}}
+\DoxyCodeLine{00232\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ \ \ e\ \ )\ \ \ \ \ \ \ \ (\ \ v1\ \ x\ \ \ v3\ \ x\ \ \ 0\ \ \ \ \ \ )}}
+\DoxyCodeLine{00233\ \textcolor{comment}{*\ \ \ \ (\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ \ )\ \ \ \ \ \ \ \ (\ \ v1\ \ x\ \ \ v3\ \ x\ \ \ e\ \ \ 0\ \ )}}
+\DoxyCodeLine{00234\ \textcolor{comment}{*}}
+\DoxyCodeLine{00235\ \textcolor{comment}{*\ \ where\ d\ and\ e\ denote\ diagonal\ and\ off-\/diagonal\ elements\ of\ T,\ vi}}
+\DoxyCodeLine{00236\ \textcolor{comment}{*\ \ denotes\ an\ element\ of\ the\ vector\ defining\ H(i),\ and\ x\ denotes\ an}}
+\DoxyCodeLine{00237\ \textcolor{comment}{*\ \ element\ not\ computed\ by\ DSKTRD.}}
+\DoxyCodeLine{00238\ \textcolor{comment}{*}}
+\DoxyCodeLine{00239\ \textcolor{comment}{*\ \ =====================================================================}}
+\DoxyCodeLine{00240\ \textcolor{comment}{*}}
+\DoxyCodeLine{00241\ \textcolor{comment}{*\ \ \ \ \ ..\ Parameters\ ..}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ ONE}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ parameter(\ one\ =\ 1.0d+0\ )}
+\DoxyCodeLine{00244\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00245\ \textcolor{comment}{*\ \ \ \ \ ..\ Local\ Scalars\ ..}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ \ \ \ \ \ \ \ \ \ \ \ LQUERY,\ UPPER,\ NORMAL}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ I,\ IINFO,\ IWS,\ J,\ LDWORK,\ LWKOPT,\ NB,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NBMIN,\ NX,\ STEP,\ NPANEL,\ NXPANEL}
+\DoxyCodeLine{00249\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00250\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Subroutines\ ..}}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ \ \ \ \ \ \ \ \ \ \ xerbla,\ \mbox{\hyperlink{dskr2k_8f_a882c5067fdc1ef29a4e5482b2a476408}{dskr2k}},\ \mbox{\hyperlink{dsktd2_8f_abe26043e6e8d91c88412d679d1a03de5}{dsktd2}},\ \mbox{\hyperlink{dlasktrd_8f_abb3c9fa438841772fbac5f5527dcdbfa}{dlasktrd}}}
+\DoxyCodeLine{00252\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00253\ \textcolor{comment}{*\ \ \ \ \ ..\ Intrinsic\ Functions\ ..}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ \ \ \ \ \ \ \ \ \ max}
+\DoxyCodeLine{00255\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00256\ \textcolor{comment}{*\ \ \ \ \ ..\ External\ Functions\ ..}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ \ \ \ \ \ \ \ \ \ \ \ LSAME}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ ILAENV}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \textcolor{keywordtype}{EXTERNAL}\ \ \ \ \ \ \ \ \ \ \ lsame,\ ilaenv}
+\DoxyCodeLine{00260\ \textcolor{comment}{*\ \ \ \ \ ..}}
+\DoxyCodeLine{00261\ \textcolor{comment}{*\ \ \ \ \ ..\ Executable\ Statements\ ..}}
+\DoxyCodeLine{00262\ \textcolor{comment}{*}}
+\DoxyCodeLine{00263\ \textcolor{comment}{*\ \ \ \ \ Test\ the\ input\ parameters}}
+\DoxyCodeLine{00264\ \textcolor{comment}{*}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ upper\ =\ lsame(\ uplo,\ \textcolor{stringliteral}{'U'}\ )}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ normal\ =\ lsame(\ mode,\ \textcolor{stringliteral}{'N'}\ )}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \ \ lquery\ =\ (\ lwork.EQ.-\/1\ )}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ .NOT.upper\ .AND.\ .NOT.lsame(\ uplo,\ \textcolor{stringliteral}{'L'}\ )\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ info\ =\ -\/1}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ .NOT.normal\ .AND.\ .NOT.lsame(\ mode,\ \textcolor{stringliteral}{'P'}\ )\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ info\ =\ -\/2}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ n.LT.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ info\ =\ -\/3}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ .NOT.normal\ .AND.\ mod(n,2).NE.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ info\ =\ -\/3}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ lda.LT.max(\ 1,\ n\ )\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ info\ =\ -\/5}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ lwork.LT.1\ .AND.\ .NOT.lquery\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ info\ =\ -\/9}
+\DoxyCodeLine{00282\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00283\ \textcolor{comment}{*}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ info.EQ.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00285\ \textcolor{comment}{*}}
+\DoxyCodeLine{00286\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Determine\ the\ block\ size.}}
+\DoxyCodeLine{00287\ \textcolor{comment}{*\ \ \ \ \ \ \ \ NOTE:\ I\ keep\ 'DSYTRD"{}\ here,\ as\ of\ course\ ILAENV\ has\ no\ information}}
+\DoxyCodeLine{00288\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ about\ DSKTRD\ ...}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ nb\ =\ ilaenv(\ 1,\ \textcolor{stringliteral}{'DSYTRD'},\ uplo,\ n,\ -\/1,\ -\/1,\ -\/1\ )}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ lwkopt\ =\ n*nb}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ work(\ 1\ )\ =\ lwkopt}
+\DoxyCodeLine{00293\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00294\ \textcolor{comment}{*}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ info.NE.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }xerbla(\ \textcolor{stringliteral}{'DSKTRD'},\ -\/info\ )}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}(\ lquery\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00300\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00301\ \textcolor{comment}{*}}
+\DoxyCodeLine{00302\ \textcolor{comment}{*\ \ \ \ \ Quick\ return\ if\ possible}}
+\DoxyCodeLine{00303\ \textcolor{comment}{*}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ n.EQ.0\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ work(\ 1\ )\ =\ 1}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00307\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00308\ \textcolor{comment}{*}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ nx\ =\ n}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ iws\ =\ 1}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ nb.GT.1\ .AND.\ nb.LT.n\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00312\ \textcolor{comment}{*}}
+\DoxyCodeLine{00313\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Determine\ when\ to\ cross\ over\ from\ blocked\ to\ unblocked\ code}}
+\DoxyCodeLine{00314\ \textcolor{comment}{*\ \ \ \ \ \ \ \ (last\ block\ is\ always\ handled\ by\ unblocked\ code).}}
+\DoxyCodeLine{00315\ \textcolor{comment}{*}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ nx\ =\ max(\ nb,\ ilaenv(\ 3,\ \textcolor{stringliteral}{'DSYTRD'},\ uplo,\ n,\ -\/1,\ -\/1,\ -\/1\ )\ )}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ nx.LT.n\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00318\ \textcolor{comment}{*}}
+\DoxyCodeLine{00319\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Determine\ if\ workspace\ is\ large\ enough\ for\ blocked\ code.}}
+\DoxyCodeLine{00320\ \textcolor{comment}{*}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ ldwork\ =\ n}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ iws\ =\ ldwork*nb}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ lwork.LT.iws\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00324\ \textcolor{comment}{*}}
+\DoxyCodeLine{00325\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ Not\ enough\ workspace\ to\ use\ optimal\ NB:\ \ determine\ the}}
+\DoxyCodeLine{00326\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ minimum\ value\ of\ NB,\ and\ reduce\ NB\ or\ force\ use\ of}}
+\DoxyCodeLine{00327\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ \ \ \ unblocked\ code\ by\ setting\ NX\ =\ N.}}
+\DoxyCodeLine{00328\ \textcolor{comment}{*}}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nb\ =\ max(\ lwork\ /\ ldwork,\ 1\ )}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nbmin\ =\ ilaenv(\ 2,\ \textcolor{stringliteral}{'DSYTRD'},\ uplo,\ n,\ -\/1,\ -\/1,\ -\/1\ )}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ nb.LT.nbmin\ .OR.\ nb.LE.1\ )}
+\DoxyCodeLine{00332\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ nx\ =\ n}
+\DoxyCodeLine{00333\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ nx\ =\ n}
+\DoxyCodeLine{00336\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ nb\ =\ 1}
+\DoxyCodeLine{00339\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00340\ \textcolor{comment}{*}}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ .NOT.normal\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ step\ =\ 2}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ step\ =\ 1}
+\DoxyCodeLine{00346\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ npanel\ =\ nb\ *\ step}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ nxpanel\ =\ nx\ *\ step}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(\ upper\ )\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00352\ \textcolor{comment}{*}}
+\DoxyCodeLine{00353\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Reduce\ the\ upper\ triangle\ of\ A.}}
+\DoxyCodeLine{00354\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Columns\ 1:kk\ are\ handled\ by\ the\ unblocked\ method.}}
+\DoxyCodeLine{00355\ \textcolor{comment}{*}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 20\ i\ =\ n,\ nxpanel\ +\ npanel,\ -\/npanel}
+\DoxyCodeLine{00357\ \textcolor{comment}{*}}
+\DoxyCodeLine{00358\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Reduce\ columns\ i-\/npanel+1:i\ to\ tridiagonal\ form\ and\ form\ the}}
+\DoxyCodeLine{00359\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ matrix\ W\ which\ is\ needed\ to\ update\ the\ unreduced\ part\ of}}
+\DoxyCodeLine{00360\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ the\ matrix}}
+\DoxyCodeLine{00361\ \textcolor{comment}{*}}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dlasktrd_8f_abb3c9fa438841772fbac5f5527dcdbfa}{dlasktrd}}(\ uplo,\ mode,\ i,\ nb,\ a,\ lda,\ e,\ tau,\ work,}
+\DoxyCodeLine{00363\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ldwork\ )}
+\DoxyCodeLine{00364\ \textcolor{comment}{*}}
+\DoxyCodeLine{00365\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Update\ the\ unreduced\ submatrix\ A(1:i-\/npanel,1:i-\/npanel),\ using\ an}}
+\DoxyCodeLine{00366\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ update\ of\ the\ form:\ \ A\ :=\ A\ +\ V*W\string^T\ -\/\ W*V\string^T}}
+\DoxyCodeLine{00367\ \textcolor{comment}{*}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dskr2k_8f_a882c5067fdc1ef29a4e5482b2a476408}{dskr2k}}(\ uplo,\ \textcolor{stringliteral}{'No\ transpose'},\ i-\/npanel,\ nb,\ one,}
+\DoxyCodeLine{00369\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ 1,\ i-\/npanel+step\ ),\ lda*step,\ work,\ ldwork,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ one,\ a,\ lda\ )}
+\DoxyCodeLine{00371\ \textcolor{comment}{*}}
+\DoxyCodeLine{00372\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Copy\ superdiagonal\ elements\ back\ into\ A}}
+\DoxyCodeLine{00373\ \textcolor{comment}{*}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 10\ j\ =\ i-\/npanel+1+step-\/1,\ i,\ step}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ j-\/1,\ j\ )\ =\ e(\ j-\/1\ )}
+\DoxyCodeLine{00376\ \ \ \ 10\ \ \ \ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00377\ \ \ \ 20\ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00378\ \textcolor{comment}{*}}
+\DoxyCodeLine{00379\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Use\ unblocked\ code\ to\ reduce\ the\ last\ or\ only\ block}}
+\DoxyCodeLine{00380\ \textcolor{comment}{*}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dsktd2_8f_abe26043e6e8d91c88412d679d1a03de5}{dsktd2}}(\ uplo,\ mode,\ i,\ a,\ lda,\ e,\ tau,\ iinfo\ )}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00383\ \textcolor{comment}{*}}
+\DoxyCodeLine{00384\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Reduce\ the\ lower\ triangle\ of\ A}}
+\DoxyCodeLine{00385\ \textcolor{comment}{*}}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 40\ i\ =\ 1,\ n\ -\/\ nxpanel,\ npanel}
+\DoxyCodeLine{00387\ \textcolor{comment}{*}}
+\DoxyCodeLine{00388\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Reduce\ columns\ i:i+npanel-\/1\ to\ tridiagonal\ form\ and\ form\ the}}
+\DoxyCodeLine{00389\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ matrix\ W\ which\ is\ needed\ to\ update\ the\ unreduced\ part\ of}}
+\DoxyCodeLine{00390\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ the\ matrix}}
+\DoxyCodeLine{00391\ \textcolor{comment}{*}}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dlasktrd_8f_abb3c9fa438841772fbac5f5527dcdbfa}{dlasktrd}}(\ uplo,\ mode,\ n-\/i+1,\ nb,\ a(\ i,\ i\ ),\ lda,}
+\DoxyCodeLine{00393\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ e(\ i\ ),\ tau(\ i\ ),\ work,\ ldwork\ )}
+\DoxyCodeLine{00394\ \textcolor{comment}{*}}
+\DoxyCodeLine{00395\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Update\ the\ unreduced\ submatrix\ A(i+npanel:n,i+npanel:n),\ using}}
+\DoxyCodeLine{00396\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ an\ update\ of\ the\ form:\ \ A\ :=\ A\ +\ V*W\string^T\ -\/\ W*V\string^T}}
+\DoxyCodeLine{00397\ \textcolor{comment}{*}}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dskr2k_8f_a882c5067fdc1ef29a4e5482b2a476408}{dskr2k}}(\ uplo,\ \textcolor{stringliteral}{'No\ transpose'},\ n-\/i-\/npanel+1,\ nb,\ one,}
+\DoxyCodeLine{00399\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ i+npanel,\ i\ ),\ lda*step,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ work(\ npanel+1\ ),\ ldwork,\ one,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ i+npanel,\ i+npanel\ ),\ lda\ )}
+\DoxyCodeLine{00402\ \textcolor{comment}{*}}
+\DoxyCodeLine{00403\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ \ \ Copy\ subdiagonal\ elements\ back\ into\ A}}
+\DoxyCodeLine{00404\ \textcolor{comment}{*}}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{DO}\ 30\ j\ =\ i,\ i\ +\ npanel\ -\/\ 1,\ step}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(\ j+1,\ j\ )\ =\ e(\ j\ )}
+\DoxyCodeLine{00407\ \ \ \ 30\ \ \ \ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00408\ \ \ \ 40\ \ \ \ \textcolor{keywordflow}{CONTINUE}}
+\DoxyCodeLine{00409\ \textcolor{comment}{*}}
+\DoxyCodeLine{00410\ \textcolor{comment}{*\ \ \ \ \ \ \ \ Use\ unblocked\ code\ to\ reduce\ the\ last\ or\ only\ block}}
+\DoxyCodeLine{00411\ \textcolor{comment}{*}}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dsktd2_8f_abe26043e6e8d91c88412d679d1a03de5}{dsktd2}}(\ uplo,\ mode,\ n-\/i+1,\ a(\ i,\ i\ ),\ lda,\ e(\ i\ ),}
+\DoxyCodeLine{00413\ \ \ \ \ \ \$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tau(\ i\ ),\ iinfo\ )}
+\DoxyCodeLine{00414\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00415\ \textcolor{comment}{*}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ work(\ 1\ )\ =\ lwkopt}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00418\ \textcolor{comment}{*}}
+\DoxyCodeLine{00419\ \textcolor{comment}{*\ \ \ \ \ End\ of\ DSKTRD}}
+\DoxyCodeLine{00420\ \textcolor{comment}{*}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dlasktrd_8f_source_l00030}{dlasktrd()}}, \mbox{\hyperlink{dskr2k_8f_source_l00030}{dskr2k()}}, and \mbox{\hyperlink{dsktd2_8f_source_l00030}{dsktd2()}}.
+

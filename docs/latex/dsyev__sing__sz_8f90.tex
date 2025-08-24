@@ -1,0 +1,175 @@
+\doxysection{src/a\+\_\+turborvb/dsyev\+\_\+sing\+\_\+sz.f90 File Reference}
+\hypertarget{dsyev__sing__sz_8f90}{}\label{dsyev__sing__sz_8f90}\index{src/a\_turborvb/dsyev\_sing\_sz.f90@{src/a\_turborvb/dsyev\_sing\_sz.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dsyev__sing__sz_8f90_ae69441048277c5a638db369fa990dd48}{dsyev\+\_\+sing}} (nbin, cov, eig, tcin, psip, lwork, iwork, ilwork, info)
+\begin{DoxyCompactList}\small\item\em Eigenvalue decomposition for singular matrix with constraint sum\+\_\+j cov(i,j) = 0. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{dsyev__sing__sz_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dsyev__sing__sz_8f90_ae69441048277c5a638db369fa990dd48}\index{dsyev\_sing\_sz.f90@{dsyev\_sing\_sz.f90}!dsyev\_sing@{dsyev\_sing}}
+\index{dsyev\_sing@{dsyev\_sing}!dsyev\_sing\_sz.f90@{dsyev\_sing\_sz.f90}}
+\doxysubsubsection{\texorpdfstring{dsyev\_sing()}{dsyev\_sing()}}
+{\footnotesize\ttfamily \label{dsyev__sing__sz_8f90_ae69441048277c5a638db369fa990dd48} 
+subroutine dsyev\+\_\+sing (\begin{DoxyParamCaption}\item[{integer}]{nbin}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nbin, \texorpdfstring{$\ast$}{*})}]{cov}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{eig}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nbin, \texorpdfstring{$\ast$}{*})}]{tcin}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{psip}{, }\item[{integer}]{lwork}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{iwork}{, }\item[{integer}]{ilwork}{, }\item[{integer}]{info}{}\end{DoxyParamCaption})}
+
+
+
+Eigenvalue decomposition for singular matrix with constraint sum\+\_\+j cov(i,j) = 0. 
+
+This subroutine computes eigenvalues and eigenvectors of a matrix cov that satisfies the constraint sum\+\_\+j cov(i,j) = 0 for all i, which implies the existence of a singular eigenvector that is constant. The algorithm constructs a transformation matrix using trigonometric functions to handle the singularity and computes the eigendecomposition of the transformed matrix, then transforms the results back to the original space. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nbin} & Dimension of the matrix \\
+\hline
+\mbox{\texttt{in,out}}  & {\em cov} & Covariance matrix (input), eigenvectors (output) \\
+\hline
+\mbox{\texttt{out}}  & {\em eig} & Eigenvalues of the matrix \\
+\hline
+\mbox{\texttt{in,out}}  & {\em tcin} & Transformation matrix for handling singularity \\
+\hline
+\mbox{\texttt{in,out}}  & {\em psip} & Work array for matrix operations \\
+\hline
+\mbox{\texttt{in}}  & {\em lwork} & Size of work array for eigenvalue solver \\
+\hline
+\mbox{\texttt{in,out}}  & {\em iwork} & Integer work array for eigenvalue solver \\
+\hline
+\mbox{\texttt{in}}  & {\em ilwork} & Size of integer work array \\
+\hline
+\mbox{\texttt{out}}  & {\em info} & Information flag from eigenvalue solver \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{dsyev__sing__sz_8f90_source_l00031}{31}} of file \mbox{\hyperlink{dsyev__sing__sz_8f90_source}{dsyev\+\_\+sing\+\_\+sz.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipiv,\ nbin,\ lwork,\ info,\ i,\ j,\ nbin2,\ nbinm,\ iwork(*),\ ilwork}
+\DoxyCodeLine{00035\ \ \ \ \ real*8\ cov(nbin,\ *),\ eig(*),\ psip(*),\ nmax,\ dnrm2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ddot,\ cost,\ sum,\ tcin(nbin,\ *),\ arg}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ this\ subroutine\ returns\ eigenvector\ and\ eigenvalues}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ of\ a\ matrix\ cov,\ satisfying\ by\ definition}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ sum\_j\ cov(i,j)=0.,\ i.e.\ has\ a\ singulare\ eigenvector}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ which\ is\ constant.}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ arg\ =\ 4.d0*dasin(1.d0)/nbin}
+\DoxyCodeLine{00044\ \ \ \ \ cost\ =\ 1.d0/dsqrt(dble(nbin))}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(nbin,\ cost,\ tcin,\ 1)}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ nbin2\ =\ nbin/2}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{if}\ (2*nbin2\ .eq.\ nbin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nbin2}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,\ i)\ =\ dcos(arg*(i\ -\/\ 1)*j)}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,\ i\ +\ nbin2)\ =\ dsin(arg*(i\ -\/\ 1)*j)}
+\DoxyCodeLine{00054\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/dnrm2(nbin,\ tcin(1,\ i),\ 1)}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(nbin,\ cost,\ tcin(1,\ i),\ 1)}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/dnrm2(nbin,\ tcin(1,\ i\ +\ nbin2),\ 1)}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(nbin,\ cost,\ tcin(1,\ i\ +\ nbin2),\ 1)}
+\DoxyCodeLine{00059\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,\ nbin2\ +\ 1)\ =\ dcos(arg*nbin2*j)}
+\DoxyCodeLine{00062\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/dnrm2(nbin,\ tcin(1,\ nbin2\ +\ 1),\ 1)}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(nbin,\ cost,\ tcin(1,\ nbin2\ +\ 1),\ 1)}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nbin2\ +\ 1}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,\ i)\ =\ dcos(arg*(i\ -\/\ 1)*j)}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,\ i\ +\ nbin2)\ =\ dsin(arg*(i\ -\/\ 1)*j)}
+\DoxyCodeLine{00072\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/dnrm2(nbin,\ tcin(1,\ i),\ 1)}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(nbin,\ cost,\ tcin(1,\ i),\ 1)}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ 1.d0/dnrm2(nbin,\ tcin(1,\ i\ +\ nbin2),\ 1)}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dscal(nbin,\ cost,\ tcin(1,\ i\ +\ nbin2),\ 1)}
+\DoxyCodeLine{00077\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00078\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ preconditioning\ before}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ j=1,nbin}}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ do\ i=1,nbin}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,i)=fkav(j)*tcin(j,i)}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ zero\ root\ before\ dsyev\ ',ipiv}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ raw/column\ ipip\ '}}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ i=1,nbin}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ i,cov(i,ipiv),cov(ipiv,i)}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Input\ L\ =cov\ ,\ Cholesky\ S=\ L\ L\string^+}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ now\ transform\ the\ matrix\ L\string^+\ T}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nbin,\ nbin,\ nbin,\ 1.d0,\ cov,\ nbin,\ tcin,\ nbin\ \ \ \ \ \&}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ psip,\ nbin)}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ nbin,\ nbin,\ nbin,\ 1.d0,\ psip,\ nbin,\ psip,\ nbin\ \ \ \ \&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ cov,\ nbin)}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ this\ transformed\ matrix\ should\ have\ the\ first}}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ index=0}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ are\ really\ zero\ ??\ '}}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i=1,nbin}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ i,cov(i,1),cov(1,i)}}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ write(6,*)\ '\ full\ transformed\ matrix\ '}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ do\ i=1,nbin}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ j=i,nbin}}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ \ i,j,cov(i,j)}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ nbinm\ =\ nbin\ -\/\ 1}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keyword}{call\ }dsyevd(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'U'},\ nbinm,\ cov(2,\ 2),\ nbin,\ eig(2),\ psip,\ lwork\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ iwork,\ ilwork,\ info)}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordflow}{if}\ (eig(2)\ .le.\ 0.)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{comment}{!c\ \ \ \ \ \ \ \ \ preconditioning\ after}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nbin}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ j,\ cov(i,\ j),\ cov(j,\ i)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ tcin(j,i)=tcin(j,i)/fkav(j)}}
+\DoxyCodeLine{00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ now\ transform\ back\ the\ eigenvectors}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ nbin,\ nbinm,\ nbinm,\ 1.d0,\ tcin(1,\ 2),\ nbin\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ cov(2,\ 2),\ nbin,\ 0.d0,\ psip,\ nbin)}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{call\ }dcopy(nbin*nbinm,\ psip,\ 1,\ cov(1,\ 2),\ 1)}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ eig(1)\ =\ 0.d0}
+\DoxyCodeLine{00142\ \ \ \ \ cost\ =\ 1.d0/dsqrt(dble(nbin))}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dscalzero_8f90_a73662e8e7f818c59e864aa5755f4650a}{dscalzero}}(nbin,\ cost,\ cov,\ 1)}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ check\ orthogonality\ '}}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ do\ i=1,nbin}}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ do\ j=i,nbin}}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ i,j,ddot(nbin,cov(1,i),1,cov(1,j),1)}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ stop}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dscalzero_8f90_source_l00036}{dscalzero()}}.
+

@@ -1,0 +1,293 @@
+\doxysection{upvpotdiag.\+f90}
+\hypertarget{upvpotdiag_8f90_source}{}\label{upvpotdiag_8f90_source}\index{src/c\_adjoint\_forward/upvpotdiag.f90@{src/c\_adjoint\_forward/upvpotdiag.f90}}
+\mbox{\hyperlink{upvpotdiag_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00002}00002\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00003}00003\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00004}00004\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00005}00005\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00006}00006\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00007}00007\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00008}00008\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00009}00009\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00010}00010\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00011}00011\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00012}00012\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00013}00013\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00014}00014\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00015}00015\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00017}\mbox{\hyperlink{upvpotdiag_8f90_ac658beab9e57c71e1e079de9201f0269}{00017}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{upvpotdiag_8f90_ac658beab9e57c71e1e079de9201f0269}{upvpotdiag}}(rkel,\ nel,\ zeta,\ rion,\ iond,\ vpot,\ nion\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00018}00018\ \ \ \ \ \ \ \ \ \&,\ kappa,\ LBox,\ vpotreg,\ cutreg,\ costz,\ costz3,vpotsav\_ee,yes\_fn)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00020}00020\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (30/11/10)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00021}00021\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceextpot}{extpot}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespaceextpot_a68d98a7c4286fcd94d0798dd4b86f539}{ext\_pot}},\ \mbox{\hyperlink{namespaceextpot_ae337eadf0ff0c1ea676e724ed1bf6f35}{link\_atom}},\ \mbox{\hyperlink{namespaceextpot_a17227a1fc2ae357009745553f6a3be1f}{mm\_restr}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00022}00022\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (4/2/11)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacevan__der__waals}{van\_der\_waals}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespacevan__der__waals_ae6fa7393fc1ae4ae381418d1cb42e15d}{vdw}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00024}00024\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (12/5/11)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacelink__angle}{link\_angle}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespacelink__angle_a599a55f37fa264b26b99645eddb31ab4}{mm\_pot\_theta}},\ \mbox{\hyperlink{namespacelink__angle_acfb2289b2bb2b72f37733b95e42d6ca9}{mm\_pot\_dihed}},\ \mbox{\hyperlink{namespacelink__angle_a1ebbe82feb32a5776b29546314998a81}{mm\_pot\_impr}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00026}00026\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecl__restr}{cl\_restr}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespacecl__restr_a2f0a6057212725e9956cef8b914f4439}{restr\_bond}},\ \mbox{\hyperlink{namespacecl__restr_aaadb9924766b541323bd0519f7d520ca}{restr\_angle}},\ \mbox{\hyperlink{namespacecl__restr_afd9a7c8879aacd0b01f5b82b1b728fc5}{restr\_dihe}},\ \mbox{\hyperlink{namespacecl__restr_a056dc07c685ebe7fad0ed07d681d6364}{restr\_dimp}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedielectric}{dielectric}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}},\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}},\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}},\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}},\mbox{\hyperlink{namespaceallio_ab7ca62d9b76d9b1c77fb80b539c5e4a4}{pot\_aasunel}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,ii,\ jj,\ i,\ j,\ k,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{integer*8}\ maxll,ll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00034}00034\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ rkel(3,\ *)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00035}00035\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ zeta(nion),\ vpot,\ rion(3,\ *),\ iond(nion,\ nion)\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ cost,\ tmp,\ kappa,\ LBox,\ pot\_ee,\ pot\_ea,\ pot\_aa,\ derfc,\ max,\ costz(*)\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ distb,\ vpotreg(2,\ nel),\ potreg\_ea,\ costz3(*),\ cutreg,\ Zreg2,\ distbreg}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{real(8)},\ \textcolor{keywordtype}{external}\ ::\ ngivej}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00039}00039\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ x\_shift(3),cost\_z}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{logical}\ yes\_fn}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00041}00041\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ vpotsav\_ee(nel,nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00043}00043\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (10/11/10)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00044}00044\ \ \ \ \ real*8\ ext\_ene(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00045}00045\ \ \ \ \ real*8\ sum\_ext}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (12/1/11)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00047}00047\ \ \ \ \ real*8\ ext\_ion(nion)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00048}00048\ \ \ \ \ real*8\ sum\_ion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (4/2/11)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00050}00050\ \ \ \ \ real*8\ sum\_vdw}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00052}00052\ \ \ \ \ vpot\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00053}00053\ \ \ \ \ pot\_aa\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00054}00054\ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00055}00055\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00056}00056\ \ \ \ \ ext\_ene\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00057}00057\ \ \ \ \ ext\_ion\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}}.le.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00060}00060\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ \ private(k,i,Zreg2,distb)\ reduction(+:vpotreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ zreg2\ =\ \mbox{\hyperlink{namespaceallio_a24711b70ba83fb654c8f37bab60d6d59}{costz}}(k)\ *\ \mbox{\hyperlink{namespaceallio_a333b58547d77d51307a49ee21b9a5e48}{costz3}}(k)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}(rion(1,\ k),\ rkel(1,\ i),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}})}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ -\/\ 2.d0\ *\ zeta(k)\ *\mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(distb)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)/distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)/distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ potreg\_ea=potreg\_ea+Zreg2/distb-\/Zreg2/max(distb,cutreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ +\ (zreg2\ -\/\ 2.d0\ *\ zeta(k))\ *\mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(distb)\ -\/\ zreg2\ *\ \mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(max(distb,\ \mbox{\hyperlink{namespaceallio_a8e5a3cab35952cd76fdd2b14ae6c00d9}{cutreg}}))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00070}00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00071}00071\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00073}00073\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ \ private(j,i,cost)\ reduction(+:vpotreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i+1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ =\mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}(rkel(1,\ i),\ rkel(1,\ j),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}}))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ j)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ j)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ j)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ j)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(yes\_fn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotsav\_ee(i,j)=2.d0*\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotsav\_ee(j,i)=2.d0*\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00087}00087\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00089}00089\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ private(i,j)\ reduction(+:pot\_aa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(zeta(i)\ *\ zeta(j).ne.0.d0)\ pot\_aa\ =\ pot\_aa\ +\ 2.d0\ *\ zeta(i)\ *\ zeta(j)\ *\ \mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(iond(i,\ j))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ ********\ \ EWALD\ REAL\ PART\ *************}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00097}00097\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00098}00098\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ cutreg}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ costz(1:nion)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ costz3(1:nion)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write(6,*)\ zeta(1:nion)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00103}00103\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00104}00104\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ \ private(k,i,ii,Zreg2,x\_shift,cost,dist\_shift,distreg\_shift)\ reduction(+:vpotreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ zreg2\ =\ \mbox{\hyperlink{namespaceallio_a24711b70ba83fb654c8f37bab60d6d59}{costz}}(k)\ *\ \mbox{\hyperlink{namespaceallio_a333b58547d77d51307a49ee21b9a5e48}{costz3}}(k)\ \ \textcolor{comment}{!\ 2\ Z\_singular}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(zreg2\ *\ \mbox{\hyperlink{namespaceallio_a8e5a3cab35952cd76fdd2b14ae6c00d9}{cutreg}}.gt.0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ngivej_8f90_a77c04cb58ba5206b3c1169bbf8d47fbc}{dgivej}}(rion(1,\ k),\ rkel(1,\ i),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}},x\_shift)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00110}00110\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00111}00111\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00112}00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00113}00113\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}\ \ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ =\ max(dsqrt((x\_shift(1)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00115}00115\ \ \ \ \ \ \ \&\ (x\_shift(2)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(x\_shift(3)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2),1\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/9)\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii)\ =\ max(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),\ \mbox{\hyperlink{namespaceallio_a8e5a3cab35952cd76fdd2b14ae6c00d9}{cutreg}})}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00117}00117\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ derfc(kappa\ *\ distb)\ /\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),kappa)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ pot\_ea=pot\_ea-\/2.d0*zeta(k)*cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii)=\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(\mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii),kappa)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ -\/\ 2.d0\ *\ zeta(k)\ *\ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ potreg\_ea=potreg\_ea+Zreg2*(cost-\/derfc(kappa*distbreg)/distbreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00125}00125\ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ +\ (zreg2\ -\/\ 2.d0\ *\ zeta(k))\ *\ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00126}00126\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ Zreg2\ *\ derfc(kappa\ *\ distbreg)\ /\ distbreg}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ -\/\ zreg2\ *\ \mbox{\hyperlink{namespacecell_ac38bf768a8151465b2fae5a30ca3755b}{distreg\_shift}}(ii)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00128}00128\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00129}00129\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ngivej_8f90_a77c04cb58ba5206b3c1169bbf8d47fbc}{dgivej}}(rion(1,\ k),\ rkel(1,\ i),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}},x\_shift)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00134}00134\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00135}00135\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00136}00136\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00137}00137\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ =\ max(dsqrt((x\_shift(1)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00139}00139\ \ \ \ \ \ \ \&\ (x\_shift(2)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(x\_shift(3)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2),1\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/9)\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00140}00140\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distb\ =\ ngivej(rion(1,\ k),\ rkel(1,\ i),\ LBox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00141}00141\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ -\/2.d0\ *\ zeta(k)\ *\ derfc(kappa\ *\ distb)\ /\ distb}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=-\/2.d0*zeta(k)*\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),kappa)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ pot\_ea=pot\_ea+cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00144}00144\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}=sum(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(1:\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,\ i)\ +\ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00148}00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00149}00149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00151}00151\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ potreg\_ea=pot\_ea+potreg\_ea}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ maxll=nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ maxll=(maxll*(nel-\/1))/2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00155}00155\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ \ private(ll,j,i,ii,cost,dist\_shift,x\_shift)\ reduction(+:vpotreg)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast_8f90_aa4f2ad040de30b9cea4666316e2760a5}{find\_j1j2}}(nel,ll,i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00158}00158\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ nel}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00159}00159\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ j\ =\ i+1,\ nel}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00160}00160\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(j.ne.i)\ then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00161}00161\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmp\ =\ ngivej(rkel(1,\ i),\ rkel(1,\ j),\ LBox)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{ngivej_8f90_a77c04cb58ba5206b3c1169bbf8d47fbc}{dgivej}}(rkel(1,\ i),\ rkel(1,\ j),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}},x\_shift)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00163}00163\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ derfc(tmp\ *\ kappa)\ /\ tmp}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00164}00164\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00165}00165\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00166}00166\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00167}00167\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)\ =\ max(dsqrt((x\_shift(1)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+\&}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00169}00169\ \ \ \ \ \ \ \&\ (x\_shift(2)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(x\_shift(3)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2),1\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/9)\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00170}00170\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),kappa)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ pot\_ee=pot\_ee+cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00173}00173\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotreg(1,\ j)\ =\ vpotreg(1,\ j)\ +\ cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00174}00174\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotreg(2,\ j)\ =\ vpotreg(2,\ j)\ +\ cost}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00175}00175\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}=sum(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(1:\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,j)=\mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,j)+\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,j)=\mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,j)+\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,i)=\mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,i)+\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,i)=\mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(2,i)+\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(yes\_fn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotsav\_ee(i,j)=2.d0*\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vpotsav\_ee(j,i)=2.d0*\mbox{\hyperlink{namespaceallio_a89ce4b90dd2be0a48e46690211f29560}{cost}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00185}00185\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00186}00186\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00187}00187\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ maxll=nion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ maxll=(maxll*(nion-\/1))/2}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00190}00190\ \textcolor{comment}{!\$omp\ parallel\ do\ default(shared)\ \ private(ll,j,i,ii,jj,cost\_z,dist\_shift)\ reduction(+:pot\_aa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ll=1,maxll}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast_8f90_aa4f2ad040de30b9cea4666316e2760a5}{find\_j1j2}}(nion,ll,i,j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00193}00193\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ nion}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00194}00194\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ j\ =\ i\ +\ 1,\ nion}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ jj=nion*(j-\/1)+i}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ cost\_z=2.d0*zeta(i)*zeta(j)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(cost\_z.ne.0.d0)\ \ \ \textcolor{keywordflow}{then}\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00198}00198\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00199}00199\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00200}00200\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00201}00201\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii=1,\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00202}00202\ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=dsqrt((\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(1,jj)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,1))**2+(\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(2,jj)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,2))**2+(\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(3,jj)+\mbox{\hyperlink{namespacecell_aa0423b2940e4a64938fa2657de9cea05}{x\_neigh}}(ii,3))**2)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii)=cost\_z*\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(ii),kappa)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00204}00204\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_aa\ =\ pot\_aa\ +\ cost\_z*rep\_erfc(dist\_shift(ii),kappa)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_aa=pot\_aa+sum(\mbox{\hyperlink{namespacecell_a58ee33ce403e0dc34d870f06e3c182b9}{dist\_shift}}(1:\mbox{\hyperlink{namespacecell_aa56275b4b719b641aa2d5c0997e59f90}{neigh}}))}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00207}00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00209}00209\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00210}00210\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00211}00211\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00212}00212\ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab7ca62d9b76d9b1c77fb80b539c5e4a4}{pot\_aasunel}}=pot\_aa/nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00213}00213\ \ \ \ \ vpot\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00214}00214\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1:2,\ i)\ =\ pot\_aa\ /\ nel\ +\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1:2,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(1,\ i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00217}00217\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00218}00218\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00219}00219\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (10/11/10):\ add\ an\ external\ potential\ (electronic)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00220}00220\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_a68d98a7c4286fcd94d0798dd4b86f539}{ext\_pot}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a0967ac914faf400d4364b2e47c04cda8}{extpot\_ene}}(rkel,\ nel,\ ext\_ene,\ sum\_ext)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ ext\_ene(i)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00224}00224\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ sum\_ext}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (12/1/11):\ add\ an\ external\ potential\ (nuclear)}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_ad0d7b18e9f03752ea9d9b924732a9dda}{ion\_ene}}(rion,\ zeta,\ nion,\ ext\_ion,\ sum\_ion)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ sum\_ion\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00230}00230\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ sum\_ion}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (4/2/11):\ add\ the\ vdw\ term}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacevan__der__waals_ae6fa7393fc1ae4ae381418d1cb42e15d}{vdw}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a1c08641040ff8b0c27bd930ecea9b03b}{vdw\_ene}}(rion,\ nion,\ sum\_vdw)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ sum\_vdw\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00237}00237\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ sum\_vdw}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00239}00239\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (11/5/11):\ add\ the\ mm\ angular\ term\ in\ case\ of\ QMC/MM\ boundary}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_ae337eadf0ff0c1ea676e724ed1bf6f35}{link\_atom}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a01049841d03b91a92301b9efe1bfd993}{mm\_angle}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_a599a55f37fa264b26b99645eddb31ab4}{mm\_pot\_theta}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00245}00245\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_a599a55f37fa264b26b99645eddb31ab4}{mm\_pot\_theta}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a71bd355cd3f57033a691f88174c856fb}{mm\_dihed}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_acfb2289b2bb2b72f37733b95e42d6ca9}{mm\_pot\_dihed}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00250}00250\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_acfb2289b2bb2b72f37733b95e42d6ca9}{mm\_pot\_dihed}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a2b2c1d363b80577d83c0c15c0827f196}{mm\_improper}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_a1ebbe82feb32a5776b29546314998a81}{mm\_pot\_impr}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00255}00255\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacelink__angle_a1ebbe82feb32a5776b29546314998a81}{mm\_pot\_impr}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00257}00257\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00258}00258\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00259}00259\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00260}00260\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (7/12/11):\ classical\ restraints}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00261}00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceextpot_a17227a1fc2ae357009745553f6a3be1f}{mm\_restr}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a2785925989b2ff3be8c7aa3a92817435}{r\_bond}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_a2f0a6057212725e9956cef8b914f4439}{restr\_bond}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00265}00265\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_a2f0a6057212725e9956cef8b914f4439}{restr\_bond}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_af608609a0b8e7dfbc2302be5e1fe329f}{r\_angle}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_aaadb9924766b541323bd0519f7d520ca}{restr\_angle}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00270}00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_aaadb9924766b541323bd0519f7d520ca}{restr\_angle}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_add2a2ee704fa2d1042dc4f786e7aeae3}{r\_dihe}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_afd9a7c8879aacd0b01f5b82b1b728fc5}{restr\_dihe}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00275}00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_afd9a7c8879aacd0b01f5b82b1b728fc5}{restr\_dihe}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00277}00277\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{extv_8f90_a2f6ae7894f3103d5a3caccf5f09ff97e}{r\_dimp}}()}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00278}00278\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ =\ \mbox{\hyperlink{namespaceallio_afcd22708c79e97b9212db78c2657af6f}{vpotreg}}(:,\ i)\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_a056dc07c685ebe7fad0ed07d681d6364}{restr\_dimp}}\ /\ real(nel)}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00280}00280\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00281}00281\ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0\ *\ \mbox{\hyperlink{namespacecl__restr_a056dc07c685ebe7fad0ed07d681d6364}{restr\_dimp}}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00282}00282\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00283}00283\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00284}00284\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00285}00285\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00286}00286\ }
+\DoxyCodeLine{\Hypertarget{upvpotdiag_8f90_source_l00287}00287\ \textcolor{keyword}{END\ subroutine\ }\mbox{\hyperlink{upvpotdiag_8f90_ac658beab9e57c71e1e079de9201f0269}{upvpotdiag}}}
+
+\end{DoxyCode}

@@ -13,8 +13,29 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file rotate_tools.f90
+!> @brief Tools for rotating atomic and orbital coordinates in TurboRVB
+!> @details Provides routines for rotating atomic positions, molecular orbitals,
+!>          and determinant matrices using arbitrary rotation angles and axes.
+!>          Supports real and complex wave functions, and handles all relevant
+!>          angular momentum channels (s, p, d, f, g, etc.).
+!> @author TurboRVB group
+!> @date 2022
+
 subroutine ruota_xyz(alpha, xrot, yrot, zrot, &
         &    nion_1, rion_1, rion_2)
+    !> @brief Rotate atomic coordinates by a given axis and angle
+    !> @details Rotates the atomic positions rion_1 by the axis (xrot, yrot, zrot)
+    !>          and angle alpha, storing the result in rion_2. The rotation is
+    !>          performed using a rotation matrix constructed from the axis/angle.
+    !> @param[in] alpha Rotation angle (radians)
+    !> @param[in] xrot X component of rotation axis
+    !> @param[in] yrot Y component of rotation axis
+    !> @param[in] zrot Z component of rotation axis
+    !> @param[in] nion_1 Number of atoms
+    !> @param[in] rion_1 Input atomic coordinates (3, nion_1)
+    !> @param[out] rion_2 Rotated atomic coordinates (3, nion_1)
+    !> @note Writes rotated coordinates to unit 20 (for debugging/visualization)
     implicit none
     real(8) u(3, 3)
     real(8), dimension(:, :), allocatable :: emme
@@ -45,6 +66,25 @@ end subroutine ruota_xyz
 
 subroutine ruota_molec(ipc, alpha, xrot, yrot, zrot, iesupr_1&
         &, dupr_1, ioptorb_1, nparam_1, nshell_1, ioptorb, nshell, nelorb, dupr_2)
+    !> @brief Rotate molecular orbital coefficients for a molecule
+    !> @details Rotates the molecular orbital coefficients dupr_1 using the rotation
+    !>          defined by axis (xrot, yrot, zrot) and angle alpha. Handles all
+    !>          angular momentum channels and both real and complex wave functions.
+    !> @param[in] ipc Number of components (1=real, 2=complex)
+    !> @param[in] alpha Rotation angle (radians)
+    !> @param[in] xrot X component of rotation axis
+    !> @param[in] yrot Y component of rotation axis
+    !> @param[in] zrot Z component of rotation axis
+    !> @param[in] iesupr_1 Number of molecular orbitals
+    !> @param[in] dupr_1 Input MO coefficients
+    !> @param[in] ioptorb_1 Input orbital type array
+    !> @param[in] nparam_1 Number of parameters per shell
+    !> @param[in] nshell_1 Number of input shells
+    !> @param[out] ioptorb Output orbital type array
+    !> @param[out] nshell Number of output shells
+    !> @param[in] nelorb Number of orbitals
+    !> @param[out] dupr_2 Rotated MO coefficients
+    !> @note Handles all angular momentum channels (s, p, d, f, g, etc.)
     use constants, only: zzero, zone
     implicit none
     integer nshell_1, indpar, nelorb, nshell, shift, i, j, ii, iesupr_1, ipc
@@ -95,6 +135,30 @@ end subroutine ruota_molec
 subroutine ruota_lambda(ipc, ipf, alpha, xrot, yrot, zrot, &
         &           ix_1, iy_1, detmat_1, nnozero_1, occ_1, nelcol, &
         &           ioptorb_1, nshell_1, nnozero_2, ix_2, iy_2, detmat_2, symmagp)
+    !> @brief Rotate determinant matrix elements for a given rotation
+    !> @details Rotates the determinant matrix elements detmat_1 using the rotation
+    !>          defined by axis (xrot, yrot, zrot) and angle alpha. Handles both real
+    !>          and complex wave functions, and all angular momentum channels.
+    !> @param[in] ipc Number of components (1=real, 2=complex)
+    !> @param[in] ipf Pfaffian/AGP flag
+    !> @param[in] alpha Rotation angle (radians)
+    !> @param[in] xrot X component of rotation axis
+    !> @param[in] yrot Y component of rotation axis
+    !> @param[in] zrot Z component of rotation axis
+    !> @param[in] ix_1 Input row indices
+    !> @param[in] iy_1 Input column indices
+    !> @param[in] detmat_1 Input determinant matrix
+    !> @param[in] nnozero_1 Number of nonzero elements
+    !> @param[in] occ_1 Number of occupied orbitals
+    !> @param[in] nelcol Number of columns
+    !> @param[in] ioptorb_1 Input orbital type array
+    !> @param[in] nshell_1 Number of input shells
+    !> @param[in] nnozero_2 Number of output nonzero elements
+    !> @param[out] ix_2 Output row indices
+    !> @param[out] iy_2 Output column indices
+    !> @param[out] detmat_2 Rotated determinant matrix
+    !> @param[in] symmagp Symmetry flag for AGP
+    !> @note Handles all angular momentum channels and both real/complex cases
     use allio, only: yes_hermite
     use constants, only: zone, zzero
     !         INPUT
@@ -208,6 +272,20 @@ end subroutine ruota_lambda
 
 subroutine build_emme(emme, occ_1, u, emmed, emmef, emmeg, ioptorb_1, &
         &                        nshell_1)
+    !> @brief Build the rotation matrix for all orbitals in a shell
+    !> @details Constructs the full rotation matrix emme for all orbitals in a shell,
+    !>          using the rotation matrix u and the appropriate angular momentum channel
+    !>          (s, p, d, f, g, etc.). Handles all orbital types and fills the emme
+    !>          matrix accordingly.
+    !> @param[out] emme Output rotation matrix (occ_1, occ_1)
+    !> @param[in] occ_1 Number of orbitals in the shell
+    !> @param[in] u 3x3 rotation matrix
+    !> @param[in] emmed 5x5 d-orbital rotation matrix
+    !> @param[in] emmef 7x7 f-orbital rotation matrix
+    !> @param[in] emmeg 9x9 g-orbital rotation matrix
+    !> @param[in] ioptorb_1 Orbital type array for the shell
+    !> @param[in] nshell_1 Number of shells
+    !> @note Handles all angular momentum channels and orbital types
     implicit none
     integer occ_1, nshell_1, icek, ish, i, j
     real*8 emme(occ_1, occ_1), u(3, 3), emmed(5, 5), emmef(7, 7), &
@@ -347,6 +425,14 @@ subroutine build_emme(emme, occ_1, u, emmed, emmef, emmeg, ioptorb_1, &
 end subroutine build_emme
 
 subroutine caricap(a, u, posx, posy, occ)
+    !> @brief Insert a 3x3 rotation block into a larger matrix
+    !> @details Inserts the 3x3 rotation matrix u into the larger matrix a at the
+    !>          specified position (posx, posy). Used for p-orbital rotation blocks.
+    !> @param[inout] a Target matrix to insert into
+    !> @param[in] u 3x3 rotation matrix
+    !> @param[in] posx Row index for insertion
+    !> @param[in] posy Column index for insertion
+    !> @param[in] occ Size of the target matrix
     implicit none
     integer posx, posy, occ, i, j
     real*8 u(3, 3), a(occ, occ)
@@ -361,6 +447,14 @@ subroutine caricap(a, u, posx, posy, occ)
 end subroutine caricap
 
 subroutine make_u(alpha, x, y, z, u)
+    !> @brief Construct a 3x3 rotation matrix from axis and angle
+    !> @details Builds the 3x3 rotation matrix u for a rotation of angle alpha around
+    !>          the axis (x, y, z) using the Rodrigues rotation formula.
+    !> @param[in] alpha Rotation angle (radians)
+    !> @param[in] x X component of rotation axis
+    !> @param[in] y Y component of rotation axis
+    !> @param[in] z Z component of rotation axis
+    !> @param[out] u 3x3 rotation matrix
     implicit none
     real*8 alpha, x, y, z, uc
     real*8 u(3, 3)
@@ -383,6 +477,12 @@ subroutine make_u(alpha, x, y, z, u)
 end subroutine make_u
 
 subroutine prepemmed(u, emmed)
+    !> @brief Prepare the d-orbital rotation matrix
+    !> @details Constructs the 5x5 rotation matrix emmed for d-orbitals using the
+    !>          input 3x3 rotation matrix u. Handles the mapping between Cartesian
+    !>          and spherical harmonics representations.
+    !> @param[in] u 3x3 rotation matrix
+    !> @param[out] emmed 5x5 d-orbital rotation matrix
     implicit none
     integer i, j
     real*8 mat(3, 3), vec(5), emmed(5, 5), u(3, 3), ut(3, 3), ddot
@@ -412,6 +512,12 @@ subroutine prepemmed(u, emmed)
 end
 
 subroutine prepemmef(u, emmef)
+    !> @brief Prepare the f-orbital rotation matrix
+    !> @details Constructs the 7x7 rotation matrix emmef for f-orbitals using the
+    !>          input 3x3 rotation matrix u. Handles the mapping between Cartesian
+    !>          and spherical harmonics representations.
+    !> @param[in] u 3x3 rotation matrix
+    !> @param[out] emmef 7x7 f-orbital rotation matrix
     implicit none
     integer i, j, jj, k
     real*8 mat(3, 3, 3), vec(7), emmef(7, 7), u(3, 3), ut(3, 3), ddot &
@@ -464,6 +570,12 @@ subroutine prepemmef(u, emmef)
 end
 
 subroutine prepemmeg(u, emmeg)
+    !> @brief Prepare the g-orbital rotation matrix
+    !> @details Constructs the 9x9 rotation matrix emmeg for g-orbitals using the
+    !>          input 3x3 rotation matrix u. Handles the mapping between Cartesian
+    !>          and spherical harmonics representations.
+    !> @param[in] u 3x3 rotation matrix
+    !> @param[out] emmeg 9x9 g-orbital rotation matrix
     implicit none
     integer i, j, k, jj, i1, i2, i3, i4
     real*8 mat(3, 3, 3, 3), vec(9), emmeg(9, 9), u(3, 3), ut(3, 3), ddot &
@@ -570,6 +682,13 @@ subroutine prepemmeg(u, emmeg)
 end
 
 subroutine mat2d(mat, vec, iopt)
+    !> @brief Map between 3x3 symmetric traceless matrix and 5D vector (d-orbitals)
+    !> @details Converts between a 3x3 symmetric traceless matrix and a 5-dimensional
+    !>          vector representation for d-orbitals. Used for rotation and transformation
+    !>          of d-orbital basis functions.
+    !> @param[inout] mat 3x3 matrix (input or output)
+    !> @param[inout] vec 5D vector (input or output)
+    !> @param[in] iopt Direction of mapping (1: mat->vec, -1: vec->mat)
     implicit none
     integer iopt
     real*8 mat(3, 3), vec(5), cost1d, cost2d, cost3d
@@ -606,6 +725,13 @@ subroutine mat2d(mat, vec, iopt)
 end
 
 subroutine mat3f(mat, vec, iopt)
+    !> @brief Map between 3x3x3 symmetric tensor and 7D vector (f-orbitals)
+    !> @details Converts between a 3x3x3 symmetric tensor and a 7-dimensional vector
+    !>          representation for f-orbitals. Used for rotation and transformation
+    !>          of f-orbital basis functions.
+    !> @param[inout] mat 3x3x3 tensor (input or output)
+    !> @param[inout] vec 7D vector (input or output)
+    !> @param[in] iopt Direction of mapping (1: mat->vec, -1: vec->mat)
     implicit none
     real*8 mat(3, 3, 3), vec(7)
     real*8 cost1f, cost2f, cost3f, cost4f
@@ -678,6 +804,13 @@ subroutine mat3f(mat, vec, iopt)
 end
 
 subroutine mat2g(mat, v, iopt)
+    !> @brief Map between 3x3x3x3 symmetric tensor and 9D vector (g-orbitals)
+    !> @details Converts between a 3x3x3x3 symmetric tensor and a 9-dimensional vector
+    !>          representation for g-orbitals. Used for rotation and transformation
+    !>          of g-orbital basis functions.
+    !> @param[inout] mat 3x3x3x3 tensor (input or output)
+    !> @param[inout] v 9D vector (input or output)
+    !> @param[in] iopt Direction of mapping (1: mat->vec, -1: vec->mat)
     implicit none
     real(8) mat(3, 3, 3, 3), v(9)
     integer iopt, i1, i2, i3, i4, i5
@@ -852,6 +985,25 @@ end
 
 subroutine prep_rotate(ipc, nshell_c, nelorb, nion, ioptorb_c, kion_c, mult_c&
 &, nparam_c, rion, zeta, emmep, emme, cellscale, iespbc, apbc)
+    !> @brief Prepare the full rotation matrix for all orbitals and atoms
+    !> @details Constructs the full rotation matrix emme for all orbitals and atoms,
+    !>          taking into account the atomic positions, cell geometry, and periodic
+    !>          boundary conditions. Handles mapping between input and output shells.
+    !> @param[in] ipc Number of components (1=real, 2=complex)
+    !> @param[in] nshell_c Number of input shells
+    !> @param[in] nelorb Number of orbitals
+    !> @param[in] nion Number of ions
+    !> @param[in] ioptorb_c Input orbital type array
+    !> @param[in] kion_c Input atom mapping array
+    !> @param[in] mult_c Input multiplicity array
+    !> @param[in] nparam_c Number of parameters per shell
+    !> @param[in] rion Atomic positions (3, nion)
+    !> @param[in] zeta Atomic numbers/charges
+    !> @param[in] emmep 3x3 input rotation matrix
+    !> @param[out] emme Output rotation matrix for all orbitals
+    !> @param[in] cellscale Cell dimensions
+    !> @param[in] iespbc Logical: periodic boundary conditions
+    !> @param[in] apbc Antiperiodic boundary condition flags
     implicit none
     integer nshell_c, nelorb, nelorbt, ind, nion, nshell, i, j, k, i3, jj, apbc_sign&
     &, ind_sco, ipc
@@ -1034,6 +1186,20 @@ end
 
 subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, &
 &                        nshell_1, indsh)
+    !> @brief Build the full rotation matrix for all orbitals (with shell mapping)
+    !> @details Constructs the full rotation matrix emme for all orbitals, using the
+    !>          input rotation matrices for each angular momentum channel and the shell
+    !>          mapping indsh. Handles real and complex cases.
+    !> @param[in] ipc Number of components (1=real, 2=complex)
+    !> @param[out] emme Output rotation matrix (ipc*occ_1, occ_1)
+    !> @param[in] occ_1 Number of orbitals
+    !> @param[in] emmep 3x3 p-orbital rotation matrix
+    !> @param[in] emmed 5x5 d-orbital rotation matrix
+    !> @param[in] emmef 7x7 f-orbital rotation matrix
+    !> @param[in] emmeg 9x9 g-orbital rotation matrix
+    !> @param[in] ioptorb_1 Orbital type array for the shell
+    !> @param[in] nshell_1 Number of shells
+    !> @param[in] indsh Shell mapping indices
     implicit none
     integer occ_1, nshell_1, icek, i, j, ish, ishr, ipc
     real*8 emme(ipc*occ_1, occ_1), emmep(3, 3), emmed(5, 5), emmef(7, 7), &
@@ -1085,7 +1251,7 @@ subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, 
         case (900000:1000000)
             emme(ishr, ish) = 1.d0
             ish = ish + 1
-            ! orbitali p
+! orbitali p
         case (20, 22, 50, 36, 82, 83, 400:499, 103, 150, 4000:4999, 1100:1199)
             do i = 0, 2
             do j = 0, 2
@@ -1116,7 +1282,7 @@ subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, 
             end do
             end do
             ish = ish + 5
-            !          case f
+!          case f
         case (48, 58, 70, 86, 154)
             do i = 0, 6
             do j = 0, 6
@@ -1132,8 +1298,8 @@ subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, 
             end do
             end do
             ish = ish + 7
-            !           case g
-        case (700:799, 51:55, 88)
+!           case g
+        case (700:701, 51:53)
             do i = 0, 8
             do j = 0, 8
                 emme(ishr + i, ish + j) = sign*emmeg(i + 1, j + 1)

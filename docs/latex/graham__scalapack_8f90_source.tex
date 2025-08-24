@@ -1,0 +1,411 @@
+\doxysection{graham\+\_\+scalapack.\+f90}
+\hypertarget{graham__scalapack_8f90_source}{}\label{graham__scalapack_8f90_source}\index{src/a\_prep/graham\_scalapack.f90@{src/a\_prep/graham\_scalapack.f90}}
+\mbox{\hyperlink{graham__scalapack_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Performs\ Gram-\/Schmidt\ orthogonalization\ for\ real\ matrices\ using\ SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ performs\ Gram-\/Schmidt\ orthogonalization\ in\ a\ metric}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ given\ by\ the\ overlap\ matrix.\ It\ orthogonalizes\ vectors\ such\ that}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ sum\_kl\ [over(k,l)\ *\ psi(k,i)\ *\ psi(l,j)]\ =\ 1\ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Supports\ both\ serial\ and\ parallel\ (SCALAPACK)\ execution.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in,out]\ PSI\ Matrix\ of\ vectors\ to\ be\ orthogonalized}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ over\ Overlap\ matrix\ defining\ the\ metric}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[out]\ rn\ Normalization\ factors\ for\ the\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ PSI}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ NDIME\ Dimension\ of\ the\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ MH\ Number\ of\ vectors\ to\ orthogonalize}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ info\ Status\ flag\ (0=success,\ >0=number\ of\ linearly\ dependent\ vectors)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ desc\ SCALAPACK\ descriptor\ for\ PSI}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ desch\ SCALAPACK\ descriptor\ for\ overlap\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ nlax\ Leading\ dimension\ for\ SCALAPACK\ arrays}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ rank\ Rank\ of\ current\ MPI\ process}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00032}\mbox{\hyperlink{graham__scalapack_8f90_a310bb8eef45801b8cdd4d571d44cbb5e}{00032}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{graham__scalapack_8f90_a310bb8eef45801b8cdd4d571d44cbb5e}{graham\_scalapack}}(PSI,\ over,\ rn,\ lda,\ NDIME,\ MH,\ info,\ desc,\ desch,\ nlax,\ rank)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordtype}{integer}\ mh,\ ndime,\ i,\ ii,\ jj,\ lda,\ nlax,\ ierr,\ rank,\ dimbuf,\ dime,\ \&}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ nslice,\ nlast,\ proclast,\ ind,\ info}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00039}00039\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ over(nlax,\ nlax)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00040}00040\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ over\_part,\ over\_new}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desch(20),\ ir,\ ic,\ j}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ desc(descla\_siz\_)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00043}00043\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ PSI(lda,\ *),\ RN(*)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00044}00044\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00045}00045\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00047}00047\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00048}00048\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00049}00049\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00050}00050\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00051}00051\ \textcolor{preprocessor}{\#if\ defined\ (\_OPENMP)\ \&\&\ defined\ (\_\_NOOMPDFT)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00052}00052\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{external}\ ::\ omp\_get\_max\_threads}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordtype}{integer}\ old\_threads}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00054}00054\ \ \ \ \ old\_threads\ =\ omp\_get\_max\_threads()}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keyword}{call\ }omp\_set\_num\_threads(1)\ \textcolor{comment}{!\ scalar\ code}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00056}00056\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00057}00057\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ "{}over"{}.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00061}00061\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ The\ output\ PSI\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00066}00066\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00067}00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00068}00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ components\ of\ psi\ such\ that\ k>\ ndime\ are\ not\ touched.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ sp(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00071}00071\ \ \ \ \ dime\ =\ ndime*mh}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00072}00072\ \ \ \ \ mat\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00073}00073\ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00074}00074\ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00075}00075\ \ \ \ \ sp\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00076}00076\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00077}00077\ \textcolor{preprocessor}{\#ifdef\ \ \ \ \ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00078}00078\ \textcolor{preprocessor}{}\ \ \ \ nslice\ =\ ndime/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00079}00079\ \ \ \ \ proclast\ =\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordflow}{if}\ (nslice*\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ .ne.\ ndime)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ nslice\ =\ ndime/proclast}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ nlast\ =\ ndime\ -\/\ nslice*proclast}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ nlast\ =\ nslice}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00086}00086\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00087}00087\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00088}00088\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00089}00089\ \textcolor{preprocessor}{}\ \ \ \ ir\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00090}00090\ \ \ \ \ ic\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00091}00091\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(\mbox{\hyperlink{namespacedescriptors_ab8e33d37bc924bedd16c0c1f8ef5d21f}{lambda\_node\_}})\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_part(nlax,\ nlax))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_new(nlax,\ nlax))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ ir\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a37d4fae84d9983220c5e0b5f8016defc}{ilar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ ic\ =\ desc(\mbox{\hyperlink{namespacedescriptors_aa5dac3f566a40f6cfbf0735e8abfa0ed}{ilac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ over\_part\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ over\_new\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00098}00098\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ mh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ over\_part(i,\ j)\ =\ psi((i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00103}00103\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00104}00104\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00105}00105\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ ndime,\ 1.0d0,\ over,\ 1,\ 1,\&}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ desch,\ over\_part,\ 1,\ 1,\ desch,\ 0.0d0,\ over\_new,\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00109}00109\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ mh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat((i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))\ =\ over\_new(i,\ j)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00114}00114\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00115}00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (over\_new,\ over\_part)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00119}00119\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00121}00121\ \ \ \textcolor{comment}{!!\ \ now\ distribute\ the\ matrix\ mat}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00122}00122\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00123}00123\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(dime,\ mat,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00124}00124\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00125}00125\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ \ reduce\_base(dime,mat,buff,dimbuf)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00126}00126\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00127}00127\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00128}00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00129}00129\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00130}00130\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00131}00131\ \ \ \ \ rn(1)\ =\ dsqrt(sum(psi(1:ndime,\ 1)*mat(:,\ 1)))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00132}00132\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00137}00137\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00138}00138\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00139}00139\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00141}00141\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ sc2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00144}00144\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00145}00145\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ ind\ =\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}*nslice\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ sp(1:i\ -\/\ 1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .ne.\ proclast\ .and.\ nslice\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nslice,\ i\ -\/\ 1,\ 1.d0,\ psi(ind,\ 1),\ lda,\ mat(ind,\ i),\ 1,\ 0.d0,\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (nlast\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ nlast,\ i\ -\/\ 1,\ 1.d0,\ psi(ind,\ 1),\ lda,\ mat(ind,\ i),\ 1,\ 0.d0,\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00151}00151\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(i\ -\/\ 1,\ sp,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00153}00153\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ sc1\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00155}00155\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .ne.\ proclast\ .and.\ nslice\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nslice,\ i,\ 1.d0,\ psi(ind,\ 1),\ lda,\ sp,\ 1,\ 0.d0,\ sc1(ind),\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (nlast\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ nlast,\ i,\ 1.d0,\ psi(ind,\ 1),\ lda,\ sp,\ 1,\ 0.d0,\ sc1(ind),\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(ndime,\ sc1,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00162}00162\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00163}00163\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ ndime,\ i\ -\/\ 1,\ 1.d0,\ psi,\ lda,\ mat(1,\ i),\ 1,\ 0.d0,\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ 1.d0,\ psi,\ lda,\ sp,\ 1,\ 0.d0,\ sc1,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00166}00166\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00167}00167\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00168}00168\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00169}00169\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\#ifdef\ \ \ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ mpi\_bcast(sc1,ndime,MPI\_DOUBLE\_PRECISION,0,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00172}00172\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(\mbox{\hyperlink{namespacedescriptors_ab8e33d37bc924bedd16c0c1f8ef5d21f}{lambda\_node\_}})\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00174}00174\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ ir\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a37d4fae84d9983220c5e0b5f8016defc}{ilar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ ic\ =\ desc(\mbox{\hyperlink{namespacedescriptors_aa5dac3f566a40f6cfbf0735e8abfa0ed}{ilac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00177}00177\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sc2(ii\ +\ ir\ -\/\ 1)\ =\ sc2(ii\ +\ ir\ -\/\ 1)\ +\ over(ii,\ jj)*sc1(jj\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00181}00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00182}00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00186}00186\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00187}00187\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ sc3=sc2}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ mpi\_allreduce(sc3,sc2,ndime,MPI\_DOUBLE\_PRECISION\&}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&,MPI\_SUM,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(ndime,\ sc2,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00191}00191\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00192}00192\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00193}00193\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00194}00194\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ 1.d0,\ over,\ lda,\ sc1,\ 1,\ 0.d0,\ sc2,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00195}00195\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00196}00196\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(rank.eq.0)\ then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ rn(i)\ =\ dsqrt(sum(sc1(:)*sc2(:)))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ info\ =\ info\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00203}00203\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00205}00205\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00206}00206\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ sp,\ mat)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00207}00207\ \ \ \ \ \textcolor{comment}{!\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00208}00208\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ mpi\_bcast(psi,lda*mh,MPI\_DOUBLE\_PRECISION,0,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00209}00209\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ mpi\_bcast(rn,mh,MPI\_DOUBLE\_PRECISION,0,MPI\_COMM\_WORLD,ierr)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00210}00210\ \ \ \ \ \textcolor{comment}{!\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00211}00211\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00212}00212\ \textcolor{preprocessor}{\#if\ defined\ (\_OPENMP)\ \&\&\ defined\ (\_\_NOOMPDFT)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00213}00213\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }omp\_set\_num\_threads(old\_threads)\ \textcolor{comment}{!\ restore\ the\ previous\ threads}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00214}00214\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00215}00215\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00216}00216\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{graham__scalapack_8f90_a310bb8eef45801b8cdd4d571d44cbb5e}{graham\_scalapack}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00217}00217\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00218}00218\ \textcolor{comment}{!>\ @brief\ Performs\ Gram-\/Schmidt\ orthogonalization\ for\ complex\ matrices\ using\ SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00219}00219\ \textcolor{comment}{!>\ @details\ This\ subroutine\ performs\ Gram-\/Schmidt\ orthogonalization\ in\ a\ metric}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00220}00220\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ given\ by\ the\ complex\ overlap\ matrix.\ It\ orthogonalizes\ complex\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00221}00221\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ such\ that\ sum\_kl\ [over(k,l)\ *\ psi(k,i)\ *\ psi(l,j)]\ =\ 1\ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00222}00222\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Supports\ both\ serial\ and\ parallel\ (SCALAPACK)\ execution.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00223}00223\ \textcolor{comment}{!>\ @param[in,out]\ PSI\ Matrix\ of\ complex\ vectors\ to\ be\ orthogonalized}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00224}00224\ \textcolor{comment}{!>\ @param[in]\ over\ Complex\ overlap\ matrix\ defining\ the\ metric}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00225}00225\ \textcolor{comment}{!>\ @param[out]\ rn\ Normalization\ factors\ for\ the\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00226}00226\ \textcolor{comment}{!>\ @param[in]\ lda\ Leading\ dimension\ of\ PSI}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00227}00227\ \textcolor{comment}{!>\ @param[in]\ NDIME\ Dimension\ of\ the\ vectors}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00228}00228\ \textcolor{comment}{!>\ @param[in]\ MH\ Number\ of\ vectors\ to\ orthogonalize}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00229}00229\ \textcolor{comment}{!>\ @param[out]\ info\ Status\ flag\ (0=success,\ >0=number\ of\ linearly\ dependent\ vectors)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00230}00230\ \textcolor{comment}{!>\ @param[in]\ desc\ SCALAPACK\ descriptor\ for\ PSI}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00231}00231\ \textcolor{comment}{!>\ @param[in]\ desch\ SCALAPACK\ descriptor\ for\ overlap\ matrix}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00232}00232\ \textcolor{comment}{!>\ @param[in]\ nlax\ Leading\ dimension\ for\ SCALAPACK\ arrays}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00233}00233\ \textcolor{comment}{!>\ @param[in]\ rank\ Rank\ of\ current\ MPI\ process}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00234}\mbox{\hyperlink{graham__scalapack_8f90_a5d10c7f75d0919e4398fe694244a5114}{00234}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{graham__scalapack_8f90_a5d10c7f75d0919e4398fe694244a5114}{graham\_scalapack\_complex}}(PSI,\ over,\ rn,\ lda,\ NDIME,\ MH,\ info,\ desc,\ desch,\ nlax,\ rank)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00235}00235\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedescriptors}{descriptors}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00236}00236\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00237}00237\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00238}00238\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00239}00239\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ lda,\ nlax,\ rank,\ desch(20),\ desc(descla\_siz\_),\ ndime,\ mh}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00240}00240\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ ii,\ jj,\ ierr,\ dimbuf,\ dime\&}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ nslice,\ nlast,\ proclast,\ ind,\ info,\ ir,\ ic,\ j}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00242}00242\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ over(nlax,\ nlax)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00243}00243\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ over\_part,\ over\_new}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00244}00244\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ RN(*)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00245}00245\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ PSI(lda,\ *)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00246}00246\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ sc1,\ sc2,\ sp}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00247}00247\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ mat}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00248}00248\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00249}00249\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00250}00250\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00251}00251\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00252}00252\ \textcolor{preprocessor}{\#if\ defined\ (\_OPENMP)\ \&\&\ defined\ (\_\_NOOMPDFT)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00253}00253\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{external}\ ::\ omp\_get\_max\_threads}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00254}00254\ \ \ \ \ \textcolor{keywordtype}{integer}\ old\_threads}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00255}00255\ \ \ \ \ old\_threads\ =\ omp\_get\_max\_threads()}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00256}00256\ \ \ \ \ \textcolor{keyword}{call\ }omp\_set\_num\_threads(1)\ \textcolor{comment}{!\ scalar\ code}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00257}00257\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00258}00258\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00259}00259\ \ \ \ \ \textcolor{keywordflow}{if}\ (mh\ .le.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ do\ nothing}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00260}00260\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00261}00261\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ This\ subroutine\ uses\ gramh-\/schmidt\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00262}00262\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ in\ a\ metric\ given\ by\ the\ overlap\ matrix\ over}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00263}00263\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ The\ output\ psi\ will\ be\ orthogonal\ vectors\ in\ this\ metric\ such\ that:}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00264}00264\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00265}00265\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ sum\_kl\ [\ over(k,l)\ \ \ psi(k,i)\ x\ psi(l,j)]\ =\ 1\ \ if\ i=j,\ 0\ otherwise.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00266}00266\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ where\ \ 1\ <=\ k,l\ <=\ ndime}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00267}00267\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ On\ output\ info=0\ successful\ orthogonalization}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00268}00268\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ info\ >\ 0\ \ MH-\/info\ linearly\ independent\ vectors\ found.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00269}00269\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ rn(i)\ is\ the\ normalization\ of\ the\ vectors.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00270}00270\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ the\ components\ of\ psi\ such\ that\ k>\ ndime\ are\ not\ touched.}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00271}00271\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00272}00272\ \ \ \ \ \textcolor{keyword}{allocate}\ (sc1(ndime),\ sp(mh),\ mat(ndime,\ mh),\ sc2(ndime))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00273}00273\ \ \ \ \ dime\ =\ ndime*mh}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00274}00274\ \ \ \ \ mat\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00275}00275\ \ \ \ \ sc1\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00276}00276\ \ \ \ \ sc2\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00277}00277\ \ \ \ \ sp\ =\ -\/\mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00278}00278\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00280}00280\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00281}00281\ \textcolor{preprocessor}{}\ \ \ \ nslice\ =\ ndime/\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00282}00282\ \ \ \ \ proclast\ =\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00283}00283\ \ \ \ \ \textcolor{keywordflow}{if}\ (nslice*\mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ .ne.\ ndime)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00284}00284\ \ \ \ \ \ \ \ \ nslice\ =\ ndime/proclast}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00285}00285\ \ \ \ \ \ \ \ \ nlast\ =\ ndime\ -\/\ nslice*proclast}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00286}00286\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ nlast\ =\ nslice}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00288}00288\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00289}00289\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00290}00290\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00291}00291\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00292}00292\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00293}00293\ \ \ \ \ ir\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00294}00294\ \ \ \ \ ic\ =\ 0}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00295}00295\ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(\mbox{\hyperlink{namespacedescriptors_ab8e33d37bc924bedd16c0c1f8ef5d21f}{lambda\_node\_}})\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00296}00296\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_part(nlax,\ nlax))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_new(nlax,\ nlax))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ ir\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a37d4fae84d9983220c5e0b5f8016defc}{ilar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ ic\ =\ desc(\mbox{\hyperlink{namespacedescriptors_aa5dac3f566a40f6cfbf0735e8abfa0ed}{ilac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00301}00301\ \ \ \ \ \ \ \ \ over\_part\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ over\_new\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00303}00303\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ mh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ over\_part(i,\ j)\ =\ psi((i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00308}00308\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00309}00309\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00310}00310\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00311}00311\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pzgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ ndime,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ over,\ 1,\ 1,\&}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ desch,\ over\_part,\ 1,\ 1,\ desch,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ over\_new,\ 1,\ 1,\ desch)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00314}00314\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ mh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat((i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))\ =\ over\_new(i,\ j)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00319}00319\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00320}00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00321}00321\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00322}00322\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00323}00323\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (over\_new,\ over\_part)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00324}00324\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00325}00325\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00326}00326\ \ \ \ \ \textcolor{comment}{!\ \ now\ distribute\ the\ matrix\ mat}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00327}00327\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00328}00328\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}{reduce\_base\_complex}}(dime,\ mat,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00329}00329\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00330}00330\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00331}00331\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00332}00332\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00333}00333\ \ \ \ \ rn(1)\ =\ dsqrt(real(sum(dconjg(psi(1:ndime,\ 1))*mat(:,\ 1))))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00334}00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(1)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ psi(1:ndime,\ 1)/rn(1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00336}00336\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ psi(1:ndime,\ 1)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00339}00339\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00340}00340\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00341}00341\ \ \ \ \ ind\ =\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}*nslice\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00342}00342\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00343}00343\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ mh}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00344}00344\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ sc2\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00346}00346\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00347}00347\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ ind\ =\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}*nslice\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ sp(1:i\ -\/\ 1)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .ne.\ proclast\ .and.\ nslice\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ nslice,\ i\ -\/\ 1,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi(ind,\ 1),\ lda,\ mat(ind,\ i),\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (nlast\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ nlast,\ i\ -\/\ 1,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi(ind,\ 1),\ lda,\ mat(ind,\ i),\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00353}00353\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}{reduce\_base\_complex}}(i\ -\/\ 1,\ sp,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00355}00355\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ sc1\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00357}00357\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .ne.\ proclast\ .and.\ nslice\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ nslice,\ i,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi(ind,\ 1),\ lda,\ sp,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc1(ind),\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (nlast\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ nlast,\ i,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi(ind,\ 1),\ lda,\ sp,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc1(ind),\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00362}00362\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}{reduce\_base\_complex}}(ndime,\ sc1,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00364}00364\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00365}00365\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'C'},\ ndime,\ i\ -\/\ 1,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ lda,\ mat(1,\ i),\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sp,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ i,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi,\ lda,\ sp,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc1,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00367}00367\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00368}00368\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00369}00369\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00370}00370\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (desc(\mbox{\hyperlink{namespacedescriptors_ab8e33d37bc924bedd16c0c1f8ef5d21f}{lambda\_node\_}})\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00372}00372\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ ir\ =\ desc(\mbox{\hyperlink{namespacedescriptors_a37d4fae84d9983220c5e0b5f8016defc}{ilar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ ic\ =\ desc(\mbox{\hyperlink{namespacedescriptors_aa5dac3f566a40f6cfbf0735e8abfa0ed}{ilac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00375}00375\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_a6492fded26893d8ba82a96fd69b3c14f}{nlac\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ \mbox{\hyperlink{namespacedescriptors_a92db053e087a557cf0b19152e50929f6}{descla}}(\mbox{\hyperlink{namespacedescriptors_aaef29d8d6ec6ddb735c3504eea77da0d}{nlar\_}})}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sc2(ii\ +\ ir\ -\/\ 1)\ =\ sc2(ii\ +\ ir\ -\/\ 1)\ +\ over(ii,\ jj)*sc1(jj\ +\ ic\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00379}00379\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00380}00380\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00381}00381\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00382}00382\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00383}00383\ }
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00384}00384\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00385}00385\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a4e7a36bd36feded14a63af09d48a9fd1}{reduce\_base\_complex}}(ndime,\ sc2,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ -\/1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00386}00386\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00387}00387\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00388}00388\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00389}00389\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemv(\textcolor{stringliteral}{'N'},\ ndime,\ ndime,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ over,\ lda,\ sc1,\ 1,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sc2,\ 1)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00390}00390\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00391}00391\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00392}00392\ \ \ \ \ \ \ \ \ rn(i)\ =\ dsqrt(real(sum(dconjg(sc1(:))*sc2(:))))}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00393}00393\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rn(i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ -\/sc1(1:ndime)/rn(i)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ psi(1:ndime,\ i)\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00398}00398\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00399}00399\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00400}00400\ \ \ \ \ \textcolor{keyword}{deallocate}\ (sc1,\ sc2,\ sp,\ mat)}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00401}00401\ \textcolor{preprocessor}{\#if\ defined\ (\_OPENMP)\ \&\&\ defined\ (\_\_NOOMPDFT)}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00402}00402\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }omp\_set\_num\_threads(old\_threads)\ \textcolor{comment}{!\ restore\ the\ previous\ threads}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00403}00403\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00404}00404\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{graham__scalapack_8f90_source_l00405}00405\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{graham__scalapack_8f90_a5d10c7f75d0919e4398fe694244a5114}{graham\_scalapack\_complex}}}
+
+\end{DoxyCode}

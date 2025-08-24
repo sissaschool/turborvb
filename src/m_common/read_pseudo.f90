@@ -13,6 +13,47 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * @brief Read and initialize pseudopotential data for quantum Monte Carlo calculations
+ *
+ * This subroutine reads pseudopotential parameters from a file and initializes
+ * the necessary arrays and variables for effective core potential (ECP) calculations
+ * in TurboRVB. It supports both ECP and ECS (soft cusp) pseudopotentials.
+ *
+ * The subroutine handles:
+ * - Reading pseudopotential file format and parameters
+ * - Allocating memory for pseudopotential arrays
+ * - Setting up quadrature points for projector evaluation
+ * - Initializing Gaussian parameters for each angular momentum shell
+ * - Supporting both real and complex pseudopotentials
+ *
+ * @details
+ * The pseudopotential file format includes:
+ * - Pseudopotential type (ECP/ECS)
+ * - Number of pseudopotential atoms (npsa)
+ * - For each atom: ion type, cutoff radius, number of shells
+ * - For each shell: number of Gaussian parameters
+ * - Gaussian parameters (exponent, coefficient, power)
+ *
+ * The subroutine allocates arrays for:
+ * - kindion: ion type for each pseudopotential
+ * - pshell: number of shells for each atom
+ * - rcutoff: cutoff radius for each atom
+ * - parshell: Gaussian parameters (3 per Gaussian)
+ * - versor: quadrature points for angular integration
+ * - legendre: Legendre polynomials for angular integration
+ *
+ * @note
+ * - If npsa <= 0, minimal arrays are allocated with default values
+ * - Parallel execution is supported with MPI broadcasting
+ * - Error checking is performed for file reading operations
+ * - The subroutine sets up quadrature points using the definition() routine
+ *
+ * @see definition(), checkiflagerr()
+ *
+ * @author TurboRVB group
+ * @date 2022
+ */
 subroutine read_pseudo
     use allio
     implicit none

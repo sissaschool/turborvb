@@ -1,0 +1,130 @@
+\doxysection{upgradcont.\+f90}
+\hypertarget{upgradcont_8f90_source}{}\label{upgradcont_8f90_source}\index{src/a\_turborvb/upgradcont.f90@{src/a\_turborvb/upgradcont.f90}}
+\mbox{\hyperlink{upgradcont_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Update\ gradient\ with\ cutoff\ for\ DMC\ calculations}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ Computes\ and\ updates\ gradients\ with\ cutoff\ for\ each\ electron.}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ Implements\ the\ gradient\ cutoff\ scheme\ based\ on\ proximity\ to\ nuclei}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ and\ applies\ scaling\ factors\ for\ DMC\ calculations.\ Uses\ Eq.36\ from}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ Umrigar\ J.Chem.Phys.\ vol.99\ p.2866\ for\ cutoff\ calculations.}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[out]\ gradpsibar\ \ \ Gradient\ with\ cutoff\ for\ each\ electron}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[out]\ gradpsi\ \ \ \ \ \ Raw\ gradient\ for\ each\ electron}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ \ \ \ \ Index\ offset\ for\ derivatives}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ nelup\ \ \ \ \ \ \ \ Number\ of\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ neldo\ \ \ \ \ \ \ \ Number\ of\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ \ winvup\ \ \ \ \ \ \ Winv\ array\ for\ up\ electrons}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ \ winvdo\ \ \ \ \ \ \ Winv\ array\ for\ down\ electrons}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ tabpip\ \ \ \ \ \ \ Table\ of\ pip\ values}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ \ ttry\ \ \ \ \ \ \ \ \ Trial\ parameter\ for\ scaling}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[out]\ gradtotbar\ \ \ Total\ gradient\ with\ cutoff}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[out]\ gradtot\ \ \ \ \ \ Total\ raw\ gradient}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ \ rcart\ \ \ \ \ \ \ \ Cartesian\ coordinates}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ \ dist\ \ \ \ \ \ \ \ \ Distance\ array}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ \ rion\ \ \ \ \ \ \ \ \ Ion\ positions}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ \ nion\ \ \ \ \ \ \ \ \ Number\ of\ ions}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ \ zeta\ \ \ \ \ \ \ \ \ Zeta\ array}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[in]\ \ LBox\ \ \ \ \ \ \ \ \ Box\ length\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00038}\mbox{\hyperlink{upgradcont_8f90_a316667d995a7e07e15107f573c61d389}{00038}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{upgradcont_8f90_a316667d995a7e07e15107f573c61d389}{upgradcont}}(gradpsibar,\ gradpsi,\ indt,\ nelup,\ neldo\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \&,\ winvup,\ winvdo,\ tabpip,\ ttry,\ gradtotbar,\ gradtot,\ rcart,\ dist\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \&,\ rion,\ nion,\ zeta,\ LBox)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a01e6a0dcc5ed9dc73a2debd4805ae7db}{zetamin}},\ \mbox{\hyperlink{namespaceallio_aad3d7fd669adad1aed1c4c8ea6680905}{distmin}}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ jj,\ jn,\ iout,\ indt,\ nelup,\ neldo,\ ion,\ nion,\ nel}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00045}00045\ \ \ \ \ real*8\ \mbox{\hyperlink{namespaceallio_a44995afab2406c9980834e5a7ded4bca}{winvup}}(nelup,\ *),\ \mbox{\hyperlink{namespaceallio_ab7048aa67f13af7c8b6489d4b99f6f94}{winvdo}}(neldo,\ *),\ \mbox{\hyperlink{namespaceallio_adeeccf215c09fd8124821de53439be5f}{tabpip}}(nelup\ +\ neldo,\ *)\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_ad483db0d218914062088bfda76a9a8fe}{gradpsibar}}(3,\ *),\ \mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(3,\ *),\ \mbox{\hyperlink{namespaceallio_a5b632c6314a210655ed0d7869b97a2a0}{ttry}},\ \mbox{\hyperlink{namespaceallio_aa25dadd42070523701402e49e605e746}{dist}}(nion,\ nelup\ +\ neldo)\ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_ad995b6b6c1fa7128c77d19af36abdb96}{gradtot}},\ \mbox{\hyperlink{namespaceallio_a124d4c923f6c9962375abea9e54750f3}{gradtotbar}},\ gradpsimod,\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(3,\ *),\ rdiff(3)\ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rdiffmod,\ cutoff,\ \mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(*),\ rdiffmod2,\ gradpsimod2,\ \mbox{\hyperlink{namespaceallio_a33fe5f9007d3419e8bab94d6c096769d}{scale}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ gradpsibarmod2}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00050}00050\ \ \ \ \ real*8\ \mbox{\hyperlink{namespaceallio_ac35df506bc881c25f65b6e03c1f20b83}{rcart}}(3,\ *),\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}},\ sdiff(3)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00052}00052\ \ \ \ \ nel\ =\ nelup\ +\ neldo}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00053}00053\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a124d4c923f6c9962375abea9e54750f3}{gradtotbar}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00054}00054\ \ \ \ \ \mbox{\hyperlink{namespaceallio_ad995b6b6c1fa7128c77d19af36abdb96}{gradtot}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{do}\ iout\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ gradient\ for\ the\ particle\ iout}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iout\ .le.\ nelup)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indt\ +\ jn}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(jn,\ iout)\ =\ \mbox{\hyperlink{namespaceallio_adeeccf215c09fd8124821de53439be5f}{tabpip}}(iout,\ jj)\ +\ \mbox{\hyperlink{namespaceallio_a44995afab2406c9980834e5a7ded4bca}{winvup}}(iout,\ jj)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00063}00063\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ indt\ +\ jn}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(jn,\ iout)\ =\ \mbox{\hyperlink{namespaceallio_adeeccf215c09fd8124821de53439be5f}{tabpip}}(iout,\ jj)\ +\ \mbox{\hyperlink{namespaceallio_ab7048aa67f13af7c8b6489d4b99f6f94}{winvdo}}(iout\ -\/\ nelup,\ jj)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00068}00068\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ gradpsimod2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ gradpsimod2\ =\ gradpsimod2\ +\ \mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(jn,\ iout)**2}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00074}00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ updating\ the\ modulus\ square\ of\ total\ gradient}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ad995b6b6c1fa7128c77d19af36abdb96}{gradtot}}\ =\ \mbox{\hyperlink{namespaceallio_ad995b6b6c1fa7128c77d19af36abdb96}{gradtot}}\ +\ gradpsimod2}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ gradpsimod\ =\ sqrt(gradpsimod2)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ find\ the\ closest\ nucleus\ ion\ to\ the\ iout\ electron}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ ion\ =\ 1}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aad3d7fd669adad1aed1c4c8ea6680905}{distmin}}(iout)\ =\ \mbox{\hyperlink{namespaceallio_aa25dadd42070523701402e49e605e746}{dist}}(ion,\ iout)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 2,\ nion}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aa25dadd42070523701402e49e605e746}{dist}}(jn,\ iout)\ .lt.\ \mbox{\hyperlink{namespaceallio_aad3d7fd669adad1aed1c4c8ea6680905}{distmin}}(iout))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ion\ =\ jn}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aad3d7fd669adad1aed1c4c8ea6680905}{distmin}}(iout)\ =\ \mbox{\hyperlink{namespaceallio_aa25dadd42070523701402e49e605e746}{dist}}(jn,\ iout)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00087}00087\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a01e6a0dcc5ed9dc73a2debd4805ae7db}{zetamin}}(iout)\ =\ \mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(ion)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ rdiff\ vector\ connecting\ ion\ nucleus\ to\ iout\ electron}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ rdiffmod2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ rdiff(:)\ =\ \mbox{\hyperlink{namespaceallio_ac35df506bc881c25f65b6e03c1f20b83}{rcart}}(:,\ iout)\ -\/\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(:,\ ion)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}}\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_aba17aa76b83089553830ab955bff6686}{applypbc}}(rdiff,\ 1)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00095}00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ rdiffmod2\ =\ sum(rdiff(:)**2)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ rdiffmod\ =\ sqrt(rdiffmod2)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00098}00098\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ gradpsibar\ (with\ cutoff)}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ cutoff\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ cutoff\ =\ cutoff\ +\ \mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(jn,\ iout)*rdiff(jn)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00103}00103\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Eq.36\ Umrigar\ J.Chem.Phys.\ vol.99\ p.2866}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ cutoff\ =\ cutoff/rdiffmod/gradpsimod}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ cutoff\ =\ 0.5d0*(1.d0\ +\ cutoff)\ +\ \mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(ion)**2*rdiffmod2/10.d0\ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /(4.d0\ +\ \mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(ion)**2*rdiffmod2)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a33fe5f9007d3419e8bab94d6c096769d}{scale}}\ =\ (sqrt(1.d0\ +\ 4.d0*cutoff*gradpsimod2*\mbox{\hyperlink{namespaceallio_a5b632c6314a210655ed0d7869b97a2a0}{ttry}})\ -\/\ 1.d0)\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /cutoff/2.d0/gradpsimod2/\mbox{\hyperlink{namespaceallio_a5b632c6314a210655ed0d7869b97a2a0}{ttry}}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ gradpsibarmod2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jn\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ad483db0d218914062088bfda76a9a8fe}{gradpsibar}}(jn,\ iout)\ =\ \mbox{\hyperlink{namespaceallio_a33fe5f9007d3419e8bab94d6c096769d}{scale}}*\mbox{\hyperlink{namespaceallio_add13aa141400cdd6b7302a9f4c11aeeb}{gradpsi}}(jn,\ iout)}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ gradpsibarmod2\ =\ gradpsibarmod2\ +\ \mbox{\hyperlink{namespaceallio_ad483db0d218914062088bfda76a9a8fe}{gradpsibar}}(jn,\ iout)**2}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ updating\ the\ modulus\ square\ of\ total\ cutoff\ gradient}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a124d4c923f6c9962375abea9e54750f3}{gradtotbar}}\ =\ \mbox{\hyperlink{namespaceallio_a124d4c923f6c9962375abea9e54750f3}{gradtotbar}}\ +\ gradpsibarmod2}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00120}00120\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00123}00123\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upgradcont_8f90_source_l00124}00124\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

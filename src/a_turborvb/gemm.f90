@@ -13,6 +13,31 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Generic matrix-matrix multiplication supporting mixed real/complex operations
+!> @details This subroutine performs matrix-matrix multiplication C = alpha*A*B + beta*C
+!> with support for various combinations of real and complex matrices. The operation
+!> type is specified by TRANSA and TRANSB parameters which can be:
+!> - 'NR': Real normal (no transpose)
+!> - 'NC': Complex normal (no transpose)
+!> - 'TR': Real transpose
+!> - 'TC': Complex transpose (no conjugate)
+!> - 'CC': Complex adjoint (transpose + conjugate)
+!> - 'SC': Simple conjugate (no transpose)
+!> The subroutine handles mixed cases where one matrix is real and the other is complex
+!> by decomposing the operation into separate real matrix multiplications.
+!> @param[in] TRANSA Operation on matrix A ('NR', 'NC', 'TR', 'TC', 'CC', 'SC')
+!> @param[in] TRANSB Operation on matrix B ('NR', 'NC', 'TR', 'TC', 'CC', 'SC')
+!> @param[in] M Number of rows in matrix C
+!> @param[in] N Number of columns in matrix C
+!> @param[in] K Number of columns in A and rows in B
+!> @param[in] ALPHA Complex scaling factor for A*B
+!> @param[in] A Input matrix A
+!> @param[in] LDA Leading dimension of matrix A
+!> @param[in] B Input matrix B
+!> @param[in] LDB Leading dimension of matrix B
+!> @param[in] BETA Complex scaling factor for C
+!> @param[in,out] C Input/output matrix C
+!> @param[in] LDC Leading dimension of matrix C
 subroutine gemm(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
     use allio, only: rank
     implicit none
@@ -515,6 +540,12 @@ subroutine gemm(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
     end if
     return
 contains
+    !> @brief Conjugate matrix B by negating imaginary parts
+    !> @details This subroutine performs complex conjugation of matrix B by negating
+    !> the imaginary components (even-indexed rows) while keeping real parts unchanged.
+    !> The matrix is modified in-place.
+    !> @note Matrix B is assumed to be stored in interleaved real/imaginary format
+    !> where even rows contain imaginary parts and odd rows contain real parts.
     subroutine conjb
         implicit none
         integer i, j
@@ -524,6 +555,13 @@ contains
             end do
         end do
     end subroutine conjb
+
+    !> @brief Conjugate matrix A by negating imaginary parts  
+    !> @details This subroutine performs complex conjugation of matrix A by negating
+    !> the imaginary components (even-indexed rows) while keeping real parts unchanged.
+    !> The matrix is modified in-place.
+    !> @note Matrix A is assumed to be stored in interleaved real/imaginary format
+    !> where even rows contain imaginary parts and odd rows contain real parts.
     subroutine conja
         implicit none
         integer i, j
@@ -534,6 +572,18 @@ contains
         end do
     end subroutine conja
 end subroutine gemm
+
+!> @brief Put real matrix result into complex matrix with scaling
+!> @details This helper subroutine combines a real matrix result with a complex matrix
+!> using the formula: C = beta*C + alpha*Creal. It is used when the matrix multiplication
+!> result is real but needs to be stored in a complex matrix format.
+!> @param[in] M Number of rows
+!> @param[in] N Number of columns
+!> @param[in] LDC Leading dimension of matrix C
+!> @param[in] alpha Complex scaling factor
+!> @param[in] beta Complex scaling factor
+!> @param[in,out] C Complex output matrix
+!> @param[in] Creal Real input matrix
 subroutine putcrealinc(M, N, LDC, alpha, beta, C, Creal)
     implicit none
     integer M, N, LDC
@@ -542,6 +592,17 @@ subroutine putcrealinc(M, N, LDC, alpha, beta, C, Creal)
     C(1:M, 1:N) = beta*C(1:M, 1:N) + alpha*Creal(1:M, 1:N)
     return
 end subroutine putcrealinc
+
+!> @brief Put complex matrix result into complex matrix with scaling
+!> @details This helper subroutine combines two complex matrices using the formula:
+!> C = beta*C + alpha*Ccomp. It is used when both input and output matrices are complex.
+!> @param[in] M Number of rows
+!> @param[in] N Number of columns
+!> @param[in] LDC Leading dimension of matrix C
+!> @param[in] alpha Complex scaling factor
+!> @param[in] beta Complex scaling factor
+!> @param[in,out] C Complex output matrix
+!> @param[in] Ccomp Complex input matrix
 subroutine putccompinc(M, N, LDC, alpha, beta, C, Ccomp)
     implicit none
     integer M, N, LDC

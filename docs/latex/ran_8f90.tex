@@ -1,0 +1,97 @@
+\doxysection{src/m\+\_\+common/ran.f90 File Reference}
+\hypertarget{ran_8f90}{}\label{ran_8f90}\index{src/m\_common/ran.f90@{src/m\_common/ran.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+real function \mbox{\hyperlink{ran_8f90_aed17b3c445e5ae9d0d7fb5de6fc4e3fe}{ran}} (idum)
+\begin{DoxyCompactList}\small\item\em Portable random number generator for quantum Monte Carlo. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ran_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{ran_8f90_aed17b3c445e5ae9d0d7fb5de6fc4e3fe}\index{ran.f90@{ran.f90}!ran@{ran}}
+\index{ran@{ran}!ran.f90@{ran.f90}}
+\doxysubsubsection{\texorpdfstring{ran()}{ran()}}
+{\footnotesize\ttfamily \label{ran_8f90_aed17b3c445e5ae9d0d7fb5de6fc4e3fe} 
+real function ran (\begin{DoxyParamCaption}\item[{integer(k4b), intent(inout)}]{idum}{}\end{DoxyParamCaption})}
+
+
+
+Portable random number generator for quantum Monte Carlo. 
+
+This function implements a portable random number generator based on the Park-\/\+Miller minimal standard multiplicative linear congruential generator combined with a Marsaglia shift sequence. It provides uniform random numbers in the interval (0,1) for use in quantum Monte Carlo calculations.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em idum} & Seed for random number generation\+:
+\begin{DoxyItemize}
+\item idum ≤ 0\+: Initialize generator with \texorpdfstring{$\vert$}{|}idum\texorpdfstring{$\vert$}{|}
+\item idum \texorpdfstring{$>$}{>} 0\+: Generate next random number 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Real random number in the interval (0,1)
+\end{DoxyReturn}
+The function implements a combined generator with the following features\+:
+\begin{DoxyEnumerate}
+\item Park-\/\+Miller multiplicative linear congruential generator\+:
+\begin{DoxyItemize}
+\item Parameters\+: IA = 16807, IM = 2147483647, IQ = 127773, IR = 2836
+\item Recurrence\+: iy = IA \texorpdfstring{$\ast$}{*} (iy -\/ k\texorpdfstring{$\ast$}{*}\+IQ) -\/ IR\texorpdfstring{$\ast$}{*}k (mod IM)
+\end{DoxyItemize}
+\item Marsaglia shift sequence for ix\+:
+\begin{DoxyItemize}
+\item Uses XOR and bit shifts for additional randomness
+\end{DoxyItemize}
+\item Combined output\+: ran = am \texorpdfstring{$\ast$}{*} (ix XOR iy OR 1)
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The generator has a period of approximately 2\texorpdfstring{$^\wedge$}{\string^}31 -\/ 1 
+
+The function uses saved variables to maintain state between calls 
+
+Initialization occurs when idum ≤ 0 or iy \texorpdfstring{$<$}{<} 0 
+
+The function is portable across different platforms and compilers 
+
+Used extensively in Monte Carlo sampling and random walk algorithms 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{ran_8f90_source_l00043}{43}} of file \mbox{\hyperlink{ran_8f90_source}{ran.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{parameter}\ ::\ K4B\ =\ selected\_int\_kind(9)}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{integer(K4B)},\ \textcolor{keywordtype}{intent(INOUT)}\ ::\ idum}
+\DoxyCodeLine{00047\ \textcolor{keywordtype}{\ \ \ \ real}\ ::\ ran}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{integer(K4B)},\ \textcolor{keywordtype}{parameter}\ ::\ IA\ =\ 16807,\ im\ =\ 2147483647,\ iq\ =\ 127773,\ ir\ =\ 2}
+\DoxyCodeLine{00049\ \textcolor{keywordtype}{\ \ \ \ real},\ \textcolor{keywordtype}{save}\ ::\ am}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{integer(K4B)},\ \textcolor{keywordtype}{save}\ ::\ ix\ =\ -\/1,\ iy\ =\ -\/1,\ k}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{if}\ (idum\ <=\ 0\ .or.\ iy\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ am\ =\ nearest(1.0,\ -\/1.0)/im}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ iy\ =\ ior(ieor(888889999,\ abs(idum)),\ 1)}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ ix\ =\ ieor(777755555,\ abs(idum))}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ idum\ =\ abs(idum)\ +\ 1}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00057\ \ \ \ \ ix\ =\ ieor(ix,\ ishft(ix,\ 13))}
+\DoxyCodeLine{00058\ \ \ \ \ ix\ =\ ieor(ix,\ ishft(ix,\ -\/17))}
+\DoxyCodeLine{00059\ \ \ \ \ ix\ =\ ieor(ix,\ ishft(ix,\ 5))}
+\DoxyCodeLine{00060\ \ \ \ \ k\ =\ iy/iq}
+\DoxyCodeLine{00061\ \ \ \ \ iy\ =\ ia*(iy\ -\/\ k*iq)\ -\/\ ir*k}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (iy\ <\ 0)\ iy\ =\ iy\ +\ im}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{ran_8f90_aed17b3c445e5ae9d0d7fb5de6fc4e3fe}{ran}}\ =\ am*ior(iand(im,\ ieor(ix,\ iy)),\ 1)}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{ran_8f90_source_l00044}{ran()}}.
+
+
+
+Referenced by \mbox{\hyperlink{ran_8f90_source_l00044}{ran()}}.
+

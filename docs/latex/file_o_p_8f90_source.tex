@@ -1,0 +1,408 @@
+\doxysection{file\+OP.\+f90}
+\hypertarget{file_o_p_8f90_source}{}\label{file_o_p_8f90_source}\index{src/m\_common/fileOP.f90@{src/m\_common/fileOP.f90}}
+\mbox{\hyperlink{file_o_p_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00016}00016\ \textcolor{comment}{!=======================================================================}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @file\ fileOP.f90}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @brief\ File\ operations\ and\ I/O\ management\ module\ for\ TurboRVB}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00019}00019\ \textcolor{comment}{!>\ @details\ This\ module\ provides\ comprehensive\ file\ I/O\ operations\ for\ TurboRVB,}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ including\ scratch\ directory\ management,\ file\ opening/closing,}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ parallel\ I/O\ support.\ It\ handles\ various\ output\ files\ for}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00022}00022\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ energy,\ forces,\ positions,\ and\ other\ simulation\ data.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @section\ Features}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00026}00026\ \textcolor{comment}{!>\ -\/\ Scratch\ directory\ setup\ and\ validation}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00027}00027\ \textcolor{comment}{!>\ -\/\ Parallel\ I/O\ support\ (POSIX\ and\ MPI-\/IO)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00028}00028\ \textcolor{comment}{!>\ -\/\ Multiple\ output\ file\ formats}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00029}00029\ \textcolor{comment}{!>\ -\/\ Rank-\/based\ file\ naming}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @section\ Files}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00031}00031\ \textcolor{comment}{!>\ Key\ output\ files\ include:}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00032}00032\ \textcolor{comment}{!>\ -\/\ fort.11:\ Energy\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00033}00033\ \textcolor{comment}{!>\ -\/\ fort.12:\ Ionic\ forces\ and\ positions}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00034}00034\ \textcolor{comment}{!>\ -\/\ forces.dat:\ Formatted\ force\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00035}00035\ \textcolor{comment}{!>\ -\/\ position.dat:\ Formatted\ position\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00036}00036\ \textcolor{comment}{!>\ -\/\ pressure.dat:\ Pressure\ data\ (PBC)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00037}00037\ \textcolor{comment}{!>\ -\/\ velocity.dat:\ Velocity\ data\ (dynamics)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00038}00038\ \textcolor{comment}{!=======================================================================}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00040}00040\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @brief\ Check\ and\ setup\ scratch\ directory\ for\ file\ operations}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @details\ This\ subroutine\ validates\ the\ scratch\ directory\ path\ and\ sets\ up}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00043}00043\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ the\ necessary\ directory\ structure\ for\ temporary\ files.\ It\ handles}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ both\ local\ and\ distributed\ scratch\ directories,\ and\ creates}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ rank-\/specific\ identifiers\ for\ parallel\ runs.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00046}00046\ \textcolor{comment}{!>\ @param[in]\ rank\ MPI\ rank\ of\ the\ current\ process}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00047}00047\ \textcolor{comment}{!>\ @param[in]\ path\ Current\ working\ directory\ path}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @param[out]\ scratchpath\ Validated\ scratch\ directory\ path}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @note\ Creates\ turborvb.scratch\ subdirectory\ if\ io\_level\ >\ 0}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @note\ Generates\ rank-\/specific\ character\ identifiers\ (chara,\ charaq)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @note\ Validates\ directory\ existence\ across\ all\ nodes}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @note\ Handles\ KCOMP\ compiler-\/specific\ behavior}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00053}\mbox{\hyperlink{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72}{00053}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72}{check\_scratch}}(rank,\ path,\ scratchpath)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a7b00bb0814a7622f31bdd4d3a5d161ff}{oldscra}},\ \mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}},\ \mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}},\ \mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}},\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a36438394b08b0c3e57a962be6de84d94}{rankcolrep}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}},\ \mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}},\ \mbox{\hyperlink{namespaceallio_add7d1cc66513f139c63f65d96ce4ea93}{manyfort10}},\ \mbox{\hyperlink{namespaceallio_a738a44dcf42f28342f0c65aaf17de9ec}{yesdft}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordtype}{use\ }io\_m}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{character(*)}\ ::\ path,\ scratchpath}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ iflagerr,\ rank,\ idigit(6)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00060}00060\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a7b00bb0814a7622f31bdd4d3a5d161ff}{oldscra}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{'./'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}}\ =\ \textcolor{stringliteral}{'./scratch'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})\ .ne.\ \textcolor{stringliteral}{'./'}\ .and.\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})\ .ne.\ trim(path))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ check\ if\ path\ wherescratch\ exist\ in\ each\ processor}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ but\ only\ if\ wherescratch\ is\ not\ the\ current\ directory\ that\ exist\ by\ def.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ inquire(directory=trim(wherescratch),exist=dir\_exist)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00069}00069\ \textcolor{preprocessor}{\#ifndef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00070}00070\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cd\_dir(trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}}))}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }get\_dir(scratchpath)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }cd\_dir(trim(path))}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ iflagerr\ =\ 0}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(scratchpath)\ .eq.\ trim(path))\ iflagerr\ =\ 1}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_a5d76085923010e21bcfe5a17f9b4201b}{checkiflagerr}}(iflagerr,\ rank,\ \textcolor{stringliteral}{'ERROR\ the\ directory\ '}//trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{stringliteral}{'\ does\ not\ exist\ at\ least\ in\ some\ node,\ pls.\ check\ wherescratch\ '})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00079}00079\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00080}00080\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00083}00083\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00084}00084\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{"{}./"{}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00085}00085\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00086}00086\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ scratchpath\ =\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\textcolor{stringliteral}{"{}turborvb.scratch/"{}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mk\_dir(trim(scratchpath))}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ scratchpath\ =\ \textcolor{stringliteral}{"{}./"{}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00092}00092\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00093}00093\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}}\ =\ trim(scratchpath)//\textcolor{stringliteral}{"{}tmp"{}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00096}00096\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a,a)'})\ \textcolor{stringliteral}{'\ \ Scratch\ extension\ '},\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00097}00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (len\_trim(scratchpath)\ .ge.\ lchlen)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ your\ probably\ truncated,\ please\ \&}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00099}00099\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \&\ \ try\ to\ increase\ lchlen\ in\ mod\_IO'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00100}00100\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00102}00102\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{convertdec_8f90_a80c373c9be66fb8ed810b45ce8b678b7}{convertdec}}(rank,\ idigit)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00103}00103\ \ \ \ \ \mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}}\ =\ char(idigit(1))//char(idigit(2))//char(idigit(3))//\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \&char(idigit(4))//char(idigit(5))//char(idigit(6))}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00105}00105\ \ \ \ \ \textcolor{comment}{!\ \ charaq\ defined\ always\ as\ does\ not\ cost\ anything}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00106}00106\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00107}00107\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{convertdec_8f90_a80c373c9be66fb8ed810b45ce8b678b7}{convertdec}}(rank,\ idigit)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00108}00108\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00109}00109\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{convertdec_8f90_a80c373c9be66fb8ed810b45ce8b678b7}{convertdec}}(\mbox{\hyperlink{namespaceallio_a36438394b08b0c3e57a962be6de84d94}{rankcolrep}},\ idigit)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00110}00110\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00111}00111\ \textcolor{preprocessor}{}\ \ \ \ \mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}}\ =\ char(idigit(1))//char(idigit(2))//char(idigit(3))//\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ char(idigit(4))//char(idigit(5))//char(idigit(6))}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00113}00113\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00114}00114\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{file_o_p_8f90_ae83832162e5966f93d8a269c02387c72}{check\_scratch}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00115}00115\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00116}00116\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00117}00117\ \textcolor{comment}{!>\ @brief\ Open\ all\ necessary\ files\ for\ TurboRVB\ simulation}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00118}00118\ \textcolor{comment}{!>\ @details\ This\ subroutine\ opens\ various\ output\ files\ based\ on\ simulation}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00119}00119\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ parameters\ and\ I/O\ level\ settings.\ It\ handles\ both\ serial\ and}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00120}00120\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ parallel\ I/O\ modes,\ including\ POSIX\ and\ MPI-\/IO\ support.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00121}00121\ \textcolor{comment}{!>\ @param[in]\ rank\ MPI\ rank\ of\ the\ current\ process}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00122}00122\ \textcolor{comment}{!>\ @param[in]\ scratchpath\ Scratch\ directory\ path\ for\ temporary\ files}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00123}00123\ \textcolor{comment}{!>\ @note\ Opens\ different\ files\ based\ on\ itestr,\ iopt,\ and\ other\ flags}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00124}00124\ \textcolor{comment}{!>\ @note\ Supports\ multiple\ I/O\ levels\ (0=local,\ 1=POSIX,\ 2=MPI-\/IO)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00125}00125\ \textcolor{comment}{!>\ @note\ Creates\ rank-\/specific\ file\ names\ for\ parallel\ runs}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00126}00126\ \textcolor{comment}{!>\ @note\ Handles\ quantum/classical\ decoupled\ runs}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00127}00127\ \textcolor{comment}{!>\ @section\ Files}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00128}00128\ \textcolor{comment}{!>\ Files\ opened\ include:}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00129}00129\ \textcolor{comment}{!>\ -\/\ fort.11:\ Energy\ data\ (unformatted)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00130}00130\ \textcolor{comment}{!>\ -\/\ fort.12:\ Forces\ and\ positions\ (unformatted)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00131}00131\ \textcolor{comment}{!>\ -\/\ forces.dat:\ Formatted\ force\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00132}00132\ \textcolor{comment}{!>\ -\/\ position.dat:\ Formatted\ position\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00133}00133\ \textcolor{comment}{!>\ -\/\ pressure.dat:\ Pressure\ data\ (PBC)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00134}00134\ \textcolor{comment}{!>\ -\/\ velocity.dat:\ Velocity\ data\ (dynamics)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00135}00135\ \textcolor{comment}{!>\ -\/\ covmat.dat:\ Covariance\ matrix\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00136}00136\ \textcolor{comment}{!>\ -\/\ parametrization.dat:\ Parameter\ optimization\ data}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00137}\mbox{\hyperlink{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}{00137}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}{open\_files}}(rank,\ scratchpath)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}},\ \mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}},\ \mbox{\hyperlink{namespaceallio_ac4156cf7d28b412b68bd6ba0d3bcd38d}{ieskint}},\ \mbox{\hyperlink{namespaceallio_a4165e60c3e2e4e3ddb109ce45e6dd1f4}{idyn}},\ \mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}},\ \mbox{\hyperlink{namespaceallio_ad9531122a8c03a2fb35328711ef99827}{ncg\_adr}},\ \mbox{\hyperlink{namespaceallio_a8155f8f1b5f45c3daf9bfbdb2b60ba96}{npower}},\ \mbox{\hyperlink{namespaceallio_affbff66d1297bd6c10d7e8ceec150535}{npowersz}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}},\ \mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}},\ \mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}},\ \mbox{\hyperlink{namespaceallio_af7d127a2c504d347ab53ab28685dfbc2}{kl}},\ \mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}},\ \mbox{\hyperlink{namespaceallio_a5e524947826cf313cc5a79f67d094cf5}{write\_cov}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}},\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}},\ \mbox{\hyperlink{namespaceallio_a9d7ed75003f3f5a3b95695ffed26d302}{yeswrite10}},\ \mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a929348e7c38f1635e12ed55991527a4d}{kel}},\ \mbox{\hyperlink{namespaceallio_ae0d093e14c2058c315dfaefdbd07fba5}{angle}},\ \mbox{\hyperlink{namespaceallio_a12d00afb3d9c75c37ad798f53ee89db2}{indt}},\ \mbox{\hyperlink{namespaceallio_a7797262a97c22ff29916fb50c102edca}{kelcont}},\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}},\ \mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}},\ decoupled\_run,\ \mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00143}00143\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_add7d1cc66513f139c63f65d96ce4ea93}{manyfort10}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00144}00144\ \ \ \ \ \textcolor{keywordtype}{use\ }io\_m}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00145}00145\ \ \ \ \ \textcolor{keywordtype}{use\ }mpiio}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00148}00148\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keywordtype}{integer}\ rank}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keywordtype}{character(lchlen)}\ ::\ scratchpath}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keywordtype}{character(lchlen\ +\ 80)}\ ::\ charascratch}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00152}00152\ \ \ \ \ \textcolor{keywordtype}{character(6)}\ ::\ positi}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordtype}{character(9)}\ ::\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00155}00155\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00156}00156\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer(kind=MPI\_OFFSET\_KIND)}\ ::\ disp\_zero\ =\ 0}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00157}00157\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00158}00158\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 0\ .or.\ \mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ positi\ =\ \textcolor{stringliteral}{'APPEND'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ message\ =\ \textcolor{stringliteral}{'appended!'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00161}00161\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ positi\ =\ \textcolor{stringliteral}{'REWIND'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ message\ =\ \textcolor{stringliteral}{'rewinded!'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00164}00164\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00165}00165\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00166}00166\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=7,\ file=\textcolor{stringliteral}{'stop.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (unit=7,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ open(unit=10,file='fort.10',form='formatted',position='REWIND')}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ file=\textcolor{stringliteral}{'fort.11'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'REWIND'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ it\ contains\ energy}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=12,\ file=\textcolor{stringliteral}{'fort.12'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ they\ contains\ ionic\ forces\ and\ positions}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00174}00174\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}}\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Energy\ files\ '},\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=16,\ file=\textcolor{stringliteral}{'forces.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a5e524947826cf313cc5a79f67d094cf5}{write\_cov}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=18,\ file=\textcolor{stringliteral}{'covmat.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=13,\ file=\textcolor{stringliteral}{'fort.12.fn'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a4165e60c3e2e4e3ddb109ce45e6dd1f4}{idyn}}\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Velocity\ file\ '},\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=22,\ file=\textcolor{stringliteral}{'velocity.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac4156cf7d28b412b68bd6ba0d3bcd38d}{ieskint}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'forces\ and\ position\ files\ '},\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=17,\ file=\textcolor{stringliteral}{'position.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(yesquantum)\ then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ 'Beads\ position\ files\ (PIMD)\ ',message}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ open(unit=27,file='beadposition.dat',form='formatted',position=positi)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00192}00192\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ Pressure\ file\ '},\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=23,\ file=\textcolor{stringliteral}{'pressure.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00196}00196\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ad9531122a8c03a2fb35328711ef99827}{ncg\_adr}}\ .gt.\ 0\ .or.\ \mbox{\hyperlink{namespaceallio_a8155f8f1b5f45c3daf9bfbdb2b60ba96}{npower}}\ +\ \mbox{\hyperlink{namespaceallio_affbff66d1297bd6c10d7e8ceec150535}{npowersz}}\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ parametrization\ file\ '},\ message}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=25,\ file=\textcolor{stringliteral}{'parametrization.dat'},\ form=\textcolor{stringliteral}{'formatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00200}00200\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00201}00201\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!itestr.eq.-\/5}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00203}00203\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .ge.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=\textcolor{stringliteral}{'fort.12.new'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00206}00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00207}00207\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!rank.eq.0}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00209}00209\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00210}00210\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00211}00211\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00212}00212\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ POSIX\ IO}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=9,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00216}00216\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ MPI-\/IO}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.all'},\ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ \mbox{\hyperlink{namespaceallio_a7797262a97c22ff29916fb50c102edca}{kelcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'kelcont.all'},\ mpi\_mode\_rdwr,\ \mbox{\hyperlink{namespaceallio_a7797262a97c22ff29916fb50c102edca}{kelcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00222}00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00223}00223\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 2\ .or.\ \mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ POSIX\ IO}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'details.'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ MPI-\/IO}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 0\ .or.\ \mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_SP.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_append,\ \mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_DP.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_append,\ \mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_SP.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ \mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(mpi\_comm\_world,\ trim(scratchpath)//\textcolor{stringliteral}{'details\_DP.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ \mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_set\_zero(\mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_set\_zero(\mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00243}00243\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00244}00244\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00245}00245\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}}\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00247}00247\ \textcolor{comment}{!\ \ \ definition\ name\ file\ scratch}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\textcolor{stringliteral}{'conf.'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=19,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00251}00251\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(\mbox{\hyperlink{namespaceallio_af7d127a2c504d347ab53ab28685dfbc2}{kl}})\ .eq.\ 9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\textcolor{stringliteral}{'lan.'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=20,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00255}00255\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00256}00256\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00257}00257\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00258}00258\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00259}00259\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00260}00260\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.'}//trim(\mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00261}00261\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00262}00262\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=8,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8b730f0b4f13c0ca2b4f00799374ea57}{iopt}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(\mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_wronly\ +\ mpi\_mode\_create,\ \mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_open(\mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ trim(scratchpath)//\textcolor{stringliteral}{'quantcont.all'},\ \&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_mode\_rdwr,\ \mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00273}00273\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_create\_view(\mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}},\ 512,\ mpi\_double\_precision)\ \textcolor{comment}{!\ using\ 512\ as\ block\ size\ for\ simplicity}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}}\%disp\ =\ 0}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_reset\_view(\mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00277}00277\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00278}00278\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00279}00279\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00280}00280\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00281}00281\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(\mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00282}00282\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00283}00283\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a9d7ed75003f3f5a3b95695ffed26d302}{yeswrite10}})\ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00284}00284\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00285}00285\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00286}00286\ \textcolor{comment}{!\ \ \ Open\ in\ any\ event\ an\ empty\ file}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=8,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(\mbox{\hyperlink{namespaceallio_aa76f5d02b509fbb34a531e40b776538c}{chara}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a9d7ed75003f3f5a3b95695ffed26d302}{yeswrite10}})\ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00290}00290\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00291}00291\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ rankrep==0}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00292}00292\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!endif\ yesquantum}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ open\ DFT\ wavefunction\ for\ each\ k-\/point!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_add7d1cc66513f139c63f65d96ce4ea93}{manyfort10}}\ .and.\ \mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(scratchpath)//\textcolor{stringliteral}{'fort.10\_'}//trim(\mbox{\hyperlink{namespaceallio_ae9a2d16fd34cd5d6e2fd1171a4542952}{charaq}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00299}00299\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\#\ fort10name:\ ',trim(charascratch),'\ rank:\ ',rank}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00300}00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'},\ \mbox{\hyperlink{namespaceallio_a107e3604fd1b8c29119e59dd69bffd10}{err}}=101)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00301}00301\ \textcolor{preprocessor}{\#ifdef\ \_\_KCOMP}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00302}00302\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=27,\ file=charascratch,\ form=\textcolor{stringliteral}{'formatted'},\ position=\textcolor{stringliteral}{'rewind'},\ \mbox{\hyperlink{namespaceallio_a107e3604fd1b8c29119e59dd69bffd10}{err}}=101)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00304}00304\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00305}00305\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00306}00306\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00307}00307\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00308}00308\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{comment}{!\ serial}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 2\ .or.\ \mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=15,\ file=\textcolor{stringliteral}{'fort.12.new'},\ form=\textcolor{stringliteral}{'unformatted'},\ position=positi)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00311}00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}}\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\textcolor{stringliteral}{'.conf'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=19,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00316}00316\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(\mbox{\hyperlink{namespaceallio_af7d127a2c504d347ab53ab28685dfbc2}{kl}})\ .eq.\ 9)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ charascratch\ =\ trim(\mbox{\hyperlink{namespaceallio_ae1cf12f122e52f1cb9fc8fdc34a5e758}{wherescratch}})//\textcolor{stringliteral}{'.lan'}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=20,\ file=charascratch,\ form=\textcolor{stringliteral}{'unformatted'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00320}00320\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00321}00321\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00322}00322\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00323}00323\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00324}00324\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00325}00325\ 101\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}}(\textcolor{stringliteral}{'\ open\_files\ '},\ \textcolor{stringliteral}{'\ fort.10\ for\ each\ k-\/point\ needed!!!\ '},\ 1,\ rank)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00326}00326\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{file_o_p_8f90_acf11c442131ad2d86a8f38e288ad28e5}{open\_files}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00327}00327\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00328}00328\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00329}00329\ \textcolor{comment}{!>\ @brief\ Close\ all\ opened\ files\ and\ cleanup\ resources}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00330}00330\ \textcolor{comment}{!>\ @details\ This\ subroutine\ closes\ all\ files\ opened\ by\ open\_files\ and}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00331}00331\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ performs\ necessary\ cleanup\ operations.\ It\ handles\ both\ serial}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00332}00332\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ parallel\ I/O\ modes,\ including\ MPI-\/IO\ file\ handles.}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00333}00333\ \textcolor{comment}{!>\ @param[in]\ rank\ MPI\ rank\ of\ the\ current\ process}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00334}00334\ \textcolor{comment}{!>\ @note\ Closes\ files\ based\ on\ simulation\ parameters\ (itestr,\ iopt,\ etc.)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00335}00335\ \textcolor{comment}{!>\ @note\ Handles\ different\ I/O\ levels\ (0=local,\ 1=POSIX,\ 2=MPI-\/IO)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00336}00336\ \textcolor{comment}{!>\ @note\ Deletes\ temporary\ scratch\ files\ when\ writescratch=0}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00337}00337\ \textcolor{comment}{!>\ @note\ Closes\ MPI-\/IO\ handles\ for\ parallel\ runs}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00338}00338\ \textcolor{comment}{!>\ @note\ Only\ rank\ 0\ closes\ main\ output\ files}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00339}\mbox{\hyperlink{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}{00339}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}{close\_files}}(rank)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00340}00340\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}},\ \mbox{\hyperlink{namespaceallio_ac4156cf7d28b412b68bd6ba0d3bcd38d}{ieskint}},\ \mbox{\hyperlink{namespaceallio_a4165e60c3e2e4e3ddb109ce45e6dd1f4}{idyn}},\ \mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}},\ \mbox{\hyperlink{namespaceallio_ad9531122a8c03a2fb35328711ef99827}{ncg\_adr}},\ \mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}},\ \mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_af7d127a2c504d347ab53ab28685dfbc2}{kl}},\ \mbox{\hyperlink{namespaceallio_a5e524947826cf313cc5a79f67d094cf5}{write\_cov}},\ \mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}},\ \mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}},\ \mbox{\hyperlink{namespaceallio_a9d7ed75003f3f5a3b95695ffed26d302}{yeswrite10}},\ \mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}},\ \mbox{\hyperlink{namespaceallio_a7797262a97c22ff29916fb50c102edca}{kelcont}}\&}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}},\ \mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}},\ \mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}},\ decoupled\_run,\ \mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00343}00343\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_add7d1cc66513f139c63f65d96ce4ea93}{manyfort10}}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00344}00344\ \ \ \ \ \textcolor{keywordtype}{use\ }mpiio}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00345}00345\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00346}00346\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ rank}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00347}00347\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00348}00348\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ close(6)}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (11)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (12)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00353}00353\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}}\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (13)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (16)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00357}00357\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a5e524947826cf313cc5a79f67d094cf5}{write\_cov}})\ \textcolor{keyword}{close}\ (18)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac4156cf7d28b412b68bd6ba0d3bcd38d}{ieskint}}\ .ne.\ 0)\ \textcolor{keyword}{close}\ (17)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a4165e60c3e2e4e3ddb109ce45e6dd1f4}{idyn}}\ .gt.\ 1)\ \textcolor{keyword}{close}\ (22)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}})\ \textcolor{keyword}{close}\ (23)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ad9531122a8c03a2fb35328711ef99827}{ncg\_adr}}\ .gt.\ 0)\ \textcolor{keyword}{close}\ (25)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00362}00362\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .ge.\ 6)\ \textcolor{keyword}{close}\ (15)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00364}00364\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!rank.eq.0}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00365}00365\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00366}00366\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00367}00367\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (9)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(\mbox{\hyperlink{namespaceallio_a7797262a97c22ff29916fb50c102edca}{kelcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00371}00371\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3e35faf1275f1677e79cf2743fc1988b}{rankrep}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (8)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(\mbox{\hyperlink{namespaceallio_abbffa9656fb7618c77509cd9d82e5399}{quantcont}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00378}00378\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00379}00379\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((\mbox{\hyperlink{namespaceallio_a4b4b957d79c1755b296d704409b3db97}{yesquantum}}\ .and.\ \mbox{\hyperlink{namespaceallio_a9d7ed75003f3f5a3b95695ffed26d302}{yeswrite10}})\ .or.\ (\mbox{\hyperlink{namespaceallio_add7d1cc66513f139c63f65d96ce4ea93}{manyfort10}}\ .and.\ \mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}}))\ \textcolor{keyword}{close}\ (27)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00381}00381\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00382}00382\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00383}00383\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 2\ .or.\ \mbox{\hyperlink{namespaceallio_a24fc997d1c2116d4eefd95e4f9e61af8}{iread}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (15)}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00386}00386\ \textcolor{preprocessor}{\#ifndef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00387}00387\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00388}00388\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00389}00389\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a3ce2f0886cd5a8a98deddac61118154a}{io\_level}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(\mbox{\hyperlink{namespaceallio_a2f5b4c8f08ee764f417864ec05346d17}{details\_sp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpiio\_file\_close(\mbox{\hyperlink{namespaceallio_a4460e8c0268338f2b2f0fd383463439a}{details\_dp}})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00392}00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00393}00393\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00394}00394\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00395}00395\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00396}00396\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a8a4211eacfdfa50e8a8e6fff054a99d9}{itestr}}\ .eq.\ -\/5)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}\ .eq.\ 0)\ \textcolor{keyword}{close}\ (unit=19,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(\mbox{\hyperlink{namespaceallio_af7d127a2c504d347ab53ab28685dfbc2}{kl}})\ .eq.\ 9)\ \textcolor{keyword}{close}\ (unit=20,\ status=\textcolor{stringliteral}{'DELETE'})}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00399}00399\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00400}00400\ }
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00401}00401\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{file_o_p_8f90_source_l00402}00402\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{file_o_p_8f90_afff2a752f78150d527cd71363e098e55}{close\_files}}}
+
+\end{DoxyCode}

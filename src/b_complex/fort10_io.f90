@@ -14,6 +14,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Reads wavefunction data from fort.10 file
+!>
+!> This subroutine reads wavefunction parameters and settings from a fort.10 file.
+!> It handles both periodic and non-periodic boundary conditions, and supports
+!> Crystal periodic basis sets with complex wavefunctions.
+!>
+!> @param[in] ufort10 Unit number for the fort.10 input file
+!> @details
+!> - Reads PBC settings (PBC, PBC_T, PBC_C)
+!> - Handles tilted cells and complex wavefunctions
+!> - Processes Crystal periodic basis set definitions
+!> - Sets up gamma point calculations
 subroutine read_fort10(ufort10)
     use Cell, only : cellscale, map, metric, CartesianToCrystal,case_map,chosen_map
     use allio
@@ -5144,6 +5156,17 @@ end subroutine read_fort10
                 !  consistently with fort.10.
                 !--------------------------------------------------------------------------
 
+!> @brief Fast version of fort.10 file reader
+!>
+!> This subroutine provides a faster implementation for reading wavefunction parameters
+!> from the fort.10 input file. It handles periodic boundary conditions and various
+!> wavefunction parameters.
+!>
+!> @details
+!> - Reads PBC settings (PBC, PBC_T, PBC_C)
+!> - Processes wavefunction parameters and orbital occupations
+!> - Handles both real and complex wavefunctions
+!> - Supports Crystal periodic basis sets
 subroutine read_fort10_fast
                 use allio
                 implicit none
@@ -5737,14 +5760,20 @@ subroutine read_fort10_fast
 
                         end subroutine read_fort10_fast
 
+                        !> @brief Writes wave function parameters and symmetries to a file
+                        !!
+                        !! This subroutine writes various wave function parameters and symmetries to the specified file unit,
+                        !! including PBC parameters, electron numbers, shell information, and matrix elements.
+                        !!
+                        !! @param[in] unit Integer file unit number to write to
                         subroutine write_fort10(unit)
                         use allio
                         implicit none
-                        integer unit
-                        integer, dimension(:), allocatable :: indexv
-                real*8, dimension(:), allocatable :: sortvect
-                integer i, ii,j, iref, ind, indpar, numpaired
-        logical, dimension(:), allocatable :: yespip
+                        integer unit                                      !< File unit number
+                        integer, dimension(:), allocatable :: indexv      !< Index array for sorting
+                        real*8, dimension(:), allocatable :: sortvect    !< Array for sorting values
+                        integer i, ii,j, iref, ind, indpar, numpaired    !< Loop and temporary variables
+                        logical, dimension(:), allocatable :: yespip      !< Logical array for parameter flags
         rewind(unit)
                 if(iespbc) then
         if(.not.yes_crystal.and..not.yes_complex) then ! for complex case use always PBC_C basis set
@@ -6229,12 +6258,20 @@ subroutine read_fort10_fast
                         endif
                         end subroutine write_fort10
 
+                        !> @brief Updates the kiontot and kiontotj arrays for atomic orbital information
+                        !!
+                        !! This subroutine updates two arrays:
+                        !! - kiontot: Stores atomic orbital information for determinant part
+                        !! - kiontotj: Stores atomic orbital information for Jastrow part
+                        !! 
+                        !! The arrays are populated based on shell information, multiplicities,
+                        !! and occupation numbers from both determinant and Jastrow parts.
                         subroutine update_kiontot
                 use allio, only:kiontot, kiontotj, nelcol_c, nelorb_c, nelorbj_c, nshell_c, mult_c&
                 &, multj_c, nshellj_c, kion_c, kionj_c, ioccup_c, ioccj_c, nelorb_at, ioptorb_c
                 use constants, only:ipj, ipf
                 implicit none
-                integer ind, indj, i, j
+                integer ind, indj, i, j    !< Loop indices and counters
                 if(allocated(kiontot)) deallocate(kiontot)
                         if(allocated(kiontotj)) deallocate(kiontotj)
                 allocate(kiontot(nelcol_c), kiontotj(ipj*nelorbj_c))

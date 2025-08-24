@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['gather_5favgs_0',['gather_avgs',['../gather__avgs_8f90.html#aa767de6c89e6a767179787fdeb755af3',1,'gather_avgs.f90']]],
+  ['gather_5ffrom_5fgrid_1',['gather_from_grid',['../namespaceparallel__module.html#a0aa726d0ea1179ed2ad2a33f04d076e6',1,'parallel_module']]],
+  ['gather_5fwconfn_2',['gather_wconfn',['../gather__avgs_8f90.html#a8919e37b842b51acc013abd5ef07ca32',1,'gather_avgs.f90']]],
+  ['gauge_5ffix_3',['gauge_fix',['../eval__molec__epsdgel_8f90.html#adb52e915ef6c94d34f10cdef4ea070c7',1,'eval_molec_epsdgel.f90']]],
+  ['gauge_5ffixr_4',['gauge_fixr',['../eval__molec__epsdgel_8f90.html#a6f1d3cefd232c665ae423f5868052510',1,'eval_molec_epsdgel.f90']]],
+  ['gemm_5',['gemm',['../gemm_8f90.html#a8db9d5e9156a4ef416ca371193f80a66',1,'gemm.f90']]],
+  ['generate_5forbidx_6',['generate_orbidx',['../namespacemod__orbital.html#a7c2000f00789a90cfb56872388498a24',1,'mod_orbital']]],
+  ['get_5fkpoints_7',['get_kpoints',['../namespacekpoints__mod.html#a9527bf65e0d6ee4839de8a1bee20f481',1,'kpoints_mod']]],
+  ['get_5fnumber_8',['get_number',['../namespaceatom__names.html#a7a706a6139768625ce41d9c6a0135db9',1,'atom_names']]],
+  ['ggen_9',['ggen',['../namespaceewald.html#ad5e207faffc43758c2ff7932f74386d6',1,'ewald']]],
+  ['ggen_5fsamegrid_10',['ggen_samegrid',['../namespaceewald.html#af1563de048826de988d4d8992baaa2f5',1,'ewald']]],
+  ['gind_5fblock_5fsca_11',['gind_block_sca',['../dsortx_8f90.html#af0d7d9b2ec25a21bf0645b833a50a824',1,'dsortx.f90']]],
+  ['good_5ffft_5fdimension_12',['good_fft_dimension',['../namespacefft__scalar.html#a2627b55abd26dcf5bd0041eb2b9321d2',1,'fft_scalar']]],
+  ['good_5ffft_5forder_13',['good_fft_order',['../namespacefft__scalar.html#a5a5fbb0eaa62541e2fb7752d5ac11890',1,'fft_scalar']]],
+  ['graham_14',['graham',['../graham_8f90.html#aaf2c3f7b6706d4ca66ccdd6019c6b462',1,'graham.f90']]],
+  ['graham_5fcomplex_15',['graham_complex',['../graham_8f90.html#ae0d987d62a6277ca0389ef45e54232f7',1,'graham.f90']]],
+  ['graham_5fscalapack_16',['graham_scalapack',['../graham__scalapack_8f90.html#a310bb8eef45801b8cdd4d571d44cbb5e',1,'graham_scalapack.f90']]],
+  ['graham_5fscalapack_5fcomplex_17',['graham_scalapack_complex',['../graham__scalapack_8f90.html#a5d10c7f75d0919e4398fe694244a5114',1,'graham_scalapack.f90']]],
+  ['grahamo_18',['grahamo',['../grahamo_8f90.html#af1390e9131fc3495a62711587d434655',1,'grahamo.f90']]],
+  ['grahamo_5fcomplex_19',['grahamo_complex',['../grahamo_8f90.html#ae5aecfc5b4a9b362f4faa9e1fa996641',1,'grahamo.f90']]],
+  ['grid2d_5fcoords_20',['grid2d_coords',['../dsortx_8f90.html#af16c1df3e395ef6492af53964e9893a3',1,'dsortx.f90']]],
+  ['grid2d_5fdims_21',['grid2d_dims',['../dsortx_8f90.html#a88344593f5c69157bf9953919490ce75',1,'dsortx.f90']]],
+  ['grid2d_5frank_22',['grid2d_rank',['../dsortx_8f90.html#ad318c6935a29a5a075a11dffdf359551',1,'dsortx.f90']]],
+  ['gross_5fdreizler_23',['gross_dreizler',['../namespacethomas__fermi__model.html#a1e0962e1dd81d5a56a3aa938b9131d06',1,'thomas_fermi_model']]]
+];

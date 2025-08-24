@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file corrforzap.f90
+!> @brief Program for computing simplified force correlation functions using bootstrap analysis
+!> @details This program reads energy and derivative data from fort.21 files and computes
+!> simplified force correlation functions using bootstrap resampling. It calculates the
+!> Pulay correction term 2*(<OH> - <O><H>) where O is the log derivative of the wave function
+!> and H is the local energy. This is a simplified version of corrforza.f90.
+
+!> @brief Main program for simplified force correlation analysis
+!> @details Reads energy and log derivative data from fort.21 files, performs bootstrap
+!> resampling to estimate statistical errors, and computes the simplified force correlation
+!> function. Outputs the Pulay correction term and its statistical uncertainty.
 program bootback
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel

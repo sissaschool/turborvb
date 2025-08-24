@@ -18,6 +18,20 @@
 ! 1400 general purpose mathematical and statistical routines
 ! written in Fortran 77.
 
+!> @brief Sorts array X and optionally carries along array Y
+!> @details This subroutine sorts array X and optionally makes the same
+!>          interchanges in array Y. The array X may be sorted in
+!>          increasing order or decreasing order. A slightly modified
+!>          QUICKSORT algorithm (Singleton's algorithm) is used.
+!>          This is a Fortran 77 implementation from the SLATEC library.
+!> @param[in,out] X Array of values to be sorted (usually abscissas)
+!> @param[in,out] Y Array to be optionally carried along with X
+!> @param[in] N Number of values in array X to be sorted
+!> @param[in] KFLAG Control parameter:
+!>             - KFLAG = 2: sort X in increasing order and carry Y along
+!>             - KFLAG = 1: sort X in increasing order (ignoring Y)
+!>             - KFLAG = -1: sort X in decreasing order (ignoring Y)
+!>             - KFLAG = -2: sort X in decreasing order and carry Y along
 subroutine DSORT(X, Y, N, KFLAG)
     !***BEGIN PROLOGUE  DSORT
     !***DATE WRITTEN   761101   (YYMMDD)

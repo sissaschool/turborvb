@@ -2404,6 +2404,12 @@ program convertfort10
 
 contains
 
+    !> @brief Load and initialize data from fort.10 input file
+    !> @details This subroutine reads the fort.10 input file and initializes all necessary
+    !>          data structures for the convertfort10 program. It handles file I/O,
+    !>          memory allocation, parameter initialization, and mesh setup.
+    !>          The subroutine also processes namelist inputs and sets up parallel
+    !>          communication if MPI is enabled.
     subroutine load_fort10in
         use allio, only: norm_metric
         implicit none
@@ -2854,8 +2860,7 @@ contains
                                                 , nelorb_c, buffer_c(1, nbufp), nelorb_c, zone, overs, nelorb_cu)
                                 else
                                     call zgemm_('N', 'C', nelorb_c, nelorb_c, ind, volmeshc, buffer_c(1, nbufp) &
-                                                , nelorb_c, buffer_c(1, nbufp), nelorb_c, zone, overs(1, nelorb_cu + 1) &
-                                                , nelorb_cu)
+                                                , nelorb_c, buffer_c(1, nbufp), nelorb_c, zone, overs(1, nelorb_cu + 1), nelorb_cu)
                                 end if
                             end if
 
@@ -3267,6 +3272,12 @@ contains
         close (10)
     end subroutine load_fort10in
 
+    !> @brief Load and compute geminal overlap matrices on mesh grid
+    !> @details This subroutine computes the geminal overlap matrices by evaluating
+    !>          wave functions on a 3D mesh grid. It handles both real and complex
+    !>          wave functions, processes mesh points in parallel, and accumulates
+    !>          overlap integrals. The subroutine also handles periodic boundary
+    !>          conditions and one-body Jastrow corrections.
     subroutine load_gemz
         use allio, only: norm_metric
         implicit none
@@ -3403,7 +3414,7 @@ contains
                                         &, zone, overonl(1, nelorb + 1), nelorbcu_in)
                             else
                                 call zgemm_('N', 'C', nelorbc_in, nelorb, ind, volmeshc, buffero(1, nbufp) &
-                                            , nelorbc_in, buffer(1, nbufp), nelorb, zone, overonl(1, nelorb + 1), nelorbcu_in)
+                                            &, nelorbc_in, buffer(1, nbufp), nelorb, zone, overonl(1, nelorb + 1), nelorbcu_in)
                             end if
                         end if
 
@@ -3554,7 +3565,7 @@ contains
 
         end if
 
-        if (rank .eq. 0 .and. overo .ne. 0) write (6, *)&
+        if (rank .eq. 0 .and. overo .ne. 0.d0) write (6, *)&
                 & ' Overlap square Geminal uncontracted found =', overlapsquare
         !OK
 
@@ -3585,6 +3596,13 @@ contains
         end if
 
     end subroutine load_gemz
+
+    !> @brief Load and compute Jastrow overlap matrices on mesh grid
+    !> @details This subroutine computes the Jastrow overlap matrices by evaluating
+    !>          Jastrow wave functions on a 3D mesh grid. It processes mesh points
+    !>          in parallel, accumulates overlap integrals, and handles both regular
+    !>          and spin-dependent Jastrow matrices. The subroutine also performs
+    !>          matrix inversions and overlap square calculations.
     subroutine load_jasz
         implicit none
         integer indmax
@@ -3786,6 +3804,18 @@ contains
 
 end program convertfort10
 
+!> @brief Calculate the trace of a matrix product with orbital cost constraints
+!> @details This function computes the trace of the product of overlap matrix and Jastrow matrix,
+!>          considering only orbitals that are not constant (orbcost = .false.).
+!>          The trace is calculated as: sum_{j,k} (sum_{i} jasmat(i,j) * jasmat(i,k)) * over(j,k)
+!>          where the sums are restricted to non-constant orbitals.
+!> @param[in] n Integer dimension of the matrices
+!> @param[in] over Real*8 overlap matrix of dimension (ldo, *)
+!> @param[in] ldo Integer leading dimension of overlap matrix
+!> @param[in] jasmat Real*8 Jastrow matrix of dimension (ldj, *)
+!> @param[in] ldj Integer leading dimension of Jastrow matrix
+!> @param[in] orbcost Logical array indicating which orbitals are constant
+!> @return Real*8 trace value of the matrix product
 function tracematloc(n, over, ldo, jasmat, ldj, orbcost)
     implicit none
     integer i, j, k, n, ldo, ldj
@@ -3812,6 +3842,16 @@ function tracematloc(n, over, ldo, jasmat, ldj, orbcost)
     return
 end
 
+!> @brief Calculate the trace of overlap matrix product with orbital cost constraints
+!> @details This function computes the trace of the product of overlap matrix with itself,
+!>          considering only orbitals that are not constant (orbcost = .false.).
+!>          The trace is calculated as: sum_{j,k} over(j,k) * over(k,j)
+!>          where the sums are restricted to non-constant orbitals.
+!> @param[in] n Integer dimension of the overlap matrix
+!> @param[in] over Real*8 overlap matrix of dimension (ldo, *)
+!> @param[in] ldo Integer leading dimension of overlap matrix
+!> @param[in] orbcost Logical array indicating which orbitals are constant
+!> @return Real*8 trace value of the overlap matrix product
 function tracematnloc(n, over, ldo, orbcost)
     implicit none
     integer i, j, k, n, ldo
@@ -3828,6 +3868,16 @@ function tracematnloc(n, over, ldo, orbcost)
     return
 end
 
+!> @brief Find minimum and maximum indices from a list of non-zero elements
+!> @details This subroutine analyzes a list of non-zero element indices and finds
+!>          the minimum and maximum row/column indices. It converts linear indices
+!>          to 2D matrix indices and determines the range of non-zero elements.
+!> @param[in] nnozero Integer number of non-zero elements
+!> @param[in] nozero Integer array containing linear indices of non-zero elements
+!> @param[in] nelorb Integer dimension of the matrix (number of orbitals)
+!> @param[out] imin Integer minimum row/column index found
+!> @param[out] imax Integer maximum row/column index found
+!> @param[out] len Integer length of the range (imax - imin + 1)
 subroutine findminmax(nnozero, nozero, nelorb, imin, imax, len)
     implicit none
     integer nnozero, nozero(*), nelorb, imin, imax, i, ix, iy, len
@@ -3843,8 +3893,32 @@ subroutine findminmax(nnozero, nozero, nelorb, imin, imax, len)
     end do
     len = imax - imin + 1
     return
-end subroutine findminmax
+end
 
+!> @brief Solve generalized eigenvalue problem with custom handling of small eigenvalues
+!> @details This subroutine solves the generalized eigenvalue problem either:
+!>          a v = e s v  (effham=.true.) or
+!>          a s v = e v  (effham=.false.)
+!>          where 's' is given in diagonal form s = umat eig umat^dag.
+!>          Small eigenvalues below epsdgel are zeroed out and excluded from calculation.
+!> @param[in] ipc Integer complex flag (1 for real, 2 for complex)
+!> @param[in] n Integer dimension of matrices
+!> @param[in,out] a Real*8 matrix of dimension (ipc*lda,*)
+!> @param[in] lda Integer leading dimension of a
+!> @param[in,out] over Real*8 overlap matrix of dimension (ipc*ldo,*)
+!> @param[in] ldo Integer leading dimension of over
+!> @param[in] doover Logical flag to compute overlap matrix inverse
+!> @param[out] umat Real*8 eigenvector matrix
+!> @param[out] eigmat Real*8 eigenvalue array
+!> @param[out] eig Real*8 array for eigenvalues
+!> @param[in] mine Integer minimum index for eigenvalue calculation
+!> @param[out] work Real*8 work array
+!> @param[in] epsdgel Real*8 threshold for zeroing small eigenvalues
+!> @param[in] effham Logical flag for eigenvalue problem type
+!> @param[out] info Integer error flag
+!> @param[in] nprocr Integer number of processors
+!> @param[in] rank Integer processor rank
+!> @param[in] comm_mpi Integer MPI communicator
 subroutine dsygv_my(ipc, n, a, lda, over, ldo, doover, umat, eigmat&
         &, eig, mine, work, epsdgel, effham, info, nprocr, rank, comm_mpi)
     use constants, only: zone, zzero
@@ -3941,6 +4015,15 @@ subroutine dsygv_my(ipc, n, a, lda, over, ldo, doover, umat, eigmat&
     return
 end subroutine dsygv_my
 
+!> @brief Consolidate multiple constant orbitals into a single one
+!> @details This subroutine handles the case where multiple constant orbitals exist in fort.10.
+!>          It consolidates all constant orbitals into the last one (icost) and rewrites
+!>          the Jastrow matrix accordingly. This ensures only one constant orbital is used.
+!> @param[in] nelorbj_c Integer number of Jastrow orbitals
+!> @param[in,out] jasmat_c Real*8 Jastrow matrix to be modified
+!> @param[in] orbcostn Logical array indicating which orbitals are constant
+!> @param[in] nozeroj_c Integer array of non-zero element indices
+!> @param[in] nnozeroj_c Integer number of non-zero elements
 subroutine setorbcost(nelorbj_c, jasmat_c, orbcostn, nozeroj_c, nnozeroj_c)
     implicit none
     integer ix, iy, ixt, iyt, k, nelorbj_c, nnozeroj_c, indsto, indstos, indadd&
@@ -3960,7 +4043,7 @@ subroutine setorbcost(nelorbj_c, jasmat_c, orbcostn, nozeroj_c, nnozeroj_c)
     do ixt = 1, nelorbj_c
         if (orbcostn(ixt) .and. ixt .ne. icost) then
             do iyt = 1, nelorbj_c
-                if (jasmat_c(nelorbj_c*(iyt - 1) + ixt) .ne. 0.d0) then
+                if (jasmat_c(nelorbj_c*(iyt - 1) + ix) .ne. 0.d0) then
                     if (orbcostn(iyt)) then
                         iy = icost
                     else
@@ -3996,6 +4079,21 @@ subroutine setorbcost(nelorbj_c, jasmat_c, orbcostn, nozeroj_c, nnozeroj_c)
         end if
     end do
 end subroutine setorbcost
+
+!> @brief Check and validate complex Jastrow matrix reconstruction
+!> @details This subroutine validates the reconstruction of a complex Jastrow matrix from sparse format.
+!>          It checks if all non-zero elements from the original matrix are properly reconstructed
+!>          and handles symmetry constraints for AGP and Pfaffian matrices.
+!> @param[in] nelorbj_c Integer number of Jastrow orbitals
+!> @param[in,out] jasmat_c Complex*16 Jastrow matrix to be checked and reconstructed
+!> @param[in] lead Integer leading dimension of the matrix
+!> @param[in] nozeroj_c Integer array of non-zero element indices
+!> @param[in] nnozeroj_c Integer number of non-zero elements
+!> @param[out] checkall Logical flag indicating if all elements were properly reconstructed
+!> @param[in] rank Integer rank of current process for parallel execution
+!> @param[in] epsr Real*8 tolerance for element comparison
+!> @param[in] symmagp Logical flag for AGP symmetry
+!> @param[in] ipf Integer Pfaffian flag (1 for AGP, 2 for Pfaffian)
 subroutine checkmat_complex(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, rank, epsr, symmagp, ipf)
     use allio, only: yes_hermite, pfaffup, kiontot
     implicit none
@@ -4095,6 +4193,21 @@ subroutine checkmat_complex(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, ch
 
     deallocate (jasmat_sav)
 end subroutine checkmat_complex
+
+!> @brief Check and validate real Jastrow matrix reconstruction
+!> @details This subroutine validates the reconstruction of a real Jastrow matrix from sparse format.
+!>          It checks if all non-zero elements from the original matrix are properly reconstructed
+!>          and handles symmetry constraints for AGP and Pfaffian matrices.
+!> @param[in] nelorbj_c Integer number of Jastrow orbitals
+!> @param[in,out] jasmat_c Real*8 Jastrow matrix to be checked and reconstructed
+!> @param[in] lead Integer leading dimension of the matrix
+!> @param[in] nozeroj_c Integer array of non-zero element indices
+!> @param[in] nnozeroj_c Integer number of non-zero elements
+!> @param[out] checkall Logical flag indicating if all elements were properly reconstructed
+!> @param[in] rank Integer rank of current process for parallel execution
+!> @param[in] epsr Real*8 tolerance for element comparison
+!> @param[in] symmagp Logical flag for AGP symmetry
+!> @param[in] ipf Integer Pfaffian flag (1 for AGP, 2 for Pfaffian)
 subroutine checkmat(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, rank, epsr, symmagp, ipf)
     use allio, only: pfaffup, kiontot
     implicit none
@@ -4175,6 +4288,15 @@ subroutine checkmat(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, 
     deallocate (jasmat_sav)
 end subroutine checkmat
 
+!> @brief Orthogonalize Jastrow matrix with respect to constant orbital
+!> @details This subroutine performs orthogonalization of the Jastrow matrix
+!>          with respect to the constant orbital. It identifies the constant
+!>          orbital and adjusts the matrix elements to ensure orthogonality.
+!> @param[in,out] jasmat Real*8 Jastrow matrix to be orthogonalized
+!> @param[in] nelorbjh Integer number of Jastrow orbitals (high)
+!> @param[in] overj Real*8 overlap matrix
+!> @param[in] nelorbj Integer number of Jastrow orbitals
+!> @param[in] orbcostn Logical array indicating which orbitals are constant
 subroutine purify(jasmat, nelorbjh, overj, nelorbj, orbcostn)
     implicit none
     integer nelorbj, nelorbjh, icost, i, j

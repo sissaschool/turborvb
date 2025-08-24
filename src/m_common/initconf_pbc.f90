@@ -13,6 +13,54 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file initconf_pbc.f90
+!> @brief Initial configuration generator for periodic boundary conditions (PBC)
+!> @details This module provides routines to generate initial electron configurations
+!>          for quantum Monte Carlo simulations with periodic boundary conditions.
+!>          It ensures fair and randomized placement of electrons around ions,
+!>          handles spin and occupation constraints, and applies PBC as needed.
+!> @author TurboRVB group
+!> @date 2022
+!> @section Features
+!> - Randomized and fair electron placement around ions
+!> - Handles spin-up and spin-down electron constraints
+!> - Supports electron affinity calculations (nel > ztot)
+!> - Applies periodic boundary conditions (PBC) if enabled
+!> - Lattice-based initialization if alat is specified
+!> - Ensures no duplicate electron positions
+!> - Computes electron-ion distances for all walkers
+!=======================================================================
+
+!-----------------------------------------------------------------------
+!> @brief Generate initial electron configuration for PBC QMC simulations
+!> @details Places electrons around ions with randomized but fair distribution,
+!>          respecting spin and occupation constraints. Applies PBC and lattice
+!>          initialization as needed. Ensures no duplicate electron positions.
+!>          Computes electron-ion distances for all walkers.
+!> @param[in] nel Total number of electrons
+!> @param[in] nelup Number of spin-up electrons
+!> @param[out] psiln Logarithm of initial wave function (per walker)
+!> @param[out] psisn Initial sign of wave function (per walker)
+!> @param[out] kel Electron coordinates (3, nel, 0:indt, *)
+!> @param[out] wconf Walker weights
+!> @param[in] rion Ion coordinates (3, nion)
+!> @param[out] dist Electron-ion distances (nion, nel, *)
+!> @param[in] indt Number of time slices (for PIMC)
+!> @param[in] nion Number of ions
+!> @param[in] zeta Ion charges
+!> @param[in] in1 Number of walkers per process
+!> @param[in] rank MPI rank
+!> @param[out] ierr Error flag
+!> @param[in] LBox Simulation box length (PBC)
+!> @param[in] alat Lattice constant (if > 0, use lattice init)
+!> @param[in] rion_ref Reference ion position for lattice init
+!> @param[in] iesrandoma Logical flag for random initialization
+!> @param[in] itest Test mode flag
+!> @note Ensures no two electrons are placed at the same position
+!> @note Applies PBC using ApplyPBC subroutine if LBox > 0
+!> @note Handles both random and lattice-based initialization
+!> @note Computes and stores electron-ion distances for all walkers
 subroutine initconf(nel, nelup, psiln, psisn, kel, wconf, rion, dist  &
         &, indt, nion, zeta, in1, rank, ierr, LBox, alat, rion_ref, iesrandoma, itest)
     use Cell

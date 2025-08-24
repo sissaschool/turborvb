@@ -200,6 +200,17 @@ program fitxyz
     stop
 end
 
+!> @brief Performs linear fitting with weighted least squares
+!> @details This subroutine performs linear fitting using weighted
+!>          least squares method. It computes the slope and intercept
+!>          of a linear function that best fits the data points.
+!> @param[in] z Independent variable array
+!> @param[in] y Dependent variable array
+!> @param[in] er Error weights array
+!> @param[in] n Number of data points
+!> @param[out] stot Total sum of weighted squares
+!> @param[out] a Slope of the linear fit
+!> @param[out] c Intercept of the linear fit
 subroutine fun(z, y, er, n, stot, a, c)
     implicit none
     real(8) y(*), z(*), er(*), somz, somy, somzy, somzq, wtot, stot, yp, a, c&

@@ -1,0 +1,162 @@
+\doxysection{corrforzap.\+f90}
+\hypertarget{corrforzap_8f90_source}{}\label{corrforzap_8f90_source}\index{src/a\_tools/corrforzap.f90@{src/a\_tools/corrforzap.f90}}
+\mbox{\hyperlink{corrforzap_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @file\ corrforzap.f90}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Program\ for\ computing\ simplified\ force\ correlation\ functions\ using\ bootstrap\ analysis}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @details\ This\ program\ reads\ energy\ and\ derivative\ data\ from\ fort.21\ files\ and\ computes}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00019}00019\ \textcolor{comment}{!>\ simplified\ force\ correlation\ functions\ using\ bootstrap\ resampling.\ It\ calculates\ the}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00020}00020\ \textcolor{comment}{!>\ Pulay\ correction\ term\ 2*(<OH>\ -\/\ <O><H>)\ where\ O\ is\ the\ log\ derivative\ of\ the\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00021}00021\ \textcolor{comment}{!>\ and\ H\ is\ the\ local\ energy.\ This\ is\ a\ simplified\ version\ of\ corrforza.f90.}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00022}00022\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @brief\ Main\ program\ for\ simplified\ force\ correlation\ analysis}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @details\ Reads\ energy\ and\ log\ derivative\ data\ from\ fort.21\ files,\ performs\ bootstrap}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00025}00025\ \textcolor{comment}{!>\ resampling\ to\ estimate\ statistical\ errors,\ and\ computes\ the\ simplified\ force\ correlation}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00026}00026\ \textcolor{comment}{!>\ function.\ Outputs\ the\ Pulay\ correction\ term\ and\ its\ statistical\ uncertainty.}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00027}\mbox{\hyperlink{corrforzap_8f90_a054887051d9b8cd58f46a5620c0c53d5}{00027}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{corrforzap_8f90_a054887051d9b8cd58f46a5620c0c53d5}{bootback}}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ nh,\ nbinm,\ nm,\ nmis,\ n,\ nbin,\ iseed,\ i,\ j,\ jj,\ k,\ kmain,\ nel}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00030}00030\ \ \ \ \ parameter(nh=500,\ nbinm=100000,\ nm=1)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00031}00031\ \ \ \ \ real*8\ err,\ eta,\ esav,\ eav,\ et(3),\ wt(3),\ alatb,\ alat,\ eps\&}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ givenmeas,\ drand1,\ w(nbinm,\ 3),\ e(nbinm,\ 3),\ deltab,\ den,\ num,\ eta0,\ errav,\ errerr\&}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ errv}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00034}00034\ \ \ \ \ iseed\ =\ 12375731}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keyword}{call\ }rand\_init(iseed)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ y\ =\ \ a*x*2+\ b*x\ +\ c}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ legge\ z,y\ da\ for011.dat}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00039}00039\ \ \ \ \ eps\ =\ 1d-\/6}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'old'},\ file=\textcolor{stringliteral}{'fort.21.1'})}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keyword}{open}\ (unit=12,\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'old'},\ file=\textcolor{stringliteral}{'fort.21.2'})}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keyword}{open}\ (unit=13,\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'old'},\ file=\textcolor{stringliteral}{'fort.21.3'})}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00044}00044\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00045}00045\ \ \ \ \ rewind(20)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00046}00046\ \ \ \ \ n\ =\ 1}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ lettura\ dati}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00048}00048\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00049}00049\ \ \ \ \ nbin\ =\ 0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (nbin\ .lt.\ nbinm)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ nbin\ =\ nbin\ +\ 1}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ *,\ \textcolor{keyword}{end}=500)\ e(nbin,\ 1),\ w(nbin,\ 1)\ \textcolor{comment}{!\ \ energy}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (12,\ *,\ \textcolor{keyword}{end}=500)\ e(nbin,\ 2),\ w(nbin,\ 2)\ \textcolor{comment}{!\ log\ \ derivative\ wf}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (13,\ *,\ \textcolor{keyword}{end}=500)\ e(nbin,\ 3),\ w(nbin,\ 3)\ \textcolor{comment}{!\ log\ derivative\ wf\ x\ local\ energy}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00055}00055\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00056}00056\ 500\ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (nbin\ .ne.\ nbinm)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ nbin\ =\ nbin\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ maximum\ number\ of\ bins\ exceeded\ !!!'}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00062}00062\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00063}00063\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ number\ of\ bins\ read\ ='},\ nbin}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00066}00066\ \ \ \ \ nmis\ =\ 200}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00068}00068\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ initialization\ opara\ e\ opars}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00069}00069\ \ \ \ \ err\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00070}00070\ \ \ \ \ eta\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00071}00071\ \ \ \ \ eav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00072}00072\ \ \ \ \ esav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00074}00074\ \ \ \ \ wt\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00075}00075\ \ \ \ \ et\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ wt(jj)\ =\ wt(jj)\ +\ w(j,\ jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ et(jj)\ =\ et(jj)\ +\ w(j,\ jj)*e(j,\ jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ et(jj)\ =\ et(jj)/wt(jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00086}00086\ \ \ \ \ eta0\ =\ 2.d0*(-\/et(3)\ +\ et(1)*et(2))}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00088}00088\ \ \ \ \ errav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00089}00089\ \ \ \ \ errerr\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00090}00090\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00091}00091\ \ \ \ \ \textcolor{keywordflow}{do}\ kmain\ =\ 1,\ nmis}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ dscal(3,0.d0,wt,1)}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ call\ dscal(3,0.d0,et,1)}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ wt\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ et\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ bootstrap\ estimate\ sample}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ eav\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ errv\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nbin}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ drand1()*nbin\ +\ 1}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wt(jj)\ =\ wt(jj)\ +\ w(j,\ jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ et(jj)\ =\ et(jj)\ +\ w(j,\ jj)*e(j,\ jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00107}00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ givenmeas\ =\ 2.d0*(-\/e(j,\ 3)\ +\ e(j,\ 1)*e(j,\ 2))}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ eav\ =\ eav\ +\ givenmeas}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ errv\ =\ errv\ +\ givenmeas**2}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ errv\ =\ errv/nbin}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ eav\ =\ eav/nbin}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ errv\ =\ dsqrt((errv\ -\/\ eav**2)/nbin)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00116}00116\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ errav\ =\ errav\ +\ errv}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ errerr\ =\ errerr\ +\ errv**2}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00119}00119\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ et(jj)\ =\ et(jj)/wt(jj)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00122}00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ average\ correlation\ function\ on\ the\ given\ bootstrap}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00125}00125\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ givenmeas\ =\ 2.d0*(-\/et(3)\ +\ et(1)*et(2))}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ eta\ =\ eta\ +\ givenmeas}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ err\ =\ err\ +\ givenmeas**2}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00130}00130\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00133}00133\ \ \ \ \ eta\ =\ eta/nmis}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00134}00134\ \ \ \ \ err\ =\ err/nmis}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00135}00135\ \ \ \ \ errav\ =\ errav/nmis}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00136}00136\ \ \ \ \ errerr\ =\ errerr/nmis}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00137}00137\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00138}00138\ \ \ \ \ errerr\ =\ dsqrt(errerr\ -\/\ errav**2)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00140}00140\ \ \ \ \ err\ =\ dsqrt(err\ -\/\ eta**2)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00142}00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(eta0)\ .gt.\ 3*err)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ \ Force\ \ \ ='},\ eta0,\ err,\ errerr\&}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \textcolor{stringliteral}{'\ Warning\ large\ fluctuation='},\ abs(eta/err)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00145}00145\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ \ Force\ \ \ ='},\ eta0,\ err,\ errerr}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00147}00147\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00148}00148\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keyword}{close}\ (11)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keyword}{close}\ (12)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keyword}{close}\ (13)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00152}00152\ \ \ \ \ \textcolor{keyword}{close}\ (14)}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00153}00153\ }
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00154}00154\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00155}00155\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{corrforzap_8f90_source_l00156}00156\ }
+
+\end{DoxyCode}

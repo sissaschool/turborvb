@@ -1,0 +1,70 @@
+\doxysection{src/m\+\_\+common/upvpot\+\_\+ei.f90 File Reference}
+\hypertarget{upvpot__ei_8f90}{}\label{upvpot__ei_8f90}\index{src/m\_common/upvpot\_ei.f90@{src/m\_common/upvpot\_ei.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upvpot__ei_8f90_a55c81fe404d3ccf6205f34ea50538126}{upvpot\+\_\+ei}} (rkel, zeta, rion, vpot, nion, lbox, epsvpot)
+\begin{DoxyCompactList}\small\item\em Calculate electron-\/ion potential energy with Yukawa potential. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upvpot__ei_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upvpot__ei_8f90_a55c81fe404d3ccf6205f34ea50538126}\index{upvpot\_ei.f90@{upvpot\_ei.f90}!upvpot\_ei@{upvpot\_ei}}
+\index{upvpot\_ei@{upvpot\_ei}!upvpot\_ei.f90@{upvpot\_ei.f90}}
+\doxysubsubsection{\texorpdfstring{upvpot\_ei()}{upvpot\_ei()}}
+{\footnotesize\ttfamily \label{upvpot__ei_8f90_a55c81fe404d3ccf6205f34ea50538126} 
+subroutine upvpot\+\_\+ei (\begin{DoxyParamCaption}\item[{real(8), dimension(3)}]{rkel}{, }\item[{real(8), dimension(nion)}]{zeta}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{real(8)}]{vpot}{, }\item[{integer}]{nion}{, }\item[{real(8)}]{lbox}{, }\item[{real(8)}]{epsvpot}{}\end{DoxyParamCaption})}
+
+
+
+Calculate electron-\/ion potential energy with Yukawa potential. 
+
+This subroutine computes the electron-\/ion potential energy for a given electron position using a Yukawa potential with periodic boundary conditions. The potential includes a screening parameter and can handle both isolated and periodic systems.\hypertarget{upvpot__ei_8f90_autotoc_md66}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upvpot__ei_8f90_autotoc_md66}
+RKEL \+: real\texorpdfstring{$\ast$}{*}8 array, in Position of the electron (3 coordinates). ZETA \+: real\texorpdfstring{$\ast$}{*}8 array, in Array of ion charges (NION). RION \+: real\texorpdfstring{$\ast$}{*}8 array, in Positions of ions (3 × NION). VPOT \+: real\texorpdfstring{$\ast$}{*}8, out Computed electron-\/ion potential energy. NION \+: integer, in Number of ions in the system. LBOX \+: real\texorpdfstring{$\ast$}{*}8, in Box length for periodic boundary conditions. EPSVPOT \+: real\texorpdfstring{$\ast$}{*}8, in Screening parameter for Yukawa potential. If EPSVPOT = 0\+: returns VPOT = 1.\+0 (no interaction). If EPSVPOT \texorpdfstring{$>$}{>} 0\+: computes Yukawa potential.\hypertarget{upvpot__ei_8f90_autotoc_md67}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upvpot__ei_8f90_autotoc_md67}
+
+\begin{DoxyItemize}
+\item Uses Yukawa potential\+: V(r) = Z\texorpdfstring{$\ast$}{*}exp(-\/κr)/r for each ion.
+\item Handles periodic boundary conditions through the NGIVEJ function.
+\item The total potential is the square root of the sum of individual contributions.
+\item For EPSVPOT = 0, returns a constant value (no electron-\/ion interaction).
+\item Optimized for quantum Monte Carlo applications.
+\end{DoxyItemize}\hypertarget{upvpot__ei_8f90_autotoc_md68}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upvpot__ei_8f90_autotoc_md68}
+If EPSVPOT = 0\+: VPOT = 1.\+0 Else\+: VPOT = √(Σᵢ 2\texorpdfstring{$\ast$}{*}zeta(i)/(rᵢ + epsvpot)) where rᵢ is the distance between electron and ion i\hypertarget{upvpot__ei_8f90_autotoc_md69}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upvpot__ei_8f90_autotoc_md69}
+Used in quantum Monte Carlo for electron-\/ion interaction calculations. Handle case with no electron-\/ion interaction
+
+Initialize potential energy
+
+Sum contributions from all ions using Yukawa potential
+
+Take square root of total potential
+
+Definition at line \mbox{\hyperlink{upvpot__ei_8f90_source_l00061}{61}} of file \mbox{\hyperlink{upvpot__ei_8f90_source}{upvpot\+\_\+ei.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ k,\ nion}
+\DoxyCodeLine{00064\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ rkel(3)}
+\DoxyCodeLine{00065\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ zeta(nion),\ vpot,\ ngivej,\ LBox,\ rion(3,\ *),\ cost,\ epsvpot\textcolor{comment}{}}
+\DoxyCodeLine{00066\ \textcolor{comment}{!>\ @brief\ Handle\ case\ with\ no\ electron-\/ion\ interaction}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{if}\ (epsvpot\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ vpot\ =\ 1.d0}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{!>\ @brief\ Initialize\ potential\ energy}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ vpot\ =\ 0.d0\textcolor{comment}{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{!>\ @brief\ Sum\ contributions\ from\ all\ ions\ using\ Yukawa\ potential}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nion}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ \mbox{\hyperlink{ngivej_8f90_a72645ff7ab9e039aa4cd8172c1f1532f}{ngivej}}(rion(1,\ k),\ rkel,\ lbox)\ +\ epsvpot}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ vpot\ =\ vpot\ +\ 2.d0*zeta(k)/cost}
+\DoxyCodeLine{00076\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{!>\ @brief\ Take\ square\ root\ of\ total\ potential}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ vpot\ =\ dsqrt(vpot)}
+\DoxyCodeLine{00079\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, and \mbox{\hyperlink{convertfort10_8f90_source_l02414}{load\+\_\+fort10in()}}.
+

@@ -1,0 +1,178 @@
+\doxysection{\+\_\+assembling\+\_\+pseudo.\+f90}
+\hypertarget{__assembling__pseudo_8f90_source}{}\label{__assembling__pseudo_8f90_source}\index{src/a\_tools/\_assembling\_pseudo.f90@{src/a\_tools/\_assembling\_pseudo.f90}}
+\mbox{\hyperlink{__assembling__pseudo_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @file\ \_assembling\_pseudo.f90}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Program\ for\ assembling\ pseudopotential\ files\ for\ TurboRVB\ calculations}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @details\ This\ program\ reads\ atomic\ information\ from\ fort.10\ file\ and\ assembles}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00019}00019\ \textcolor{comment}{!>\ pseudopotential\ files\ for\ atoms\ that\ require\ pseudopotentials\ (when\ zetar\ !=\ atom\_number).}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00020}00020\ \textcolor{comment}{!>\ It\ can\ also\ calculate\ distances\ between\ atoms\ when\ using\ the\ 'distance'\ extension.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00021}00021\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @brief\ Main\ program\ for\ assembling\ pseudopotential\ files}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @details\ Reads\ atomic\ configuration\ from\ fort.10,\ processes\ pseudopotential\ files}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00024}00024\ \textcolor{comment}{!>\ for\ atoms\ requiring\ them,\ and\ outputs\ assembled\ pseudopotential\ data\ to\ pseudo.dat.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00025}00025\ \textcolor{comment}{!>\ Supports\ distance\ calculation\ mode\ when\ extension\ is\ 'distance'.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00026}\mbox{\hyperlink{__assembling__pseudo_8f90_ae0f8196a2bddfd950b383ebe7e4b6f27}{00026}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{__assembling__pseudo_8f90_ae0f8196a2bddfd950b383ebe7e4b6f27}{assembling\_pseudo}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00029}00029\ \ \ \ \ real*8\ atomic\_sub}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00030}00030\ \ \ \ \ real*8\ ps\_par1,\ ps\_par2,\ ps\_par3,\ ps\_cut,\ dist\_kel(3)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ extension}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{character(220)}\ file\_pseudo}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ dir\_pseudo}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ \mbox{\hyperlink{__help__online_8f90_a5b94b095c17f696321ab2dbb6a05f5bd}{name\_dir}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{integer}\ unit\_number,\ line\_to\_read,\ num\_sh,\ i,\ j,\ jj,\ fake\_num,\ ios}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ shwork}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00037}00037\ \textcolor{comment}{!\ \ \ AAA\ \ \ \ Lines\ to\ be\ added\ just\ after\ all\ definitions\ of\ variables.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{character(60)}\ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ str}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keyword}{call\ }getarg(1,\ str)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00043}00043\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00044}00044\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\ =\ \textcolor{stringliteral}{'assembling\_pseudo'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }help\_online(\mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}})}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00049}00049\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00050}00050\ \textcolor{comment}{!\ \ \ \ AAA\ \ \ end\ lines\ to\ be\ added}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00052}00052\ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5b94b095c17f696321ab2dbb6a05f5bd}{name\_dir}}\ =\ \textcolor{stringliteral}{'NAME\_DIR'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10'},\ status=\textcolor{stringliteral}{'old'},\ form=\textcolor{stringliteral}{'formatted'})}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(10)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00058}00058\ \textcolor{comment}{!\ \ \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00059}00059\ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Input\ directory\ pseudo\ e.g.\ /home/trunk/pseudo/\ '}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00060}00060\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !path\ of\ the\ dir\ for\ the\ PP\ files}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00061}00061\ \textcolor{comment}{!\ \ \ \ \ \ \ read(5,'(A70)')\ dir\_pseudo}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00062}00062\ \ \ \ \ dir\_pseudo\ =\ trim(\mbox{\hyperlink{__help__online_8f90_a5b94b095c17f696321ab2dbb6a05f5bd}{name\_dir}})//\textcolor{stringliteral}{'/pseudo/'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00063}00063\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ dir\_pseudo\ ='},\ dir\_pseudo}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Input\ file\ extension\ (e.g.\ filippi)\ '}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00066}00066\ \ \ \ \ \textcolor{comment}{!nome\_file.extension}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keyword}{read}\ (5,\ \textcolor{stringliteral}{'(A20)'})\ extension}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Extension\ read\ ='},\ extension}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keyword}{open}\ (unit=33,\ file=\textcolor{stringliteral}{'pseudo.dat'},\ status=\textcolor{stringliteral}{'unknown'},\ form=\textcolor{stringliteral}{'formatted'})}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keyword}{write}\ (33,\ *)\ \textcolor{stringliteral}{'ECP'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a5a10b2a6bfcc5d499e28cdc791fa7079}{zetar}}(j)\ .ne.\ \mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}}(j)\ .and.\ \mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}}(j)\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{__assembling__pseudo_8f90_aeeda70ce5352aaad9d131c52ca870471}{open\_file\_pseudo}}(int(\mbox{\hyperlink{namespaceallio_a5a10b2a6bfcc5d499e28cdc791fa7079}{zetar}}(j)),\ int(\mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}}(j))\ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00079}00079\ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ extension,\ file\_pseudo)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00080}00080\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00081}00081\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ file\ pseudo\ after\ =',file\_pseudo}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ unit\_number\ =\ 100}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ file\_pseudo\ =\ trim(dir\_pseudo)//trim(file\_pseudo)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=unit\_number,\ file=file\_pseudo,\ status=\textcolor{stringliteral}{'old'}\ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00086}00086\ \ \ \ \ \ \ \&,\ form=\textcolor{stringliteral}{'formatted'},\ iostat=ios)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ios\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(extension)\ .ne.\ \textcolor{stringliteral}{'distance'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00091}00091\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'Error\ opening\ the\ pseudo\ potential\ file'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'File\ \ '},\ trim(file\_pseudo),\ \textcolor{stringliteral}{'\ not\ found'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'Program\ ends'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00096}00096\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (unit\_number,\ *)\ \mbox{\hyperlink{namespaceallio_ab6c85dd9248d57213cba30173084f8df}{pseudoname}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (unit\_number,\ *)\ fake\_num,\ ps\_cut,\ num\_sh}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00104}00104\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (33,\ *)\ j,\ ps\_cut,\ num\_sh}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (shwork(num\_sh))}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (unit\_number,\ *)\ (shwork(jj),\ jj=1,\ num\_sh)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (33,\ *)\ (shwork(jj),\ jj=1,\ num\_sh)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ line\_to\_read\ =\ sum(shwork)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (shwork)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jj\ =\ 1,\ line\_to\_read}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (unit\_number,\ *)\ ps\_par1,\ ps\_par2,\ ps\_par3}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (33,\ *)\ ps\_par1,\ ps\_par2,\ ps\_par3}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (unit\_number)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00123}00123\ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(extension)\ .eq.\ \textcolor{stringliteral}{'distance'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Distance\ atoms\ \#i,\#j,val\ distance\ '}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_kel(:)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(:,\ i)\ -\/\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(:,\ j)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}})\ \textcolor{keyword}{call\ }applypbc(dist\_kel,\ 1)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ j,\ dsqrt(sum(dist\_kel(:)**2))}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00135}00135\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00136}00136\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00137}00137\ \textcolor{keyword}{end\ program\ }\mbox{\hyperlink{__assembling__pseudo_8f90_ae0f8196a2bddfd950b383ebe7e4b6f27}{assembling\_pseudo}}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00138}00138\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00139}00139\ \textcolor{comment}{!>\ @brief\ Generates\ pseudopotential\ filename\ based\ on\ atomic\ number\ and\ extension}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00140}00140\ \textcolor{comment}{!>\ @details\ Constructs\ a\ filename\ in\ the\ format\ 'Z\{atomic\_number\}\_atomnumber\{atom\_number\}.\{extension\}'}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00141}00141\ \textcolor{comment}{!>\ where\ atomic\ numbers\ are\ formatted\ with\ appropriate\ leading\ zeros.}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00142}00142\ \textcolor{comment}{!>\ @param[in]\ z\ Atomic\ number\ (charge)\ of\ the\ element}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00143}00143\ \textcolor{comment}{!>\ @param[in]\ atom\ Atom\ number\ identifier}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00144}00144\ \textcolor{comment}{!>\ @param[in]\ extension\ File\ extension\ for\ the\ pseudopotential\ file}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00145}00145\ \textcolor{comment}{!>\ @param[out]\ file\_pseudo\ Generated\ filename\ for\ the\ pseudopotential\ file}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00146}\mbox{\hyperlink{__assembling__pseudo_8f90_aeeda70ce5352aaad9d131c52ca870471}{00146}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{__assembling__pseudo_8f90_aeeda70ce5352aaad9d131c52ca870471}{open\_file\_pseudo}}(z,\ atom,\ extension,\ file\_pseudo)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00148}00148\ \ \ \ \ \textcolor{keywordtype}{integer}\ z,\ atom}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keywordtype}{character(6)}\ char\_z,\ char\_atom}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ extension}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00151}00151\ \ \ \ \ \textcolor{keywordtype}{character(220)}\ file\_pseudo}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00152}00152\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordflow}{if}\ (z\ <\ 10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_z,\ fmt=\textcolor{stringliteral}{"{}(I1)"{}})\ z}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00155}00155\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (z\ <\ 100)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_z,\ fmt=\textcolor{stringliteral}{"{}(I2)"{}})\ z}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00157}00157\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (z\ <\ 1000)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_z,\ fmt=\textcolor{stringliteral}{"{}(I3)"{}})\ z}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00159}00159\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00160}00160\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00161}00161\ \ \ \ \ \textcolor{keywordflow}{if}\ (atom\ <\ 10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_atom,\ fmt=\textcolor{stringliteral}{"{}(I1)"{}})\ atom}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00163}00163\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (atom\ <\ 100)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_atom,\ fmt=\textcolor{stringliteral}{"{}(I2)"{}})\ atom}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00165}00165\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (atom\ <\ 1000)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (char\_atom,\ fmt=\textcolor{stringliteral}{"{}(I3)"{}})\ atom}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00167}00167\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00168}00168\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00169}00169\ \ \ \ \ file\_pseudo\ =\ \textcolor{stringliteral}{'Z'}//trim(char\_z)//\textcolor{stringliteral}{'\_atomnumber'}//trim(char\_atom)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00170}00170\ \ \ \ \ file\_pseudo\ =\ trim(file\_pseudo)//\textcolor{stringliteral}{'.'}//trim(extension)}
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{__assembling__pseudo_8f90_source_l00172}00172\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

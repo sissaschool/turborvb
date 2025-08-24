@@ -16,14 +16,26 @@
 
 !
 !------------------------------------------------------------------------------!
+!> @file kind.f90
+!> @brief Data type definitions and precision information module
+!> @details This module defines portable data types for TurboRVB, ensuring
+!>          consistent precision across different platforms and compilers.
+!>          Based on quantum-ESPRESSO's kind module, it provides high-precision
+!>          real types and utility functions for data type information.
+!> @author TurboRVB group (based on quantum-ESPRESSO group code)
+!> @date 2022
+!> @see print_kind_info
 module kinds
     !------------------------------------------------------------------------------!
 
     implicit none
     save
     ! ... kind definitions
+    !> @brief Double precision real type (14 digits, range up to 10^200)
     integer, parameter :: DP = selected_real_kind(14, 200)
+    !> @brief Single precision real type (6 digits, range up to 10^30)
     integer, parameter :: sgl = selected_real_kind(6, 30)
+    !> @brief 32-bit integer type (range up to 10^9)
     integer, parameter :: i4b = selected_int_kind(9)
     private
     public :: i4b, sgl, DP, print_kind_info
@@ -34,8 +46,19 @@ contains
     !
     !------------------------------------------------------------------------------!
     !
-    !!   Print information about the used data types.
-    !
+    !> @brief Print detailed information about the used data types
+    !> @details This subroutine provides comprehensive information about the
+    !>          precision, range, and characteristics of the defined data types.
+    !>          Useful for debugging and ensuring numerical accuracy across
+    !>          different platforms and compilers.
+    !> @param[in] stdout Integer unit number for output (typically 6 for stdout)
+    !> @note The subroutine prints information for:
+    !>       - DP (double precision): precision, epsilon, tiny, huge values
+    !>       - sgl (single precision): precision, epsilon, tiny, huge values
+    !>       - INTEGER: kind value, bit size, largest representable number
+    !>       - LOGICAL: kind value
+    !>       - CHARACTER: kind value
+    !> @see DP, sgl, i4b
     subroutine print_kind_info(stdout)
         !
         !------------------------------------------------------------------------------!

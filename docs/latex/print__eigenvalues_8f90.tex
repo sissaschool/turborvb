@@ -1,0 +1,78 @@
+\doxysection{src/m\+\_\+common/print\+\_\+eigenvalues.f90 File Reference}
+\hypertarget{print__eigenvalues_8f90}{}\label{print__eigenvalues_8f90}\index{src/m\_common/print\_eigenvalues.f90@{src/m\_common/print\_eigenvalues.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941}{print\+\_\+eigenvalues}} (rank, eig, maxdimeig, irankdet)
+\begin{DoxyCompactList}\small\item\em Print eigenvalues and determine matrix rank for quantum Monte Carlo. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{print__eigenvalues_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941}\index{print\_eigenvalues.f90@{print\_eigenvalues.f90}!print\_eigenvalues@{print\_eigenvalues}}
+\index{print\_eigenvalues@{print\_eigenvalues}!print\_eigenvalues.f90@{print\_eigenvalues.f90}}
+\doxysubsubsection{\texorpdfstring{print\_eigenvalues()}{print\_eigenvalues()}}
+{\footnotesize\ttfamily \label{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941} 
+subroutine print\+\_\+eigenvalues (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{rank}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{eig}{, }\item[{integer, intent(in)}]{maxdimeig}{, }\item[{integer}]{irankdet}{}\end{DoxyParamCaption})}
+
+
+
+Print eigenvalues and determine matrix rank for quantum Monte Carlo. 
+
+This subroutine prints eigenvalues to output and determines the effective rank of a matrix by counting non-\/zero eigenvalues. It is used in quantum Monte Carlo calculations for analyzing matrix properties and numerical stability.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the calling process \\
+\hline
+\mbox{\texttt{in}}  & {\em eig} & Array of eigenvalues to be printed \\
+\hline
+\mbox{\texttt{in}}  & {\em maxdimeig} & Maximum dimension of eigenvalue array \\
+\hline
+\mbox{\texttt{out}}  & {\em irankdet} & Effective rank of the matrix (number of non-\/zero eigenvalues)\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Initializes irankdet to 0
+\item Iterates through all eigenvalues from 1 to maxdimeig\+:
+\begin{DoxyItemize}
+\item Checks if eigenvalue magnitude is greater than 1.\+0e-\/11
+\item Increments irankdet for each non-\/zero eigenvalue
+\item Prints eigenvalue index and value (only from rank 0)
+\end{DoxyItemize}
+\item Returns the effective rank of the matrix
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Only rank 0 prints eigenvalues to avoid duplicate output in parallel 
+
+Uses a threshold of 1.\+0e-\/11 to determine non-\/zero eigenvalues 
+
+The effective rank represents the number of linearly independent components in the matrix 
+
+Used for analyzing overlap matrices, Hamiltonian matrices, and other matrices in quantum Monte Carlo calculations 
+
+The subroutine is useful for debugging and numerical stability analysis 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{print__eigenvalues_8f90_source_l00044}{44}} of file \mbox{\hyperlink{print__eigenvalues_8f90_source}{print\+\_\+eigenvalues.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ rank,\ maxdimeig}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ irankdet}
+\DoxyCodeLine{00048\ \ \ \ \ real*8\ eig(*)}
+\DoxyCodeLine{00049\ \ \ \ \ irankdet\ =\ 0}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxdimeig}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(eig(i))\ .gt.\ 1.d-\/11)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ irankdet\ =\ irankdet\ +\ 1}
+\DoxyCodeLine{00053\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ i,\ eig(i)}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}

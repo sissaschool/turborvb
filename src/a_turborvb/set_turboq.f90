@@ -13,6 +13,21 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Set up TurboQ parameters for quantum dynamics
+!> @details    Computes TurboQ parameters for quantum dynamics including Green's functions,
+!>             noise matrices, and time evolution operators. Handles both overdamped and
+!>             underdamped regimes with proper noise corrections for quantum Monte Carlo.
+!> @param[in]  gamma_eig    Eigenvalue of gamma matrix
+!> @param[in]  kdyn_eig     Eigenvalue of kinetic matrix
+!> @param[in]  dt           Time step
+!> @param[in]  alphaall     All alpha parameter
+!> @param[in]  alphaqmc     QMC alpha parameter
+!> @param[out] mnoise       Noise matrix
+!> @param[out] Gn           Green's function
+!> @param[out] Tn           T function
+!> @param[out] Gni          Green's function inverse
+!> @param[out] Gnh          Half-step Green's function
+!> @param[out] Gnih         Half-step Green's function inverse
 subroutine set_turboq(gamma_eig, kdyn_eig, dt, alphaall, alphaqmc, mnoise&
         &, Gn, Tn, Gni, Gnh, Gnih)
     implicit none
@@ -146,6 +161,13 @@ subroutine set_turboq(gamma_eig, kdyn_eig, dt, alphaall, alphaqmc, mnoise&
 
     return
 end
+
+!> @brief      Compute gamma function for real arguments
+!> @details    Computes the gamma function (1-exp(-x*dt))/x with protection
+!>             against small arguments to avoid numerical instabilities.
+!> @param[in]  x             Real argument
+!> @param[in]  dt            Time step
+!> @return     mygamma       Gamma function value
 function mygamma(x, dt)
     implicit none
     real*8 x, mygamma, dt, xdt
@@ -157,6 +179,13 @@ function mygamma(x, dt)
     end if
     return
 end
+
+!> @brief      Compute gamma function for complex arguments
+!> @details    Computes the gamma function (1-exp(-x*dt))/x for complex arguments
+!>             with protection against small arguments to avoid numerical instabilities.
+!> @param[in]  x             Complex argument
+!> @param[in]  dt            Time step
+!> @return     mygammac      Complex gamma function value
 function mygammac(x, dt)
     implicit none
     complex*16 x, xdt, mygammac

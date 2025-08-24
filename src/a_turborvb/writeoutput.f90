@@ -13,6 +13,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Write final output and statistics for TurboRVB calculation
+!> @details    This subroutine writes comprehensive output including:
+!>             - Performance profiling information (timing statistics)
+!>             - Acceptance rates and move statistics
+!>             - Energy averages and uncertainties
+!>             - Branching statistics for DMC calculations
+!>             - Optimization convergence information
+!>             - Various diagnostic information based on calculation type
 subroutine write_output
     use allio
     implicit none

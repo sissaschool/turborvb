@@ -13,6 +13,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Compute regularization values for wave function ratio
+!> @details    This function computes several values related to regularization
+!>             which is defined as \psi_g(x)=R_\epsilon(x)*[\psi_T(x)/R(x)].
+!>             R_\epsilon(x) is explicitly expressed here as Max(\epsilon, R(x)).
+!> @param[in]  Rold        Old value of R(x) function computed in ratiovar() as ratiodetr
+!> @param[in]  Rnew        New (proposed move) value of R(x) function
+!> @param[in]  parcut      Regularization parameter (cutoff value)
+!> @param[out] ratioreg    New R_\epsilon(x) / old R_\epsilon(x)
+!> @param[out] reweight    [new \psi_T(x) / new \psi_g(x)]^2
+!> @param[in]  epstl       Precision control parameter (if zero not used)
 subroutine ratio_psi(Rold, Rnew, parcut, ratioreg, reweight, epstl)
     implicit none
     real*8 Rold, Rnew, parcut, ratioreg, reweight, epstl

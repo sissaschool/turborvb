@@ -1,0 +1,93 @@
+\doxysection{buffer.\+f90}
+\hypertarget{buffer_8f90_source}{}\label{buffer_8f90_source}\index{src/m\_common/buffer.f90@{src/m\_common/buffer.f90}}
+\mbox{\hyperlink{buffer_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @file\ buffer.f90}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @brief\ Module\ providing\ buffer\ arrays\ for\ reduction\ operations\ in\ TurboRVB}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00018}00018\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00019}00019\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00022}00022\ \textcolor{comment}{!>\ This\ module\ defines\ buffer\ arrays\ used\ for\ MPI\ reduction\ operations\ and}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00023}00023\ \textcolor{comment}{!>\ temporary\ storage\ in\ TurboRVB\ calculations.\ The\ buffer\ size\ is\ configurable}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00024}00024\ \textcolor{comment}{!>\ based\ on\ compilation\ flags\ to\ optimize\ memory\ usage\ for\ different\ scenarios.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00025}00025\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00026}00026\ \textcolor{comment}{!>\ The\ module\ provides:}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00027}00027\ \textcolor{comment}{!>\ -\/\ Integer\ buffer\ for\ index-\/based\ reductions}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00028}00028\ \textcolor{comment}{!>\ -\/\ Double\ precision\ buffer\ for\ real\ number\ reductions\ \ }}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00029}00029\ \textcolor{comment}{!>\ -\/\ Complex\ buffer\ for\ complex\ number\ reductions}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00030}00030\ \textcolor{comment}{!>\ -\/\ Configurable\ buffer\ size\ based\ on\ compilation\ flags}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00031}00031\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @note\ Buffer\ size\ is\ determined\ by\ UNREL\_DIAG\ compilation\ flag}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @warning\ Buffer\ arrays\ are\ shared\ across\ all\ routines\ using\ this\ module}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00035}00035\ \textcolor{preprocessor}{\#if\ UNREL\_DIAG}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00036}00036\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#define\ Buffersize\ 100000}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00037}00037\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00038}00038\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#define\ Buffersize\ 1000000}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00039}00039\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00040}00040\ \textcolor{preprocessor}{}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @brief\ Module\ containing\ buffer\ arrays\ for\ reduction\ operations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @details\ Provides\ pre-\/allocated\ buffer\ arrays\ for\ efficient\ MPI\ reduction}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00043}00043\ \textcolor{comment}{!>\ operations\ and\ temporary\ storage\ in\ quantum\ Monte\ Carlo\ calculations.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00044}00044\ \textcolor{comment}{!>\ The\ buffer\ size\ is\ automatically\ determined\ based\ on\ compilation\ flags:}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00045}00045\ \textcolor{comment}{!>\ -\/\ UNREL\_DIAG\ defined:\ 100,000\ elements\ (smaller\ memory\ footprint)}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00046}00046\ \textcolor{comment}{!>\ -\/\ UNREL\_DIAG\ undefined:\ 1,000,000\ elements\ (larger\ capacity)}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00047}00047\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00048}00048\ \textcolor{comment}{!>\ These\ buffers\ are\ used\ throughout\ TurboRVB\ for:}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00049}00049\ \textcolor{comment}{!>\ -\/\ MPI\ collective\ operations\ (reduce,\ gather,\ scatter)}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00050}00050\ \textcolor{comment}{!>\ -\/\ Temporary\ storage\ during\ matrix\ operations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00051}00051\ \textcolor{comment}{!>\ -\/\ Accumulation\ of\ partial\ results\ in\ parallel\ calculations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00052}00052\ \textcolor{comment}{!>\ -\/\ Buffer\ space\ for\ communication\ in\ distributed\ memory\ computations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00053}00053\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @note\ All\ arrays\ are\ statically\ allocated\ for\ performance}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @warning\ Buffer\ arrays\ are\ shared\ -\/\ avoid\ concurrent\ writes\ to\ same\ elements}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00056}00056\ \textcolor{keyword}{module}\ buffer}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00059}00059\ \textcolor{comment}{\ \ \ \ !>\ @var\ bufdim\ Buffer\ dimension\ parameter}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00060}00060\ \textcolor{comment}{\ \ \ \ !>\ @details\ The\ actual\ buffer\ size\ used\ in\ calculations.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00061}00061\ \textcolor{comment}{\ \ \ \ !>\ This\ parameter\ is\ set\ to\ the\ value\ of\ Buffersize\ macro.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00062}00062\ \ \ \ \ \textcolor{keywordtype}{integer}\ bufdim}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00063}00063\ \ \ \ \ parameter(bufdim=buffersize)}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00065}00065\ \textcolor{comment}{\ \ \ \ !>\ @var\ buffi\_reduce\ Integer\ buffer\ for\ reduction\ operations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00066}00066\ \textcolor{comment}{\ \ \ \ !>\ @details\ Array\ of\ integers\ used\ for\ index-\/based\ reductions\ and}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ !>\ temporary\ storage\ of\ integer\ data\ in\ MPI\ operations.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00068}00068\ \textcolor{comment}{\ \ \ \ !>\ Size:\ Buffersize\ elements}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{integer}\ buffi\_reduce(Buffersize)}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00070}00070\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00071}00071\ \textcolor{comment}{\ \ \ \ !>\ @var\ buff\_reduce\ Double\ precision\ buffer\ for\ reduction\ operations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00072}00072\ \textcolor{comment}{\ \ \ \ !>\ @details\ Array\ of\ double\ precision\ real\ numbers\ used\ for}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00073}00073\ \textcolor{comment}{\ \ \ \ !>\ accumulation\ and\ reduction\ of\ real-\/valued\ data\ in\ parallel}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00074}00074\ \textcolor{comment}{\ \ \ \ !>\ quantum\ Monte\ Carlo\ calculations.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00075}00075\ \textcolor{comment}{\ \ \ \ !>\ Size:\ Buffersize\ elements}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00076}00076\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ buff\_reduce(Buffersize)}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00078}00078\ \textcolor{comment}{\ \ \ \ !>\ @var\ buff\_reducec\ Complex\ buffer\ for\ reduction\ operations}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00079}00079\ \textcolor{comment}{\ \ \ \ !>\ @details\ Array\ of\ double\ precision\ complex\ numbers\ used\ for}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00080}00080\ \textcolor{comment}{\ \ \ \ !>\ accumulation\ and\ reduction\ of\ complex-\/valued\ data,\ particularly}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00081}00081\ \textcolor{comment}{\ \ \ \ !>\ in\ calculations\ involving\ complex\ wave\ functions\ and\ operators.}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00082}00082\ \textcolor{comment}{\ \ \ \ !>\ Size:\ Buffersize\ elements}}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ buff\_reducec(Buffersize)}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00084}00084\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00085}00085\ \textcolor{keyword}{end\ module\ }buffer}
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00086}00086\ }
+\DoxyCodeLine{\Hypertarget{buffer_8f90_source_l00087}00087\ \textcolor{preprocessor}{\#undef\ Buffersize}}
+
+\end{DoxyCode}

@@ -1,0 +1,258 @@
+\doxysection{evsa.\+f90}
+\hypertarget{evsa_8f90_source}{}\label{evsa_8f90_source}\index{src/a\_tools/evsa.f90@{src/a\_tools/evsa.f90}}
+\mbox{\hyperlink{evsa_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00016}\mbox{\hyperlink{evsa_8f90_a89fa0f2926f2745e25a24e90af1ab4cb}{00016}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{evsa_8f90_a89fa0f2926f2745e25a24e90af1ab4cb}{fitxyz}}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00017}00017\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00018}00018\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ x,\ erx,\ y,\ z,\ er,\ ys,\ xs,\ xt,\ yn\&}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00019}00019\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ern,\ yns,\ alat}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{real(8)}\ eps,\ pi,\ am,\ cm,\ delm,\ sam,\ scm,\ sdelm,\ a,\ c,\ an,\ cn,\ stot,\ as,\ cs\&}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00021}00021\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ r1,\ r2,\ zeta(2),\ del(2),\ xmax,\ drand1,\ era,\ erc,\ yp,\ cost,\ cmat(2,\ 2)\&}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00022}00022\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ eig(2),\ psip(20),\ anm,\ cnm,\ sanm,\ scnm,\ stotn,\ ans,\ cns,\ eran,\ ercn}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ n,\ nh,\ nmis,\ imis,\ nmi,\ iopt,\ iter,\ imax,\ iseed,\ lwork,\ info}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00024}00024\ \ \ \ \ \textcolor{comment}{!\ \ \ AAA\ \ \ \ Lines\ to\ be\ added\ just\ after\ all\ definitions\ of\ variables.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ str}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00027}00027\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keyword}{call\ }getarg(1,\ str)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00031}00031\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\ =\ \textcolor{stringliteral}{'evsa'}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ call\ help\_online(name\_tool)}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00036}00036\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!\ \ \ \ AAA\ \ \ end\ lines\ to\ be\ added}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00038}00038\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ file=\textcolor{stringliteral}{'evsa.d'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'old'})}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keyword}{open}\ (unit=20,\ file=\textcolor{stringliteral}{'evsa.fitl'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00041}00041\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ y\ =\ a*z\ +\ \ c}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00042}00042\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ legge\ z,y\ da\ for011.dat}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00043}00043\ \ \ \ \ eps\ =\ 1e-\/12}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00044}00044\ \ \ \ \ lwork\ =\ 20}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ lettura\ dati}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00046}00046\ \ \ \ \ rewind(11)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00047}00047\ \ \ \ \ n\ =\ 0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (n\ .ge.\ 0)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ *,\ \textcolor{keyword}{end}=500)\ psip(1:9)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ n\ =\ n\ +\ 1}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00052}00052\ 500\ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keyword}{allocate}\ (x(n),\ erx(n),\ y(n),\ z(n),\ er(n),\ ys(n),\ xs(n),\ xt(n),\ yn(n)\&}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ ern(n),\ yns(n),\ alat(n))}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00056}00056\ \ \ \ \ nh\ =\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00058}00058\ \ \ \ \ rewind(11)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordflow}{do}\ n\ =\ 1,\ nh}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (11,\ *)\ alat(n),\ y(n),\ er(n),\ yn(n),\ ern(n),\ a,\ c,\ xt(n),\ erx(n)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ xt(n),\ erx(n),\ y(n),\ er(n),\ yn(n),\ ern(n)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00062}00062\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00063}00063\ \ \ \ \ n\ =\ nh}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (er(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ er(i)\ =\ 1.0/er(i)**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ er(i)\ =\ 1.d0/eps}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00070}00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ern(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ ern(i)\ =\ 1.0/ern(i)**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ ern(i)\ =\ 1.d0/eps}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00075}00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (erx(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ erx(i)\ =\ 1.0/erx(i)**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ erx(i)\ =\ 1.d0/eps}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00083}00083\ \ \ \ \ nmis\ =\ 10000}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00085}00085\ \ \ \ \ iseed\ =\ 3523}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keyword}{call\ }rand\_init(iseed)\ \textcolor{comment}{!\ ibm}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00087}00087\ \ \ \ \ pi\ =\ 2.d0*dasin(1.d0)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00088}00088\ \ \ \ \ am\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00089}00089\ \ \ \ \ cm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00090}00090\ \ \ \ \ anm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00091}00091\ \ \ \ \ cnm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00092}00092\ \ \ \ \ delm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00093}00093\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00094}00094\ \ \ \ \ sam\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00095}00095\ \ \ \ \ scm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00096}00096\ \ \ \ \ sanm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00097}00097\ \ \ \ \ scnm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00098}00098\ \ \ \ \ sdelm\ =\ 0.}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00100}00100\ \ \ \ \ nmi\ =\ 0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00101}00101\ \ \ \ \ iopt\ =\ 0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00102}00102\ \ \ \ \ \textcolor{keywordflow}{do}\ imis\ =\ 1,\ nmis}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ iter\ =\ 0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{evsa_8f90_a921b00d1c4a698d5680e5aaa91cdde96}{fun}}(xt,\ y,\ er,\ n,\ stot,\ a,\ c)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{evsa_8f90_a921b00d1c4a698d5680e5aaa91cdde96}{fun}}(xt,\ yn,\ ern,\ n,\ stotn,\ an,\ cn)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (imis\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ update\ ys}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ as\ =\ a}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ cs\ =\ c}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ ans\ =\ an}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ cns\ =\ cn}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ys(i)\ =\ y(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yns(i)\ =\ yn(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xs(i)\ =\ xt(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00117}00117\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'Linear\ fit'}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'\ sum\ weighted\ squares\ =\ '},\ stot,\ stotn}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ generate\ new\ set\ of\ y\ random\ distributed}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ calculation\ 2x2\ covariance\ matrix}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmat(1,\ 1)\ =\ 1.d0/er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmat(2,\ 2)\ =\ 1.d0/ern(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmat(1,\ 2)\ =\ (cmat(1,\ 1)\ +\ cmat(2,\ 2)\ -\/\ 1.d0/erx(i))/2.d0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmat(2,\ 1)\ =\ cmat(1,\ 2)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ diagonalize\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev(\textcolor{stringliteral}{'V'},\ \textcolor{stringliteral}{'L'},\ 2,\ cmat,\ 2,\ eig,\ psip,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r1\ =\ drand1()}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r2\ =\ drand1()}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zeta(1)\ =\ dsqrt(-\/2.*dlog(r1)*eig(1))*dcos(2.*pi*r2)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zeta(2)\ =\ dsqrt(-\/2.*dlog(r1)*eig(2))*dsin(2.*pi*r2)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ 2,\ 2,\ 1.d0,\ cmat,\ 2,\ zeta,\ 1,\ 0.d0,\ del,\ 1)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y(i)\ =\ ys(i)\ +\ del(1)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yn(i)\ =\ yns(i)\ +\ del(2)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xt(i)\ =\ xs(i)\ +\ del(2)\ -\/\ del(1)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ '\ y\ new\ =',y(i),'\ del\ =',del}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00147}00147\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00148}00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ WRITE(6,*)\ A,B,C}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ am\ =\ am\ +\ a}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ cm\ =\ cm\ +\ c}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ sam\ =\ sam\ +\ a**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ scm\ =\ scm\ +\ c**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ anm\ =\ anm\ +\ an}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ cnm\ =\ cnm\ +\ cn}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ sanm\ =\ sanm\ +\ an**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ scnm\ =\ scnm\ +\ cn**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ nmi\ =\ nmi\ +\ 1}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00159}00159\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00160}00160\ \textcolor{keywordflow}{\ \ \ \ end\ do}\ \textcolor{comment}{!\ enddo\ main\ if}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00161}00161\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00162}00162\ \ \ \ \ cost\ =\ 1.d0/dble(nmi)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00163}00163\ \ \ \ \ am\ =\ am*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00164}00164\ \ \ \ \ cm\ =\ cm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00165}00165\ \ \ \ \ sam\ =\ sam*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00166}00166\ \ \ \ \ scm\ =\ scm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00167}00167\ \ \ \ \ era\ =\ sqrt(abs(am**2\ -\/\ sam))}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00168}00168\ \ \ \ \ erc\ =\ sqrt(abs(cm**2\ -\/\ scm))}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00170}00170\ \ \ \ \ anm\ =\ anm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00171}00171\ \ \ \ \ cnm\ =\ cnm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00172}00172\ \ \ \ \ sanm\ =\ sanm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00173}00173\ \ \ \ \ scnm\ =\ scnm*cost}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00174}00174\ \ \ \ \ eran\ =\ sqrt(abs(anm**2\ -\/\ sanm))}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00175}00175\ \ \ \ \ ercn\ =\ sqrt(abs(cnm**2\ -\/\ scnm))}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00176}00176\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00177}00177\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00178}00178\ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'EXTRAPOLATION\ a-\/-\/>0\ '}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00179}00179\ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'Slope\ (MA)\ \ =\ '},\ as,\ \textcolor{stringliteral}{'\ +/-\/\ '},\ era}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00180}00180\ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'Energy\ (MA)\ =\ '},\ cs,\ \textcolor{stringliteral}{'\ +/-\/\ '},\ erc}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00181}00181\ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'Slope\ (H\string^a)\ \ =\ '},\ ans,\ \textcolor{stringliteral}{'\ +/-\/\ '},\ eran}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00182}00182\ \ \ \ \ \textcolor{keyword}{write}\ (20,\ *)\ \textcolor{stringliteral}{'Energy\ (H\string^a)\ \ =\ '},\ cns,\ \textcolor{stringliteral}{'\ +/-\/\ '},\ ercn}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00184}00184\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ imax=1}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00185}00185\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ xmax=0.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00186}00186\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00187}00187\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(xs(i).gt.xmax)\ then}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00188}00188\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ imax=i}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00189}00189\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ xmax=xs(i)}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00190}00190\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00191}00191\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ yp=as*xs(i)\ +cs}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00192}00192\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(20,*)\ '\ predicted\ -\/-\/>\ ',yp,\ '\ measured\ -\/-\/>\ ',ys(i)}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00193}00193\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00194}00194\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00195}00195\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ yp=as*xs(imax)\ \ +cs}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00196}00196\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00197}00197\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(21,*)\ 0.,cs,erc}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00198}00198\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(21,*)\ xs(imax),yp,0.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00199}00199\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00200}00200\ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00201}00201\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00202}00202\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00203}00203\ \textcolor{comment}{!>\ @brief\ Performs\ linear\ fitting\ with\ weighted\ least\ squares}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00204}00204\ \textcolor{comment}{!>\ @details\ This\ subroutine\ performs\ linear\ fitting\ using\ weighted}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00205}00205\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ least\ squares\ method.\ It\ computes\ the\ slope\ and\ intercept}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00206}00206\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ of\ a\ linear\ function\ that\ best\ fits\ the\ data\ points.}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00207}00207\ \textcolor{comment}{!>\ @param[in]\ z\ Independent\ variable\ array}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00208}00208\ \textcolor{comment}{!>\ @param[in]\ y\ Dependent\ variable\ array}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00209}00209\ \textcolor{comment}{!>\ @param[in]\ er\ Error\ weights\ array}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00210}00210\ \textcolor{comment}{!>\ @param[in]\ n\ Number\ of\ data\ points}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00211}00211\ \textcolor{comment}{!>\ @param[out]\ stot\ Total\ sum\ of\ weighted\ squares}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00212}00212\ \textcolor{comment}{!>\ @param[out]\ a\ Slope\ of\ the\ linear\ fit}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00213}00213\ \textcolor{comment}{!>\ @param[out]\ c\ Intercept\ of\ the\ linear\ fit}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00214}\mbox{\hyperlink{evsa_8f90_a921b00d1c4a698d5680e5aaa91cdde96}{00214}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{evsa_8f90_a921b00d1c4a698d5680e5aaa91cdde96}{fun}}(z,\ y,\ er,\ n,\ stot,\ a,\ c)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00215}00215\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00216}00216\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ y(*),\ z(*),\ er(*),\ somz,\ somy,\ somzy,\ somzq,\ wtot,\ stot,\ yp,\ a,\ c\&}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ Szy,\ Szz}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00218}00218\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00219}00219\ \ \ \ \ somz\ =\ 0.0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00220}00220\ \ \ \ \ somy\ =\ 0.0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00221}00221\ \ \ \ \ somzy\ =\ 0.0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00222}00222\ \ \ \ \ somzq\ =\ 0.0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00224}00224\ \ \ \ \ wtot\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00225}00225\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00226}00226\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ somy\ =\ somy\ +\ y(i)*er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ somz\ =\ somz\ +\ z(i)*er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ somzy\ =\ somzy\ +\ z(i)*y(i)*er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ somzq\ =\ somzq\ +\ z(i)**2*er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00232}00232\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00233}00233\ \ \ \ \ somy\ =\ somy/wtot}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00234}00234\ \ \ \ \ somz\ =\ somz/wtot}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00235}00235\ \ \ \ \ somzy\ =\ somzy/wtot}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00236}00236\ \ \ \ \ somzq\ =\ somzq/wtot}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00237}00237\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00238}00238\ \ \ \ \ szy\ =\ somzy\ -\/\ somz*somy}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00239}00239\ \ \ \ \ szz\ =\ somzq\ -\/\ somz**2}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00240}00240\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00241}00241\ \ \ \ \ \textcolor{comment}{!\ \ ONLY\ TWO\ PARAMETER\ FIT\ \ \ \ ....}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00242}00242\ \ \ \ \ a\ =\ szy/szz}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00243}00243\ \ \ \ \ c\ =\ somy\ -\/\ a*somz}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00244}00244\ \ \ \ \ stot\ =\ 0.0}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00245}00245\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ yp\ =\ a*z(i)\ +\ c}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ stot\ =\ stot\ +\ (yp\ -\/\ y(i))**2*er(i)}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00248}00248\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00249}00249\ }
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00250}00250\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00251}00251\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{evsa_8f90_source_l00252}00252\ }
+
+\end{DoxyCode}

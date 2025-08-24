@@ -1,0 +1,465 @@
+\doxysection{read\+\_\+corr\+\_\+fun.\+f90}
+\hypertarget{read__corr__fun_8f90_source}{}\label{read__corr__fun_8f90_source}\index{src/a\_readforward/read\_corr\_fun.f90@{src/a\_readforward/read\_corr\_fun.f90}}
+\mbox{\hyperlink{read__corr__fun_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Reads\ correlation\ function\ parameters\ and\ system\ setup}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ subroutine\ reads\ the\ fort.10\ file\ and\ readforward.input}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ file\ to\ set\ up\ correlation\ function\ calculations.\ It\ processes}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ namelist\ input\ for\ simulation\ parameters,\ system\ configuration,}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ correlation\ function\ options\ including\ density,\ spin,\ pair}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ correlation,\ and\ structure\ factor\ calculations.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ nel\ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ nelup\ Number\ of\ up-\/spin\ electrons}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ nion\ Number\ of\ ions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ iespbc\ Flag\ for\ periodic\ boundary\ conditions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ celldm\ Cell\ dimensions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ rs\ Wigner-\/Seitz\ radius}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ cellscale\ Cell\ scaling\ factors}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[out]\ ngen\ Number\ of\ generations}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[out]\ ell\ System\ dimensions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[out]\ ncell\ Number\ of\ cells}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[out]\ nbias\ Number\ of\ bias\ steps}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[out]\ maxf\ Maximum\ frequency}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[out]\ ibinit\ Initial\ bin}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[out]\ lbin\ Bin\ length}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[out]\ iskip\ Skip\ factor}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[out]\ ddim\ Dimension\ of\ the\ system}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @param[out]\ cutk\ K-\/space\ cutoff}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @param[out]\ vdim\ Vector\ dimensions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @param[out]\ ngrid\_l\ Local\ grid\ dimensions}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @param[out]\ r\_offset\ Position\ offset}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @param[out]\ ngrid\_p\ Number\ of\ pair\ grid\ points}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @param[out]\ ifrho\ Flag\ for\ density\ calculation}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00044}00044\ \textcolor{comment}{!>\ @param[out]\ ifspin\ Flag\ for\ spin\ calculation}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00045}00045\ \textcolor{comment}{!>\ @param[out]\ ifkspin\ Flag\ for\ k-\/space\ spin\ calculation}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00046}00046\ \textcolor{comment}{!>\ @param[out]\ kspin\ K-\/space\ spin\ vector}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00047}00047\ \textcolor{comment}{!>\ @param[out]\ ifpair\ Flag\ for\ pair\ correlation}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @param[out]\ iffluct\ Flag\ for\ fluctuations}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @param[out]\ ifsofk\ Flag\ for\ structure\ factor}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @param[out]\ fermi\_flag\ Flag\ for\ Fermi\ statistics}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @param[out]\ err\_stop\ Error\ stop\ flag}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @param[out]\ ifcorrs\ Flag\ for\ correlations}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00053}00053\ \textcolor{comment}{!>\ @param[out]\ shiftlog\ Logarithmic\ shift}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @param[out]\ ioptread\ Read\ option}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @param[out]\ longio\ Long\ I/O\ flag}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00056}00056\ \textcolor{comment}{!>\ @param[out]\ noeloc\ No\ local\ energy\ flag}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00057}00057\ \textcolor{comment}{!>\ @param[out]\ sphere\_radius\ Sphere\ radius}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00058}00058\ \textcolor{comment}{!>\ @param[out]\ allshells\ All\ shells\ flag}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00059}00059\ \textcolor{comment}{!>\ @param[out]\ outofplane\ Out-\/of-\/plane\ coordinate}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00060}00060\ \textcolor{comment}{!>\ @param[out]\ rdf\_for\_atom\ RDF\ for\ atom\ flag}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00061}\mbox{\hyperlink{read__corr__fun_8f90_a4e9ef2ef6a9e2b2dbfe1f7bfa10b2962}{00061}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{read__corr__fun_8f90_a4e9ef2ef6a9e2b2dbfe1f7bfa10b2962}{read\_corr\_fun}}(nel,\ nelup,\ nion,\ iespbc,\ celldm,\ rs,\ cellscale\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ ngen,\ ell,\ ncell,\ nbias,\ maxf,\ ibinit,\ lbin,\ iskip,\ ddim,\ cutk,\ vdim,\ ngrid\_l,\ r\_offset,\ ngrid\_p\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ ifrho,\ ifspin,\ ifkspin,\ kspin,\ ifpair,\ iffluct,\ ifsofk\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ fermi\_flag,\ err\_stop,\ ifcorrs,\ shiftlog,\ ioptread,\ longio,\ noeloc\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ sphere\_radius,\ allshells,\ outofplane,\ rdf\_for\_atom)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00066}00066\ \ \ \ \ \textcolor{comment}{!\ read\ fort.10\ and\ readforward.input\ (standard\ input)\ with\ namelist}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceassar__module}{assar\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}},\ \mbox{\hyperlink{namespaceassar__module_ab7c3744bee5d92985892b3da4795afe6}{kswitch}},\ \mbox{\hyperlink{namespaceassar__module_a52fddfd643eb73d072ff65d4689500c7}{nswitch}},\ \mbox{\hyperlink{namespaceassar__module_a229d578067f498a561c3cf8802a71c60}{assar\_parr}},\ \mbox{\hyperlink{namespaceassar__module_a7ce27a2402998efaa8acc0e5f1d7e5f6}{assar\_cut}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacegrid__module}{grid\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacegrid__module_ab655000008f129485b9d360a2b441d80}{ext\_grid}},\ \mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}},\ \mbox{\hyperlink{namespacegrid__module_a766e7ffe925eecc9231f79e35c238ca3}{da}},\ \mbox{\hyperlink{namespacegrid__module_a0969654dd74398a74f58b366c8d588ff}{center}},\ \mbox{\hyperlink{namespacegrid__module_a39d51b02f9f5bc4eeaf411a318af6fb6}{grid\_start}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceqpwf__module}{qpwf\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceqpwf__module_aac88791a3eb56b7c68b6c87824963fe7}{ifqpwf}},\ \mbox{\hyperlink{namespaceqpwf__module_a549e5932410edafed3a0ccb5994743da}{ifqpwf\_h}},\ \mbox{\hyperlink{namespaceqpwf__module_afc1a1e8ae162c843fd62df46a51753af}{ifqpwf\_k}},\ \mbox{\hyperlink{namespaceqpwf__module_a8f788174c50635105fa7d4bce2218049}{ifqpwf\_extr}},\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_af22ce0a606b5e819681aef01ba213418}{n\_extr\_points}},\ \mbox{\hyperlink{namespaceqpwf__module_ab6c163193dec06b668773c2dac1734c5}{extr\_point}},\ \mbox{\hyperlink{namespaceqpwf__module_a169c60a5c291057011057511b69d55d5}{decouple\_k}},\ \mbox{\hyperlink{namespaceqpwf__module_aabab4dc6f59bde29e21469d25ccbb99b}{decouple\_files}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacerho__corr__module}{rho\_corr\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacerho__corr__module_a97fee0c6aae9d7018bb886a83f541c0c}{ifrho\_corr}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacespin2}{spin2}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacespin2_a2786c0b690bdb66261a765e8fdfa3009}{ifspin2}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedipole__module}{dipole\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacedipole__module_a7e41c0c9f0bc6bf6ae282c275b9aa9c1}{ifdipole}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacecell_a995ccfa7352b004f303a7e3d8946cd3a}{givens2r}},\ \mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}},\ \mbox{\hyperlink{namespacecell_aef05c09f5dc0d7c65e90a63aa4fccc4f}{yes\_tilted}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceberry__phase}{berry\_phase}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceberry__phase_aded8568c12521ba68ab6206b86e5b1b8}{ifberry}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ corr\_factors,\ fwd\_propagations,\ j\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ ,\ bin\_length,\ initial\_bin,\ fwd\_skip,\ corrfun\_dim,\ i,\ ngen,\ nbias,\ maxf,\ lbin,\ iskip,\ ddim,\ ibinit,\ iopt,\ ioptread}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00082}00082\ \ \ \ \ \textcolor{keywordtype}{integer}\ ncell(3),\ ngrid(3),\ cart\_axes(3),\ vdim(3),\ ngrid\_l(3),\ nel,\ nelup,\ ngrid\_p,\ radial\_grid}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00083}00083\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ ipiv(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00084}00084\ \ \ \ \ real*8\ ell(3),\ k\_cutoff,\ cutk,\ offset(3),\ r\_offset(3)\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ ,\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(3),\ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}},\ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(*),\ \mbox{\hyperlink{namespaceallio_a3e0d74cbe4eaa83f1ca22bda9eda636d}{rs}},\ shiftlog,\ kspin(3),\ sphere\_radius}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00086}00086\ \ \ \ \ \textcolor{keywordtype}{logical}\ err\_stop,\ fermi\_flag,\ assar\_density,\ new\_density,\ charge\_density,\ spin\_density,\ pair\_corr\_fun,\ structure\_factor\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ ,\ allshells,\ ifrho,\ ifspin,\ ifpair,\ ifkspin,\ ifsofk,\ correlated\_samp,\ ifcorrs,\ iespbc,\ fluctuations,\ iffluct}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keywordtype}{logical}\ longio}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keywordtype}{character(2)}\ cartesian(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00090}00090\ \ \ \ \ \textcolor{comment}{!\ (Matteo\ change)\ Added\ logical\ variables\ assar\_density\ and\ input\_grid}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00091}00091\ \ \ \ \ \textcolor{keywordtype}{logical}\ noeloc}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00092}00092\ \ \ \ \ \textcolor{comment}{!\ (Matteo)\ Logical\ for\ computing\ STM}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keywordtype}{logical}\ quasi\_particle,\ quasi\_hole,\ quasi\_hole\_k,\ quasi\_hole\_extr}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00094}00094\ \ \ \ \ \textcolor{keywordtype}{integer}\ center\_type}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00095}00095\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ starting\_point(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00096}00096\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ ::\ matscra(3,\ 3),\ vecscra(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00097}00097\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ outofplane}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00098}00098\ \ \ \ \ \textcolor{comment}{!\ (Ye)\ an\ logical\ variable\ for\ computing\ spin\string^2.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00099}00099\ \ \ \ \ \textcolor{keywordtype}{logical}\ compute\_spin2}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00100}00100\ \ \ \ \ \textcolor{keywordtype}{logical}\ dipole\_moment}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00101}00101\ \ \ \ \ \textcolor{comment}{!\ (Kosuke\ Nakano)\ an\ logical\ variable\ for\ computing\ Radial\ distribution\ function\ of\ atom}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00102}00102\ \ \ \ \ \textcolor{keywordtype}{logical}\ rdf\_for\_atom}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00103}00103\ \ \ \ \ \textcolor{comment}{!namelist\ /simulation/\ ngen,nw,number\_files,wherescratch}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00104}00104\ \ \ \ \ namelist\ /simulation/\ ngen,\ iopt,\ longio,\ \mbox{\hyperlink{namespaceqpwf__module_a169c60a5c291057011057511b69d55d5}{decouple\_k}},\ \mbox{\hyperlink{namespaceqpwf__module_aabab4dc6f59bde29e21469d25ccbb99b}{decouple\_files}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00105}00105\ \ \ \ \ namelist\ /system/\ ncell,\ ell,\ center\_type,\ starting\_point,\ \mbox{\hyperlink{namespacegrid__module_a766e7ffe925eecc9231f79e35c238ca3}{da}},\ \mbox{\hyperlink{namespaceqpwf__module_ab6c163193dec06b668773c2dac1734c5}{extr\_point}},\ \mbox{\hyperlink{namespaceqpwf__module_af22ce0a606b5e819681aef01ba213418}{n\_extr\_points}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00106}00106\ \ \ \ \ namelist\ /corrfun/\ corr\_factors,\ fwd\_propagations,\ bin\_length,\ initial\_bin,\ fwd\_skip,\ corrfun\_dim\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ ,\ k\_cutoff,\ assar\_density,\ \mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}},\ \mbox{\hyperlink{namespaceassar__module_a229d578067f498a561c3cf8802a71c60}{assar\_parr}},\ charge\_density,\ new\_density,\ spin\_density,\ pair\_corr\_fun,\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ structure\_factor,\ ngrid,\ cart\_axes,\ offset,\ correlated\_samp,\ shiftlog,\ ifkspin,\ kspin,\ \mbox{\hyperlink{namespaceassar__module_a7ce27a2402998efaa8acc0e5f1d7e5f6}{assar\_cut}},\ noeloc,\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_ab7c3744bee5d92985892b3da4795afe6}{kswitch}},\ \mbox{\hyperlink{namespaceassar__module_a52fddfd643eb73d072ff65d4689500c7}{nswitch}},\ compute\_spin2,\ radial\_grid,\ sphere\_radius,\ quasi\_particle,\ quasi\_hole,\ quasi\_hole\_k,\ \&}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ quasi\_hole\_extr,\ dipole\_moment,\ allshells,\ fluctuations,\ \mbox{\hyperlink{namespaceberry__phase_aded8568c12521ba68ab6206b86e5b1b8}{ifberry}},\ outofplane,\ rdf\_for\_atom}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00112}00112\ \ \ \ \ err\_stop\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00113}00113\ \ \ \ \ cartesian(1)\ =\ \textcolor{stringliteral}{'\ x'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00114}00114\ \ \ \ \ cartesian(2)\ =\ \textcolor{stringliteral}{'\ y'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00115}00115\ \ \ \ \ cartesian(3)\ =\ \textcolor{stringliteral}{'\ z'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00116}00116\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00117}00117\ \ \ \ \ \textcolor{keyword}{open}\ (55,\ file=\textcolor{stringliteral}{'readforward.input'},\ status=\textcolor{stringliteral}{'old'},\ form=\textcolor{stringliteral}{'formatted'})}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00119}00119\ \ \ \ \ \textcolor{comment}{!\ read\ commands\ of\ readforward}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00120}00120\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_a169c60a5c291057011057511b69d55d5}{decouple\_k}}\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00121}00121\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_aabab4dc6f59bde29e21469d25ccbb99b}{decouple\_files}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00122}00122\ \ \ \ \ ngen\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00123}00123\ \ \ \ \ iopt\ =\ 1\ \textcolor{comment}{!\ default\ value\ of\ iopt}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00124}00124\ \ \ \ \ \textcolor{keyword}{read}\ (55,\ nml=simulation)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00125}00125\ \ \ \ \ ioptread\ =\ iopt}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00127}00127\ \ \ \ \ ell\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00128}00128\ \ \ \ \ ncell\ =\ 1}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00130}00130\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_af22ce0a606b5e819681aef01ba213418}{n\_extr\_points}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00131}00131\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_ab6c163193dec06b668773c2dac1734c5}{extr\_point}}(:)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00132}00132\ \ \ \ \ center\_type\ =\ 1}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00133}00133\ \ \ \ \ starting\_point(:)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00134}00134\ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a766e7ffe925eecc9231f79e35c238ca3}{da}}(:)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00135}00135\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keyword}{read}\ (55,\ nml=system)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00137}00137\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespacecell_a995ccfa7352b004f303a7e3d8946cd3a}{givens2r}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(2)*\mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1)\ =\ (\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}*nel*4.d0/3.d0/\mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}})**(1.d0/3.d0)*\mbox{\hyperlink{namespaceallio_a3e0d74cbe4eaa83f1ca22bda9eda636d}{rs}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(2)\ =\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1)*\mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(2)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(3)\ =\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1)*\mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ matscra\ =\ \mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrf(3,\ 3,\ matscra,\ 3,\ ipiv,\ info)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ matscra(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ 3}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}*matscra(i,\ i)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00150}00150\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ abs(\mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}})}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(i)\ =\ sqrt(\mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}}(1,\ i)**2\ +\ \mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}}(2,\ i)**2\ +\ \mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}}(3,\ i)**2)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00154}00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00156}00156\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00157}00157\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_aade8cc385efd751c1f0aaa090dace3d1}{omega}}\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(2)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00159}00159\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a804e3bd0ed944d6c5dc80b358ab6d908}{celldm}}(3)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a3e0d74cbe4eaa83f1ca22bda9eda636d}{rs}}\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ell(1)*ell(2)*ell(3)\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Default\ box\ 10x10x10\ a.u..\ Change\ ell\ in\ input\ to\ modify\ it!\ '}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(1)\ =\ 10.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(2)\ =\ 10.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(3)\ =\ 10.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ ell(:)\ =\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)\ =\ ell(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write(6,*)\ 'cellscale\ inside',cellscale(:)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00170}00170\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00171}00171\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00172}00172\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00173}00173\ \ \ \ \ \textcolor{comment}{!\ change\ cellscale}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00174}00174\ \ \ \ \ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)\ =\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)/ncell(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00175}00175\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00176}00176\ \ \ \ \ \textcolor{keywordflow}{if}\ (ell(1)\ .eq.\ 0.d0\ .and.\ ell(2)\ .eq.\ 0.d0\ .and.\ ell(3)\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00177}00177\ \ \ \ \ \ \ \ \ ell(:)\ =\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00178}00178\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00179}00179\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00180}00180\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'SYSTEM\ PARAMETERS'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00181}00181\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00182}00182\ \ \ \ \ \textcolor{keywordflow}{if}\ (nel\ -\/\ nelup\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ fermi\_flag\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00184}00184\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Bose\ particles,\ or\ spinless\ fermions'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ fermi\_flag\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Fermi\ particles\ with\ spin'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00188}00188\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00189}00189\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00190}00190\ \ \ \ \ new\_density\ =\ .false.\ \textcolor{comment}{!\ (Matteo)\ Added\ default\ for\ flag\ assaraf\ density}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00191}00191\ \ \ \ \ assar\_density\ =\ .false.\ \textcolor{comment}{!\ (Matteo)\ Added\ default\ for\ flag\ assaraf\ density}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00192}00192\ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_a229d578067f498a561c3cf8802a71c60}{assar\_parr}}\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00193}00193\ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_a7ce27a2402998efaa8acc0e5f1d7e5f6}{assar\_cut}}\ =\ 1000.d0\ \textcolor{comment}{!\ (Matteo)\ default\ per\ il\ cut\ off}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00194}00194\ \ \ \ \ longio\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00195}00195\ \ \ \ \ noeloc\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00196}00196\ \ \ \ \ charge\_density\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00197}00197\ \ \ \ \ rdf\_for\_atom\ =\ .false.\ \textcolor{comment}{!\ (Kosuke\ Nakano)\ computing\ rdf\ of\ an\ atom}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00198}00198\ \ \ \ \ spin\_density\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00199}00199\ \ \ \ \ pair\_corr\_fun\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00200}00200\ \ \ \ \ fluctuations\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00201}00201\ \ \ \ \ structure\_factor\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00202}00202\ \ \ \ \ correlated\_samp\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00203}00203\ \ \ \ \ shiftlog\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00204}00204\ \ \ \ \ compute\_spin2\ =\ .false.\ \textcolor{comment}{!\ (Ye)\ default\ computing\ spin\string^2\ switched\ off}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00205}00205\ \ \ \ \ dipole\_moment\ =\ .false.\ \textcolor{comment}{!\ (Shibing)\ no\ dipole\ moment\ by\ default}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00207}00207\ \ \ \ \ quasi\_particle\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00208}00208\ \ \ \ \ quasi\_hole\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00209}00209\ \ \ \ \ quasi\_hole\_k\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00210}00210\ \ \ \ \ quasi\_hole\_extr\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00211}00211\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00212}00212\ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00213}00213\ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_ab655000008f129485b9d360a2b441d80}{ext\_grid}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00215}00215\ \ \ \ \ corr\_factors\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00216}00216\ \ \ \ \ fwd\_propagations\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00217}00217\ \ \ \ \ bin\_length\ =\ ngen/100}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00218}00218\ \ \ \ \ initial\_bin\ =\ 2}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00219}00219\ \ \ \ \ fwd\_skip\ =\ 1}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00220}00220\ \ \ \ \ corrfun\_dim\ =\ 3}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00221}00221\ \ \ \ \ k\_cutoff\ =\ 3.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00222}00222\ \ \ \ \ shiftlog\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00224}00224\ \ \ \ \ cart\_axes(1)\ =\ 1}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00225}00225\ \ \ \ \ cart\_axes(2)\ =\ 2}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00226}00226\ \ \ \ \ cart\_axes(3)\ =\ 3}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00227}00227\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00228}00228\ \ \ \ \ offset(1)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00229}00229\ \ \ \ \ offset(2)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00230}00230\ \ \ \ \ offset(3)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00231}00231\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00232}00232\ \ \ \ \ ngrid(1)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00233}00233\ \ \ \ \ ngrid(2)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00234}00234\ \ \ \ \ ngrid(3)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00235}00235\ \ \ \ \ kspin\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00236}00236\ \ \ \ \ ifkspin\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00237}00237\ \ \ \ \ \textcolor{comment}{!\ by\ E.\ Coccia\ (19/7/11):\ default\ value\ for\ Chernomor\ formulas}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00238}00238\ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_ab7c3744bee5d92985892b3da4795afe6}{kswitch}}\ =\ 0.1d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00239}00239\ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_a52fddfd643eb73d072ff65d4689500c7}{nswitch}}\ =\ 8}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00240}00240\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00241}00241\ \ \ \ \ radial\_grid\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00242}00242\ \ \ \ \ sphere\_radius\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00243}00243\ \ \ \ \ allshells\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00244}00244\ \ \ \ \ \mbox{\hyperlink{namespaceberry__phase_aded8568c12521ba68ab6206b86e5b1b8}{ifberry}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00245}00245\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00246}00246\ \ \ \ \ outofplane\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00247}00247\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00248}00248\ \ \ \ \ \textcolor{keyword}{read}\ (55,\ nml=corrfun)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00249}00249\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00250}00250\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'CORRELATION\ FUNCTION\ PARAMETERS'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00251}00251\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'corrective\ factors\ (corr\_factors)\ ='},\ corr\_factors}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00252}00252\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'forward\ propagations\ (fwd\_propagations)\ ='},\ fwd\_propagations}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00253}00253\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'skips\ forward\ (fwd\_skip)\ ='},\ fwd\_skip}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00254}00254\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'bin\ length\ (bin\_length)\ ='},\ bin\_length}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00255}00255\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'initial\ bin\ (initial\_bin)\ ='},\ initial\_bin}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00256}00256\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'active\ dimension\ (corrfun\_dim)\ ='},\ corrfun\_dim}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00257}00257\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'cartesian\ coordinates\ (cart\_axes)\ ='},\ (cartesian(cart\_axes(i)),\ i=1,\ corrfun\_dim)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00258}00258\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'offset\ ='},\ (offset(i),\ i=1,\ corrfun\_dim)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00259}00259\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'cutoff\ log\ wave\ function\ (shiftlog)\ ='},\ shiftlog}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00260}00260\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00261}00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (sum(abs(offset(:)))\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00262}00262\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ngrid(1)\ .ge.\ 1\ .and.\ ngrid(2)\ .ge.\ 1\ .and.\ ngrid(3)\ .ge.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Default\ shift\ offset\ for\ centering\ xcrysden\ -\/0.5,-\/0.5,-\/0.5\ in\ mesh\ grid\ units'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespacecell_aef05c09f5dc0d7c65e90a63aa4fccc4f}{yes\_tilted}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset(:)\ =\ offset(:)\ -\/\ 0.5d0*\mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)/ngrid(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecscra(:)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vecscra(:)\ =\ vecscra(:)\ -\/\ \mbox{\hyperlink{namespacecell_a8316b92a34f5bae8fe8da783a265dc83}{s2r}}(:,\ j)*0.5d0/ngrid(j)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00270}00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset(:)\ =\ offset(:)\ +\ vecscra(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00272}00272\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00273}00273\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00274}00274\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00275}00275\ \ \ \ \ \textcolor{comment}{!\ \ offset(:)=offset(:)*cellscale(:)/ngrid(:)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00276}00276\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00277}00277\ \ \ \ \ nbias\ =\ corr\_factors}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00278}00278\ \ \ \ \ maxf\ =\ fwd\_propagations}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00279}00279\ \ \ \ \ lbin\ =\ bin\_length}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00280}00280\ \ \ \ \ ibinit\ =\ initial\_bin}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00281}00281\ \ \ \ \ iskip\ =\ fwd\_skip}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00282}00282\ \ \ \ \ ddim\ =\ corrfun\_dim}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00283}00283\ \ \ \ \ cutk\ =\ k\_cutoff}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00284}00284\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00285}00285\ \ \ \ \ \textcolor{keywordflow}{if}\ (iskip\ .le.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'input\ fatal\ error'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00287}00287\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'fwd\_skip\ must\ be\ positive!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ err\_stop\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00289}00289\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00290}00290\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00291}00291\ \ \ \ \ \textcolor{comment}{!\ added\ by\ Kosuke\ Nakano\ on\ 29\ May\ 2019}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00292}00292\ \ \ \ \ \textcolor{keywordflow}{if}\ (rdf\_for\_atom\ .and.\ ddim\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'input\ fatal\ error'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'rdf\_for\_atom\ is\ valid\ only\ for\ corrfun\_dim=1'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ err\_stop\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00296}00296\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00297}00297\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00298}00298\ \ \ \ \ \mbox{\hyperlink{namespacerho__corr__module_a97fee0c6aae9d7018bb886a83f541c0c}{ifrho\_corr}}\ =\ new\_density\ \textcolor{comment}{!\ (Matteo)\ Added\ default\ for\ flag\ assaraf\ density}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00299}00299\ \ \ \ \ \mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}}\ =\ assar\_density\ \textcolor{comment}{!(Matteo)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00301}00301\ \ \ \ \ ifrho\ =\ charge\_density}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00302}00302\ \ \ \ \ ifspin\ =\ spin\_density}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00303}00303\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00304}00304\ \ \ \ \ iffluct\ =\ fluctuations}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00305}00305\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00306}00306\ \ \ \ \ \textcolor{keywordflow}{if}\ ((.not.\ ifrho)\ .and.\ (.not.\ ifspin)\ .and.\ fluctuations)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00307}00307\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ to\ compute\ local\ charge\ or\ spin\ fluctuations,\ you\ must\ switch\ on\ the\ charge\ or\ spin\ flag!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ iffluct\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00309}00309\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00310}00310\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00311}00311\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_aac88791a3eb56b7c68b6c87824963fe7}{ifqpwf}}\ =\ quasi\_particle}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00312}00312\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_a549e5932410edafed3a0ccb5994743da}{ifqpwf\_h}}\ =\ quasi\_hole}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00313}00313\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_afc1a1e8ae162c843fd62df46a51753af}{ifqpwf\_k}}\ =\ quasi\_hole\_k}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00314}00314\ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_a8f788174c50635105fa7d4bce2218049}{ifqpwf\_extr}}\ =\ quasi\_hole\_extr}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00315}00315\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00316}00316\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceqpwf__module_afc1a1e8ae162c843fd62df46a51753af}{ifqpwf\_k}}\ .or.\ \mbox{\hyperlink{namespaceqpwf__module_a549e5932410edafed3a0ccb5994743da}{ifqpwf\_h}}\ .or.\ \mbox{\hyperlink{namespaceqpwf__module_a8f788174c50635105fa7d4bce2218049}{ifqpwf\_extr}})\ \mbox{\hyperlink{namespaceqpwf__module_aac88791a3eb56b7c68b6c87824963fe7}{ifqpwf}}\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00317}00317\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00318}00318\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceqpwf__module_a8f788174c50635105fa7d4bce2218049}{ifqpwf\_extr}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_a549e5932410edafed3a0ccb5994743da}{ifqpwf\_h}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00320}00320\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceqpwf__module_afc1a1e8ae162c843fd62df46a51753af}{ifqpwf\_k}}\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00321}00321\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00322}00322\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00323}00323\ \ \ \ \ ifpair\ =\ pair\_corr\_fun}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00324}00324\ \ \ \ \ ifsofk\ =\ structure\_factor}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00325}00325\ \ \ \ \ ifcorrs\ =\ correlated\_samp}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00326}00326\ \ \ \ \ \mbox{\hyperlink{namespacespin2_a2786c0b690bdb66261a765e8fdfa3009}{ifspin2}}\ =\ compute\_spin2\ \textcolor{comment}{!(Ye)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00327}00327\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00328}00328\ \ \ \ \ \mbox{\hyperlink{namespacedipole__module_a7e41c0c9f0bc6bf6ae282c275b9aa9c1}{ifdipole}}\ =\ dipole\_moment\ \textcolor{comment}{!(Shibing)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00329}00329\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00330}00330\ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a0969654dd74398a74f58b366c8d588ff}{center}}\ =\ center\_type}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00331}00331\ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a39d51b02f9f5bc4eeaf411a318af6fb6}{grid\_start}}(:)\ =\ starting\_point(:)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00332}00332\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00333}00333\ \ \ \ \ vdim\ =\ cart\_axes}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00334}00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ r\_offset\ =\ offset}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00336}00336\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ added\ by\ Kosuke\ Nakano\ 30\ May\ 2019}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00338}00338\ \textcolor{comment}{!\ \ \ \ \ \ \ \ if(.not.rdf\_for\_atom.and..not.ifdipole)\ then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00339}00339\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ if(corrfun\_dim.eq.3)\ then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00340}00340\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ r\_offset(:)\ =\ offset(:)\ -\/\ cellscale(:)\ /\ 2.d0}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00341}00341\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00342}00342\ \textcolor{comment}{!\ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00343}00343\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ r\_offset\ =\ offset}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00344}00344\ \textcolor{comment}{!\ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ rdf\_for\_atom\ .and.\ .not.\ \mbox{\hyperlink{namespacedipole__module_a7e41c0c9f0bc6bf6ae282c275b9aa9c1}{ifdipole}}\ .and.\ corrfun\_dim\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ r\_offset(:)\ =\ offset(:)\ -\/\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(:)/2.d0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ r\_offset\ =\ offset}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00349}00349\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00350}00350\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ write(6,*)\ 'offset',offset(:)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ write(6,*)\ 'cellscale',cellscale(:)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ write(6,*)\ 'r\_offset',r\_offset(:)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00354}00354\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00355}00355\ \ \ \ \ ngrid\_l\ =\ ngrid}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00356}00356\ \ \ \ \ ngrid\_p\ =\ radial\_grid}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00357}00357\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00358}00358\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ calculating\ only\ the\ charge\ distribution\ with\ the\ \&}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00360}00360\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&method\ proposed\ \(\backslash\)n\ by\ Assaraf\ the\ rest\ is\ switched\ off'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ charge\_density\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ spin\_density\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ pair\_corr\_fun\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ quasi\_particle\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ quasi\_hole\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ quasi\_hole\_k\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ structure\_factor\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ correlated\_samp\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ compute\_spin2\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ ifrho\ =\ charge\_density}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ ifspin\ =\ spin\_density}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ ifpair\ =\ pair\_corr\_fun}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ ifsofk\ =\ structure\_factor}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ ifcorrs\ =\ correlated\_samp}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacespin2_a2786c0b690bdb66261a765e8fdfa3009}{ifspin2}}\ =\ compute\_spin2\ \textcolor{comment}{!(Ye)}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a766e7ffe925eecc9231f79e35c238ca3}{da}}(:)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_ab655000008f129485b9d360a2b441d80}{ext\_grid}}\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ =\ ngrid(1)*ngrid(2)*ngrid(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00381}00381\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'Switch\ value\ for\ the\ grid\ ='},\ \mbox{\hyperlink{namespaceassar__module_ab7c3744bee5d92985892b3da4795afe6}{kswitch}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'Steepness\ n\ value\ for\ Ks\ and\ Ka\ (see\ O.\ Chernomor'}\textcolor{stringliteral}{'s\ thesis)\ ='},\ \mbox{\hyperlink{namespaceassar__module_a52fddfd643eb73d072ff65d4689500c7}{nswitch}}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00384}00384\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00385}00385\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00386}00386\ \ \ \ \ \textcolor{comment}{!\ (Matteo)\ Added\ for\ STM\ to\ fix\ the\ grid\ type.}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00387}00387\ \ \ \ \ \textcolor{keywordflow}{if}\ ((\mbox{\hyperlink{namespaceqpwf__module_aac88791a3eb56b7c68b6c87824963fe7}{ifqpwf}}\ .and.\ .not.\ \mbox{\hyperlink{namespaceqpwf__module_a8f788174c50635105fa7d4bce2218049}{ifqpwf\_extr}})\ .or.\ \mbox{\hyperlink{namespacerho__corr__module_a97fee0c6aae9d7018bb886a83f541c0c}{ifrho\_corr}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_ab655000008f129485b9d360a2b441d80}{ext\_grid}}\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ =\ ngrid(1)*ngrid(2)*ngrid(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00392}00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00393}00393\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00394}00394\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00395}00395\ \ \ \ \ \textcolor{keywordflow}{if}\ (ifpair\ .or.\ ifspin\ .or.\ ifrho\ .or.\ (\mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sphere\_radius\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ngrid\ (ngrid)\ ='},\ (ngrid(i),\ i=1,\ corrfun\_dim)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Warning:\ site\ occupation\ instead\ of\ standard\ density!!!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ddim\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'site\ defined\ by\ cylinder\ radius\ of'},\ sphere\_radius,\ \textcolor{stringliteral}{'a\_0'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (outofplane\ .ne.\ 0.d0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'take\ only\ out-\/of-\/plane\ configurations\ >'},\ outofplane,\ \textcolor{stringliteral}{'a\_0'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'site\ defined\ by\ sphere\ radius\ of'},\ sphere\_radius,\ \textcolor{stringliteral}{'a\_0'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00405}00405\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (allshells)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning:\ All\ bonds\ considered\ without\ averaging\ according\ to\ the\ distance\ '}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ ngrid\_l\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ ngrid\_p\ =\ 0}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ifkspin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ site\ occupation\ not\ compatible\ with\ SDW\ yet\ !!!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ifkspin\ set\ to\ .false.'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifkspin\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00413}00413\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iffluct)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ in\ the\ site\ approach,\ fluctuations\ are\ already\ computed\ as\ on-\/site\ pair\ correlations!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'fluctuations\ option\ has\ been\ disabled'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iffluct\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00418}00418\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00419}00419\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00420}00420\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00421}00421\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00422}00422\ \ \ \ \ \textcolor{keywordflow}{if}\ (ifsofk)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00423}00423\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'cutoff\ in\ k\ space\ for\ S(k)'},\ cutk}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00424}00424\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00425}00425\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00426}00426\ \ \ \ \ \textcolor{keywordflow}{if}\ ((ifpair\ .and.\ .not.\ ifspin\ .and.\ .not.\ ifrho))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ ifrho\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ ifspin\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ charge\_density\ and\ spin\_density\ switched\ on'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00430}00430\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00431}00431\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00432}00432\ \ \ \ \ \textcolor{keywordflow}{if}\ (ifpair\ .and.\ .not.\ iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ to\ compute\ pair\_corr\_fun\ we\ assume\ translational\ invariance!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00434}00434\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00435}00435\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00436}00436\ \ \ \ \ \textcolor{keywordflow}{if}\ (ifsofk\ .and.\ .not.\ iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'warning:\ to\ compute\ the\ structure\ factor\ we\ assume\ translational\ invariance!'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00438}00438\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00439}00439\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00440}00440\ \ \ \ \ \textcolor{keywordflow}{if}\ ((ifpair\ .or.\ ifspin\ .or.\ ifrho\ .or.\ (\mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}}))\ .and.\ sphere\_radius\ .eq.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00441}00441\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ngrid(1)\ .eq.\ 0\ .and.\ ngrid(2)\ .eq.\ 0\ .and.\ ngrid(3)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00442}00442\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'input\ fatal\ error'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00443}00443\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'you\ must\ specify\ ngrid\ in\ each\ direction\ to\ compute\ density\ and\ pair\_corr\_fun'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00444}00444\ \ \ \ \ \ \ \ \ \ \ \ \ err\_stop\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00445}00445\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00446}00446\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00447}00447\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00448}00448\ \ \ \ \ \textcolor{keywordflow}{if}\ (ifpair\ .or.\ ifspin\ .or.\ ifrho\ .or.\ ifsofk\ .or.\ (\mbox{\hyperlink{namespacegrid__module_a1c8caa98a1eec80aa35c9f87828712b3}{grid\_points}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceassar__module_a92179f5071051b4b15b4b44f8fc6381b}{ifrho\_assar}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00449}00449\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'dimension\ of\ the\ cell\ for\ correlation\ functions'}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00450}00450\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ell(x)\ ='},\ ell(1)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ell(y)\ ='},\ ell(2)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'ell(z)\ ='},\ ell(3)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00453}00453\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00454}00454\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00455}00455\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00456}00456\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00457}00457\ \ \ \ \ \textcolor{keyword}{close}\ (55)}
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00458}00458\ }
+\DoxyCodeLine{\Hypertarget{read__corr__fun_8f90_source_l00459}00459\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{read__corr__fun_8f90_a4e9ef2ef6a9e2b2dbfe1f7bfa10b2962}{read\_corr\_fun}}}
+
+\end{DoxyCode}

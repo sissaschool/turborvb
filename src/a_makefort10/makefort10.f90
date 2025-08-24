@@ -13,6 +13,53 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!-------------------------------------------------------------------------------
+! TurboRVB: makefort10.f90
+!-------------------------------------------------------------------------------
+! PURPOSE
+!   This program generates the fort.10 file for TurboRVB, which contains all the
+!   information about the wave function (Slater determinant, Pfaffian, Jastrow,
+!   symmetry, atomic positions, etc.) for both periodic (solid) and open systems.
+!   The fort.10 file is a key input for quantum Monte Carlo (QMC) calculations.
+!
+! MAIN FEATURES
+!   - Supports periodic boundary conditions (PBC) and open boundary conditions.
+!   - Handles arbitrary crystal structures, including tilted cells.
+!   - Automatically detects and applies point group and translation symmetries.
+!   - Supports Slater, Pfaffian, and Jastrow wave functions (1-, 2-, 3-body).
+!   - Can read atomic wave functions from file or generate them from input.
+!   - Outputs auxiliary files (e.g., structure.xsf, symmetries.dat) for analysis.
+!   - Flexible input via Fortran namelists for system, electrons, and symmetries.
+!
+! USAGE
+!   1. Prepare an input file (e.g., makefort10.input) with namelist sections:
+!      &system, &electrons, &symmetries, and ATOMIC_POSITIONS (and optionally
+!      ATOMIC_SPECIES, UNPAIRED, etc.).
+!   2. Run the program (after compilation):
+!        ./makefort10 < makefort10.input
+!   3. The program will generate fort.10_new (and structure.xsf, symmetries.dat).
+!
+! MINIMAL INPUT EXAMPLE
+!   &system
+!     natoms = 2
+!     pbcfort10 = .true.
+!     celldm(1) = 10.0
+!     nxyz = 1, 1, 1
+!   /
+!   &electrons
+!     nel = 2
+!     twobody = -6
+!   /
+!   &symmetries
+!     nosym = .false.
+!     rot_det = .true.
+!   /
+!   ATOMIC_POSITIONS
+!   1.0 1.0 0.0 0.0 0.0
+!   1.0 1.0 1.4 0.0 0.0
+!
+! For more details, see the TurboRVB documentation and example input files.
+!-------------------------------------------------------------------------------
 program makefort10
     use symm_data
     use constants

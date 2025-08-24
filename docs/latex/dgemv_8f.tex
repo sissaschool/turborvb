@@ -1,0 +1,161 @@
+\doxysection{src/d\+\_\+qlapack/dgemv.f File Reference}
+\hypertarget{dgemv_8f}{}\label{dgemv_8f}\index{src/d\_qlapack/dgemv.f@{src/d\_qlapack/dgemv.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{dgemv_8f_a174aa5d1094870eafbc4e628812abf6b}{dgemv\+\_\+}} (trans, m, n, alpha, a, lda, x, incx, beta, y, incy, yes\+\_\+ontarget)
+\item 
+subroutine \mbox{\hyperlink{dgemv_8f_a92bc96c58b3554f173f4c230b21e8963}{dgemv\+\_\+\+\_\+}} (trans, m, n, alpha, a, lda, x, incx, beta, y, incy, yes\+\_\+ontarget)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{dgemv_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{dgemv_8f_a174aa5d1094870eafbc4e628812abf6b}\index{dgemv.f@{dgemv.f}!dgemv\_@{dgemv\_}}
+\index{dgemv\_@{dgemv\_}!dgemv.f@{dgemv.f}}
+\doxysubsubsection{\texorpdfstring{dgemv\_()}{dgemv\_()}}
+{\footnotesize\ttfamily \label{dgemv_8f_a174aa5d1094870eafbc4e628812abf6b} 
+subroutine dgemv\+\_\+ (\begin{DoxyParamCaption}\item[{character}]{trans}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{alpha}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda, \texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{beta}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{, }\item[{logical}]{yes\+\_\+ontarget}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dgemv_8f_source_l00019}{19}} of file \mbox{\hyperlink{dgemv_8f_source}{dgemv.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \ \ real*8\ ::\ alpha,\ beta,\ a(lda,\ *),\ x(*),\ y(*)}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ incx,\ incy,\ lda,\ M,\ N}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ ::\ trans}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ ::\ yes\_ontarget}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ real*8\ ::\ one,\ zero}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ parameter(one=1.0d+0,zero=0.0d+0)}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ I,\ J,\ info,\ lenx,\ leny}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ max}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#ifndef\ \_OFFLOAD}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dgemv\_offload\_(trans,m,n,alpha,a,lda,x}
+\DoxyCodeLine{00044\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incx,beta,y,incy)}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_dgemv\_offload(trans,m,n,alpha,a,lda,x}
+\DoxyCodeLine{00048\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,incx,beta,y,incy)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (m.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ info\ =\ 2}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (n.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ info\ =\ 3}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (lda.LT.max(1,m))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ info\ =\ 6}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incx.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ info\ =\ 8}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incy.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ info\ =\ 11}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (info.NE.0\ .OR.}
+\DoxyCodeLine{00072\ \ \ \ \ \ +\ \ \ \ m.EQ.0\ .OR.}
+\DoxyCodeLine{00073\ \ \ \ \ \ +\ \ \ \ n.EQ.0\ .OR.}
+\DoxyCodeLine{00074\ \ \ \ \ \ +\ \ \ \ ((alpha.EQ.zero)\ .AND.\ (beta.EQ.one)))\ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (trans.EQ.\textcolor{stringliteral}{'N'}.OR.trans.EQ.\textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dgemvn_8f_a451e25bbfd0e71f07cec8fdbd11f56a6}{dgemvn\_offload}}(m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dgemvt_8f_ad5740d0305647f8aa62c07a2f9ca2682}{dgemvt\_offload}}(m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00080\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00085\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dgemvn_8f_source_l00033}{dgemvn\+\_\+offload()}}, and \mbox{\hyperlink{dgemvt_8f_source_l00033}{dgemvt\+\_\+offload()}}.
+
+
+
+Referenced by \mbox{\hyperlink{dgemv_8f_source_l00090}{dgemv\+\_\+\+\_\+()}}, \mbox{\hyperlink{ratiovar_8f90_source_l00027}{ratiovar()}}, \mbox{\hyperlink{test__dgemv_8f90_source_l00016}{test\+\_\+dgemv()}}, \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}, \mbox{\hyperlink{uptabpip__new_8f90_source_l00060}{uptabpip()}}, and \mbox{\hyperlink{uptabtot__new_8f90_source_l00166}{uptabtot()}}.
+
+\Hypertarget{dgemv_8f_a92bc96c58b3554f173f4c230b21e8963}\index{dgemv.f@{dgemv.f}!dgemv\_\_@{dgemv\_\_}}
+\index{dgemv\_\_@{dgemv\_\_}!dgemv.f@{dgemv.f}}
+\doxysubsubsection{\texorpdfstring{dgemv\_\_()}{dgemv\_\_()}}
+{\footnotesize\ttfamily \label{dgemv_8f_a92bc96c58b3554f173f4c230b21e8963} 
+subroutine dgemv\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{character}]{trans}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{alpha}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(lda,\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{beta}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{, }\item[{logical}]{yes\+\_\+ontarget}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{dgemv_8f_source_l00088}{88}} of file \mbox{\hyperlink{dgemv_8f_source}{dgemv.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ real*8\ ::\ alpha,\ beta}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ real*8\ ::\ a(lda,*),x(*),y(*)}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ incx,\ incy,\ lda,\ M,\ N}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ ::\ trans}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ ::\ yes\_ontarget}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ XLEN,\ YLEN}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }dgemv(trans,m,n,alpha,a,lda,x,incx,beta}
+\DoxyCodeLine{00103\ \ \ \ \ \ +\ \ \ \ ,y,incy)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00105\ \textcolor{comment}{*\ \ \ \ \ \ \ \ \ THE\ MATRIX\ IS\ ASSUMED\ ON\ THE\ GPU\ VECTORS\ IN\ CPU}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ xlen\ =\ -\/1}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ ylen\ =\ -\/1}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(trans.EQ.\textcolor{stringliteral}{'N'}.OR.trans.EQ.\textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xlen\ =\ incx*n}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ylen\ =\ incy*m}
+\DoxyCodeLine{00111\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}(trans.EQ.\textcolor{stringliteral}{'T'}.OR.trans.EQ.\textcolor{stringliteral}{'t'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xlen\ =\ incx*m}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ylen\ =\ incy*n}
+\DoxyCodeLine{00115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00116\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ to\ (x(1:xlen))}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!\$omp\ target\ update\ to\ (y(1:ylen))\ if(beta.ne.0)}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{dgemv_8f_a174aa5d1094870eafbc4e628812abf6b}{dgemv\_}}(trans,m,n,alpha,a,lda,x,incx,beta}
+\DoxyCodeLine{00122\ \ \ \ \ \ +\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,y,incy,.true.)}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from\ \ (y(1:ylen))}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dgemv_8f_source_l00021}{dgemv\+\_\+()}}.
+
+
+
+Referenced by \mbox{\hyperlink{conjginv__prep_8f90_source_l00049}{conjginv\+\_\+prep()}}, and \mbox{\hyperlink{test__dgemv___8f90_source_l00016}{test\+\_\+dgemv\+\_\+()}}.
+

@@ -1,0 +1,184 @@
+\doxysection{src/a\+\_\+turborvb/cutminzmaxz.f90 File Reference}
+\hypertarget{cutminzmaxz_8f90}{}\label{cutminzmaxz_8f90}\index{src/a\_turborvb/cutminzmaxz.f90@{src/a\_turborvb/cutminzmaxz.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{cutminzmaxz_8f90_ac65c9dbc8d5038a3d410350b1d0fb973}{cutminzmaxz}} (ipc, contractionj, iesm, npar3bodyr\+\_\+c, iesuptransbj, jbraiesm, minz, maxz, indc, alphavar, alphab, scalpar, fixpar, tpar, nmat, rank)
+\begin{DoxyCompactList}\small\item\em Cut and rescale parameters to maintain Z values within bounds. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{cutminzmaxz_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{cutminzmaxz_8f90_ac65c9dbc8d5038a3d410350b1d0fb973}\index{cutminzmaxz.f90@{cutminzmaxz.f90}!cutminzmaxz@{cutminzmaxz}}
+\index{cutminzmaxz@{cutminzmaxz}!cutminzmaxz.f90@{cutminzmaxz.f90}}
+\doxysubsubsection{\texorpdfstring{cutminzmaxz()}{cutminzmaxz()}}
+{\footnotesize\ttfamily \label{cutminzmaxz_8f90_ac65c9dbc8d5038a3d410350b1d0fb973} 
+subroutine cutminzmaxz (\begin{DoxyParamCaption}\item[{integer}]{ipc}{, }\item[{integer}]{contractionj}{, }\item[{integer}]{iesm}{, }\item[{integer}]{npar3bodyr\+\_\+c}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{iesuptransbj}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbraiesm}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{minz}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{maxz}{, }\item[{integer}]{indc}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{alphavar}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{alphab}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{scalpar}{, }\item[{logical}]{fixpar}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{tpar}{, }\item[{integer}]{nmat}{, }\item[{integer}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Cut and rescale parameters to maintain Z values within bounds. 
+
+This subroutine rescales alphab if the Z values are outside the interval minz \texorpdfstring{$<$}{<} Z \texorpdfstring{$<$}{<} maxz. It does not modify any other input parameters. If the previous Z values (alphavar) are already outside the interval, they are not changed. The subroutine handles both contracted and non-\/contracted cases for parameter optimization. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ipc} & Number of components per parameter \\
+\hline
+\mbox{\texttt{in}}  & {\em contractionj} & Contraction flag \\
+\hline
+\mbox{\texttt{in}}  & {\em iesm} & Number of parameters to check \\
+\hline
+\mbox{\texttt{in}}  & {\em npar3bodyr\+\_\+c} & Number of 3-\/body real parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em iesuptransbj} & Super transformation array \\
+\hline
+\mbox{\texttt{in}}  & {\em jbraiesm} & Branching array for iesm \\
+\hline
+\mbox{\texttt{in}}  & {\em minz} & Minimum Z value \\
+\hline
+\mbox{\texttt{in}}  & {\em maxz} & Maximum Z value \\
+\hline
+\mbox{\texttt{in}}  & {\em indc} & Index offset \\
+\hline
+\mbox{\texttt{in,out}}  & {\em alphavar} & Current parameter values \\
+\hline
+\mbox{\texttt{in,out}}  & {\em alphab} & Parameter updates \\
+\hline
+\mbox{\texttt{in,out}}  & {\em scalpar} & Parameter scaling factors \\
+\hline
+\mbox{\texttt{in}}  & {\em fixpar} & Flag to fix parameters permanently \\
+\hline
+\mbox{\texttt{in}}  & {\em tpar} & Learning rate \\
+\hline
+\mbox{\texttt{in}}  & {\em nmat} & Total number of parameters \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Process rank \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cutminzmaxz_8f90_source_l00038}{38}} of file \mbox{\hyperlink{cutminzmaxz_8f90_source}{cutminzmaxz.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesuptransbj(*),\ jbraiesm(*),\ i,\ j,\ iesm,\ npar3bodyr\_c\ \ \ \&}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rank,\ contractionj,\ indc,\ nmat,\ ipc}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{real*8}\ alphavar(*),\ minz,\ maxz,\ cost\&}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tpar,\ scalealphab,\ scaletry,\ alphab(*),\ scalpar(*)}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{logical}\ fixpar}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!This\ subroutine\ rescale\ alphab\ if\ the\ Z\ are\ outside\ the\ interval\ minz<\ Z\ <\ maxz}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Does\ not\ modify\ any\ other\ input}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if\ the\ previous\ Z\ (alphavar)\ are\ outside\ the\ interval\ -\/-\/>\ not\ changed}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordflow}{if}\ (maxz\ .le.\ minz\ .or.\ iesm\ .eq.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ input\ does\ not\ make\ sense}}
+\DoxyCodeLine{00055\ \ \ \ \ scalealphab\ =\ 1.d0}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ iesm,\ ipc}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ alphavar(indc\ +\ i)\ +\ tpar*alphab(indc\ +\ i)}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ minz\ .and.\ alphavar(indc\ +\ i)\ .ge.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (minz\ -\/\ alphavar(indc\ +\ i))/tpar/alphab(indc\ +\ i)/2.d0}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ scaletry*alphab(indc\ +\ i)}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ small\ \ '},\ i,\ cost,\ minz}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{00066\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ i)\ .lt.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ smaller\ than\ limit\ \ '}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ i)\ =\ minz}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ maxz\ .and.\ alphavar(indc\ +\ i)\ .le.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Warning\ Z\ too\ large\ '},\ i,\ cost,\ maxz}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (maxz\ -\/\ alphavar(indc\ +\ i))/tpar/alphab(indc\ +\ i)/2.d0}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ scaletry*alphab(indc\ +\ i)}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ i)\ .gt.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ larger\ than\ limit\ \ '}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ i)\ =\ maxz}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ npar3bodyr\_c}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesuptransbj(i)\ .ne.\ 0\ .and.\ jbraiesm(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ ipc*(abs(jbraiesm(i))\ -\/\ 1)\ +\ 1}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ alphavar(indc\ +\ j)\ +\ tpar*alphab(indc\ +\ j)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ minz\ .and.\ alphavar(indc\ +\ j)\ .ge.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (minz\ -\/\ alphavar(indc\ +\ j))/tpar/alphab(indc\ +\ j)/2.d0}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ scaletry*alphab(indc\ +\ j)}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ small\ '},\ j,\ cost,\ minz}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ j)\ .lt.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ smaller\ than\ limit\ \ '}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ j)\ =\ minz}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ maxz\ .and.\ alphavar(indc\ +\ j)\ .le.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (maxz\ -\/\ alphavar(indc\ +\ j))/tpar/alphab(indc\ +\ j)/2.d0}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ scaletry*alphab(indc\ +\ j)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ large\ \ '},\ j,\ cost,\ maxz}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ j)\ .gt.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ larger\ than\ limit\ \ '}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ j)\ =\ maxz}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00137\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Inside\ cut\ i,j\ =',i,jbraiesm(i)}}
+\DoxyCodeLine{00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00141\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(scalealphab.ne.1.d0)\ call\ dscal(nmat,0.5d0*scalealphab,alphab,1)}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ To\ avoid\ roundoff\ difference\ between\ processors\ we\ bcast\ scalpar,alphab,alphavar}}
+\DoxyCodeLine{00145\ \textcolor{comment}{!\ \ safely.}}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(alphavar,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(alphab,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(scalpar,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dsortx_8f90_source_l00768}{bcast\+\_\+real()}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

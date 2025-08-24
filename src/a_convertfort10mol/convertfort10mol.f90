@@ -15,6 +15,23 @@
 !
 ! Sandro Sorella created on 25th Nov. 2009.
 
+!> @brief Main program for converting fort.10 files and computing molecular orbitals
+!> @details This program reads a fort.10 input file and performs molecular orbital
+!>          conversion and optimization. It supports both serial and parallel execution
+!>          using MPI, handles pseudopotential calculations, and generates optimized
+!>          molecular orbitals for quantum Monte Carlo calculations.
+!>          
+!>          The program processes three main namelist inputs:
+!>          - control: Optimization parameters and algorithm settings
+!>          - mesh_info: 3D mesh grid parameters for orbital evaluation
+!>          - molec_info: Molecular orbital specifications and constraints
+!>          
+!>          Key features:
+!>          - Parallel processing with MPI support
+!>          - Pseudopotential handling
+!>          - Molecular orbital optimization
+!>          - Periodic boundary condition support
+!>          - Output generation for TurboRVB calculations
 program convertfort10mol
     use convertmod
     use allio
@@ -26,12 +43,30 @@ program convertfort10mol
     character(100) name_tool
     character(20) str
 
+    !> @brief Control parameters for molecular orbital optimization
+    !> @details This namelist contains parameters that control the molecular orbital
+    !>          optimization process, including convergence criteria, algorithm settings,
+    !>          and output options.
     namelist /control/ epsdgm, molopt, weight_loc, power, orthoyes, yesbig, membig, gramyes &
         , epsbas, allowed_averagek, add_onebody2det, only_molecular, add_offmol
+    
+    !> @brief 3D mesh grid parameters for orbital evaluation
+    !> @details This namelist defines the 3D mesh grid used for evaluating molecular
+    !>          orbitals and computing overlap matrices. It includes grid dimensions,
+    !>          spacing parameters, and origin shift options.
     namelist /mesh_info/ nbufd, nx, ny, nz, ax, ay, az, shift_origin, shiftx, shifty, shiftz
+    
+    !> @brief Molecular orbital specifications and constraints
+    !> @details This namelist specifies the number and range of molecular orbitals
+    !>          to be computed, including minimum and maximum orbital counts and
+    !>          overlap printing options.
     namelist /molec_info/ nmol, nmolmin, nmolmax, printoverlap
 
 #ifdef PARALLEL
+    !> @brief Initialize MPI parallel processing environment
+    !> @details This section initializes the MPI environment for parallel execution,
+    !>          sets up communicators, and defines rank and size variables for
+    !>          distributed computation across multiple processes.
     include 'mpif.h'
     call mpi_init(ierr)
     call mpi_comm_size(MPI_COMM_WORLD, nprocn, ierr)
@@ -44,6 +79,9 @@ program convertfort10mol
     rankcolrep = 0
     commcolrep_mpi = MPI_COMM_WORLD
 #else
+    !> @brief Serial execution setup
+    !> @details This section sets up variables for serial execution when MPI is not
+    !>          available. It also handles command-line help options for the program.
     rankn = 0
     nprocn = 1
     comm_mpi = 0
@@ -86,6 +124,9 @@ program convertfort10mol
     !  commpot_mpi=MPI_COMM_WORLD
     !#endif
     if (rank .eq. 0) then
+        !> @brief Initialize default parameters for molecular orbital optimization
+        !> @details This section sets up default values for optimization parameters
+        !>          including convergence criteria, algorithm flags, and processing options.
         yesmin = 0 ! no optimization is employed here
         yesbig = .false.
         membig = .true.
@@ -103,6 +144,10 @@ program convertfort10mol
         iflagerr = 0
 115     if (iflagerr .ne. 0) write (6, *) ' ERROR reading control !!! '
 
+        !> @brief Set up mesh parameters based on system size and optimization settings
+        !> @details This section determines appropriate mesh parameters for orbital
+        !>          evaluation, including buffer sizes and grid dimensions based on
+        !>          the number of orbitals and optimization criteria.
         if (epsdgm .ge. 0.d0) then
             if (nelorb .lt. 2000) then
                 nbufd = 1000
@@ -171,6 +216,9 @@ program convertfort10mol
 
     if (yesbig) yesfast = 0
 
+    !> @brief Check for pseudopotential files and initialize pseudopotential handling
+    !> @details This section performs a fast read of fort.10 to check for pseudopotential
+    !>          data and sets up the pseudopotential processing environment if needed.
     ! read_fast to check if there are pseudo
     if (rank .eq. 0) call read_fort10_fast
 #ifdef PARALLEL
@@ -182,6 +230,10 @@ program convertfort10mol
 
     if (npsa .gt. 0) nintpsa = 6
 
+    !> @brief Read pseudopotential data and wave function information
+    !> @details This section reads pseudopotential files and the main fort.10 input
+    !>          file containing wave function data, orbital information, and system
+    !>          parameters for the molecular orbital conversion process.
     ! ----------------------
     ! reading pseudo and w.f.
     call read_pseudo
@@ -189,6 +241,10 @@ program convertfort10mol
     ! ----------------------
     if (allowed_averagek .and. rank .eq. 0) write (6, *) ' Warning attaching flux to det !!! '
 
+    !> @brief Display and validate determinant matrix information
+    !> @details This section prints the determinant matrix for small systems (nelorb_c < 100)
+    !>          to verify the input data and check matrix properties for both contracted
+    !>          and uncontracted basis sets.
     if (rank .eq. 0 .and. nelorb_c .lt. 100) then
         write (6, *) ' Read matrix detmat_c ', nelorb_c, nelorbh, sum(abs(detmat_c(:)))
         if (contraction .eq. 0) then
@@ -217,6 +273,10 @@ program convertfort10mol
         end if
     end if
 
+    !> @brief Recompute determinant matrix if needed for uncontracted basis
+    !> @details This section checks if the determinant matrix needs to be recomputed
+    !>          for uncontracted basis sets and performs the matrix contraction
+    !>          operation if necessary.
     if (nelorb_c .ge. nelorbh*ipf .and. yesfast .ne. 0) then ! nelorb_c=nelorbh in the case of uncontracted basis
 
         if (iscramax .le. nelorbh*ipf*nelcol_c) then
@@ -234,6 +294,10 @@ program convertfort10mol
                 &, nelorb_c, nelcol_c, detmat, detmat_c, mu_c, psip)
     end if
 
+    !> @brief Set up mesh parameters for periodic boundary conditions or free space
+    !> @details This section determines the appropriate mesh spacing based on whether
+    !>          periodic boundary conditions are used (cellscale) or free space
+    !>          calculations (user-defined ax, ay, az parameters).
     if (iespbc) then
         ax = cellscale(1)/nx
         ay = cellscale(2)/ny
@@ -247,6 +311,10 @@ program convertfort10mol
     end if
     !
     if (rank .eq. 0) then
+        !> @brief Initialize molecular orbital parameters and constraints
+        !> @details This section sets up the molecular orbital specifications including
+        !>          the number of orbitals to compute, minimum and maximum orbital
+        !>          counts, and overlap printing options.
         nmol = 0
         nmolmin = 0
         nmolmax = 0
@@ -291,6 +359,10 @@ program convertfort10mol
     nmolmaxw = nmolmax
 
     if (rank .eq. 0) write (6, *) ' Chosen nmolmin nmolmax =', nmolmin, nmolmax
+    !> @brief Perform molecular orbital conversion and optimization
+    !> @details This section executes the main molecular orbital conversion process
+    !>          using the convertmol_fast subroutine. The computation is wrapped in
+    !>          OpenMP target data directives for GPU acceleration if available.
 #ifdef _OFFLOAD
 !$omp target data map(to:mu_c)
 #endif
@@ -299,6 +371,10 @@ program convertfort10mol
 !$omp end target data
 #endif
 
+    !> @brief Generate output files with optimized molecular orbitals
+    !> @details This section creates the output fort.10_new file containing the
+    !>          optimized molecular orbitals and updated wave function parameters
+    !>          for use in subsequent TurboRVB calculations.
     if (rank .eq. 0) then
         close (10)
         open (unit=10, file='fort.10_new', form='formatted', status='unknown')

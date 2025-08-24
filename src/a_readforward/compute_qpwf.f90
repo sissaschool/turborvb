@@ -26,6 +26,17 @@ module qpwf_module
 
 contains
 
+    !> @brief Computes quasi-particle wave function for electron addition
+    !> @details This subroutine computes the quasi-particle wave function
+    !>          for electron addition by evaluating the wave function at
+    !>          grid points. It handles both real and complex wavefunctions
+    !>          and computes wave function ratios for each grid point.
+    !> @param[in] rnew Electron positions (3, nel_read)
+    !> @param[in] nel_read Number of electrons to read
+    !> @param[in] nelup_read Number of up-spin electrons to read
+    !> @param[in] signpsi Sign of the wave function
+    !> @param[in] spsiln Logarithm of the wave function
+    !> @param[in] shiftlog Logarithmic shift parameter
     subroutine compute_elec_add(rnew, nel_read, nelup_read, signpsi, spsiln, shiftlog)
         use allio
         use grid_module
@@ -135,6 +146,17 @@ contains
 
     end subroutine compute_elec_add
 
+    !> @brief Computes quasi-particle wave function by extrapolation
+    !> @details This subroutine computes the quasi-particle wave function
+    !>          by extrapolation from a reference configuration. It finds
+    !>          the closest electron to the extrapolation point and computes
+    !>          wave function values at different distances.
+    !> @param[in] rnew Electron positions (3, nel_read)
+    !> @param[in] nel_read Number of electrons to read
+    !> @param[in] nelup_read Number of up-spin electrons to read
+    !> @param[in] signpsi Sign of the wave function
+    !> @param[in] spsiln Logarithm of the wave function
+    !> @param[in] shiftlog Logarithmic shift parameter
     subroutine compute_extrapolate(rnew, nel_read, nelup_read, signpsi, spsiln, shiftlog)
         use allio
         use grid_module, only: da
@@ -338,6 +360,20 @@ contains
 
     end subroutine compute_extrapolate
 
+    !> @brief Computes quasi-particle wave function for electron deletion
+    !> @details This subroutine computes the quasi-particle wave function
+    !>          for electron deletion by evaluating the wave function at
+    !>          grid points where electrons are removed. It handles both
+    !>          up and down electron deletions and computes wave function
+    !>          ratios for each grid point.
+    !> @param[in] rnew Electron positions (3, nel_read)
+    !> @param[in] nel_read Number of electrons to read
+    !> @param[in] nelup_read Number of up-spin electrons to read
+    !> @param[in] signpsi Sign of the wave function
+    !> @param[in] spsiln Logarithm of the wave function
+    !> @param[in] shiftlog Logarithmic shift parameter
+    !> @param[in] mesh Grid mesh dimensions (3)
+    !> @param[in] vell Grid velocity vectors (3)
     subroutine compute_elec_delete(rnew, nel_read, nelup_read, signpsi, spsiln, shiftlog, mesh, vell)
         use allio
         use grid_module
@@ -540,6 +576,18 @@ contains
         end if
     end subroutine compute_elec_delete
 
+    !> @brief Computes quasi-particle wave function in k-space
+    !> @details This subroutine computes the quasi-particle wave function
+    !>          in k-space by evaluating plane wave contributions at
+    !>          grid points. It handles both up and down electron
+    !>          additions and computes real and imaginary parts of
+    !>          the wave function for each grid point.
+    !> @param[in] rnew Electron positions (3, nel_read)
+    !> @param[in] nel_read Number of electrons to read
+    !> @param[in] nelup_read Number of up-spin electrons to read
+    !> @param[in] signpsi Sign of the wave function
+    !> @param[in] spsiln Logarithm of the wave function
+    !> @param[in] shiftlog Logarithmic shift parameter
     subroutine compute_QPWF_k_space(rnew, nel_read, nelup_read, signpsi, spsiln, shiftlog)
         use allio
         use grid_module

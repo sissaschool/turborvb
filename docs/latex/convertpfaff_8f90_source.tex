@@ -1,0 +1,609 @@
+\doxysection{convertpfaff.\+f90}
+\hypertarget{convertpfaff_8f90_source}{}\label{convertpfaff_8f90_source}\index{src/a\_convertfortpfaff/convertpfaff.f90@{src/a\_convertfortpfaff/convertpfaff.f90}}
+\mbox{\hyperlink{convertpfaff_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00015}00015\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00017}00017\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00018}00018\ \textcolor{comment}{!\ It\ converts\ an\ AGP\ wf\ in\ a\ Pfaffian\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00019}00019\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00020}00020\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @brief\ Main\ program\ for\ converting\ AGP\ wave\ functions\ to\ Pfaffian\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @details\ This\ program\ converts\ Antisymmetrized\ Geminal\ Power\ (AGP)\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00023}00023\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ to\ Pfaffian\ wave\ functions.\ It\ reads\ an\ input\ fort.10\_in\ file\ containing}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ AGP\ parameters\ and\ generates\ a\ new\ fort.10\_new\ file\ with\ Pfaffian\ parameters.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ The\ conversion\ process\ includes:}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Matrix\ transformation\ from\ AGP\ to\ Pfaffian\ format}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Spin\ rotation\ handling\ for\ magnetic\ systems}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Unpaired\ orbital\ processing}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00030}00030\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Symmetry\ considerations\ for\ up-\/up\ and\ down-\/down\ correlations}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ Key\ features:}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00033}00033\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Support\ for\ both\ real\ and\ complex\ wave\ functions}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Magnetic\ moment\ rotation\ capabilities}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00035}00035\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Unpaired\ orbital\ handling}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00036}00036\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Contracted\ and\ uncontracted\ basis\ set\ support}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00037}\mbox{\hyperlink{convertpfaff_8f90_ae2a4e2417cc5238ab64f96249744d36f}{00037}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{convertpfaff_8f90_ae2a4e2417cc5238ab64f96249744d36f}{convertpfaff}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{use\ }io\_m}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesub__comm}{sub\_comm}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00043}00043\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Loop\ indices\ and\ matrix\ dimensions}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j,\ k,\ nelorbin,\ nelcolin,\ nelorbout,\ nelcolout,\ nunp,\ nshell\_in,\ indparo,\ indpar,\ nelorbh\_in,\ ipf\_in,\ nelorbin2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00046}00046\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Input\ and\ output\ determinant\ matrices\ for\ AGP\ to\ Pfaffian\ conversion}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00047}00047\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable}\ ::\ detmatin(:,\ :),\ detmatout(:,\ :),\ unpaired(:,\ :),\ mat\_unp(:,\ :),\ dup\_in(:)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00049}00049\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Orbital\ parameter\ arrays\ for\ contracted\ basis\ sets}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ ioptorb\_in(:),\ nparam\_in(:)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00051}00051\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00052}00052\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Control\ flags\ for\ spin\ rotation\ and\ unpaired\ orbital\ processing}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ rotmagn,\ unp2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00055}00055\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Command\ line\ argument\ and\ tool\ name\ for\ help\ system}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ ::\ str}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ ::\ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00058}00058\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00059}00059\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Scaling\ and\ rotation\ parameters\ for\ magnetic\ systems}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00060}00060\ \ \ \ \ real*8\ scale\_unp,\ angle\_rot,\ phi\_rot}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00061}00061\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00062}00062\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Rotation\ matrices\ for\ spin\ transformations}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00063}00063\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ surot,\ suscra,\ sutry}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00065}00065\ \ \ \ \ \textcolor{comment}{!\ output\ version\ information}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{__version_8f90_adf51b5b8cc304f7a947db920ef2e10e1}{print\_version}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00067}00067\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00068}00068\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Read\ input\ AGP\ wave\ function\ from\ fort.10\_in}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00069}00069\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ reads\ the\ input\ AGP\ wave\ function\ file\ and\ saves}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00070}00070\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ orbital\ parameters\ and\ matrix\ elements\ for\ conversion\ to}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00071}00071\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Pfaffian\ format.\ It\ handles\ both\ contracted\ and\ uncontracted}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00072}00072\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ basis\ sets\ and\ validates\ molecular\ orbital\ compatibility.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!reading\ and\ saving\ the\ quantities\ of\ the\ fort.10\_in}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00075}00075\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10\_in'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00078}00078\ \ \ \ \ nshell\_in\ =\ \mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ioptorb\_in(\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}),\ nparam\_in(\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}),\ dup\_in(\textcolor{keyword}{size}(\mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}})))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ ioptorb\_in(1:\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}})\ =\ \mbox{\hyperlink{namespaceallio_a0157f4257e942e0cc52d8aaefbef795c}{ioptorb\_c}}(1:\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ nparam\_in(1:\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}})\ =\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(1:\mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ dup\_in\ =\ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00085}00085\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ the\ code\ does\ not\ work\ with\ molecular\ orbitals\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00088}00088\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00089}00089\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Determine\ spin\ rotation\ requirements\ based\ on\ AGP\ symmetry}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00090}00090\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ checks\ if\ spin\ rotation\ is\ needed\ based\ on\ the}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00091}00091\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ AGP\ symmetry\ properties\ and\ sets\ the\ rotation\ flag\ accordingly.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00092}00092\ \ \ \ \ \textcolor{comment}{!Understand\ if\ we\ have\ to\ rotate\ the\ spin\ on\ the\ plan\ or\ not}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00093}00093\ \ \ \ \ ipf\_in\ =\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00094}00094\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00095}00095\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ rotmagn\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00097}00097\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ rotmagn\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00100}00100\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00101}00101\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Process\ command\ line\ arguments\ for\ rotation\ control\ and\ help}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00102}00102\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ handles\ command\ line\ arguments\ to\ control\ spin}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00103}00103\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ rotation\ behavior\ and\ provides\ help\ information.\ Valid\ options}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00104}00104\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ include\ "{}rotate"{},\ "{}norotate"{},\ and\ help\ flags.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00105}00105\ \ \ \ \ \textcolor{keyword}{call\ }get\_command\_argument(1,\ str)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00107}00107\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\ =\ \textcolor{stringliteral}{'convertpfaff'}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }help\_online(\mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00112}00112\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00113}00113\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00114}00114\ \ \ \ \ \textcolor{keywordflow}{if}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}rotate"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ rotmagn\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ forcing\ rotation\ magnetization\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00117}00117\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (trim(str)\ .eq.\ \textcolor{stringliteral}{"{}norotate"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ rotmagn\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ forcing\ no\ rotation\ in\ magnetization\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00121}00121\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00122}00122\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Initialize\ unpaired\ orbital\ processing\ and\ matrix\ setup}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00123}00123\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ sets\ up\ the\ processing\ of\ unpaired\ orbitals\ and}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00124}00124\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ initializes\ the\ matrices\ needed\ for\ AGP\ to\ Pfaffian\ conversion.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00125}00125\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ It\ handles\ the\ scaling\ factor\ for\ mean\ field\ treatment.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00126}00126\ \ \ \ \ \textcolor{comment}{!Activate\ the\ creation\ of\ the\ upup\ or/and\ downdown\ part\ of\ the\ pfaffian}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00127}00127\ \ \ \ \ \textcolor{comment}{!using\ two\ unpaired\ orbitals}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00128}00128\ \ \ \ \ unp2\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00130}00130\ \ \ \ \ nunp\ =\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00131}00131\ \ \ \ \ \textcolor{comment}{!\ \ write\ (6,*)\ nelorb\_c}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00132}00132\ \ \ \ \ nelorbh\_in\ =\ \mbox{\hyperlink{namespaceallio_a2b03475ca405fe3eca7ab0a85d52eeaf}{nelorbh}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00133}00133\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ nelorbin\ =\ \mbox{\hyperlink{namespaceallio_a2b03475ca405fe3eca7ab0a85d52eeaf}{nelorbh}}*\mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ nelcolin\ =\ \mbox{\hyperlink{namespaceallio_a4511981c0d1d2bb2cb08d3ff41a148fc}{nelcolh}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ nelorbin\ =\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ nelcolin\ =\ \mbox{\hyperlink{namespaceallio_a8e647def3cafa4e0823c434e748feef9}{nelcol\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00139}00139\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00141}00141\ \ \ \ \ \textcolor{keyword}{allocate}\ (detmatin(nelorbin*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ nelcolin))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00142}00142\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00143}00143\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcolin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatin(i,\ j)\ =\ \mbox{\hyperlink{namespaceallio_a6dfd4ec251c5de2cc1af0d5df1843075}{detmat}}(i\ +\ (j\ -\/\ 1)*(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00147}00147\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00148}00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcolin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatin(i,\ j)\ =\ \mbox{\hyperlink{namespaceallio_a6ea4f57eb5e4e55369d7b74d164cbc7a}{detmat\_c}}(i\ +\ (j\ -\/\ 1)*(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00153}00153\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00154}00154\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00156}00156\ \ \ \ \ \textcolor{keyword}{allocate}\ (mat\_unp(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin,\ nelorbin))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00157}00157\ \ \ \ \ mat\_unp\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00158}00158\ \ \ \ \ scale\_unp\ =\ 100.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00159}00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (nunp\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00160}00160\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}The\ agp\ has\ "{}},\ nunp,\ \textcolor{stringliteral}{"{}unpaired"{}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00161}00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if\ (rotmagn)\ then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00162}00162\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ write\ (6,*)\ "{}ERROR:\ AGP\ with\ unpaired\ cannot\ work\ with\ the\ rotated\ magnetization"{}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ stop}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Scale\ mean\ field\ (\ infty=exact)?\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *)\ scale\_unp}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00166}00166\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00167}00167\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (unpaired(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin,\ 1:nunp))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00168}00168\ \ \ \ \ \ \ \ \ unp2\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ unpaired(:,\ 1:nunp)\ =\ detmatin(:,\ nelorbin\ +\ 1:nelorbin\ +\ nunp)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00170}00170\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00173}00173\ \ \ \ \ \textcolor{keyword}{call\ }deallocate\_all}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00174}00174\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00175}00175\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Read\ output\ template\ file\ and\ transfer\ orbital\ parameters}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00176}00176\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ reads\ the\ fort.10\_out\ template\ file\ and\ transfers}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00177}00177\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ orbital\ parameters\ from\ the\ input\ AGP\ to\ the\ output\ Pfaffian}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00178}00178\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ format,\ handling\ contracted\ basis\ sets\ and\ parameter\ mapping.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00179}00179\ \ \ \ \ \textcolor{comment}{!reading\ the\ fort.10\_out}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00180}00180\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10\_out'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00181}00181\ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00182}00182\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00184}00184\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a989e01f4da23c7ad5be50de9295ecbfc}{molyes}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ the\ code\ does\ not\ work\ with\ molecular\ orbitals\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00188}00188\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00189}00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\_in\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00191}00191\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ put\ in\ order\ dup\_c}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ indpar\ =\ 0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ indparo\ =\ 0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a0157f4257e942e0cc52d8aaefbef795c}{ioptorb\_c}}(i)\ .eq.\ 900000)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nparam\_in(i)/2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(2*(indpar\ +\ j)\ -\/\ 1)\ =\ dup\_in(2*(indparo\ +\ j)\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(2*(indpar\ +\ j\ +\ nparam\_in(i)/2)\ -\/\ 1)\ =\ dup\_in(2*(indparo\ +\ j)\ -\/\ 1)\ +\ nelorbh\_in}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nparam\_in(i)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(2*(indpar\ +\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(i)/2)\ +\ j)\ =\ dup\_in(2*(indparo\ +\ nparam\_in(i)/2)\ +\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(2*(indpar\ +\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(i)/2\ +\ nparam\_in(i)/2)\ +\ j)\ =\ dup\_in(2*(indparo\ +\ nparam\_in(i)/2)\ +\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00206}00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nparam\_in(i)/2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(indpar\ +\ j)\ =\ dup\_in(indparo\ +\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(indpar\ +\ j\ +\ nparam\_in(i)/2)\ =\ dup\_in(indparo\ +\ j)\ +\ nelorbh\_in}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00211}00211\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nparam\_in(i)/2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(indpar\ +\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(i)/2\ +\ j)\ =\ dup\_in(indparo\ +\ j\ +\ nparam\_in(i)/2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(indpar\ +\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(i)/2\ +\ nparam\_in(i)/2\ +\ j)\ =\ dup\_in(indparo\ +\ j\ +\ nparam\_in(i)/2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00215}00215\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00216}00216\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (nparam\_in(i)\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nparam\_in(i)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*indpar\ +\ j)\ =\ dup\_in(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*indparo\ +\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00220}00220\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*indpar\ +\ 1)\ =\ dup\_in(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*indparo\ +\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00223}00223\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indpar\ =\ indpar\ +\ \mbox{\hyperlink{namespaceallio_afa718e9434460f4ae97dd6e7b8a66183}{nparam\_c}}(i)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indparo\ =\ indparo\ +\ nparam\_in(i)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00226}00226\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_ab55a1d7ae602c6bab4d5819fc272dc1f}{dup\_c}}\ =\ dup\_in}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00229}00229\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00230}00230\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00231}00231\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00232}00232\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Set\ up\ output\ matrix\ dimensions\ and\ validate\ compatibility}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00233}00233\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ determines\ the\ output\ matrix\ dimensions\ for\ the}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00234}00234\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Pfaffian\ format\ and\ validates\ that\ the\ AGP\ and\ Pfaffian\ are}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00235}00235\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ compatible\ in\ terms\ of\ orbital\ counts\ and\ shell\ structure.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00236}00236\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00237}00237\ \ \ \ \ \ \ \ \ nelorbout\ =\ \mbox{\hyperlink{namespaceallio_a2b03475ca405fe3eca7ab0a85d52eeaf}{nelorbh}}*2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00238}00238\ \ \ \ \ \ \ \ \ nelcolout\ =\ \mbox{\hyperlink{namespaceallio_a4511981c0d1d2bb2cb08d3ff41a148fc}{nelcolh}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00239}00239\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00240}00240\ \ \ \ \ \ \ \ \ nelorbout\ =\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00241}00241\ \ \ \ \ \ \ \ \ nelcolout\ =\ \mbox{\hyperlink{namespaceallio_a8e647def3cafa4e0823c434e748feef9}{nelcol\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00242}00242\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00243}00243\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00244}00244\ \ \ \ \ \textcolor{keywordflow}{if}\ (nelorbout\ .ne.\ 2*nelorbin/ipf\_in\ .or.\ \mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}\ .ne.\ nshell\_in)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00245}00245\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}ERROR\ AGP\ not\ compatible\ with\ the\ pfaffian"{}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00246}00246\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}Contraction="{}},\ \mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00247}00247\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}\#\ shell\ input/output="{}},\ nshell\_in,\ \mbox{\hyperlink{namespaceallio_a5c1d74642d340aec4088bb3e432e5249}{nshell\_c}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00248}00248\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{"{}nelorbout="{}},\ nelorbout,\ \textcolor{stringliteral}{"{}nelorbin="{}},\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00249}00249\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00250}00250\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00251}00251\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00252}00252\ \ \ \ \ \textcolor{keyword}{allocate}\ (detmatout(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbout,\ nelcolout))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00253}00253\ \ \ \ \ detmatout\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00254}00254\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00255}00255\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'nelorbin\ nelorbout\ ='},\ nelorbin,\ nelorbout}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00256}00256\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00257}00257\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Convert\ AGP\ matrix\ to\ Pfaffian\ format\ for\ ipf=1\ (AGP\ case)}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00258}00258\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ performs\ the\ matrix\ transformation\ from\ AGP\ to}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00259}00259\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Pfaffian\ format\ when\ ipf=1,\ handling\ both\ real\ and\ complex}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00260}00260\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ matrices\ with\ appropriate\ sign\ conventions.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00261}00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\_in\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00262}00262\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00263}00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1,\ j\ +\ nelorbin)\ =\ -\/detmatin(2*i\ -\/\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i,\ j\ +\ nelorbin)\ =\ -\/detmatin(2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(j\ +\ nelorbin)\ -\/\ 1,\ i)\ =\ detmatin(2*i\ -\/\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(j\ +\ nelorbin),\ i)\ =\ detmatin(2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00270}00270\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00271}00271\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00272}00272\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j\ +\ nelorbin)\ =\ -\/detmatin(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(j\ +\ nelorbin,\ i)\ =\ detmatin(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00277}00277\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00278}00278\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00279}00279\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00280}00280\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00281}00281\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00282}00282\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Set\ up\ rotation\ matrices\ for\ ipf=2\ (Pfaffian\ case)}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00283}00283\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @details\ This\ section\ initializes\ rotation\ matrices\ for\ spin}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00284}00284\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ transformations\ when\ ipf=2,\ handling\ both\ real\ and\ complex}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00285}00285\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ rotation\ parameters.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00286}00286\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (surot(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*2,\ 2),\ sutry(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*2,\ 2),\ suscra(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*2,\ 2))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00287}00287\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00288}00288\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Input\ angle\ (unit\ \ Pi)\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *)\ angle\_rot}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ angle\_rot\ =\ angle\_rot*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}/2.d0\ \textcolor{comment}{!\ For\ the\ spin}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ surot(1,\ 1)\ =\ cos(angle\_rot)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ surot(2,\ 2)\ =\ surot(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ surot(2,\ 1)\ =\ -\/sin(angle\_rot)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ surot(1,\ 2)\ =\ -\/surot(2,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ rotation'}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ j,\ surot(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00300}00300\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00301}00301\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00302}00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Input\ theta,\ phi\ (unit\ \ Pi)\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (5,\ *)\ angle\_rot,\ phi\_rot}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ angle\_rot\ =\ angle\_rot*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}/2.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ phi\_rot\ =\ phi\_rot*\mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}/2.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00307}00307\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{convertpfaff_8f90_a306430f2c58cfa72af041fae8249c2f4}{fill\_surot}}(surot,\ angle\_rot,\ phi\_rot)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Matrix\ rotation'}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ j,\ surot(2*i\ -\/\ 1,\ j),\ surot(2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00313}00313\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00314}00314\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00315}00315\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00316}00316\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00317}00317\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00318}00318\ \ \ \ \ \ \ \ \ suscra\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00319}00319\ \ \ \ \ \ \ \ \ sutry\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00320}00320\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00321}00321\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00322}00322\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00323}00323\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Process\ unpaired\ orbitals\ and\ add\ to\ Pfaffian\ matrix}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00324}00324\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ handles\ unpaired\ orbitals\ by\ computing\ their}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00325}00325\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ contributions\ to\ the\ Pfaffian\ matrix,\ including\ both\ real\ and}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00326}00326\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ complex\ cases,\ and\ handles\ single\ unpaired\ orbital\ scenarios.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00327}00327\ \ \ \ \ \textcolor{keywordflow}{if}\ (unp2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00328}00328\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00329}00329\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nunp\ -\/\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}},\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00330}00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!Here\ I\ considered\ that\ the\ product\ is\ between\ two\ complex\ numbers}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rotmagn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_unp(i*2\ -\/\ 1,\ j)\ =\ mat\_unp(2*i\ -\/\ 1,\ j)\ +\ unpaired(2*i\ -\/\ 1,\ k)*unpaired(2*j\ -\/\ 1,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i\ -\/\ 1,\ k\ +\ 1)*unpaired(2*j\ -\/\ 1,\ k)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ (unpaired(2*i,\ k)*unpaired(2*j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i,\ k\ +\ 1)*unpaired(2*j,\ k))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_unp(i*2,\ j)\ =\ mat\_unp(2*i,\ j)\ +\ unpaired(2*i\ -\/\ 1,\ k)*unpaired(2*j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i\ -\/\ 1,\ k\ +\ 1)*unpaired(2*j,\ k)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00340}00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ unpaired(2*i,\ k)*unpaired(2*j\ -\/\ 1,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i,\ k\ +\ 1)*unpaired(2*j\ -\/\ 1,\ k)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00343}00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i*2\ -\/\ 1,\ j)\ =\ detmatout(2*i\ -\/\ 1,\ j)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ scale\_unp*(unpaired(2*i\ -\/\ 1,\ k)*unpaired(2*j\ -\/\ 1,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i\ -\/\ 1,\ k\ +\ 1)*unpaired(2*j\ -\/\ 1,\ k)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ (unpaired(2*i,\ k)*unpaired(2*j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ unpaired(2*i,\ k\ +\ 1)*unpaired(2*j,\ k)))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i*2,\ j)\ =\ detmatout(2*i,\ j)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ scale\_unp*(unpaired(2*i\ -\/\ 1,\ k)*unpaired(2*j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i\ -\/\ 1,\ k\ +\ 1)*unpaired(2*j,\ k)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ unpaired(2*i,\ k)*unpaired(2*j\ -\/\ 1,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(2*i,\ k\ +\ 1)*unpaired(2*j\ -\/\ 1,\ k))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00353}00353\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00354}00354\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00355}00355\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00356}00356\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00357}00357\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Read\ unpaired\ '},\ nunp,\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nunp}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Unpaired\ \#\ ='},\ k}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ unpaired(i,\ k)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00363}00363\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00364}00364\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ nunp\ -\/\ \mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}},\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rotmagn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mat\_unp(i,\ j)\ =\ mat\_unp(i,\ j)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ unpaired(i,\ k)*unpaired(j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00371}00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(i,\ k\ +\ 1)*unpaired(j,\ k)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j)\ =\ detmatout(i,\ j)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&+\ scale\_unp*(unpaired(i,\ k)*unpaired(j,\ k\ +\ 1)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&-\/\ unpaired(i,\ k\ +\ 1)*unpaired(j,\ k))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00376}00376\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00377}00377\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00378}00378\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00379}00379\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aed4699b968b437c4d57f3d5398bb4140}{ndiff}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ There\ is\ only\ one\ unpaired\ in\ the\ Pfaffian}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rotmagn\ .and.\ ipf\_in\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ nelcolout)\ =\ unpaired(i,\ nunp)/dsqrt(2.d0)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin,\ nelcolout)\ =\ unpaired(i,\ nunp)/dsqrt(2.d0)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00386}00386\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ nelcolout)\ =\ unpaired(i,\ nunp)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00390}00390\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00391}00391\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00392}00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00393}00393\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ mat\_unp\ =\ mat\_unp*scale\_unp\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00395}00395\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Handle\ symmetry\ for\ down-\/down\ correlations}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00396}00396\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @details\ This\ section\ applies\ symmetry\ considerations\ to\ define}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00397}00397\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ down-\/down\ correlations\ based\ on\ up-\/up\ correlations\ when}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00398}00398\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ pfaffup\ is\ false\ and\ symmagp\ is\ true.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \textcolor{comment}{!I'm\ not\ sure\ I\ really\ got\ how\ this\ uppfaff\ works}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_ac0409166662dee8d2301bb2c00bb81b4}{pfaffup}}\ .and.\ \mbox{\hyperlink{namespaceallio_a76c79489eb90ac3223c5b49296bea7ea}{symmagp}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ defining\ also\ down-\/down\ by\ symmetry\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1\ .or.\ .not.\ \mbox{\hyperlink{namespaceallio_a041665f14b4a481fd7533a14debc45c0}{yes\_hermite}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ j\ +\ nelorbin)\ =\ detmatout(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00406}00406\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00407}00407\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ ipc=2\ and\ yes\_hermite-\/-\/>\ the\ complex\ conjugate}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 2*nelorbin,\ 2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ 2*nelorbin,\ j\ +\ nelorbin)\ =\ detmatout(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ 1\ +\ 2*nelorbin,\ j\ +\ nelorbin)\ =\ -\/detmatout(i\ +\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00414}00414\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00415}00415\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00416}00416\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00417}00417\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00418}00418\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @brief\ Add\ unpaired\ orbital\ contributions\ to\ transformed\ matrix}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00419}00419\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ @details\ This\ section\ adds\ the\ unpaired\ orbital\ contributions\ to}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00420}00420\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ transformed\ Pfaffian\ matrix,\ handling\ both\ real\ and}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00421}00421\ \textcolor{comment}{\ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ complex\ cases\ with\ appropriate\ scaling\ factors.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nunp\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00423}00423\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00425}00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1:2*i,\ j)\ =\ detmatout(2*i\ -\/\ 1:2*i,\ j)\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1\ +\ nelorbin:2*i\ +\ nelorbin,\ j\ +\ nelorbin)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ detmatout(2*i\ -\/\ 1\ +\ nelorbin:2*i\ +\ nelorbin,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)\ =\ detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)\&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*j\ -\/\ 1\ +\ nelorbin:2*j\ +\ nelorbin,\ i)\ =\ -\/detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00432}00432\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00433}00433\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j)\ =\ detmatout(i,\ j)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin,\ j\ +\ nelorbin)\ =\ detmatout(i\ +\ nelorbin,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00439}00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j\ +\ nelorbin)\ =\ detmatout(i,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00440}00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(j\ +\ nelorbin,\ i)\ =\ -\/detmatout(i,\ j\ +\ nelorbin)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00441}00441\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00442}00442\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00443}00443\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00444}00444\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ nunp>0}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00445}00445\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00446}00446\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00447}00447\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Apply\ spin\ rotation\ transformations\ to\ magnetic\ systems}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00448}00448\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ performs\ spin\ rotation\ transformations\ for\ magnetic}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00449}00449\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ systems,\ handling\ both\ ipf=1\ and\ ipf=2\ cases\ with\ appropriate}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00450}00450\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ matrix\ operations\ for\ real\ and\ complex\ wave\ functions.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00451}00451\ \ \ \ \ \textcolor{keywordflow}{if}\ (rotmagn)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ rotating\ magnetic\ moment\ //\ x\ '}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00453}00453\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\_in\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00454}00454\ \ \ \ \ \ \ \ \ \ \ \ \ nelorbin2\ =\ nelorbin/2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00455}00455\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00456}00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00458}00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(1,\ 1)\ =\ detmatin(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00459}00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(2,\ 1)\ =\ detmatin(i\ +\ nelorbin2,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00460}00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(1,\ 2)\ =\ detmatin(i,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00461}00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(2,\ 2)\ =\ detmatin(i\ +\ nelorbin2,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00462}00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ su2\ rotation}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ 2,\ 2,\ 2,\ 1.d0,\ surot,\ 2,\ suscra,\ 2,\ 0.d0,\ sutry,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ 2,\ 2,\ 2,\ 1.d0,\ sutry,\ 2,\ surot,\ 2,\ 0.d0,\ suscra,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00465}00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j)\ =\ suscra(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00466}00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin2,\ j)\ =\ suscra(2,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j\ +\ nelorbin2)\ =\ suscra(1,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00468}00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin2,\ j\ +\ nelorbin2)\ =\ suscra(2,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00469}00469\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00470}00470\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00471}00471\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00472}00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin2}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(1,\ 1)\ =\ detmatin(2*i\ -\/\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00475}00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(2,\ 1)\ =\ detmatin(2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00476}00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(3,\ 1)\ =\ detmatin(2*i\ -\/\ 1\ +\ nelorbin2*2,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(4,\ 1)\ =\ detmatin(2*i\ +\ nelorbin2*2,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00478}00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(1,\ 2)\ =\ detmatin(2*i\ -\/\ 1,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00479}00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(2,\ 2)\ =\ detmatin(2*i,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00480}00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(3,\ 2)\ =\ detmatin(2*i\ -\/\ 1\ +\ nelorbin2*2,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00481}00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ suscra(4,\ 2)\ =\ detmatin(2*i\ +\ nelorbin2*2,\ j\ +\ nelorbin2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00482}00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ su2\ rotation}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00483}00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ 2,\ 2,\ 2,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ surot,\ 2,\ suscra,\ 2,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ sutry,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00484}00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ 2,\ 2,\ 2,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ sutry,\ 2,\ surot,\ 2,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ suscra,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00485}00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1,\ j)\ =\ suscra(1,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i,\ j)\ =\ suscra(2,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00487}00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1\ +\ nelorbin2*2,\ j)\ =\ suscra(3,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00488}00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ +\ nelorbin2*2,\ j)\ =\ suscra(4,\ 1)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1,\ j\ +\ nelorbin2)\ =\ suscra(1,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00490}00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i,\ j\ +\ nelorbin2)\ =\ suscra(2,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00491}00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1\ +\ nelorbin2*2,\ j\ +\ nelorbin2)\ =\ suscra(3,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00492}00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ +\ nelorbin2*2,\ j\ +\ nelorbin2)\ =\ suscra(4,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00493}00493\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00494}00494\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00495}00495\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00496}00496\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00497}00497\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00498}00498\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00499}00499\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ @brief\ Apply\ anti-\/symmetric\ transformation\ for\ ipf=1\ case}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00500}00500\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ @details\ This\ section\ applies\ the\ anti-\/symmetric\ transformation}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00501}00501\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ for\ the\ ipf=1\ case,\ creating\ the\ proper\ Pfaffian\ matrix}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00502}00502\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ !>\ \ \ \ \ \ \ \ \ \ structure\ with\ appropriate\ sign\ conventions.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00503}00503\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00504}00504\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1,\ j\ +\ nelorbin)\ =\ -\/(detmatin(2*i\ -\/\ 1,\ j)\ +\ detmatin(2*j\ -\/\ 1,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00507}00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i,\ j\ +\ nelorbin)\ =\ -\/(detmatin(2*i,\ j)\ +\ detmatin(2*j,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00508}00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(j\ +\ nelorbin)\ -\/\ 1,\ i)\ =\ (detmatin(2*i\ -\/\ 1,\ j)\ +\ detmatin(2*j\ -\/\ 1,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00509}00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(j\ +\ nelorbin),\ i)\ =\ (detmatin(2*i,\ j)\ +\ detmatin(2*j,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00510}00510\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1,\ j)\ =\ (detmatin(2*i\ -\/\ 1,\ j)\ -\/\ detmatin(2*j\ -\/\ 1,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00511}00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i,\ j)\ =\ (detmatin(2*i,\ j)\ -\/\ detmatin(2*j,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00512}00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(i\ +\ nelorbin)\ -\/\ 1,\ j\ +\ nelorbin)\ =\ -\/(detmatin(2*i\ -\/\ 1,\ j)\ -\/\ detmatin(2*j\ -\/\ 1,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*(i\ +\ nelorbin),\ j\ +\ nelorbin)\ =\ -\/(detmatin(2*i,\ j)\ -\/\ detmatin(2*j,\ i))*0.5}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00514}00514\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00515}00515\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00516}00516\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00517}00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00518}00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00519}00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j\ +\ nelorbin)\ =\ -\/(detmatin(i,\ j)\ +\ detmatin(j,\ i))*0.5d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00520}00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(j\ +\ nelorbin,\ i)\ =\ (detmatin(i,\ j)\ +\ detmatin(j,\ i))*0.5d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00521}00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j)\ =\ (detmatin(i,\ j)\ -\/\ detmatin(j,\ i))*0.5d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin,\ j\ +\ nelorbin)\ =\ -\/(detmatin(i,\ j)\ -\/\ detmatin(j,\ i))*0.5d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00523}00523\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00524}00524\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00525}00525\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00526}00526\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nunp\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00527}00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00528}00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00529}00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00530}00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1:2*i,\ j)\ =\ detmatout(2*i\ -\/\ 1:2*i,\ j)\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00531}00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1\ +\ nelorbin:2*i\ +\ nelorbin,\ j\ +\ nelorbin)\ \&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00532}00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ detmatout(2*i\ -\/\ 1\ +\ nelorbin:2*i\ +\ nelorbin,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00533}00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)\ =\ detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)\&}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00534}00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ 0.5d0*mat\_unp(2*i\ -\/\ 1:2*i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00535}00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(2*j\ -\/\ 1\ +\ nelorbin:2*j\ +\ nelorbin,\ i)\ =\ -\/detmatout(2*i\ -\/\ 1:2*i,\ j\ +\ nelorbin)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00536}00536\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00537}00537\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00538}00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00539}00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00540}00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelorbin}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00541}00541\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j)\ =\ detmatout(i,\ j)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00542}00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i\ +\ nelorbin,\ j\ +\ nelorbin)\ =\ detmatout(i\ +\ nelorbin,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00543}00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(i,\ j\ +\ nelorbin)\ =\ detmatout(i,\ j\ +\ nelorbin)\ +\ 0.5d0*mat\_unp(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00544}00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ detmatout(j\ +\ nelorbin,\ i)\ =\ -\/detmatout(i,\ j\ +\ nelorbin)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00545}00545\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00546}00546\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00547}00547\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00548}00548\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ nunp>0}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00549}00549\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}\ \textcolor{comment}{!\ ipf=1}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00550}00550\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!\ rotmagn}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00551}00551\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Write\ output\ matrices\ to\ internal\ storage\ and\ generate\ output\ file}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00552}00552\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ section\ transfers\ the\ converted\ Pfaffian\ matrix\ to\ the}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00553}00553\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ internal\ storage\ format\ and\ writes\ the\ final\ fort.10\_new\ file}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00554}00554\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ containing\ the\ converted\ Pfaffian\ wave\ function\ parameters.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00555}00555\ \ \ \ \ \textcolor{comment}{!Writing\ the\ output\ matrices}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00556}00556\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00557}00557\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a370823cb29fddd9361b80e29e827ee48}{contraction}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00558}00558\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a6dfd4ec251c5de2cc1af0d5df1843075}{detmat}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00559}00559\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcolout}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00560}00560\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbout*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00561}00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a6dfd4ec251c5de2cc1af0d5df1843075}{detmat}}(i\ +\ (j\ -\/\ 1)*(nelorbout*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}))\ =\ detmatout(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00562}00562\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00563}00563\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00564}00564\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00565}00565\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a6ea4f57eb5e4e55369d7b74d164cbc7a}{detmat\_c}}\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00566}00566\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nelcolout}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelorbout*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00568}00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a6ea4f57eb5e4e55369d7b74d164cbc7a}{detmat\_c}}(i\ +\ (j\ -\/\ 1)*(nelorbout*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}))\ =\ detmatout(i,\ j)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00569}00569\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00570}00570\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00571}00571\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00572}00572\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00573}00573\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10\_new'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00574}00574\ \ \ \ \ \textcolor{keyword}{call\ }write\_fort10(10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00575}00575\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00576}00576\ \ \ \ \ \textcolor{keyword}{call\ }deallocate\_all}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00577}00577\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(surot))\ \textcolor{keyword}{deallocate}\ (surot,\ sutry,\ suscra)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00578}00578\ \textcolor{keyword}{end\ program\ }\mbox{\hyperlink{convertpfaff_8f90_ae2a4e2417cc5238ab64f96249744d36f}{convertpfaff}}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00579}00579\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00580}00580\ \textcolor{comment}{!>\ @brief\ Fill\ complex\ rotation\ matrix\ for\ spin\ transformations}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00581}00581\ \textcolor{comment}{!>\ @details\ This\ subroutine\ constructs\ a\ complex\ 2x2\ rotation\ matrix\ for\ spin}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00582}00582\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ transformations\ using\ the\ SU(2)\ rotation\ formula:\ U\ =\ U\_z(2*phi)*U\_y(2*theta).}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00583}00583\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ The\ matrix\ is\ used\ for\ rotating\ spin\ states\ in\ magnetic\ systems.}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00584}00584\ \textcolor{comment}{!>\ @param[out]\ surot\ Complex*16\ 2x2\ rotation\ matrix}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00585}00585\ \textcolor{comment}{!>\ @param[in]\ angle\_rot\ Real*8\ rotation\ angle\ theta\ (in\ radians)}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00586}00586\ \textcolor{comment}{!>\ @param[in]\ phi\_rot\ Real*8\ rotation\ angle\ phi\ (in\ radians)}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00587}\mbox{\hyperlink{convertpfaff_8f90_a306430f2c58cfa72af041fae8249c2f4}{00587}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{convertpfaff_8f90_a306430f2c58cfa72af041fae8249c2f4}{fill\_surot}}(surot,\ angle\_rot,\ phi\_rot)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00588}00588\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00589}00589\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ surot(2,\ 2)}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00590}00590\ \ \ \ \ real*8\ angle\_rot,\ phi\_rot}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00591}00591\ \ \ \ \ \textcolor{comment}{!\ \ surot=\ U\_z(\ 2\ phi\_rot)\ U\_y(\ 2\ angle\_rot)\ \ Landau\ eq.58.6}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00592}00592\ \ \ \ \ surot(1,\ 1)\ =\ dcos(angle\_rot)*exp(dcmplx(0.d0,\ phi\_rot))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00593}00593\ \ \ \ \ surot(2,\ 2)\ =\ dconjg(surot(1,\ 1))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00594}00594\ \ \ \ \ surot(1,\ 2)\ =\ dsin(angle\_rot)*exp(dcmplx(0.d0,\ phi\_rot))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00595}00595\ \ \ \ \ surot(2,\ 1)\ =\ -\/dconjg(surot(1,\ 2))}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00596}00596\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00597}00597\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00598}00598\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00599}00599\ \textcolor{comment}{!\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00600}00600\ \textcolor{comment}{!namelist\ /option/}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00601}00601\ }
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00602}00602\ \textcolor{comment}{!\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}}
+\DoxyCodeLine{\Hypertarget{convertpfaff_8f90_source_l00603}00603\ }
+
+\end{DoxyCode}

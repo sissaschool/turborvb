@@ -1,0 +1,63 @@
+\doxysection{print\+\_\+eigenvalues.\+f90}
+\hypertarget{print__eigenvalues_8f90_source}{}\label{print__eigenvalues_8f90_source}\index{src/m\_common/print\_eigenvalues.f90@{src/m\_common/print\_eigenvalues.f90}}
+\mbox{\hyperlink{print__eigenvalues_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Print\ eigenvalues\ and\ determine\ matrix\ rank\ for\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ prints\ eigenvalues\ to\ output\ and\ determines\ the\ effective}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00019}00019\ \textcolor{comment}{!>\ rank\ of\ a\ matrix\ by\ counting\ non-\/zero\ eigenvalues.\ It\ is\ used\ in\ quantum}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00020}00020\ \textcolor{comment}{!>\ Monte\ Carlo\ calculations\ for\ analyzing\ matrix\ properties\ and\ numerical}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00021}00021\ \textcolor{comment}{!>\ stability.}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ rank\ MPI\ rank\ of\ the\ calling\ process}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ eig\ Array\ of\ eigenvalues\ to\ be\ printed}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ maxdimeig\ Maximum\ dimension\ of\ eigenvalue\ array}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ irankdet\ Effective\ rank\ of\ the\ matrix\ (number\ of\ non-\/zero\ eigenvalues)}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00027}00027\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00029}00029\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00030}00030\ \textcolor{comment}{!>\ 1.\ Initializes\ irankdet\ to\ 0}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00031}00031\ \textcolor{comment}{!>\ 2.\ Iterates\ through\ all\ eigenvalues\ from\ 1\ to\ maxdimeig:}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00032}00032\ \textcolor{comment}{!>\ \ \ \ -\/\ Checks\ if\ eigenvalue\ magnitude\ is\ greater\ than\ 1.0e-\/11}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00033}00033\ \textcolor{comment}{!>\ \ \ \ -\/\ Increments\ irankdet\ for\ each\ non-\/zero\ eigenvalue}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ -\/\ Prints\ eigenvalue\ index\ and\ value\ (only\ from\ rank\ 0)}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00035}00035\ \textcolor{comment}{!>\ 3.\ Returns\ the\ effective\ rank\ of\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00036}00036\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @note\ Only\ rank\ 0\ prints\ eigenvalues\ to\ avoid\ duplicate\ output\ in\ parallel}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @note\ Uses\ a\ threshold\ of\ 1.0e-\/11\ to\ determine\ non-\/zero\ eigenvalues}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00039}00039\ \textcolor{comment}{!>\ @note\ The\ effective\ rank\ represents\ the\ number\ of\ linearly\ independent}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00040}00040\ \textcolor{comment}{!>\ \ \ \ \ \ \ components\ in\ the\ matrix}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @note\ Used\ for\ analyzing\ overlap\ matrices,\ Hamiltonian\ matrices,\ and}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ \ \ \ other\ matrices\ in\ quantum\ Monte\ Carlo\ calculations}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @note\ The\ subroutine\ is\ useful\ for\ debugging\ and\ numerical\ stability\ analysis}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00044}\mbox{\hyperlink{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941}{00044}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941}{print\_eigenvalues}}(rank,\ eig,\ maxdimeig,\ irankdet)}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00046}00046\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ rank,\ maxdimeig}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ irankdet}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00048}00048\ \ \ \ \ real*8\ eig(*)}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00049}00049\ \ \ \ \ irankdet\ =\ 0}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ maxdimeig}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(eig(i))\ .gt.\ 1.d-\/11)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ irankdet\ =\ irankdet\ +\ 1}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00053}00053\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ i,\ eig(i)}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00055}00055\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{print__eigenvalues_8f90_source_l00057}00057\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{print__eigenvalues_8f90_a76262c167f471b4bbfa2515813a51941}{print\_eigenvalues}}}
+
+\end{DoxyCode}

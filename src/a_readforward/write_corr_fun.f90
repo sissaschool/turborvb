@@ -14,6 +14,55 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 
+!> @brief Writes correlation functions and related quantities to output files
+!> @details This subroutine writes various correlation functions and related
+!>          quantities to output files. It handles density, spin, structure
+!>          factors, pair correlations, and other observables. The subroutine
+!>          averages data over processors and computes error bars.
+!> @param[in] ebin Energy bins (0:maxf, *)
+!> @param[in] ebin2 Energy squared bins (0:maxf, *)
+!> @param[in] wbin Weight bins (0:maxf)
+!> @param[in] ibin Current bin index
+!> @param[in] ibinit Initial bin index
+!> @param[in] nind Number of independent quantities
+!> @param[in] maxf Maximum frequency
+!> @param[in] ddim Dimension of the system
+!> @param[in] ell System dimensions
+!> @param[in] nel Number of electrons
+!> @param[in] nelup Number of up-spin electrons
+!> @param[in] nrhoind Number of density indices
+!> @param[in] dxil Grid spacing
+!> @param[in] ind_offset Index offsets
+!> @param[in,out] psip Working array for averages
+!> @param[in] read_start Starting read index
+!> @param[in] ncell Number of cells
+!> @param[in] ifrho Flag for density calculation
+!> @param[in] ifspin Flag for spin calculation
+!> @param[in] ifkspin Flag for k-space spin calculation
+!> @param[in] iespbc Flag for periodic boundary conditions
+!> @param[in] atom_number Atomic numbers
+!> @param[in] datagrid Grid data
+!> @param[in] npairind Number of pair indices
+!> @param[in] dxil_p Pair grid spacing
+!> @param[in] ngrid_p Number of pair grid points
+!> @param[in] ind_offset_pair Pair index offsets
+!> @param[in] ifpair Flag for pair correlation
+!> @param[in] iffluct Flag for fluctuations
+!> @param[in] drmax Maximum distance for pair correlation
+!> @param[in] r_offset Position offset
+!> @param[in] vdim Vector dimensions
+!> @param[in] nskind Number of structure factor indices
+!> @param[in] ifsofk Flag for structure factor
+!> @param[in] fermi_flag Flag for Fermi surface
+!> @param[in] rkcomp Wave vector components
+!> @param[in] ndim Number of dimensions
+!> @param[in] simap Symmetry mapping
+!> @param[in] ifcorrs Flag for correlations
+!> @param[in] sphere_radius Sphere radius
+!> @param[in] sec_spc Section spacing
+!> @param[in] nshellsp Number of shells
+!> @param[in] iioniond Ion-ion distances
+!> @param[in] allshells Flag for all shells
 subroutine write_corr_fun(ebin, ebin2, wbin, ibin, ibinit, nind, maxf, ddim, ell, nel, nelup &
                           , nrhoind, dxil, ind_offset, psip, read_start, ncell &
                           , ifrho, ifspin, ifkspin &
@@ -202,6 +251,11 @@ subroutine write_corr_fun(ebin, ebin2, wbin, ibin, ibinit, nind, maxf, ddim, ell
 
 contains
 
+    !> @brief Writes electron density data to output files
+    !> @details This subroutine writes electron density data to output files
+    !>          in various formats including regular grid, pair correlation,
+    !>          and radial distribution functions. It handles both periodic
+    !>          and non-periodic systems with support for tilted cells.
     subroutine write_rho
         implicit none
         integer ip, jp, kp
@@ -572,6 +626,12 @@ contains
 
     end subroutine write_rho
 
+    !> @brief Writes spin density and correlation data to output files
+    !> @details This subroutine writes spin density data to output files
+    !>          including regular grid, pair correlation, and radial
+    !>          distribution functions. It handles both periodic and
+    !>          non-periodic systems with support for tilted cells.
+    !>          It also computes total magnetization and structure factors.
     subroutine write_spin
         implicit none
         integer ip, jp, kp
@@ -995,6 +1055,12 @@ contains
         end if
     end subroutine write_spin
 
+    !> @brief Writes structure factor data to output files
+    !> @details This subroutine writes structure factor data for different
+    !>          wave vectors to output files. It handles both regular
+    !>          structure factors and Fermi surface specific factors
+    !>          (up-up, down-down, up-down correlations). Supports
+    !>          tilted cells and complex wave vector calculations.
     subroutine write_sofk
         implicit none
         integer neldown
@@ -1131,6 +1197,11 @@ contains
         end if
     end subroutine write_sofk
 
+    !> @brief Writes correlation sampling data using bootstrap analysis
+    !> @details This subroutine writes correlation sampling data including
+    !>          reference energy, reweighted energy, energy differences,
+    !>          and overlap calculations. It uses bootstrap analysis to
+    !>          compute statistical errors and averages over processors.
     subroutine write_corrs
         implicit none
 
@@ -1179,6 +1250,10 @@ contains
         end if
     end subroutine write_corrs
 
+    !> @brief Writes Assaraf density data to output files
+    !> @details This subroutine writes Assaraf density data to output files.
+    !>          The Assaraf density is a specific type of density calculation
+    !>          that provides additional information about the system.
     subroutine write_rho_assar
         implicit none
         ! (Matteo) Calculating Assaraf density
@@ -1196,6 +1271,9 @@ contains
         close (read_start + 85)
     end subroutine write_rho_assar
 
+    !> @brief Writes correlation density data to output files
+    !> @details This subroutine writes correlation density data to output files.
+    !>          This provides information about density correlations in the system.
     subroutine write_rho_corr
         implicit none
         ! (Matteo) Calculating Assaraf density
@@ -1213,6 +1291,10 @@ contains
         close (read_start + 85)
     end subroutine write_rho_corr
 
+    !> @brief Writes spin square data to output files
+    !> @details This subroutine writes spin square data to output files.
+    !>          The spin square provides information about the total
+    !>          spin magnitude in the system.
     subroutine write_spin2
         implicit none
 
@@ -1233,6 +1315,11 @@ contains
         close (read_start + 91)
     end subroutine write_spin2
 
+    !> @brief Writes quasi-particle wave function data to output files
+    !> @details This subroutine writes quasi-particle wave function data
+    !>          to output files. It handles both real and complex wave
+    !>          functions, and can output data in different formats
+    !>          including regular grid and extracted radial data.
     subroutine write_qpwf
         implicit none
 
@@ -1284,6 +1371,11 @@ contains
 
     end subroutine write_qpwf
 
+    !> @brief Writes Berry phase data to output files
+    !> @details This subroutine writes Berry phase data to output files.
+    !>          The Berry phase provides information about geometric
+    !>          phases in the system, which are important for
+    !>          understanding topological properties.
     subroutine write_berry
         implicit none
         if (decouple_files) then
@@ -1298,6 +1390,12 @@ contains
         shift = shift + 6
     end subroutine write_berry
 
+    !> @brief Writes dipole and quadrupole moment data to output files
+    !> @details This subroutine writes dipole and quadrupole moment data
+    !>          to output files. It computes both electronic and nuclear
+    !>          contributions to these moments, including their magnitudes
+    !>          and individual components. It also diagonalizes the
+    !>          quadrupole tensor to find principal components.
     subroutine write_dipole
         implicit none
         real(8) :: d_mod
@@ -1395,6 +1493,17 @@ contains
 
 end subroutine write_corr_fun
 
+!> @brief Performs bootstrap analysis for statistical error estimation
+!> @details This subroutine performs bootstrap analysis to estimate
+!>          statistical errors in correlation sampling data. It reads
+!>          data from a file, performs multiple bootstrap resampling
+!>          iterations, and computes averages and error bars for
+!>          reference energy, reweighted energy, energy differences,
+!>          and overlap calculations.
+!> @param[in] unit File unit number for reading data
+!> @param[out] av Array of averages (4 elements)
+!> @param[out] err Array of error bars (4 elements)
+!> @param[out] nbin Number of bins read from file
 subroutine bootstrap(unit, av, err, nbin)
     use constants, only: ipc
     use allio, only: rank

@@ -13,6 +13,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Calculate mapping function for distance-dependent interactions
+!> @details    This function computes a mapping function based on the minimum
+!>             distance to ions, excluding ghost atoms (zeta=0). The mapping
+!>             provides a distance-dependent scaling factor for interactions.
+!> @param[in]  nion     Number of ions
+!> @param[in]  dist     Array of distances to ions
+!> @param[in]  zeta     Array of ion charges/weights
+!> @param[in]  b        Mapping parameter b
+!> @param[in]  c        Mapping parameter c
+!> @param[out] imin     Index of ion with minimum distance
+!> @param[out] imax     Index of ion with maximum distance
+!> @return     mapping  Mapping function value
 function mapping(nion, dist, zeta, b, c, imin, imax)
     !
     implicit none

@@ -1,0 +1,103 @@
+\doxysection{src/d\+\_\+qlapack/zgemv.f File Reference}
+\hypertarget{zgemv_8f}{}\label{zgemv_8f}\index{src/d\_qlapack/zgemv.f@{src/d\_qlapack/zgemv.f}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{zgemv_8f_a2727fc5adcdcb91bf17c2b7d5ea0f6b7}{zgemv\+\_\+}} (trans, m, n, alpha, a, lda, x, incx, beta, y, incy, yes\+\_\+ontarget)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{zgemv_8f_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{zgemv_8f_a2727fc5adcdcb91bf17c2b7d5ea0f6b7}\index{zgemv.f@{zgemv.f}!zgemv\_@{zgemv\_}}
+\index{zgemv\_@{zgemv\_}!zgemv.f@{zgemv.f}}
+\doxysubsubsection{\texorpdfstring{zgemv\_()}{zgemv\_()}}
+{\footnotesize\ttfamily \label{zgemv_8f_a2727fc5adcdcb91bf17c2b7d5ea0f6b7} 
+subroutine zgemv\+\_\+ (\begin{DoxyParamCaption}\item[{character}]{trans}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{m}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{n}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{alpha}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(lda, \texorpdfstring{$\ast$}{*})}]{a}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{lda}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(\texorpdfstring{$\ast$}{*})}]{x}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incx}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16}]{beta}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(\texorpdfstring{$\ast$}{*})}]{y}{, }\item[{integer\texorpdfstring{$\ast$}{*}4}]{incy}{, }\item[{logical}]{yes\+\_\+ontarget}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{zgemv_8f_source_l00019}{19}} of file \mbox{\hyperlink{zgemv_8f_source}{zgemv.\+f}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ alpha,\ beta,\ A(lda,\ *),\ X(*),\ Y(*)}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ incx,\ incy,\ lda,\ M,\ N}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{keywordtype}{CHARACTER}\ ::\ trans}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordtype}{LOGICAL}\ ::\ yes\_ontarget}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ ::\ one,\ zero}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ parameter(one=(1.0d+0,0.0d+0),\ zero=(0.0d+0,0.0d+0))}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordtype}{INTEGER*4}\ ::\ I,\ J,\ info,\ lenx,\ leny}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ max}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#ifndef\ \_OFFLOAD}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ \_CUBLAS}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{IF}(.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemv\_offload\_(trans,m,n,alpha,a,lda,x}
+\DoxyCodeLine{00044\ \ \ \ \ \ +,incx,beta,y,incy)}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync\_}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cublas\_zgemv\_offload(trans,m,n,alpha,a,lda,x}
+\DoxyCodeLine{00048\ \ \ \ \ \ +,incx,beta,y,incy)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }cudasync}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{}\ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (.NOT.yes\_ontarget)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }zgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (m.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ info\ =\ 2}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (n.LT.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ info\ =\ 3}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (lda.LT.max(1,m))\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ info\ =\ 6}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incx.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ info\ =\ 8}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}\ \textcolor{keywordflow}{IF}\ (incy.EQ.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ info\ =\ 11}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (info.NE.0\ .OR.}
+\DoxyCodeLine{00072\ \ \ \ \ \ +\ \ \ \ m.EQ.0\ .OR.}
+\DoxyCodeLine{00073\ \ \ \ \ \ +\ \ \ \ n.EQ.0\ .OR.}
+\DoxyCodeLine{00074\ \ \ \ \ \ +\ \ \ \ ((alpha.EQ.zero)\ .AND.\ (beta.EQ.one)))\ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (trans.EQ.\textcolor{stringliteral}{'N'}.OR.trans.EQ.\textcolor{stringliteral}{'n'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{zgemvn_8f_a09d114605fac3a14885c47736f25e79f}{zgemvn\_offload}}(m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00078\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (trans.EQ.\textcolor{stringliteral}{'T'}.OR.trans.EQ.\textcolor{stringliteral}{'t'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{zgemvt_8f_a828a010051cabf051dfa422057254c7c}{zgemvt\_offload}}(m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (trans.EQ.\textcolor{stringliteral}{'C'}.OR.trans.EQ.\textcolor{stringliteral}{'c'})\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{CALL\ }\mbox{\hyperlink{zgemvt_8f_a818b3a763010edff88de7e751dd6b5ce}{zgemvc\_offload}}(m,n,alpha,a,lda,x,incx,beta,y,incy)}
+\DoxyCodeLine{00084\ \textcolor{keywordflow}{\ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \textcolor{keywordflow}{RETURN}}
+\DoxyCodeLine{00089\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{zgemvt_8f_source_l00090}{zgemvc\+\_\+offload()}}, \mbox{\hyperlink{zgemvn_8f_source_l00033}{zgemvn\+\_\+offload()}}, and \mbox{\hyperlink{zgemvt_8f_source_l00033}{zgemvt\+\_\+offload()}}.
+
+
+
+Referenced by \mbox{\hyperlink{ratiovar_8f90_source_l00027}{ratiovar()}}, \mbox{\hyperlink{test__zgemv_8f90_source_l00016}{test\+\_\+zgemv()}}, \mbox{\hyperlink{upinvhop__fnf__new_8f90_source_l00021}{upinvhop\+\_\+fnf()}}, and \mbox{\hyperlink{uptabtot__new_8f90_source_l00166}{uptabtot()}}.
+

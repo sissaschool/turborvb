@@ -13,6 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Transform psi parameters for complex wave functions
+!> @details    Transforms psi parameters (psip) for complex wave functions by
+!>             reorganizing the parameter array according to transformation indices.
+!>             Handles both real (ipc=1) and complex (ipc=2) cases. First copies
+!>             zeta parameters using iesuptrans mapping, then processes mu_c
+!>             coefficients using transpip and multranspip arrays.
+!> @param[in,out] psip         Psi parameter array to transform
+!> @param[in]  iesupr         Number of real parameters
+!> @param[in]  iesupc         Number of complex parameters
+!> @param[in]  iesuptrans     Transformation indices for real parameters
+!> @param[in]  multranspip    Multiplicity array for complex parameters
+!> @param[in]  transpip       Transformation array for complex parameters
+!> @param[in]  derdet_mu      Derivative determinant mu array
 subroutine transpsip_complex(psip, iesupr, iesupc, iesuptrans&
         &, multranspip, transpip, derdet_mu)
     use types

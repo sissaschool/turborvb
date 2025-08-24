@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Variable selection and analysis program for TurboRVB
+!> @details This program performs variable selection and analysis using
+!> polynomial fitting with various transformation options. It supports
+!> machine learning approaches with evidence-based model selection.
+!> The program can handle different input formats and provides
+!> statistical error analysis through Monte Carlo sampling.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program fitvsa
     implicit none
     real*8 res, errscale, r1, r2, zeta, pi, drand1, xk, xmax, power&

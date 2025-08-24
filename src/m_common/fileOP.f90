@@ -13,6 +13,43 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file fileOP.f90
+!> @brief File operations and I/O management module for TurboRVB
+!> @details This module provides comprehensive file I/O operations for TurboRVB,
+!>          including scratch directory management, file opening/closing,
+!>          and parallel I/O support. It handles various output files for
+!>          energy, forces, positions, and other simulation data.
+!> @author TurboRVB group
+!> @date 2022
+!> @section Features
+!> - Scratch directory setup and validation
+!> - Parallel I/O support (POSIX and MPI-IO)
+!> - Multiple output file formats
+!> - Rank-based file naming
+!> @section Files
+!> Key output files include:
+!> - fort.11: Energy data
+!> - fort.12: Ionic forces and positions
+!> - forces.dat: Formatted force data
+!> - position.dat: Formatted position data
+!> - pressure.dat: Pressure data (PBC)
+!> - velocity.dat: Velocity data (dynamics)
+!=======================================================================
+
+!-----------------------------------------------------------------------
+!> @brief Check and setup scratch directory for file operations
+!> @details This subroutine validates the scratch directory path and sets up
+!>          the necessary directory structure for temporary files. It handles
+!>          both local and distributed scratch directories, and creates
+!>          rank-specific identifiers for parallel runs.
+!> @param[in] rank MPI rank of the current process
+!> @param[in] path Current working directory path
+!> @param[out] scratchpath Validated scratch directory path
+!> @note Creates turborvb.scratch subdirectory if io_level > 0
+!> @note Generates rank-specific character identifiers (chara, charaq)
+!> @note Validates directory existence across all nodes
+!> @note Handles KCOMP compiler-specific behavior
 subroutine check_scratch(rank, path, scratchpath)
     use allio, only: oldscra, wherescratch, chara, charaq, rankrep, rankcolrep&
             &, yesquantum, io_level, manyfort10, yesdft
@@ -76,6 +113,27 @@ subroutine check_scratch(rank, path, scratchpath)
 
 end subroutine check_scratch
 
+!-----------------------------------------------------------------------
+!> @brief Open all necessary files for TurboRVB simulation
+!> @details This subroutine opens various output files based on simulation
+!>          parameters and I/O level settings. It handles both serial and
+!>          parallel I/O modes, including POSIX and MPI-IO support.
+!> @param[in] rank MPI rank of the current process
+!> @param[in] scratchpath Scratch directory path for temporary files
+!> @note Opens different files based on itestr, iopt, and other flags
+!> @note Supports multiple I/O levels (0=local, 1=POSIX, 2=MPI-IO)
+!> @note Creates rank-specific file names for parallel runs
+!> @note Handles quantum/classical decoupled runs
+!> @section Files
+!> Files opened include:
+!> - fort.11: Energy data (unformatted)
+!> - fort.12: Forces and positions (unformatted)
+!> - forces.dat: Formatted force data
+!> - position.dat: Formatted position data
+!> - pressure.dat: Pressure data (PBC)
+!> - velocity.dat: Velocity data (dynamics)
+!> - covmat.dat: Covariance matrix data
+!> - parametrization.dat: Parameter optimization data
 subroutine open_files(rank, scratchpath)
     use allio, only: iopt, itestr, ieskint, idyn, iespbc, ncg_adr, npower, npowersz&
             &, iread, wherescratch, writescratch, kl, chara, write_cov&
@@ -267,6 +325,17 @@ subroutine open_files(rank, scratchpath)
 101 call error(' open_files ', ' fort.10 for each k-point needed!!! ', 1, rank)
 end subroutine open_files
 
+!-----------------------------------------------------------------------
+!> @brief Close all opened files and cleanup resources
+!> @details This subroutine closes all files opened by open_files and
+!>          performs necessary cleanup operations. It handles both serial
+!>          and parallel I/O modes, including MPI-IO file handles.
+!> @param[in] rank MPI rank of the current process
+!> @note Closes files based on simulation parameters (itestr, iopt, etc.)
+!> @note Handles different I/O levels (0=local, 1=POSIX, 2=MPI-IO)
+!> @note Deletes temporary scratch files when writescratch=0
+!> @note Closes MPI-IO handles for parallel runs
+!> @note Only rank 0 closes main output files
 subroutine close_files(rank)
     use allio, only: itestr, ieskint, idyn, iespbc, ncg_adr, iread, writescratch&
             &, kl, write_cov, yesquantum, rankrep, yeswrite10, io_level, kelcont&

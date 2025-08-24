@@ -13,6 +13,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes vectors within a cutoff radius in reciprocal space
+!> @details Computes vectors x(ndim)=(a(1)*n(1),...,a(ndim)*n(ndim)) where n(i) are integers
+!>          and x(1)^2 + ... + x(ndim)^2 <= cut^2. The vectors are stored in rkcomp ordered
+!>          by their norms. Also computes the number of different norm values (nshlls) and
+!>          stores the norms in rknorm with their multiplicities in kmult.
+!> @param[in] ndim Dimension of space
+!> @param[in] a Array of lattice parameters (mdim)
+!> @param[in] cut Cutoff radius
+!> @param[out] nshlls Number of different norm values found
+!> @param[out] rkcomp Array storing the computed vectors (mdim,mnkv)
+!> @param[out] rknorm Array storing the different norm values (0:mnsh)
+!> @param[out] kmult Array storing multiplicities of each norm (0:mnsh)
+!> @param[out] nvects Total number of vectors found
+!> @param[in] mnkv Maximum number of vectors allowed
+!> @param[in] mnsh Maximum number of shells allowed
+!> @param[in] mdim Dimension of arrays
 subroutine shells(ndim, a, cut, nshlls, rkcomp, rknorm, kmult           &
         &, nvects, mnkv, mnsh, mdim)
     !      implicit real*8 (a-h,o-z)

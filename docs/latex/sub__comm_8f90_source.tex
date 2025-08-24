@@ -1,0 +1,164 @@
+\doxysection{sub\+\_\+comm.\+f90}
+\hypertarget{sub__comm_8f90_source}{}\label{sub__comm_8f90_source}\index{src/m\_common/sub\_comm.f90@{src/m\_common/sub\_comm.f90}}
+\mbox{\hyperlink{sub__comm_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ MPI\ sub-\/communicator\ management\ for\ parallel\ quantum\ Monte\ Carlo}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ module\ provides\ functionality\ for\ creating\ and\ managing\ MPI}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00019}00019\ \textcolor{comment}{!>\ sub-\/communicators\ used\ in\ parallel\ quantum\ Monte\ Carlo\ calculations.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00020}00020\ \textcolor{comment}{!>\ It\ allows\ for\ dynamic\ creation\ of\ smaller\ communication\ groups}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00021}00021\ \textcolor{comment}{!>\ from\ larger\ parent\ communicators,\ enabling\ efficient\ parallel}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00022}00022\ \textcolor{comment}{!>\ processing\ with\ different\ group\ sizes.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00023}00023\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00024}00024\ \textcolor{comment}{!>\ The\ module\ includes:}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00025}00025\ \textcolor{comment}{!>\ -\/\ Derived\ type\ for\ sub-\/communicator\ information}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00026}00026\ \textcolor{comment}{!>\ -\/\ Subroutine\ for\ creating\ sub-\/communicators}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00027}00027\ \textcolor{comment}{!>\ -\/\ Subroutine\ for\ freeing\ sub-\/communicators}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00028}00028\ \textcolor{comment}{!>\ -\/\ Support\ for\ both\ parallel\ and\ serial\ execution\ modes}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00029}00029\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00034}\mbox{\hyperlink{namespacesub__comm}{00034}}\ \textcolor{keyword}{module}\ \mbox{\hyperlink{namespacesub__comm}{sub\_comm}}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00036}00036\ \ \ \ \ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00037}00037\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Derived\ type\ for\ MPI\ sub-\/communicator\ information}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00038}00038\ \textcolor{comment}{\ \ \ \ !>\ @details\ Contains\ all\ necessary\ information\ for\ managing\ a\ sub-\/communicator:}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00039}00039\ \textcolor{comment}{\ \ \ \ !>\ -\/\ rank:\ Rank\ of\ current\ process\ in\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00040}00040\ \textcolor{comment}{\ \ \ \ !>\ -\/\ nproc:\ Number\ of\ processes\ in\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00041}00041\ \textcolor{comment}{\ \ \ \ !>\ -\/\ comm:\ MPI\ communicator\ handle\ for\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00042}00042\ \textcolor{comment}{\ \ \ \ !>\ -\/\ parent:\ Parent\ communicator\ handle}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00043}00043\ \textcolor{comment}{\ \ \ \ !>\ -\/\ yesin:\ Logical\ flag\ indicating\ if\ current\ process\ is\ in\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00044}\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{00044}}\ \ \ \ \ \textcolor{keyword}{type}\ ::\ \mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\_sub\_comm}}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00045}\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm_a4b743c73c5eff23cca2c01900a6676e8}{00045}}\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ rank,\ nproc}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00046}\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm_acb83e7444539d924d6532bdca6f82700}{00046}}\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ comm,\ parent}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00047}\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm_a0d89de470300cbe9888dbce47a557ec9}{00047}}\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{logical}\ yesin}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keyword}{end\ type}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00049}00049\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00050}00050\ \textcolor{keyword}{contains}\textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00051}00051\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Create\ a\ new\ MPI\ sub-\/communicator\ from\ a\ parent\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00052}00052\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00053}00053\ \textcolor{comment}{\ \ \ \ !>\ This\ subroutine\ creates\ a\ new\ MPI\ sub-\/communicator\ containing\ a\ subset}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00054}00054\ \textcolor{comment}{\ \ \ \ !>\ of\ processes\ from\ the\ parent\ communicator.\ It\ is\ useful\ for\ creating}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00055}00055\ \textcolor{comment}{\ \ \ \ !>\ smaller\ communication\ groups\ for\ specific\ parallel\ operations.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00056}00056\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00057}00057\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ parent\_comm\ Parent\ MPI\ communicator\ handle}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00058}00058\ \textcolor{comment}{\ \ \ \ !>\ @param[in]\ new\_size\ Number\ of\ processes\ in\ the\ new\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00059}00059\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ child\ Sub-\/communicator\ information\ structure}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00060}00060\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ ierror\ MPI\ error\ code}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00061}00061\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00062}00062\ \textcolor{comment}{\ \ \ \ !>\ @details}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00063}00063\ \textcolor{comment}{\ \ \ \ !>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00064}00064\ \textcolor{comment}{\ \ \ \ !>\ 1.\ Allocates\ rank\ array\ for\ the\ new\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00065}00065\ \textcolor{comment}{\ \ \ \ !>\ 2.\ Assigns\ ranks\ 0\ to\ new\_size-\/1\ to\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00066}00066\ \textcolor{comment}{\ \ \ \ !>\ 3.\ Creates\ MPI\ group\ from\ the\ parent\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00067}00067\ \textcolor{comment}{\ \ \ \ !>\ 4.\ Creates\ new\ group\ with\ specified\ ranks}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00068}00068\ \textcolor{comment}{\ \ \ \ !>\ 5.\ Creates\ new\ communicator\ from\ the\ group}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00069}00069\ \textcolor{comment}{\ \ \ \ !>\ 6.\ Determines\ rank\ and\ membership\ in\ the\ new\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00070}00070\ \textcolor{comment}{\ \ \ \ !>\ 7.\ Frees\ temporary\ groups\ and\ deallocates\ arrays}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00071}00071\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00072}00072\ \textcolor{comment}{\ \ \ \ !>\ @note\ In\ serial\ mode,\ new\_size\ is\ forced\ to\ 1}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00073}00073\ \textcolor{comment}{\ \ \ \ !>\ @note\ Processes\ not\ included\ in\ the\ sub-\/communicator\ have\ yesin\ =\ .false.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00074}00074\ \textcolor{comment}{\ \ \ \ !>\ @note\ The\ subroutine\ handles\ both\ parallel\ and\ serial\ execution\ modes}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00075}00075\ \textcolor{comment}{\ \ \ \ !>\ @note\ Used\ for\ creating\ specialized\ communication\ groups\ in\ parallel\ QMC}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00076}\mbox{\hyperlink{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749}{00076}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749}{mpi\_sub\_comm\_create}}(parent\_comm,\ new\_size,\ child,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00078}00078\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00079}00079\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00080}00080\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00081}00081\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ parent\_comm,\ new\_size,\ ierror}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\_sub\_comm}})\ ::\ child}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00083}00083\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ orig\_group,\ sub\_group,\ i}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ranks}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00086}00086\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00087}00087\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00088}00088\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00089}00089\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_size\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ changing\ number\ of\ processors\ to\ 1\ in\ serial\ '}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ new\_size\ =\ 1}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00092}00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (ranks(new\_size))}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00094}00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00095}00095\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ new\_size}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ ranks(i)\ =\ i\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00097}00097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00098}00098\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ child\%parent\ =\ parent\_comm}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00100}00100\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00101}00101\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_group(parent\_comm,\ orig\_group,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_incl(orig\_group,\ new\_size,\ ranks,\ sub\_group,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_create(parent\_comm,\ sub\_group,\ child\%comm,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_rank(sub\_group,\ child\%rank,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%rank\ .eq.\ mpi\_undefined)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00111}00111\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00112}00112\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ child\%nproc\ =\ new\_size}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ child\%yesin\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00114}00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00115}00115\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ write(6,*)\ child\%rank,"{}xx"{},new\_size}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00118}00118\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00119}00119\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(orig\_group,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_group\_free(sub\_group,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00121}00121\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00122}00122\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (ranks)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00125}00125\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacesub__comm_a389a7050532a7973ea070fe71a2e5749}{mpi\_sub\_comm\_create}}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00126}00126\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00127}00127\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Free\ an\ MPI\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00128}00128\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00129}00129\ \textcolor{comment}{\ \ \ \ !>\ This\ subroutine\ properly\ frees\ an\ MPI\ sub-\/communicator\ and\ its}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00130}00130\ \textcolor{comment}{\ \ \ \ !>\ associated\ resources.\ It\ ensures\ clean\ deallocation\ of\ MPI}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00131}00131\ \textcolor{comment}{\ \ \ \ !>\ communicator\ handles\ to\ prevent\ memory\ leaks.}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00132}00132\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00133}00133\ \textcolor{comment}{\ \ \ \ !>\ @param[in,out]\ child\ Sub-\/communicator\ structure\ to\ be\ freed}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00134}00134\ \textcolor{comment}{\ \ \ \ !>\ @param[out]\ ierror\ MPI\ error\ code}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00135}00135\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00136}00136\ \textcolor{comment}{\ \ \ \ !>\ @details}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00137}00137\ \textcolor{comment}{\ \ \ \ !>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00138}00138\ \textcolor{comment}{\ \ \ \ !>\ 1.\ Checks\ if\ the\ current\ process\ is\ a\ member\ of\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00139}00139\ \textcolor{comment}{\ \ \ \ !>\ 2.\ If\ yesin\ =\ .true.,\ calls\ MPI\_COMM\_FREE\ to\ deallocate\ the\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00140}00140\ \textcolor{comment}{\ \ \ \ !>\ 3.\ Handles\ both\ parallel\ and\ serial\ execution\ modes}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00141}00141\ \textcolor{comment}{\ \ \ \ !>}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00142}00142\ \textcolor{comment}{\ \ \ \ !>\ @note\ Only\ processes\ that\ are\ members\ of\ the\ sub-\/communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00143}00143\ \textcolor{comment}{!>\ \ \ \ \ \ \ participate\ in\ the\ MPI\_COMM\_FREE\ call}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00144}00144\ \textcolor{comment}{!>\ @note\ The\ subroutine\ is\ safe\ to\ call\ even\ if\ the\ communicator}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00145}00145\ \textcolor{comment}{!>\ \ \ \ \ \ \ was\ not\ properly\ created}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00146}00146\ \textcolor{comment}{!>\ @note\ Used\ for\ cleanup\ after\ parallel\ operations\ are\ complete}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00147}\mbox{\hyperlink{namespacesub__comm_a68f756638020505901020b6055e639a6}{00147}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{namespacesub__comm_a68f756638020505901020b6055e639a6}{mpi\_sub\_comm\_free}}(child,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ ierror}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00150}00150\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{type}(\mbox{\hyperlink{structsub__comm_1_1mpi__sub__comm}{mpi\_sub\_comm}})\ ::\ child}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00151}00151\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00152}00152\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00153}00153\ }
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\%yesin)\ \textcolor{keyword}{call\ }mpi\_comm\_free(child\%comm,\ ierror)}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00155}00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00156}00156\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00157}00157\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{namespacesub__comm_a68f756638020505901020b6055e639a6}{mpi\_sub\_comm\_free}}}
+\DoxyCodeLine{\Hypertarget{sub__comm_8f90_source_l00158}00158\ \textcolor{keyword}{end\ module\ }\mbox{\hyperlink{namespacesub__comm}{sub\_comm}}}
+
+\end{DoxyCode}

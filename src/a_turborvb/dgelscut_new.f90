@@ -13,6 +13,28 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Cut-off procedure for stochastic reconfiguration matrix using eigenvalue analysis
+!> @details This subroutine performs a cut-off procedure on the stochastic reconfiguration (SR) matrix
+!> by eliminating parameters with eigenvalues below a threshold epsdgel. The algorithm diagonalizes
+!> the SR matrix and iteratively removes parameters with the smallest eigenvalues until all remaining
+!> eigenvalues are above the threshold. This helps stabilize the optimization process by removing
+!> ill-conditioned parameters.
+!> @param[in,out] sov SR matrix (input), transformed matrix (output)
+!> @param[in] nmat Dimension of the SR matrix
+!> @param[in] npm Leading dimension of matrix sov
+!> @param[in,out] psip Work array for eigenvalue storage and temporary calculations
+!> @param[in] epsdgel Eigenvalue threshold for parameter elimination
+!> @param[in,out] ipsip Parameter status array (1=active, 0=eliminated)
+!> @param[in] np Number of parameters
+!> @param[out] info Information flag from eigenvalue solver
+!> @param[in] scalpar Parameter scaling factors
+!> @param[in] lwork Size of work array for eigenvalue solver
+!> @param[in] epsmach Machine precision
+!> @param[in] indexpar Parameter index mapping
+!> @param[in] rank Current processor rank
+!> @param[in] nprocopt Number of processors for optimization
+!> @param[in] rankopt Rank for optimization
+!> @param[in] commopt_mpi MPI communicator for optimization
 subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
         &, scalpar, lwork, epsmach, indexpar, rank, nprocopt, rankopt, commopt_mpi)
     use allio, only: nproc_diag

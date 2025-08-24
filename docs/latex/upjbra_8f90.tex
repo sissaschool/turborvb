@@ -1,0 +1,78 @@
+\doxysection{src/a\+\_\+turborvb/upjbra.f90 File Reference}
+\hypertarget{upjbra_8f90}{}\label{upjbra_8f90}\index{src/a\_turborvb/upjbra.f90@{src/a\_turborvb/upjbra.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{upjbra}} (nw, jbra, ipip, indz)
+\begin{DoxyCompactList}\small\item\em Update Jastrow branching array for walker redistribution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upjbra_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}\index{upjbra.f90@{upjbra.f90}!upjbra@{upjbra}}
+\index{upjbra@{upjbra}!upjbra.f90@{upjbra.f90}}
+\doxysubsubsection{\texorpdfstring{upjbra()}{upjbra()}}
+{\footnotesize\ttfamily \label{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded} 
+subroutine upjbra (\begin{DoxyParamCaption}\item[{integer}]{nw}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{jbra}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{ipip}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{indz}{}\end{DoxyParamCaption})}
+
+
+
+Update Jastrow branching array for walker redistribution. 
+
+This subroutine updates the Jastrow branching array (jbra) to redistribute walkers after branching. It identifies killed walkers and replaces them with replicated walkers to maintain the total number of walkers. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nw} & Number of walkers \\
+\hline
+\mbox{\texttt{in,out}}  & {\em jbra} & Jastrow branching array \\
+\hline
+\mbox{\texttt{out}}  & {\em ipip} & Temporary array for counting walkers \\
+\hline
+\mbox{\texttt{out}}  & {\em indz} & Array storing positions of killed walkers \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{upjbra_8f90_source_l00025}{25}} of file \mbox{\hyperlink{upjbra_8f90_source}{upjbra.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{integer}\ jbra(*),\ ipip(*),\ indz(*),\ j,\ i,\ nw,\ ind}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ before\ I\ make\ another\ permutation\ to\ optimize\ the\ reshuff}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ in1=\#\ walkers\ in\ each\ processor\ nw/in1=integer>=1}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ ipip(j)\ =\ 0}
+\DoxyCodeLine{00033\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ ind\ =\ jbra(j)}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ ipip(ind)\ =\ ipip(ind)\ +\ 1}
+\DoxyCodeLine{00037\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00038\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ store\ the\ position\ of\ the\ killed\ walkers}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipip(j)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ indz(ind)\ =\ j}
+\DoxyCodeLine{00044\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00045\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ now\ update\ jbra}}
+\DoxyCodeLine{00047\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipip(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ jbra(j)\ =\ j}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ the\ replicated\ walkers\ take\ the\ position\ of\ the\ killed\ ones}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ ipip(j)}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbra(indz(ind))\ =\ j}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00057\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{branchingo_8f90_source_l00030}{branchingo()}}.
+

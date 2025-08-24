@@ -1,0 +1,81 @@
+\doxysection{invmat.\+f90}
+\hypertarget{invmat_8f90_source}{}\label{invmat_8f90_source}\index{src/a\_makefort10/invmat.f90@{src/a\_makefort10/invmat.f90}}
+\mbox{\hyperlink{invmat_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group\ based\ on\ code\ by}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00002}00002\ \textcolor{comment}{!\ Copyright\ (C)\ 2004\ PWSCF-\/CP-\/FPMD\ group}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00003}00003\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00004}00004\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00005}00005\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00006}00006\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00007}00007\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00008}00008\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00009}00009\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00010}00010\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00011}00011\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00012}00012\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00013}00013\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00014}00014\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00015}00015\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00017}00017\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00018}00018\ \textcolor{preprocessor}{\#include\ "{}f\_defs.h"{}}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00019}00019\ \textcolor{preprocessor}{}\textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00020}00020\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @brief\ Compute\ the\ inverse\ of\ a\ matrix\ using\ LAPACK}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @details\ This\ subroutine\ computes\ the\ inverse\ of\ a\ square\ matrix\ using}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00023}00023\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ LAPACK\ routines\ DGETRF\ (LU\ decomposition)\ and\ DGETRI\ (inversion).}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00024}00024\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ For\ 3x3\ matrices,\ it\ also\ computes\ the\ determinant.\ The\ original}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00025}00025\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ matrix\ is\ preserved\ and\ the\ inverse\ is\ stored\ in\ a\ separate\ array.}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00026}00026\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00027}00027\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ The\ subroutine\ uses:}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00028}00028\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ DGETRF:\ LU\ decomposition\ with\ partial\ pivoting}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00029}00029\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ DGETRI:\ Matrix\ inversion\ using\ LU\ decomposition}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00030}00030\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ -\/\ Explicit\ determinant\ calculation\ for\ 3x3\ matrices}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00031}00031\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ n\ Matrix\ dimension}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ a\ Input\ matrix\ (n,\ n)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[out]\ a\_inv\ Inverse\ matrix\ (n,\ n)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[out]\ da\ Determinant\ (computed\ only\ for\ n=3)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00036}00036\ \textcolor{keyword}{subroutine\ }invmat(n,\ a,\ a\_inv,\ da)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ computes\ the\ inverse\ "{}a\_inv"{}\ of\ matrix\ "{}a"{},\ both\ dimensioned\ (n,n)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!\ if\ the\ matrix\ is\ dimensioned\ 3x3,\ it\ also\ computes\ determinant\ "{}da"{}}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00040}00040\ \ \ \ \ \textcolor{comment}{!\ matrix\ "{}a"{}\ is\ unchanged\ on\ output\ -\/\ LAPACK}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00041}00041\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekinds}{kinds}}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ n}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00045}00045\ \textcolor{keywordtype}{\ \ \ \ real}(DP),\ \textcolor{keywordtype}{dimension(n,\ n)}\ ::\ a,\ a\_inv}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00046}00046\ \textcolor{keywordtype}{\ \ \ \ real}(DP)\ ::\ da}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ info,\ lda,\ lwork,\ ipiv(n)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ info=0:\ inversion\ was\ successful}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ lda\ \ \ :\ leading\ dimension\ (the\ same\ as\ n)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ ipiv\ \ :\ work\ space\ for\ pivoting\ (assumed\ of\ length\ lwork=n)}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00052}00052\ \textcolor{keywordtype}{\ \ \ \ real}(DP)\ ::\ work(n)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00053}00053\ \ \ \ \ \textcolor{comment}{!\ more\ work\ space}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00054}00054\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00055}00055\ \ \ \ \ lda\ =\ n}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00056}00056\ \ \ \ \ lwork\ =\ n}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00057}00057\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00058}00058\ \ \ \ \ a\_inv(:,\ :)\ =\ a(:,\ :)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keyword}{call\ }dgetrf(n,\ n,\ a\_inv,\ lda,\ ipiv,\ info)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00061}00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'invmat'},\ \textcolor{stringliteral}{'error\ in\ DGETRF'},\ abs(info))}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00062}00062\ \ \ \ \ \textcolor{keyword}{call\ }dgetri(n,\ a\_inv,\ lda,\ ipiv,\ work,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .ne.\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'invmat'},\ \textcolor{stringliteral}{'error\ in\ DGETRI'},\ abs(info))}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00065}00065\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ ==\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ da\ =\ a(1,\ 1)*(a(2,\ 2)*a(3,\ 3)\ -\/\ a(2,\ 3)*a(3,\ 2))\ +\ \&}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ a(1,\ 2)*(a(2,\ 3)*a(3,\ 1)\ -\/\ a(2,\ 1)*a(3,\ 3))\ +\ \&}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ a(1,\ 3)*(a(2,\ 1)*a(3,\ 2)\ -\/\ a(3,\ 1)*a(2,\ 2))}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(da)\ <\ 1.d-\/10)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{error__handler_8f90_ae1ab1951e8c0db4f3e770674a7ff973b}{errore}}(\textcolor{stringliteral}{'\ invmat\ '},\ \textcolor{stringliteral}{'\ singular\ matrix\ '},\ 1)}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ da\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{invmat_8f90_source_l00075}00075\ \textcolor{keyword}{end\ subroutine\ }invmat}
+
+\end{DoxyCode}

@@ -22,6 +22,19 @@ module Rho_corr_module
 
 contains
 
+    !> @brief Computes correlation function for electron density
+    !> @details This subroutine computes the correlation function for electron
+    !>          density by evaluating the wave function at different grid points.
+    !>          It handles both spin-up and spin-down electrons, computes local
+    !>          energy and wave function ratios, and stores density correlation
+    !>          values for analysis.
+    !> @param[in] rnew Electron positions (3, nel_read)
+    !> @param[in] nel_read Number of electrons to read
+    !> @param[in] nelup_read Number of spin-up electrons to read
+    !> @param[out] density_c Density correlation values
+    !> @param[in] signpsi Sign of the wave function
+    !> @param[in] spsiln Logarithm of the wave function
+    !> @param[in] shiftlog Logarithmic shift parameter
     subroutine compute_rho_corr(rnew, nel_read, nelup_read, density_c, signpsi, spsiln, shiftlog)
         use allio
         use grid_module

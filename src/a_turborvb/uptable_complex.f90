@@ -13,6 +13,28 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update table and tabler for complex wave function ratios
+!> @details    Updates the table and tabler arrays for complex wave function ratios.
+!>             The bosonic regularizing wfb is Sqrt(Det^2+exp(2 epscut)) and the guiding
+!>             is the fermionic one wf = Sign Det x Sqrt(Det^2+exp(2 epscut)).
+!>             abs(table) are the ratio of the bosonic wf. Handles complex matrices
+!>             for up and down electrons with regularization options.
+!> @param[in]  nelup     Number of up electrons
+!> @param[in]  neldo     Number of down electrons
+!> @param[in]  indt      Index offset for derivatives
+!> @param[out] table     Complex table of wave function values
+!> @param[out] tabler    Real table of regularized values
+!> @param[in]  winvup    Complex inverse matrix for up electrons
+!> @param[in]  winvdo    Complex inverse matrix for down electrons
+!> @param[in]  tabpip    Table of pip values
+!> @param[in]  tmu       Table of tmu values
+!> @param[in]  epscut    Cutoff parameter for regularization
+!> @param[in]  psiln     Psi log value
+!> @param[in]  psidetln  Psi determinant log value
+!> @param[in]  costa     Cost parameter (plat(2)/alat**2)
+!> @param[in]  parcutg   Cutoff parameter
+!> @param[in]  istart    Start index for calculation
+!> @param[in]  typereg   Regularization type
 subroutine uptable_complex(nelup, neldo, indt, table, tabler, winvup &
                            , winvdo, tabpip, tmu, epscut, psiln, psidetln, costa, parcutg, istart, typereg)
     implicit none

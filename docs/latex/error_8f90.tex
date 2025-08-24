@@ -1,0 +1,296 @@
+\doxysection{src/m\+\_\+common/error.f90 File Reference}
+\hypertarget{error_8f90}{}\label{error_8f90}\index{src/m\_common/error.f90@{src/m\_common/error.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}{error}} (routin, messag, ierror, rank)
+\begin{DoxyCompactList}\small\item\em Error handling and reporting utilities for Turbo\+RVB. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{error_8f90_a636eb81d695388117dcfdb6e4f2b0b06}{errore}} (a, b, ierr)
+\begin{DoxyCompactList}\small\item\em Simple error reporting subroutine for serial execution. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{error_8f90_a5d76085923010e21bcfe5a17f9b4201b}{checkiflagerr}} (iflagerr, rank, messag)
+\begin{DoxyCompactList}\small\item\em Global error checking and synchronization for parallel execution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{error_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{error_8f90_a5d76085923010e21bcfe5a17f9b4201b}\index{error.f90@{error.f90}!checkiflagerr@{checkiflagerr}}
+\index{checkiflagerr@{checkiflagerr}!error.f90@{error.f90}}
+\doxysubsubsection{\texorpdfstring{checkiflagerr()}{checkiflagerr()}}
+{\footnotesize\ttfamily \label{error_8f90_a5d76085923010e21bcfe5a17f9b4201b} 
+subroutine checkiflagerr (\begin{DoxyParamCaption}\item[{integer}]{iflagerr}{, }\item[{integer}]{rank}{, }\item[{character(\texorpdfstring{$\ast$}{*})}]{messag}{}\end{DoxyParamCaption})}
+
+
+
+Global error checking and synchronization for parallel execution. 
+
+This subroutine provides global error checking across all MPI processes and ensures proper synchronization for error handling in parallel quantum Monte Carlo calculations.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em iflagerr} & Local error flag for current process \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the calling process \\
+\hline
+\mbox{\texttt{in}}  & {\em messag} & Error message to display if global error exists\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Performs global reduction of error flags across all MPI processes
+\item If any process has an error (iflagerrall != 0)\+:
+\begin{DoxyItemize}
+\item Rank 0 displays the error message
+\item For unreliable networks, synchronizes with barrier
+\item Frees MPI communicators if k-\/point averaging is active
+\item Finalizes MPI and terminates all processes
+\end{DoxyItemize}
+\item If no global errors, subroutine returns normally
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+This subroutine must be called by ALL MPI processes, not just rank 0 
+
+Do not use this subroutine inside rank.\+eq.\+0 regions 
+
+The subroutine handles both reliable and unreliable network configurations 
+
+For k-\/point averaging calculations, it properly cleans up MPI communicators 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{error_8f90_source_l00174}{174}} of file \mbox{\hyperlink{error_8f90_source}{error.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekpoints__mod}{kpoints\_mod}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}}}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordtype}{integer}\ ierr,\ iflagerrall,\ iflagerr,\ rank}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordtype}{character(*)}\ ::\ messag}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_allreduce(iflagerr,\ \mbox{\hyperlink{namespaceallio_ae831c2d056ac513f76e75432b12c5a3f}{iflagerrall}},\ 1,\ mpi\_integer,\ mpi\_sum,\ mpi\_comm\_world,\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{}\ \ \ \ \mbox{\hyperlink{namespaceallio_ae831c2d056ac513f76e75432b12c5a3f}{iflagerrall}}\ =\ iflagerr}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ae831c2d056ac513f76e75432b12c5a3f}{iflagerrall}}\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ messag}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#ifdef\ UNREL}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ \ For\ unreliable\ \ networks.}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00197\ \textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacekpoints__mod_ac44b0de8cdab8ee994c4bfb763b15002}{kaverage}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_free(\mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_comm\_free(\mbox{\hyperlink{namespaceallio_a681bdb80cae38d124e70fcda8e5305f3}{commcolrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00202\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_finalize(\mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00206\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00209\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00392}{allio\+::commcolrep\+\_\+mpi}}, \mbox{\hyperlink{allio_8f90_source_l00386}{allio\+::commrep\+\_\+mpi}}, and \mbox{\hyperlink{kpoints_8f90_source_l00062}{kpoints\+\_\+mod\+::kaverage}}.
+
+
+
+Referenced by \mbox{\hyperlink{file_o_p_8f90_source_l00054}{check\+\_\+scratch()}}, \mbox{\hyperlink{convertfort10_8f90_source_l00016}{convertfort10()}}, \mbox{\hyperlink{convertfort10mol_8f90_source_l00035}{convertfort10mol()}}, \mbox{\hyperlink{testad_8f90_source_l02140}{initializeall()}}, \mbox{\hyperlink{setup_8f90_source_l00207}{setup\+::initializeall()}}, \mbox{\hyperlink{convertfort10_8f90_source_l02414}{load\+\_\+fort10in()}}, \mbox{\hyperlink{main_8f90_source_l00017}{main()}}, \mbox{\hyperlink{read__datas_8f90_source_l00022}{read\+\_\+datasmin()}}, \mbox{\hyperlink{read__datas_8f90_source_l02646}{read\+\_\+datasmin\+\_\+mol()}}, \mbox{\hyperlink{upocc__kpoints_8f90_source_l00292}{read\+\_\+occupations()}}, \mbox{\hyperlink{scal__lins_8f90_source_l00057}{scal\+\_\+lins\+::set\+\_\+env()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157}\index{error.f90@{error.f90}!error@{error}}
+\index{error@{error}!error.f90@{error.f90}}
+\doxysubsubsection{\texorpdfstring{error()}{error()}}
+{\footnotesize\ttfamily \label{error_8f90_aa6977db6f9a8c2b389bfbda3a59fa157} 
+subroutine error (\begin{DoxyParamCaption}\item[{character(\texorpdfstring{$\ast$}{*})}]{routin}{, }\item[{character(\texorpdfstring{$\ast$}{*})}]{messag}{, }\item[{integer}]{ierror}{, }\item[{integer}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Error handling and reporting utilities for Turbo\+RVB. 
+
+This module provides comprehensive error handling and reporting functionality for the Turbo\+RVB quantum Monte Carlo code. It includes subroutines for warning messages, fatal error termination, and parallel error synchronization.
+
+The module supports both serial and parallel execution modes, with proper MPI coordination for error handling across multiple processes.
+
+\begin{DoxyAuthor}{Author}
+Turbo\+RVB group 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2022
+\end{DoxyDate}
+Report errors and warnings with MPI-\/aware handling
+
+This subroutine provides centralized error reporting for Turbo\+RVB calculations. It handles both warnings (ierror \texorpdfstring{$<$}{<} 0) and fatal errors (ierror \texorpdfstring{$>$}{>} 0) with appropriate MPI coordination for parallel execution.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em routin} & Name of the calling routine for error identification \\
+\hline
+\mbox{\texttt{in}}  & {\em messag} & Error or warning message to display \\
+\hline
+\mbox{\texttt{in}}  & {\em ierror} & Error code\+:
+\begin{DoxyItemize}
+\item ierror \texorpdfstring{$<$}{<} 0\+: Warning (program continues)
+\item ierror = 0\+: No error (subroutine returns immediately)
+\item ierror \texorpdfstring{$>$}{>} 0\+: Fatal error (program terminates) 
+\end{DoxyItemize}\\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & MPI rank of the calling process\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item For warnings (ierror \texorpdfstring{$<$}{<} 0)\+:
+\begin{DoxyItemize}
+\item Displays warning message with routine name and error code
+\item Only rank 0 outputs the message
+\item Program continues execution
+\end{DoxyItemize}
+\item For fatal errors (ierror \texorpdfstring{$>$}{>} 0)\+:
+\begin{DoxyItemize}
+\item Displays error message with routine name and error code
+\item For ierror = 3, all ranks output their rank number
+\item Otherwise, only rank 0 outputs the error
+\item Terminates all MPI processes and stops the program
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+The subroutine uses formatted output with separator lines for clear visual distinction of error messages 
+
+For parallel execution, MPI\+\_\+\+ABORT is called to ensure all processes terminate when a fatal error occurs 
+
+Error code 3 is special and causes all ranks to output their rank number 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{error_8f90_source_l00060}{60}} of file \mbox{\hyperlink{error_8f90_source}{error.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ iflagerr}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{!\ the\ name\ of\ the\ calling\ routine}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{character(*)}\ ::\ routin}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ the\ output\ message}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{character(*)}\ ::\ messag}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{!\ the\ error\ flag}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ ierror,\ ierr,\ info}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{integer}\ rank,\ ierror\_mpi}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierror\ ==\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierror\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ '}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(1x,78('}\textcolor{stringliteral}{'\%'}\textcolor{stringliteral}{'))'})}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(5x,'}\textcolor{stringliteral}{'from\ '}\textcolor{stringliteral}{',a,'}\textcolor{stringliteral}{'\ :\ Warning\ \#'}\textcolor{stringliteral}{',i10)'})\ routin,\ ierror}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(5x,a)'})\ \textcolor{stringliteral}{'Warning\ \ '}//messag}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(1x,78('}\textcolor{stringliteral}{'\%'}\textcolor{stringliteral}{'))'})}
+\DoxyCodeLine{00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .or.\ ierror\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ierror\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ From\ proc\ \#\ '},\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ From\ Master\ '}}
+\DoxyCodeLine{00091\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(*,'(1x,78(''\%''))')}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(5x,'}\textcolor{stringliteral}{'from\ '}\textcolor{stringliteral}{',a,'}\textcolor{stringliteral}{'\ :\ ERROR\ \#'}\textcolor{stringliteral}{',i10)'})\ routin,\ ierror}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ \textcolor{stringliteral}{'(5x,a)'})\ \textcolor{stringliteral}{'ERROR\ \ '}//messag}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(*,'(1x,78(''\%''))')}}
+\DoxyCodeLine{00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00097\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierror\ <\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ simple\ warning,\ the\ program\ goes\ on.}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ !\ increment\ error\ counter}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ iflagerr=iflagerr+1}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ Fatal\ error,\ abort\ all\ MPI\ processes\ and\ stop\ the\ program.}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_abort(mpi\_comm\_world,\ 0,\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00114\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{mod___i_o_8f90_source_l00017}{\+\_\+\+\_\+mod\+\_\+io\+\_\+f90\+\_\+\+\_\+()}}, \mbox{\hyperlink{setup_8f90_source_l00911}{setup\+::check\+\_\+dft\+\_\+input()}}, \mbox{\hyperlink{kpoints_8f90_source_l00543}{kpoints\+\_\+mod\+::check\+\_\+kpoints()}}, \mbox{\hyperlink{convertfort10_8f90_source_l04098}{checkmat\+\_\+complex()}}, \mbox{\hyperlink{conjginv_8f90_source_l00043}{conjginv()}}, \mbox{\hyperlink{conjginv__prep_8f90_source_l00049}{conjginv\+\_\+prep()}}, \mbox{\hyperlink{conjginvs_8f90_source_l00042}{conjginvs()}}, \mbox{\hyperlink{readff_8f90_source_l00016}{erread()}}, \mbox{\hyperlink{funvsa_8f90_source_l00270}{funmult()}}, \mbox{\hyperlink{initialize__environment_8f90_source_l00023}{initialize\+\_\+environment()}}, \mbox{\hyperlink{initialize__matrices_8f90_source_l00030}{initialize\+\_\+mats\+\_\+new()}}, \mbox{\hyperlink{setup_8f90_source_l00207}{setup\+::initializeall()}}, \mbox{\hyperlink{prep_8f90_source_l00022}{main()}}, \mbox{\hyperlink{file_o_p_8f90_source_l00138}{open\+\_\+files()}}, \mbox{\hyperlink{compute__bands_8f90_source_l00244}{plot\+\_\+bands()}}, \mbox{\hyperlink{plot__orbitals_8f90_source_l00025}{plot\+\_\+orbitals()}}, \mbox{\hyperlink{compute__bands_8f90_source_l00208}{postprocessing()}}, \mbox{\hyperlink{pp__nsc_8f90_source_l00027}{pp\+\_\+nsc()}}, \mbox{\hyperlink{read__datas_8f90_source_l00022}{read\+\_\+datasmin()}}, \mbox{\hyperlink{compute__bands_8f90_source_l00158}{read\+\_\+density\+\_\+from\+\_\+file()}}, \mbox{\hyperlink{fort10__io_8f90_source_l00030}{read\+\_\+fort10()}}, \mbox{\hyperlink{fort10__io_8f90_source_l05171}{read\+\_\+fort10\+\_\+fast()}}, \mbox{\hyperlink{upocc__kpoints_8f90_source_l00292}{read\+\_\+occupations()}}, \mbox{\hyperlink{reweight0__k6_8f90_source_l00130}{reweight0()}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00065}{freeelmod\+\_\+complex\+::self\+\_\+consistent\+\_\+run()}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00042}{parallel\+\_\+module\+::setup\+\_\+para()}}, \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}, \mbox{\hyperlink{elec__density_8f90_source_l00023}{updenorb\+\_\+new()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l01201}{fourier\+\_\+module\+::upload\+\_\+vector\+\_\+global()}}, and \mbox{\hyperlink{setup_8f90_source_l01093}{setup\+::write\+\_\+info()}}.
+
+\Hypertarget{error_8f90_a636eb81d695388117dcfdb6e4f2b0b06}\index{error.f90@{error.f90}!errore@{errore}}
+\index{errore@{errore}!error.f90@{error.f90}}
+\doxysubsubsection{\texorpdfstring{errore()}{errore()}}
+{\footnotesize\ttfamily \label{error_8f90_a636eb81d695388117dcfdb6e4f2b0b06} 
+subroutine errore (\begin{DoxyParamCaption}\item[{character(len=\texorpdfstring{$\ast$}{*})}]{a}{, }\item[{character(len=\texorpdfstring{$\ast$}{*})}]{b}{, }\item[{integer}]{ierr}{}\end{DoxyParamCaption})}
+
+
+
+Simple error reporting subroutine for serial execution. 
+
+This subroutine provides basic error reporting functionality for serial execution mode. It displays error information and terminates the program when an error occurs.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em a} & First error message string \\
+\hline
+\mbox{\texttt{in}}  & {\em b} & Second error message string ~\newline
+ \\
+\hline
+\mbox{\texttt{in}}  & {\em ierr} & Error code (program terminates if \texorpdfstring{$>$}{>} 0)\\
+\hline
+\end{DoxyParams}
+The subroutine performs the following operations\+:
+\begin{DoxyEnumerate}
+\item Checks if ierr \texorpdfstring{$>$}{>} 0 (error condition)
+\item If error exists, outputs both message strings and error code
+\item Terminates program execution
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+This subroutine is designed for serial execution and does not include MPI coordination 
+
+The subroutine returns immediately if ierr \texorpdfstring{$<$}{<}= 0 (no error) 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{error_8f90_source_l00136}{136}} of file \mbox{\hyperlink{error_8f90_source}{error.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordtype}{character(LEN=*)}\ ::\ A}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{character(LEN=*)}\ ::\ B}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ IERR}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (ierr\ <=\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ a}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ b}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ ierr}
+\DoxyCodeLine{00147\ \ \ \ \ stop}
+
+\end{DoxyCode}

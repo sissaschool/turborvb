@@ -1,0 +1,464 @@
+\doxysection{src/a\+\_\+tools/cleanfort10.f90 File Reference}
+\hypertarget{cleanfort10_8f90}{}\label{cleanfort10_8f90}\index{src/a\_tools/cleanfort10.f90@{src/a\_tools/cleanfort10.f90}}
+
+
+Program for cleaning and optimizing Turbo\+RVB fort.\+10 input files.  
+
+
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+program \mbox{\hyperlink{cleanfort10_8f90_a6dc47fd7551240c3c88ff23c4ee8ad3b}{join}}
+\begin{DoxyCompactList}\small\item\em Main program for cleaning Turbo\+RVB input files. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{cleanfort10_8f90_afa314adc18aeb0462abc8b29d83ba870}{independent\+\_\+complex}} (n, ncoeff, psi\+\_\+in, psi\+\_\+out, ipiv, yesfixphase)
+\begin{DoxyCompactList}\small\item\em Makes complex orbitals independent using Gram-\/\+Schmidt orthogonalization. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{cleanfort10_8f90_ae1ed168736273667080caa5501cc6393}{independent}} (n, ncoeff, psi\+\_\+in, psi\+\_\+out, ipiv)
+\begin{DoxyCompactList}\small\item\em Makes real orbitals independent using Gram-\/\+Schmidt orthogonalization. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{cleanfort10_8f90_a53c8f82785510d0ab65ff25e95399725}{makeumat}} (ipc, n, ncoeff, psi\+\_\+in, psi\+\_\+out, umat)
+\begin{DoxyCompactList}\small\item\em Constructs transformation matrix for orbital basis change. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{cleanfort10_8f90_a62224747535874dd8dd57699ba1f5944}{lambda\+\_\+transf}} (ipc, n, m, lambda, umat)
+\begin{DoxyCompactList}\small\item\em Transforms lambda matrix using orbital transformation matrix. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{cleanfort10_8f90_ae5bed6fb93b41c2ed9a6dc3fdb6dae18}{search}} (target, sortvect, n, index)
+\begin{DoxyCompactList}\small\item\em Binary search for target value in sorted vector. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Program for cleaning and optimizing Turbo\+RVB fort.\+10 input files. 
+
+This program reads a Turbo\+RVB fort.\+10 file and produces a cleaned version (fort.\+10\+\_\+clean) with optimized orbital parameters, removed redundant constraints, and improved numerical stability. It handles both real and complex wave functions, periodic boundary conditions, and various orbital types including determinants, Jastrow factors, and AGP (antisymmetrized geminal power) wave functions. 
+
+Definition in file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+
+\label{doc-func-members}
+\Hypertarget{cleanfort10_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{cleanfort10_8f90_ae1ed168736273667080caa5501cc6393}\index{cleanfort10.f90@{cleanfort10.f90}!independent@{independent}}
+\index{independent@{independent}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{independent()}{independent()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_ae1ed168736273667080caa5501cc6393} 
+subroutine independent (\begin{DoxyParamCaption}\item[{integer}]{n}{, }\item[{integer}]{ncoeff}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ncoeff, n)}]{psi\+\_\+in}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ncoeff, n)}]{psi\+\_\+out}{, }\item[{integer, dimension(n)}]{ipiv}{}\end{DoxyParamCaption})}
+
+
+
+Makes real orbitals independent using Gram-\/\+Schmidt orthogonalization. 
+
+Performs Gram-\/\+Schmidt orthogonalization on real orbital coefficients to ensure linear independence. Normalizes orbitals and removes linear dependencies. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em n} & Number of orbitals to process \\
+\hline
+\mbox{\texttt{in}}  & {\em ncoeff} & Number of coefficients per orbital \\
+\hline
+\mbox{\texttt{in}}  & {\em psi\+\_\+in} & Input orbital coefficients (real) \\
+\hline
+\mbox{\texttt{out}}  & {\em psi\+\_\+out} & Output orthogonalized orbital coefficients \\
+\hline
+\mbox{\texttt{out}}  & {\em ipiv} & Pivot indices for maximum elements \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l02134}{2134}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{02135\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{02136\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i,\ ipiv(n),\ jmax,\ j,\ ncoeff}
+\DoxyCodeLine{02137\ \ \ \ \ real*8\ psi\_in(ncoeff,\ n),\ psi\_out(ncoeff,\ n),\ cost,\ maxv}
+\DoxyCodeLine{02138\ \ \ \ \ ipiv\ =\ 0}
+\DoxyCodeLine{02139\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{02140\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ first\ step\ set\ to\ zero\ all\ coefficient}}
+\DoxyCodeLine{02141\ }
+\DoxyCodeLine{02142\ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_in(:,\ i)}
+\DoxyCodeLine{02143\ }
+\DoxyCodeLine{02144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{02145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(ipiv(j),\ i)}
+\DoxyCodeLine{02147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_out(:,\ i)\ -\/\ cost*psi\_out(:,\ j)}
+\DoxyCodeLine{02148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02149\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02150\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ Now\ find\ the\ maximum}}
+\DoxyCodeLine{02151\ }
+\DoxyCodeLine{02152\ \ \ \ \ \ \ \ \ maxv\ =\ 0.d0}
+\DoxyCodeLine{02153\ \ \ \ \ \ \ \ \ jmax\ =\ 0}
+\DoxyCodeLine{02154\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ncoeff}
+\DoxyCodeLine{02155\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs(psi\_out(j,\ i))}
+\DoxyCodeLine{02156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ maxv)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmax\ =\ j}
+\DoxyCodeLine{02158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxv\ =\ cost}
+\DoxyCodeLine{02159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02160\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02161\ }
+\DoxyCodeLine{02162\ \ \ \ \ \ \ \ \ ipiv(i)\ =\ jmax}
+\DoxyCodeLine{02163\ }
+\DoxyCodeLine{02164\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (jmax\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02165\ }
+\DoxyCodeLine{02166\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(jmax,\ i)}
+\DoxyCodeLine{02167\ }
+\DoxyCodeLine{02168\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_out(:,\ i)/cost}
+\DoxyCodeLine{02169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ to\ avoid\ roundoff}}
+\DoxyCodeLine{02170\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(jmax,\ i)\ =\ 1.d0}
+\DoxyCodeLine{02171\ }
+\DoxyCodeLine{02172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{02173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(jmax,\ j)}
+\DoxyCodeLine{02174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ j)\ =\ psi\_out(:,\ j)\ -\/\ cost*psi\_out(:,\ i)}
+\DoxyCodeLine{02175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ cost=psi\_out(ipiv(j),j)}}
+\DoxyCodeLine{02176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ psi\_out(:,j)=psi\_out(:,j)/cost}}
+\DoxyCodeLine{02177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02178\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02179\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ It\ may\ happen\ that\ the\ vector\ is\ vanishing}}
+\DoxyCodeLine{02180\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ 0.d0}
+\DoxyCodeLine{02181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02182\ }
+\DoxyCodeLine{02183\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{02184\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}.
+
+\Hypertarget{cleanfort10_8f90_afa314adc18aeb0462abc8b29d83ba870}\index{cleanfort10.f90@{cleanfort10.f90}!independent\_complex@{independent\_complex}}
+\index{independent\_complex@{independent\_complex}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{independent\_complex()}{independent\_complex()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_afa314adc18aeb0462abc8b29d83ba870} 
+subroutine independent\+\_\+complex (\begin{DoxyParamCaption}\item[{integer}]{n}{, }\item[{integer}]{ncoeff}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ncoeff, n)}]{psi\+\_\+in}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}\texorpdfstring{$\ast$}{*}16, dimension(ncoeff, n)}]{psi\+\_\+out}{, }\item[{integer, dimension(n)}]{ipiv}{, }\item[{logical}]{yesfixphase}{}\end{DoxyParamCaption})}
+
+
+
+Makes complex orbitals independent using Gram-\/\+Schmidt orthogonalization. 
+
+Performs Gram-\/\+Schmidt orthogonalization on complex orbital coefficients to ensure linear independence. Handles phase fixing and numerical stability. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em n} & Number of orbitals to process \\
+\hline
+\mbox{\texttt{in}}  & {\em ncoeff} & Number of coefficients per orbital \\
+\hline
+\mbox{\texttt{in}}  & {\em psi\+\_\+in} & Input orbital coefficients (complex) \\
+\hline
+\mbox{\texttt{out}}  & {\em psi\+\_\+out} & Output orthogonalized orbital coefficients \\
+\hline
+\mbox{\texttt{out}}  & {\em ipiv} & Pivot indices for maximum elements \\
+\hline
+\mbox{\texttt{in}}  & {\em yesfixphase} & Logical flag for phase fixing \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l02067}{2067}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{02068\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{02069\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i,\ ipiv(n),\ jmax,\ j,\ ncoeff}
+\DoxyCodeLine{02070\ \ \ \ \ \textcolor{keywordtype}{complex*16}\ psi\_in(ncoeff,\ n),\ psi\_out(ncoeff,\ n),\ cost}
+\DoxyCodeLine{02071\ \ \ \ \ real*8\ maxv,\ costr}
+\DoxyCodeLine{02072\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesfixphase}
+\DoxyCodeLine{02073\ \ \ \ \ ipiv\ =\ 0}
+\DoxyCodeLine{02074\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{02075\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ first\ step\ set\ to\ zero\ all\ coefficient}}
+\DoxyCodeLine{02076\ }
+\DoxyCodeLine{02077\ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_in(:,\ i)}
+\DoxyCodeLine{02078\ }
+\DoxyCodeLine{02079\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ yesfixphase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{02081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(ipiv(j),\ i)}
+\DoxyCodeLine{02083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_out(:,\ i)\ -\/\ cost*psi\_out(:,\ j)}
+\DoxyCodeLine{02084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02086\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02087\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ Now\ find\ the\ maximum}}
+\DoxyCodeLine{02088\ }
+\DoxyCodeLine{02089\ \ \ \ \ \ \ \ \ maxv\ =\ 0.d0}
+\DoxyCodeLine{02090\ \ \ \ \ \ \ \ \ jmax\ =\ 0}
+\DoxyCodeLine{02091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ ncoeff}
+\DoxyCodeLine{02092\ \ \ \ \ \ \ \ \ \ \ \ \ costr\ =\ abs(psi\_out(j,\ i))}
+\DoxyCodeLine{02093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (costr\ .gt.\ maxv)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jmax\ =\ j}
+\DoxyCodeLine{02095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxv\ =\ costr}
+\DoxyCodeLine{02096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02097\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02098\ }
+\DoxyCodeLine{02099\ \ \ \ \ \ \ \ \ ipiv(i)\ =\ jmax}
+\DoxyCodeLine{02100\ }
+\DoxyCodeLine{02101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (jmax\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02102\ }
+\DoxyCodeLine{02103\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(jmax,\ i)}
+\DoxyCodeLine{02104\ }
+\DoxyCodeLine{02105\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ psi\_out(:,\ i)/cost}
+\DoxyCodeLine{02106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ to\ avoid\ roundoff}}
+\DoxyCodeLine{02107\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(jmax,\ i)\ =\ (1.d0,\ 0.d0)}
+\DoxyCodeLine{02108\ }
+\DoxyCodeLine{02109\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ yesfixphase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ i\ -\/\ 1}
+\DoxyCodeLine{02111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ psi\_out(jmax,\ j)}
+\DoxyCodeLine{02112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ j)\ =\ psi\_out(:,\ j)\ -\/\ cost*psi\_out(:,\ i)}
+\DoxyCodeLine{02113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ cost=psi\_out(ipiv(j),j)}}
+\DoxyCodeLine{02114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ psi\_out(:,j)=psi\_out(:,j)/cost}}
+\DoxyCodeLine{02115\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ It\ may\ happen\ that\ the\ vector\ is\ vanishing}}
+\DoxyCodeLine{02119\ \ \ \ \ \ \ \ \ \ \ \ \ psi\_out(:,\ i)\ =\ (0.d0,\ 0.d0)}
+\DoxyCodeLine{02120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02121\ }
+\DoxyCodeLine{02122\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{02123\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}.
+
+\Hypertarget{cleanfort10_8f90_a6dc47fd7551240c3c88ff23c4ee8ad3b}\index{cleanfort10.f90@{cleanfort10.f90}!join@{join}}
+\index{join@{join}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{join()}{join()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_a6dc47fd7551240c3c88ff23c4ee8ad3b} 
+program join}
+
+
+
+Main program for cleaning Turbo\+RVB input files. 
+
+Reads fort.\+10 file, processes orbital parameters, removes redundant constraints, optimizes numerical representation, and outputs cleaned fort.\+10\+\_\+clean file. Supports various command line options for constraint removal and different wave function types. 
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{28}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+
+References \mbox{\hyperlink{dscalzero_8f90_source_l00036}{dscalzero()}}, \mbox{\hyperlink{dsortx_8f90_source_l00046}{dsortx()}}, \mbox{\hyperlink{cleanfort10_8f90_source_l02135}{independent()}}, \mbox{\hyperlink{cleanfort10_8f90_source_l02068}{independent\+\_\+complex()}}, \mbox{\hyperlink{cleanfort10_8f90_source_l02273}{lambda\+\_\+transf()}}, \mbox{\hyperlink{cleanfort10_8f90_source_l02198}{makeumat()}}, \mbox{\hyperlink{__help__online_8f90_source_l00051}{name\+\_\+tool}}, and \mbox{\hyperlink{cleanfort10_8f90_source_l02320}{search()}}.
+
+\Hypertarget{cleanfort10_8f90_a62224747535874dd8dd57699ba1f5944}\index{cleanfort10.f90@{cleanfort10.f90}!lambda\_transf@{lambda\_transf}}
+\index{lambda\_transf@{lambda\_transf}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{lambda\_transf()}{lambda\_transf()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_a62224747535874dd8dd57699ba1f5944} 
+subroutine lambda\+\_\+transf (\begin{DoxyParamCaption}\item[{integer}]{ipc}{, }\item[{integer}]{n}{, }\item[{integer}]{m}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ipc\texorpdfstring{$\ast$}{*}n, m)}]{lambda}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ipc\texorpdfstring{$\ast$}{*}n, n)}]{umat}{}\end{DoxyParamCaption})}
+
+
+
+Transforms lambda matrix using orbital transformation matrix. 
+
+Applies the transformation U to the lambda matrix\+: lambda\+\_\+new = U \texorpdfstring{$\ast$}{*} lambda \texorpdfstring{$\ast$}{*} U\texorpdfstring{$^\wedge$}{\string^}T Handles both real and complex matrices and preserves the structure for m \texorpdfstring{$>$}{>} n. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ipc} & Complex flag (1=real, 2=complex) \\
+\hline
+\mbox{\texttt{in}}  & {\em n} & Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em m} & Number of columns in lambda matrix \\
+\hline
+\mbox{\texttt{in,out}}  & {\em lambda} & Lambda matrix to be transformed \\
+\hline
+\mbox{\texttt{in}}  & {\em umat} & Transformation matrix U \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l02272}{2272}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{02273\ }
+\DoxyCodeLine{02274\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{02275\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{02276\ }
+\DoxyCodeLine{02277\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ m,\ neldiff,\ i,\ j,\ ipc}
+\DoxyCodeLine{02278\ \ \ \ \ real*8\ lambda(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ m),\ umat(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ n)}
+\DoxyCodeLine{02279\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ psip}
+\DoxyCodeLine{02280\ \ \ \ \ \textcolor{keyword}{allocate}\ (psip(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ m))}
+\DoxyCodeLine{02281\ }
+\DoxyCodeLine{02282\ \ \ \ \ psip\ =\ 0.d0\ \textcolor{comment}{!\ to\ avoid\ NaN}}
+\DoxyCodeLine{02283\ }
+\DoxyCodeLine{02284\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ New\ \ lambda\ =\ emme\ lambda\ emme\string^\{T\}}}
+\DoxyCodeLine{02285\ }
+\DoxyCodeLine{02286\ \ \ \ \ \textcolor{keywordflow}{if}\ (m\ .gt.\ n)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02287\ \ \ \ \ \ \ \ \ neldiff\ =\ m\ -\/\ n}
+\DoxyCodeLine{02288\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dcopy(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*neldiff*n,\ lambda(1,\ n\ +\ 1),\ 1,\ psip(1,\ n\ +\ 1),\ 1)}
+\DoxyCodeLine{02289\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{02290\ }
+\DoxyCodeLine{02291\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02292\ }
+\DoxyCodeLine{02293\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ lambda,\ n,\ \&}
+\DoxyCodeLine{02294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ umat,\ n,\ 0.d0,\ psip,\ n)}
+\DoxyCodeLine{02295\ }
+\DoxyCodeLine{02296\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ m,\ n,\ 1.d0,\ umat,\ n,\ \&}
+\DoxyCodeLine{02297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ psip,\ n,\ 0.d0,\ lambda,\ n)}
+\DoxyCodeLine{02298\ }
+\DoxyCodeLine{02299\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02300\ }
+\DoxyCodeLine{02301\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ lambda,\ n,\ \&}
+\DoxyCodeLine{02302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ umat,\ n,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ psip,\ n)}
+\DoxyCodeLine{02303\ }
+\DoxyCodeLine{02304\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ m,\ n,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ umat,\ n,\ \&}
+\DoxyCodeLine{02305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ psip,\ n,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ lambda,\ n)}
+\DoxyCodeLine{02306\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{02307\ }
+\DoxyCodeLine{02308\ \ \ \ \ \textcolor{keyword}{deallocate}\ (psip)}
+\DoxyCodeLine{02309\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}, and \mbox{\hyperlink{constants_8f90_source_l00248}{constants\+::zzero}}.
+
+
+
+Referenced by \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}.
+
+\Hypertarget{cleanfort10_8f90_a53c8f82785510d0ab65ff25e95399725}\index{cleanfort10.f90@{cleanfort10.f90}!makeumat@{makeumat}}
+\index{makeumat@{makeumat}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{makeumat()}{makeumat()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_a53c8f82785510d0ab65ff25e95399725} 
+subroutine makeumat (\begin{DoxyParamCaption}\item[{integer}]{ipc}{, }\item[{integer}]{n}{, }\item[{integer}]{ncoeff}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ncoeff\texorpdfstring{$\ast$}{*}ipc, n)}]{psi\+\_\+in}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ncoeff\texorpdfstring{$\ast$}{*}ipc, n)}]{psi\+\_\+out}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(ipc\texorpdfstring{$\ast$}{*}n, n)}]{umat}{}\end{DoxyParamCaption})}
+
+
+
+Constructs transformation matrix for orbital basis change. 
+
+Computes the transformation matrix U that relates input and output orbital bases. Uses matrix operations to ensure proper transformation for both real and complex orbitals. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em ipc} & Complex flag (1=real, 2=complex) \\
+\hline
+\mbox{\texttt{in}}  & {\em n} & Number of orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em ncoeff} & Number of coefficients per orbital \\
+\hline
+\mbox{\texttt{in}}  & {\em psi\+\_\+in} & Input orbital coefficients \\
+\hline
+\mbox{\texttt{in}}  & {\em psi\+\_\+out} & Output orbital coefficients \\
+\hline
+\mbox{\texttt{out}}  & {\em umat} & Transformation matrix U \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l02197}{2197}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{02198\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{02199\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{02200\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ i,\ j,\ ncoeff,\ info,\ lwork,\ ipc}
+\DoxyCodeLine{02201\ \ \ \ \ real*8\ psi\_in(ncoeff*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ n),\ psi\_out(ncoeff*\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ n),\ umat(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ n)}
+\DoxyCodeLine{02202\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ smat,\ psip}
+\DoxyCodeLine{02203\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ ipsip}
+\DoxyCodeLine{02204\ }
+\DoxyCodeLine{02205\ \ \ \ \ \textcolor{keywordflow}{if}\ (ncoeff\ .le.\ 0\ .or.\ n\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{02206\ }
+\DoxyCodeLine{02207\ \ \ \ \ \textcolor{keyword}{allocate}\ (smat(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ n),\ psip(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*n,\ n),\ ipsip(n))}
+\DoxyCodeLine{02208\ }
+\DoxyCodeLine{02209\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ The\ matrix\ psip\ has\ to\ have\ n\string^2\ elemnts}}
+\DoxyCodeLine{02210\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ the\ psi\_out\ due\ to\ roundoff\ are\ likely\ to\ be\ independent}}
+\DoxyCodeLine{02211\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ even\ when\ psi\_in\ are\ dependent}}
+\DoxyCodeLine{02212\ }
+\DoxyCodeLine{02213\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02214\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ ncoeff,\ 1.d0,\ psi\_out,\ ncoeff,\ psi\_out,\ ncoeff\&}
+\DoxyCodeLine{02215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ smat,\ n)}
+\DoxyCodeLine{02216\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetrf(n,\ n,\ smat,\ n,\ ipsip,\ info)}
+\DoxyCodeLine{02217\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02218\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ ncoeff,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi\_out,\ ncoeff,\ psi\_out,\ ncoeff\&}
+\DoxyCodeLine{02219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ smat,\ n)}
+\DoxyCodeLine{02220\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgetrf(n,\ n,\ smat,\ n,\ ipsip,\ info)}
+\DoxyCodeLine{02221\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{02222\ }
+\DoxyCodeLine{02223\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ '\ Output\ dgetrf\ '}}
+\DoxyCodeLine{02224\ }
+\DoxyCodeLine{02225\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,n}}
+\DoxyCodeLine{02226\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ write(6,*)\ i,smat(i,i)}}
+\DoxyCodeLine{02227\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{02228\ }
+\DoxyCodeLine{02229\ \ \ \ \ \textcolor{keywordflow}{if}\ (info\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02230\ \ \ \ \ \ \ \ \ lwork\ =\ n*n}
+\DoxyCodeLine{02231\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02232\ }
+\DoxyCodeLine{02233\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgetri(n,\ smat,\ n,\ ipsip,\ psip,\ lwork,\ info)}
+\DoxyCodeLine{02234\ }
+\DoxyCodeLine{02235\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ ncoeff,\ 1.d0,\ psi\_out,\ ncoeff,\ psi\_in,\ ncoeff\ \&}
+\DoxyCodeLine{02236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ psip,\ n)}
+\DoxyCodeLine{02237\ }
+\DoxyCodeLine{02238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ 1.d0,\ psip,\ n,\ smat,\ n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{02239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ 0.d0,\ umat,\ n)}
+\DoxyCodeLine{02240\ }
+\DoxyCodeLine{02241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02242\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgetri(n,\ smat,\ n,\ ipsip,\ psip,\ lwork,\ info)}
+\DoxyCodeLine{02243\ }
+\DoxyCodeLine{02244\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ ncoeff,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psi\_out,\ ncoeff,\ psi\_in,\ ncoeff\ \&}
+\DoxyCodeLine{02245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ psip,\ n)}
+\DoxyCodeLine{02246\ }
+\DoxyCodeLine{02247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ n,\ n,\ n,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ psip,\ n,\ smat,\ n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{02248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ umat,\ n)}
+\DoxyCodeLine{02249\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast__b_8f90_a0a91ea1764f939561f052d2128132a13}{conjmat}}(n,\ n,\ umat,\ n)}
+\DoxyCodeLine{02250\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02251\ }
+\DoxyCodeLine{02252\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02253\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Orbitals\ are\ not\ independent,\ ERROR\ in\ dgetrf\ !!!!\ '},\ info}
+\DoxyCodeLine{02254\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{02255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ smat(\mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i\ -\/\ 1)\ +\ 1,\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}}*(i\ -\/\ 1)\ +\ 1)}
+\DoxyCodeLine{02256\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{02257\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ stop}}
+\DoxyCodeLine{02258\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{02259\ }
+\DoxyCodeLine{02260\ \ \ \ \ \textcolor{keyword}{deallocate}\ (smat,\ psip,\ ipsip)}
+\DoxyCodeLine{02261\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{compute__fast__b_8f90_source_l03223}{conjmat()}}, \mbox{\hyperlink{constants_8f90_source_l00249}{constants\+::zone}}, and \mbox{\hyperlink{constants_8f90_source_l00248}{constants\+::zzero}}.
+
+
+
+Referenced by \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}.
+
+\Hypertarget{cleanfort10_8f90_ae5bed6fb93b41c2ed9a6dc3fdb6dae18}\index{cleanfort10.f90@{cleanfort10.f90}!search@{search}}
+\index{search@{search}!cleanfort10.f90@{cleanfort10.f90}}
+\doxysubsubsection{\texorpdfstring{search()}{search()}}
+{\footnotesize\ttfamily \label{cleanfort10_8f90_ae5bed6fb93b41c2ed9a6dc3fdb6dae18} 
+subroutine search (\begin{DoxyParamCaption}\item[{}]{target}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*}), target}]{sortvect}{, }\item[{integer}]{n}{, }\item[{integer}]{index}{}\end{DoxyParamCaption})}
+
+
+
+Binary search for target value in sorted vector. 
+
+Performs binary search to find the index of target value in a sorted vector. Returns the index of the closest value if exact match is not found. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em target} & Target value to search for \\
+\hline
+\mbox{\texttt{in}}  & {\em sortvect} & Sorted vector to search in \\
+\hline
+\mbox{\texttt{in}}  & {\em n} & Length of the vector \\
+\hline
+\mbox{\texttt{out}}  & {\em index} & Index of the found value \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{cleanfort10_8f90_source_l02319}{2319}} of file \mbox{\hyperlink{cleanfort10_8f90_source}{cleanfort10.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{02320\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{02321\ \ \ \ \ real*8\ \textcolor{keywordtype}{target},\ sortvect(*)}
+\DoxyCodeLine{02322\ \ \ \ \ \textcolor{keywordtype}{integer}\ n,\ index,\ i,\ k}
+\DoxyCodeLine{02323\ \ \ \ \ i\ =\ 1}
+\DoxyCodeLine{02324\ \ \ \ \ index\ =\ n}
+\DoxyCodeLine{02325\ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{02326\ \ \ \ \ \ \ \ \ k\ =\ (i\ +\ index)/2}
+\DoxyCodeLine{02327\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keywordtype}{target}\ .lt.\ sortvect(k))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02328\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ k}
+\DoxyCodeLine{02329\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02330\ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ k}
+\DoxyCodeLine{02331\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02332\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ +\ 1\ .ge.\ index)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{02333\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sortvect(index)\ .ne.\ \textcolor{keywordtype}{target})\ index\ =\ i}
+\DoxyCodeLine{02334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{02335\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{02336\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{02337\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{cleanfort10_8f90_source_l00028}{join()}}.
+

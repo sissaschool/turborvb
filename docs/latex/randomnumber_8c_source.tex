@@ -1,0 +1,451 @@
+\doxysection{randomnumber.\+c}
+\hypertarget{randomnumber_8c_source}{}\label{randomnumber_8c_source}\index{src/m\_common/randomnumber.c@{src/m\_common/randomnumber.c}}
+\mbox{\hyperlink{randomnumber_8c}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00001}00001\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00002}00002\ \textcolor{comment}{*\ Lagged\ Fibonacci\ pseudo\ random-\/number\ generator}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00003}00003\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00004}00004\ \textcolor{comment}{This\ code\ implements\ a\ lagged\ Fibonnacci\ pseudo-\/random\ number\ generator}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00005}00005\ \textcolor{comment}{with\ lags\ p\ and\ q\ in\ the\ notation\ of\ "{}A\ current\ view\ of\ random\ number\ generators"{}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00006}00006\ \textcolor{comment}{published\ by\ G.A.\ Marsaglia\ in\ Computational\ Science\ and\ Statistics:\ The\ Interface,}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00007}00007\ \textcolor{comment}{ed.\ L.\ Balliard\ (Elsevier,\ Amsterdam,\ 1985).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00008}00008\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00009}00009\ \textcolor{comment}{The\ implementation\ also\ relies\ on\ the\ following\ references:}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00010}00010\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00011}00011\ \textcolor{comment}{*\ P.D.\ Coddington,\ "{}Monte\ Carlo\ tests\ of\ random\ number\ generators"{},\ NPAC\ technical\ report\ SCCS-\/526.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00012}00012\ \textcolor{comment}{*\ P.D.\ Coddington,\ "{}Random\ number\ generators\ for\ parallel\ computers."{}\ (1997),\ Syracuse\ University,\ SURFACE.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00013}00013\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00014}00014\ \textcolor{comment}{The\ followings\ are\ comments\ by\ Paul\ Coddington\ in\ October\ 1993.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00016}00016\ \textcolor{comment}{Background}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00017}00017\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00018}00018\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00019}00019\ \textcolor{comment}{This\ program\ implements\ a\ lagged\ Fibonnacci\ pseudo-\/random\ number\ generator}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00020}00020\ \textcolor{comment}{using\ multiplication,\ with\ lags\ p\ and\ q,\ i.e.\ F(p,q,*)\ in\ the\ notation\ of}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00021}00021\ \textcolor{comment}{[Marsaglia].}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00022}00022\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00023}00023\ \textcolor{comment}{A\ sequence\ of\ odd\ random\ integers\ Xn\ is\ obtained\ from\ the\ formula}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00024}00024\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00025}00025\ \textcolor{comment}{Xn=\ Xn-\/p\ *\ Xn-\/q\ mod\ M}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00026}00026\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00027}00027\ \textcolor{comment}{where\ M\ is\ a\ large\ integer\ less\ than\ the\ machine\ precision\ (M\ is\ taken}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00028}00028\ \textcolor{comment}{to\ be\ 2\string^\{31\}\ here).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00029}00029\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00030}00030\ \textcolor{comment}{Unlike\ lagged\ Fibonnacci\ generators\ which\ use\ subtraction,\ addition,\ or}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00031}00031\ \textcolor{comment}{XOR,\ this\ generator\ seems\ to\ give\ "{}good"{}\ random\ numbers\ for\ ANY\ lag,\ not}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00032}00032\ \textcolor{comment}{necessarily\ large\ (see\ [Coddington]).\ However\ larger\ lags\ give\ larger}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00033}00033\ \textcolor{comment}{periods\ and\ empirically\ seem\ to\ give\ "{}better"{}\ random\ numbers\ (see}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00034}00034\ \textcolor{comment}{[Marsaglia],\ [Knuth],\ [Coddington]).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00035}00035\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00036}00036\ \textcolor{comment}{The\ period\ is\ given\ by\ (2\string^\{p\}-\/1)*2\string^\{b-\/3\},\ where\ p\ is\ the\ largest\ lag}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00037}00037\ \textcolor{comment}{and\ b\ is\ the\ number\ of\ bits\ in\ the\ integers\ X\_\{n\},\ i.e.\ b\ =\ log\_\{2\}(M).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00038}00038\ \textcolor{comment}{The\ lag\ needs\ to\ be\ chosen\ large\ enough\ to\ give\ a\ period\ much\ longer}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00039}00039\ \textcolor{comment}{than\ the\ number\ of\ random\ numbers\ to\ be\ generated.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00040}00040\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00041}00041\ \textcolor{comment}{Only\ certain\ lags\ (p,q)\ will\ give\ the\ maximal\ period\ of\ the\ generator}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00042}00042\ \textcolor{comment}{(see\ [Marsaglia],\ [Knuth]).\ Here\ are\ some\ of\ those\ lags,\ with\ the}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00043}00043\ \textcolor{comment}{corresponding\ periods\ for\ 32-\/bit\ integers.\ As\ a\ comparison,\ note\ that}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00044}00044\ \textcolor{comment}{linear\ congruential\ generators\ have\ a\ period\ of\ about\ 10\string^\{9\}\ (which\ is}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00045}00045\ \textcolor{comment}{too\ short\ for\ most\ purposes),\ or\ 10\string^\{18\}\ for\ 64-\/bit\ integers\ (which\ is}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00046}00046\ \textcolor{comment}{fine\ for\ most\ purposes).\ A\ Teraflop-\/year\ is\ about\ 10\string^\{21\}\ floating\ point}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00047}00047\ \textcolor{comment}{operations.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00048}00048\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00049}00049\ \textcolor{comment}{P\ \ \ \ \ Q\ \ \ \ \ \ \ \ period}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00050}00050\ \textcolor{comment}{1279\ \ \ 418\ \ \ \ \ \ \ 10\string^\{393\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00051}00051\ \textcolor{comment}{607\ \ \ 273\ \ \ \ \ \ \ 10\string^\{191\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00052}00052\ \textcolor{comment}{521\ \ \ 168\ \ \ \ \ \ \ 10\string^\{166\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00053}00053\ \textcolor{comment}{250\ \ \ 103\ \ \ \ \ \ \ 10\string^\{84\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00054}00054\ \textcolor{comment}{127\ \ \ \ 63\ \ \ \ \ \ \ 10\string^\{46\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00055}00055\ \textcolor{comment}{97\ \ \ \ 33\ \ \ \ \ \ \ 10\string^\{38\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00056}00056\ \textcolor{comment}{89\ \ \ \ 38\ \ \ \ \ \ \ 10\string^\{35\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00057}00057\ \textcolor{comment}{55\ \ \ \ 24\ \ \ \ \ \ \ 10\string^\{25\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00058}00058\ \textcolor{comment}{43\ \ \ \ 22\ \ \ \ \ \ \ 10\string^\{21\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00059}00059\ \textcolor{comment}{31\ \ \ \ 13\ \ \ \ \ \ \ 10\string^\{18\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00060}00060\ \textcolor{comment}{24\ \ \ \ 10\ \ \ \ \ \ \ 10\string^\{16\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00061}00061\ \textcolor{comment}{17\ \ \ \ \ 5\ \ \ \ \ \ \ 10\string^\{14\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00062}00062\ \textcolor{comment}{7\ \ \ \ \ 3\ \ \ \ \ \ \ 10\string^\{11\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00063}00063\ \textcolor{comment}{5\ \ \ \ \ 2\ \ \ \ \ \ \ 10\string^\{10\}}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00064}00064\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00065}00065\ \textcolor{comment}{I\ would\ recommend\ using\ at\ least\ (43,22),\ and\ ideally\ (607,273).\ This}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00066}00066\ \textcolor{comment}{will\ only\ add\ an\ extra\ 607x4\ =\ 2428\ bytes\ to\ the\ memory\ required\ for}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00067}00067\ \textcolor{comment}{the\ user\ program,\ which\ should\ be\ completely\ negligible.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00068}00068\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00069}00069\ \textcolor{comment}{Note\ that\ very\ little\ is\ known\ theoretically\ about\ this\ generator,}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00070}00070\ \textcolor{comment}{however\ it\ performs\ very\ well\ in\ all\ empirical\ statistical\ tests\ (see}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00071}00071\ \textcolor{comment}{[Marsaglia],\ [Coddington]).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00072}00072\ \textcolor{comment}{THIS\ DOES\ NOT\ NECESSARILY\ MEAN\ IT\ WILL\ PERFORM\ WELL\ FOR\ YOUR\ APPLICATION.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00073}00073\ \textcolor{comment}{It\ is\ a\ good\ idea\ to\ check\ by\ using\ another\ good\ generator\ such\ as\ RANF}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00074}00074\ \textcolor{comment}{or\ DRAND48\ or\ a\ good\ 64-\/bit\ generator\ (see\ [Coddington]).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00075}00075\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00076}00076\ \textcolor{comment}{Program}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00077}00077\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00078}00078\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00079}00079\ \textcolor{comment}{This\ program\ is\ based\ on\ the\ implementation\ of\ RANMAR\ in\ [James].}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00080}00080\ \textcolor{comment}{It\ is\ the\ same\ as\ RANMAR\ except\ it\ uses\ multiplication\ instead\ of}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00081}00081\ \textcolor{comment}{subtraction,\ odd\ integers\ instead\ of\ reals,\ and\ does\ not\ include\ an}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00082}00082\ \textcolor{comment}{extra\ Weyl\ generator.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00083}00083\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00084}00084\ \textcolor{comment}{The\ program\ accesses\ the\ "{}lag\ table"{},\ i.e.\ the\ array\ storing\ the\ previous}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00085}00085\ \textcolor{comment}{p\ values\ in\ the\ sequence,\ using\ a\ "{}circular\ list"{},\ i.e.\ the\ elements\ of}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00086}00086\ \textcolor{comment}{the\ array\ are\ not\ moved\ with\ every\ new\ addition,\ only\ the\ pointers\ pt0}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00087}00087\ \textcolor{comment}{and\ pt1\ to\ the\ (n-\/p)th\ and\ (n-\/q)th\ value\ are\ changed.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00088}00088\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00089}00089\ \textcolor{comment}{NOTE\ THAT\ YOU\ *MUST*\ CALL\ THE\ INITIALIZATION\ SUBROUTINE\ (rand\_init)\ BEFORE}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00090}00090\ \textcolor{comment}{USING\ THE\ GENERATOR.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00091}00091\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00092}00092\ \textcolor{comment}{In\ order\ for\ the\ sequence\ to\ be\ random,\ the\ initial\ values\ of\ the\ lag}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00093}00093\ \textcolor{comment}{table\ have\ to\ be\ "{}random\ enough"{}.\ There\ have\ not\ to\ my\ knowledge\ been\ any}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00094}00094\ \textcolor{comment}{quantitive\ tests\ of\ this\ point,\ however\ initializing\ the\ lag\ table\ using}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00095}00095\ \textcolor{comment}{a\ good\ linear\ congruential\ generator\ (the\ Unix/C\ generator\ RAND\ is\ used}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00096}00096\ \textcolor{comment}{here)\ seems\ empirically\ to\ work\ fine.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00097}00097\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00098}00098\ \textcolor{comment}{The\ computation\ required\ to\ generate\ a\ new\ random\ number,\ apart\ from}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00099}00099\ \textcolor{comment}{updating\ 2\ pointers,\ is\ 1\ integer\ multiplication,\ which\ multiplies\ two}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00100}00100\ \textcolor{comment}{32-\/bit\ integers\ and\ returns\ the\ answer\ modulo\ 2\string^\{32\}\ (this\ is\ the\ standard}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00101}00101\ \textcolor{comment}{for\ unsigned\ ints\ in\ C),\ and\ 1\ floating\ point\ multiplication,\ to\ convert}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00102}00102\ \textcolor{comment}{the\ integers\ into\ a\ floating\ point\ number\ in\ [0,1).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00103}00103\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00104}00104\ \textcolor{comment}{For\ simplicity\ and\ clarity\ the\ lag\ table\ is\ indexed\ from\ 1\ to\ P\ rather}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00105}00105\ \textcolor{comment}{than\ 0\ to\ P-\/1.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00106}00106\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00107}00107\ \textcolor{comment}{References}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00108}00108\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00109}00109\ \textcolor{comment}{P.D.\ Coddington,\ "{}Monte\ Carlo\ tests\ of\ random\ number\ generators"{},}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00110}00110\ \textcolor{comment}{NPAC\ technical\ report\ SCCS-\/526.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00111}00111\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00112}00112\ \textcolor{comment}{F.\ James,\ "{}A\ Review\ of\ Pseudo-\/random\ Number\ Generators"{},}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00113}00113\ \textcolor{comment}{Comput.\ Phys.\ Comm.\ 60\ (1990)\ 329.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00114}00114\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00115}00115\ \textcolor{comment}{D.E.\ Knuth,\ "{}The\ Art\ of\ Computer\ Programming\ Vol.\ 2:\ Seminumerical}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00116}00116\ \textcolor{comment}{Methods"{},\ (Addison-\/Wesley,\ Reading,\ Mass.,\ 1981).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00117}00117\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00118}00118\ \textcolor{comment}{P.\ L'Ecuyer,\ "{}Random\ numbers\ for\ simulation"{},\ Comm.\ ACM\ 33:10\ (1990)\ 85.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00119}00119\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00120}00120\ \textcolor{comment}{G.A.\ Marsaglia,\ "{}A\ current\ view\ of\ random\ number\ generators"{},}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00121}00121\ \textcolor{comment}{in\ Computational\ Science\ and\ Statistics:\ The\ Interface,}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00122}00122\ \textcolor{comment}{ed.\ L.\ Balliard\ (Elsevier,\ Amsterdam,\ 1985).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00123}00123\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00124}00124\ \textcolor{comment}{****************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00125}00125\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00126}00126\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00127}00127\ \textcolor{preprocessor}{\#include\ <stdlib.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00128}00128\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00129}\mbox{\hyperlink{randomnumber_8c_ad4a2b87a8be86bd1cfdd41330457f3e8}{00129}}\ \textcolor{preprocessor}{\#define\ TWOTO31\ 2147483648.0}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00130}\mbox{\hyperlink{randomnumber_8c_adeaa29febed8eb2efef576c1ba374796}{00130}}\ \textcolor{preprocessor}{\#define\ TWOTO30\ 1073741824\ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00131}\mbox{\hyperlink{randomnumber_8c_ae53956fb28455136026d56be5adf105d}{00131}}\ \textcolor{keywordtype}{double}\ \ \mbox{\hyperlink{randomnumber_8c_ae53956fb28455136026d56be5adf105d}{TWOTONEG31}}=(1.0/\mbox{\hyperlink{randomnumber_8c_ad4a2b87a8be86bd1cfdd41330457f3e8}{TWOTO31}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00133}00133\ \textcolor{comment}{/*\ Lags,\ P\ and\ Q\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00134}\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{00134}}\ \textcolor{preprocessor}{\#define\ P\ 1279}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00135}\mbox{\hyperlink{randomnumber_8c_acbcee443d6d55cb8600b3f240f5cf907}{00135}}\ \textcolor{preprocessor}{\#define\ Q\ 418}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00136}00136\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00137}00137\ \textcolor{comment}{/*\ Variables\ for\ the\ lagged\ Fibonacci\ generator\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00138}\mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{00138}}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}}+1];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00139}\mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{00139}}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}},\ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00141}00141\ \textcolor{comment}{/*\ Variables\ for\ the\ linear\ congruential\ generator\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00142}\mbox{\hyperlink{randomnumber_8c_a52037c938e3c1b126c6277da5ca689d0}{00142}}\ \textcolor{preprocessor}{\#define\ M\ (\ 0x7fffffff\ )\ \ \ \ \ }\textcolor{comment}{/*\ 2\string^\{31\}-\/1\ -\/-\/\ mask\ by\ M\ to\ get\ modulo\ 2\string^\{31\}\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00143}\mbox{\hyperlink{randomnumber_8c_a955f504eccf76b4eb2489c0adab03121}{00143}}\ \textcolor{preprocessor}{\#define\ A\ 1103515245}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00144}\mbox{\hyperlink{randomnumber_8c_a97d832ae23af4f215e801e37e4f94254}{00144}}\ \textcolor{preprocessor}{\#define\ K\ 12345}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00146}00146\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00147}00147\ \textcolor{comment}{\ \ \ Initialize\ the\ lagged\ Fibonacci\ random\ number\ generator.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00148}00148\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00149}00149\ \textcolor{comment}{\ \ \ Every\ bit\ of\ all\ the\ seeds\ in\ the\ lag\ table\ is\ initialized\ using\ the}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00150}00150\ \textcolor{comment}{\ \ \ linear\ congruential\ generator.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00151}00151\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00152}00152\ \textcolor{comment}{\ \ \ s\ =\ (A\ *\ s\ +\ K)\ mod\ M,\ where\ A\ =\ 1103515245,\ K\ =\ 12345,\ and\ M\ =\ 2\string^\{31\}-\/1}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00153}00153\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00154}00154\ \textcolor{comment}{\ \ \ This\ routine\ must\ be\ called\ before\ the\ random\ number\ generator\ is\ called.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00155}00155\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00156}00156\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00157}00157\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00158}00158\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00159}00159\ \ \ \textcolor{keywordtype}{void}\ rand\_init(seed)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00160}00160\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00161}\mbox{\hyperlink{randomnumber_8c_ad5b9e64af1d0326d422e18f7bd20b753}{00161}}\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{randomnumber_8c_ad5b9e64af1d0326d422e18f7bd20b753}{rand\_init\_}}(seed)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00162}00162\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00163}00163\ \textcolor{keywordtype}{int}\ *\ seed;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00164}00164\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00165}00165\ \ \ \ \textcolor{keywordtype}{int}\ i,j;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00166}00166\ \ \ \ \textcolor{keywordtype}{int}\ s,t,y;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00167}00167\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00168}00168\ \ \ \ y\ =\ *seed;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00170}00170\ \ \ \ \textcolor{comment}{/*\ Initialize\ every\ bit\ of\ the\ lag\ table\ using\ RAND\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00171}00171\ \ \ \ \textcolor{keywordflow}{for}\ (i=1;i<=\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};i++)\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00172}00172\ \ \ \ \ \ \ s\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00173}00173\ \ \ \ \ \ \ t\ =\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00174}00174\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (j=0;j<32;j++)\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00175}00175\ \ \ \ \ \ \ y\ =\ (\mbox{\hyperlink{randomnumber_8c_a955f504eccf76b4eb2489c0adab03121}{A}}\ *\ y\ +\ \mbox{\hyperlink{randomnumber_8c_a97d832ae23af4f215e801e37e4f94254}{K}})\ \&\ \mbox{\hyperlink{randomnumber_8c_a52037c938e3c1b126c6277da5ca689d0}{M}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\ y\ <\ \mbox{\hyperlink{randomnumber_8c_adeaa29febed8eb2efef576c1ba374796}{TWOTO30}}\ )\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ s\ =\ s\ +\ t;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00179}00179\ \ \ \ \ \ \ t\ =\ t\ <<\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00180}00180\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00181}00181\ \ \ \ \ \ \ \textcolor{comment}{/*\ Seeds\ must\ be\ odd\ integers\ because\ the\ last\ bit\ should\ be\ 1\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00182}00182\ \ \ \ \ \ \ s\ =\ s\ |\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00183}00183\ \ \ \ \ \ \ \mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[i]\ =\ s;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00184}00184\ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00186}00186\ \ \ \ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}\ =\ \mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00187}00187\ \ \ \ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\ =\ \mbox{\hyperlink{randomnumber_8c_acbcee443d6d55cb8600b3f240f5cf907}{Q}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00188}00188\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00189}00189\ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00190}00190\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00191}00191\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00192}00192\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00193}00193\ \textcolor{comment}{\ \ \ Return\ a\ random\ **double**\ in\ [0.0,\ 1.0).}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00194}00194\ \textcolor{comment}{\ \ \ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00195}00195\ \textcolor{comment}{\ \ \ !!!Caution!!!}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00196}00196\ \textcolor{comment}{\ \ \ Only\ the\ most\ significant\ 31\ bits\ of\ drand1\ will\ actually}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00197}00197\ \textcolor{comment}{\ \ \ be\ random,\ since\ a\ random\ 32-\/bit\ integer\ is\ converted\ into\ a\ double.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00198}00198\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00199}00199\ \textcolor{comment}{\ \ \ To\ return\ a\ float\ instead\ of\ a\ double,\ simply\ change\ the\ type\ of\ rand}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00200}00200\ \textcolor{comment}{\ \ \ and\ drand1\ to\ float.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00201}00201\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00202}00202\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00203}00203\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00204}00204\ \textcolor{preprocessor}{\#ifdef\ RISC\ \ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00205}00205\ \ \ \textcolor{keywordtype}{double}\ drand1()}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00206}00206\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00207}\mbox{\hyperlink{randomnumber_8c_a1ba4332ea9f33b0479d45f04f67027a8}{00207}}\ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{randomnumber_8c_a1ba4332ea9f33b0479d45f04f67027a8}{drand1\_}}()}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00208}00208\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00209}00209\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00210}00210\ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ unsi;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00211}00211\ \ \ \ \textcolor{keywordtype}{double}\ rand;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00213}00213\ \ \ \ unsi\ =\ \mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[\mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}]\ *\ \mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[\mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00214}00214\ \ \ \ \mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[\mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}]\ =\ unsi;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00215}00215\ \ \ \ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}\ -\/-\/;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00216}00216\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}\ ==\ 0)\ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}\ =\ \mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00217}00217\ \ \ \ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\ -\/-\/;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00218}00218\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\ ==\ 0)\ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\ =\ \mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00219}00219\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00220}00220\ \ \ \ unsi\ =\ unsi\ >>\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00221}00221\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00222}00222\ \ \ \ rand\ =\ (double)unsi\ *\ \mbox{\hyperlink{randomnumber_8c_ae53956fb28455136026d56be5adf105d}{TWOTONEG31}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00223}00223\ \ \ \ \textcolor{keywordflow}{return}(rand);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00224}00224\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00225}00225\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00226}00226\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00227}00227\ \textcolor{comment}{\ \ \ Store\ the\ lag\ table\ and\ pointers.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00228}00228\ \textcolor{comment}{\ \ \ They\ are\ needed\ for\ restarting\ MCMC.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00229}00229\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00230}00230\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00231}00231\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00232}00232\ \textcolor{keywordtype}{int}\ write\_seeds(seedfilename)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00233}00233\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00234}\mbox{\hyperlink{randomnumber_8c_a68ec8f3c6e211372c23d97fe46deff38}{00234}}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{randomnumber_8c_a68ec8f3c6e211372c23d97fe46deff38}{write\_seeds\_}}(seedfilename)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00235}00235\ \textcolor{preprocessor}{\#endif\ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00236}00236\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00237}00237\ \textcolor{keywordtype}{char}\ seedfilename[128];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00238}00238\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00239}00239\ \ \ \ FILE\ *f1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00240}00240\ \ \ \ \textcolor{keywordtype}{int}\ i,pointer[2];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00241}00241\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00242}00242\ \ \ \ pointer[0]\ =\ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00243}00243\ \ \ \ pointer[1]\ =\ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00244}00244\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00245}00245\ \ \ \ \textcolor{comment}{/*\ Open\ a\ file\ to\ store\ the\ lag\ table\ and\ pointers\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00246}00246\ \ \ \ f1\ =\ fopen(seedfilename,\textcolor{stringliteral}{"{}w"{}})\ ;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00247}00247\ \ \ \ \textcolor{keywordflow}{for}\ (i=1;i<=\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};i++)\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00248}00248\ \ \ \ \ \ \ fprintf(f1,\textcolor{stringliteral}{"{}\%u\(\backslash\)n"{}},\mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[i]);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00249}00249\ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00250}00250\ \ \ \ fflush(f1);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00251}00251\ \ \ \ fprintf(f1,\textcolor{stringliteral}{"{}\%d\ \%d\(\backslash\)n"{}},pointer[0],pointer[1]);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00252}00252\ \ \ \ fclose(f1);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00254}00254\ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00255}00255\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00256}00256\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00257}00257\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00258}00258\ \textcolor{comment}{\ \ \ Read\ in\ stored\ lag\ table\ and\ pointers.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00259}00259\ \textcolor{comment}{\ \ \ They\ are\ needed\ for\ restarting\ MCMC.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00260}00260\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00261}00261\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00262}00262\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00263}00263\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00264}00264\ \textcolor{keywordtype}{int}\ read\_seeds(seedfilename)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00265}00265\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00266}\mbox{\hyperlink{randomnumber_8c_a763349afc02b1168a44cc395e171963d}{00266}}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{randomnumber_8c_a763349afc02b1168a44cc395e171963d}{read\_seeds\_}}(seedfilename)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00267}00267\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00268}00268\ \textcolor{keywordtype}{char}\ seedfilename[128];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00269}00269\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00270}00270\ \ \ FILE\ *f1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00271}00271\ \ \ \textcolor{keywordtype}{int}\ i,pointer[2];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00272}00272\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00273}00273\ \ \ \textcolor{comment}{/*\ Open\ the\ file\ containing\ the\ lag\ table\ and\ pointers\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00274}00274\ \ \ f1\ =\ fopen(seedfilename,\textcolor{stringliteral}{"{}r"{}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00275}00275\ \ \ \textcolor{keywordflow}{if}(\ f1\ ==\ NULL\ )\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00276}00276\ \ \ \ \ \ \ fprintf(\ stderr,\ \textcolor{stringliteral}{"{}WARNING\ error\ opening\ file:\ \%s\(\backslash\)n"{}},seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00277}00277\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00278}00278\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00279}00279\ \ \ \ \ \textcolor{keywordflow}{for}(i=1;i<=\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};i++)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00280}00280\ \ \ \ \ \ \ \textcolor{keywordflow}{if}(fscanf(f1,\textcolor{stringliteral}{"{}\%u"{}},\&\mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[i])<0)\ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00281}00281\ \ \ \ \ \ \ fprintf(\ stdout,\ \textcolor{stringliteral}{"{}WAR1"{}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00282}00282\ \ \ \ \ \textcolor{keywordflow}{if}(fscanf(f1,\textcolor{stringliteral}{"{}\%d\ \%d"{}},\&pointer[0],\&pointer[1])<0)\ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00283}00283\ \ \ \ \ \ \ fprintf(\ stdout,\ \textcolor{stringliteral}{"{}WAR2"{}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00284}00284\ \ \ \ \ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}\ =\ pointer[0];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00285}00285\ \ \ \ \ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\ =\ pointer[1];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00286}00286\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00287}00287\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00288}00288\ \ \ fclose(f1);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00289}00289\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00290}00290\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00291}00291\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00292}00292\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00293}00293\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00294}00294\ \textcolor{comment}{\ \ \ Store\ the\ lag\ table\ and\ pointers\ with\ MPI-\/IO.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00295}00295\ \textcolor{comment}{\ \ \ They\ are\ needed\ for\ restarting\ MCMC.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00296}00296\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00297}00297\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00298}00298\ \textcolor{preprocessor}{\#include\ <mpi.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00299}00299\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00300}00300\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00301}00301\ \ \ \ \ \textcolor{keywordtype}{int}\ write\_seeds\_mpiio(seedfilename,\ rank\_address)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00302}00302\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00303}00303\ \ \ \ \ \textcolor{keywordtype}{int}\ write\_seeds\_mpiio\_(seedfilename,\ rank\_address)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00304}00304\ \textcolor{preprocessor}{\#endif\ }}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00305}00305\ \textcolor{keywordtype}{char}\ seedfilename[128];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00306}00306\ \textcolor{keywordtype}{int}*\ rank\_address;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00307}00307\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00308}00308\ \ \ MPI\_File\ \mbox{\hyperlink{namespacesetup_aef32cb2b488d35d32ebd7ce6cf9ccaae}{fh}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00309}00309\ \ \ MPI\_Offset\ offset1,\ offset2;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00310}00310\ \ \ MPI\_Info\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00311}00311\ \ \ MPI\_Status\ status;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00312}00312\ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}=*rank\_address;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00313}00313\ \ \ \textcolor{keywordtype}{int}\ root=(\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}==0);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00314}00314\ \ \ \textcolor{keywordtype}{int}\ result;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00315}00315\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pointer[2]=\{\mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}},\mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}\};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00316}00316\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00317}00317\ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stdout,\ \textcolor{stringliteral}{"{}\ Writing\ random\ seeds\ to\ \%s\ with\ MPI-\/IO\ ...\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00318}00318\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00319}00319\ \ \ \textcolor{comment}{/*\ Open\ a\ file\ to\ store\ the\ lag\ table\ and\ pointers\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00320}00320\ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ MPI\_INFO\_NULL;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00321}00321\ \ \ result\ =\ MPI\_File\_open(MPI\_COMM\_WORLD,\ seedfilename,\ MPI\_MODE\_WRONLY\ |\ MPI\_MODE\_CREATE,\ info,\ \&fh);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00322}00322\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00323}00323\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ open\ file\ \%s\ for\ writing\ random\ seeds\ with\ MPI-\/IO!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00324}00324\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00325}00325\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00326}00326\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00327}00327\ \ \ MPI\_File\_set\_size(fh,\ 0);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00328}00328\ \ \ result\ =\ MPI\_File\_set\_view(fh,\ 0,\ MPI\_UNSIGNED,\ MPI\_UNSIGNED,\ \textcolor{stringliteral}{"{}native"{}},\ info);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00329}00329\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00330}00330\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ in\ MPI\_File\_set\_view!\(\backslash\)n"{}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00331}00331\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00332}00332\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00333}00333\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00334}00334\ \ \ offset1\ =\ (MPI\_Offset)\ rank*(\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}}+2);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00335}00335\ \ \ offset2\ =\ (MPI\_Offset)\ rank*(\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}}+2)+\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00336}00336\ \ \ \textcolor{comment}{//\ file\ size\ is\ rank*(P+2)*4\ bytes.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00337}00337\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00338}00338\ \ \ \textcolor{comment}{//fprintf(stdout,"{}rank\ \%d,\ offset\ \%d\ \%d\(\backslash\)n"{},rank,offset1,offset2);}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00339}00339\ \ \ result\ =\ MPI\_File\_write\_at\_all(fh,\ offset1,\ \&\mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[1]\ \ ,\ \mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}},\ MPI\_UNSIGNED,\ \&status);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00340}00340\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00341}00341\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ write\ vector\ u\ to\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00342}00342\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00343}00343\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00344}00344\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00345}00345\ \ \ result\ =\ MPI\_File\_write\_at\_all(fh,\ offset2,\ pointer,\ 2,\ MPI\_UNSIGNED,\ \&status);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00346}00346\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00347}00347\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ write\ pointer0\ and\ pointer1\ to\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00348}00348\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00349}00349\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00350}00350\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00351}00351\ \ \ result\ =\ MPI\_File\_close(\&fh);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00352}00352\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00353}00353\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ close\ file\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00354}00354\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00355}00355\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00356}00356\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00357}00357\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00358}00358\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00359}00359\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00360}00360\ \textcolor{comment}{/***************************************************************************}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00361}00361\ \textcolor{comment}{\ \ Read\ in\ stored\ lag\ table\ and\ pointers\ with\ MPI-\/IO.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00362}00362\ \textcolor{comment}{\ \ They\ are\ needed\ for\ restarting\ MCMC.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00363}00363\ \textcolor{comment}{***************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00364}00364\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00365}00365\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00366}00366\ \ \ \ \textcolor{keywordtype}{int}\ read\_seeds\_mpiio(seedfilename,rank\_address)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00367}00367\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00368}00368\ \ \ \ \textcolor{keywordtype}{int}\ read\_seeds\_mpiio\_(seedfilename,rank\_address)}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00369}00369\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00370}00370\ \textcolor{keywordtype}{char}\ seedfilename[128];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00371}00371\ \textcolor{keywordtype}{int}*\ rank\_address;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00372}00372\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00373}00373\ \ \ MPI\_File\ \mbox{\hyperlink{namespacesetup_aef32cb2b488d35d32ebd7ce6cf9ccaae}{fh}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00374}00374\ \ \ MPI\_Offset\ offset1,\ offset2;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00375}00375\ \ \ MPI\_Info\ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00376}00376\ \ \ MPI\_Status\ status;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00377}00377\ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}=*rank\_address;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00378}00378\ \ \ \textcolor{keywordtype}{int}\ root=(\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}==0);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00379}00379\ \ \ \textcolor{keywordtype}{int}\ result;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00380}00380\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pointer[2];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00381}00381\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00382}00382\ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stdout,\ \textcolor{stringliteral}{"{}\ Reading\ random\ seeds\ from\ \%s\ with\ MPI-\/IO\ ...\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00383}00383\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00384}00384\ \ \ \textcolor{comment}{/*\ Open\ a\ file\ to\ store\ the\ lag\ table\ and\ pointers\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00385}00385\ \ \ \mbox{\hyperlink{namespaceallio_a700af39cb9f1eb5f934c738414a88496}{info}}\ =\ MPI\_INFO\_NULL;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00386}00386\ \ \ result\ =\ MPI\_File\_open(MPI\_COMM\_WORLD,\ seedfilename,\ MPI\_MODE\_RDONLY,\ info,\ \&fh);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00387}00387\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00388}00388\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ open\ file\ \%s\ for\ reading\ random\ seeds\ with\ MPI-\/IO!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00389}00389\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00390}00390\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00391}00391\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00392}00392\ \ \ result\ =\ MPI\_File\_set\_view(fh,\ 0,\ MPI\_UNSIGNED,\ MPI\_UNSIGNED,\ \textcolor{stringliteral}{"{}native"{}},\ info);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00393}00393\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00394}00394\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ in\ MPI\_File\_set\_view!\(\backslash\)n"{}});}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00395}00395\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00396}00396\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00397}00397\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00398}00398\ \ \ offset1\ =\ (MPI\_Offset)\ rank*(\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}}+2);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00399}00399\ \ \ offset2\ =\ (MPI\_Offset)\ rank*(\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}}+2)+\mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}};}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00400}00400\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00401}00401\ \ \ \textcolor{comment}{//fprintf(stdout,"{}rank\ \%d,\ offset\ \%d\ \%d\(\backslash\)n"{},rank,offset1,offset2);}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00402}00402\ \ \ result\ =\ MPI\_File\_read\_at\_all(fh,\ offset1,\ \&\mbox{\hyperlink{randomnumber_8c_a4f82b2670fc0b0917353bcd5036bb0b8}{u}}[1]\ \ ,\ \mbox{\hyperlink{randomnumber_8c_a2748566f4c443ee77aa831e63dbb5ebe}{P}},\ MPI\_UNSIGNED,\ \&status);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00403}00403\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00404}00404\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ read\ vector\ u\ to\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00405}00405\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00406}00406\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00407}00407\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00408}00408\ \ \ result\ =\ MPI\_File\_read\_at\_all(fh,\ offset2,\ pointer,\ 2,\ MPI\_UNSIGNED,\ \&status);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00409}00409\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00410}00410\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ read\ pointer0\ and\ pointer1\ to\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00411}00411\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00412}00412\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00413}00413\ \ \ \mbox{\hyperlink{randomnumber_8c_ad9678d44ed542d8c26186cc459c9af5c}{pointer0}}=pointer[0];\ \mbox{\hyperlink{randomnumber_8c_a853cd501bb69ac69fe23daf96ad1caa3}{pointer1}}=pointer[1];}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00414}00414\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00415}00415\ \ \ result\ =\ MPI\_File\_close(\&fh);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00416}00416\ \ \ \textcolor{keywordflow}{if}(result\ !=\ MPI\_SUCCESS)\{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00417}00417\ \ \ \ \ \textcolor{keywordflow}{if}(root)\ fprintf(stderr,\ \textcolor{stringliteral}{"{}ERROR:\ Fail\ to\ close\ file\ \%s!\(\backslash\)n"{}},\ seedfilename);}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00418}00418\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00419}00419\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00420}00420\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00421}00421\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00422}00422\ \}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00423}00423\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00424}00424\ \textcolor{comment}{//\ end\ of\ PARALLEL\ for\ reading\ and\ writing\ MPI-\/IO\ random\ seeds.}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00425}00425\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00426}00426\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00427}00427\ \textcolor{preprocessor}{\#include\ <sys/time.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00428}00428\ \textcolor{preprocessor}{\#include\ <sys/resource.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00429}00429\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00430}00430\ }
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00431}00431\ \textcolor{comment}{/*\ avoid\ possible\ conflict,\ \#ifdef\ RISC\ preprocessor\ */}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00432}00432\ \textcolor{preprocessor}{\#ifdef\ RISC}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00433}00433\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{namespacefreeelmod__complex_aec8bdf0a87c6b84a74996a0ccf426935}{cclock}}()}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00434}00434\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00435}\mbox{\hyperlink{randomnumber_8c_ac7143620843de8458aa107505861ceb6}{00435}}\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{randomnumber_8c_ac7143620843de8458aa107505861ceb6}{cclock\_}}()}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00436}00436\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00437}00437\ \textcolor{comment}{/*\ Return\ the\ second\ elapsed\ since\ Epoch\ (00:00:00\ UTC,\ January\ 1,\ 1970)}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00438}00438\ \textcolor{comment}{*/}}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00439}00439\ \{}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00440}00440\ \ \ \ \ \textcolor{keyword}{struct\ }timeval\ tmp;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00441}00441\ \ \ \ \ \textcolor{keywordtype}{double}\ sec;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00442}00442\ \ \ \ \ gettimeofday(\ \&tmp,\ (\textcolor{keyword}{struct}\ timezone\ *)0\ );}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00443}00443\ \ \ \ \ sec\ =\ tmp.tv\_sec\ +\ ((double)tmp.tv\_usec)/1000000.0;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00444}00444\ \ \ \ \ \textcolor{keywordflow}{return}\ sec;}
+\DoxyCodeLine{\Hypertarget{randomnumber_8c_source_l00445}00445\ \}}
+
+\end{DoxyCode}

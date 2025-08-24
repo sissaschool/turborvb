@@ -1,0 +1,96 @@
+\doxysection{diffus.\+f90}
+\hypertarget{diffus_8f90_source}{}\label{diffus_8f90_source}\index{src/a\_turborvb/diffus.f90@{src/a\_turborvb/diffus.f90}}
+\mbox{\hyperlink{diffus_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Calculate\ diffusion\ coefficient\ for\ real\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ computes\ the\ diffusion\ coefficient\ for\ the}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ quantum\ Monte\ Carlo\ walkers.\ It\ evaluates\ the\ quantity\ that}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ should\ be\ exactly\ one\ for\ perfect\ short-\/time\ diffusion.}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00020}00020\ \textcolor{comment}{!>\ @param[in]\ \ nel\ \ \ \ \ \ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ Number\ of\ time\ steps}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ gamma\ \ \ \ Diffusion\ parameter}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ ivic\ \ \ \ \ Velocity\ array\ (3,\ indt,\ nel)}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ table\ \ \ \ Wave\ function\ table}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[out]\ fun\ \ \ \ \ \ Diffusion\ coefficient}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ \ istart\ \ \ Starting\ index\ for\ calculation}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00027}\mbox{\hyperlink{diffus_8f90_a1e64bb9a8f933590c9bfa51f5912a1e5}{00027}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{diffus_8f90_a1e64bb9a8f933590c9bfa51f5912a1e5}{diffus}}(nel,\ indt,\ gamma,\ ivic,\ table,\ fun,\ istart)}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00028}00028\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ indt,\ i,\ j,\ istart}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00032}00032\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ivic(3,\ indt,\ *),\ table(nel,\ *),\ fun,\ amu2,\ gamma,\ cost}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00034}00034\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ this\ quantity\ should\ be\ exactly\ one\ for\ perfect}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00035}00035\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ short\ time\ diffusion}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00036}00036\ \ \ \ \ fun\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ istart\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ cost\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \ \ amu2\ =\ sum(ivic(:,\ i,\ j)**2)}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ this\ regularize\ the\ diffusion\ in\ the\ true\ H\string^a}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ cost\ +\ table(j,\ i)*amu2}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00043}00043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ fun\ =\ fun\ +\ cost}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00045}00045\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00046}00046\ \ \ \ \ fun\ =\ fun/(6.d0*nel)\ \textcolor{comment}{!\ This\ has\ to\ be\ one\ for\ perfect\ diffusion}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00049}00049\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{diffus_8f90_a1e64bb9a8f933590c9bfa51f5912a1e5}{diffus}}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00051}00051\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/!}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00052}00052\ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/!}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00053}00053\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Calculate\ diffusion\ coefficient\ for\ complex\ wave\ function}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ computes\ the\ diffusion\ coefficient\ for\ complex}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00056}00056\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ wave\ functions\ in\ quantum\ Monte\ Carlo.\ Similar\ to\ diffus\ but}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00057}00057\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ handles\ complex\ wave\ function\ tables.}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00058}00058\ \textcolor{comment}{!>\ @param[in]\ \ nel\ \ \ \ \ \ Number\ of\ electrons}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00059}00059\ \textcolor{comment}{!>\ @param[in]\ \ indt\ \ \ \ \ Number\ of\ time\ steps}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00060}00060\ \textcolor{comment}{!>\ @param[in]\ \ gamma\ \ \ \ Diffusion\ parameter}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00061}00061\ \textcolor{comment}{!>\ @param[in]\ \ ivic\ \ \ \ \ Velocity\ array\ (3,\ indt,\ nel)}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00062}00062\ \textcolor{comment}{!>\ @param[in]\ \ table\ \ \ \ Complex\ wave\ function\ table}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00063}00063\ \textcolor{comment}{!>\ @param[out]\ fun\ \ \ \ \ \ Complex\ diffusion\ coefficient}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00064}00064\ \textcolor{comment}{!>\ @param[in]\ \ istart\ \ \ Starting\ index\ for\ calculation}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00065}\mbox{\hyperlink{diffus_8f90_a109137c3ebd11753be5a8992276dad99}{00065}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{diffus_8f90_a109137c3ebd11753be5a8992276dad99}{diffus\_complex}}(nel,\ indt,\ gamma,\ ivic,\ table,\ fun,\ istart)}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00067}00067\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00069}00069\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ indt,\ i,\ j,\ istart}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00072}00072\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ivic(3,\ indt,\ *),\ amu2,\ gamma}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00073}00073\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ table(nel,\ *),\ fun,\ cost}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ this\ quantity\ should\ be\ exactly\ one\ for\ perfect}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ short\ time\ diffusion}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00077}00077\ \ \ \ \ fun\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ istart\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ cost\ =\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nel}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ amu2\ =\ sum(ivic(:,\ i,\ j)**2)}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ this\ regularize\ the\ diffusion\ in\ the\ true\ H\string^a}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ cost\ +\ table(j,\ i)*amu2}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ fun\ =\ fun\ +\ cost}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00087}00087\ \ \ \ \ fun\ =\ fun/(6.d0*nel)\ \textcolor{comment}{!\ This\ has\ to\ be\ one\ for\ perfect\ diffusion}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{diffus_8f90_source_l00090}00090\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{diffus_8f90_a109137c3ebd11753be5a8992276dad99}{diffus\_complex}}}
+
+\end{DoxyCode}

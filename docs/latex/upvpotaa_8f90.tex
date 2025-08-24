@@ -1,0 +1,119 @@
+\doxysection{src/m\+\_\+common/upvpotaa.f90 File Reference}
+\hypertarget{upvpotaa_8f90}{}\label{upvpotaa_8f90}\index{src/m\_common/upvpotaa.f90@{src/m\_common/upvpotaa.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+real(8) function \mbox{\hyperlink{upvpotaa_8f90_a25b94c77dd5a5b5b15f63f0612e520d5}{upvpotaa}} (zeta, iond, nion, kappa, lbox)
+\begin{DoxyCompactList}\small\item\em Calculate ion-\/ion potential energy with Ewald summation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{upvpotaa_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{upvpotaa_8f90_a25b94c77dd5a5b5b15f63f0612e520d5}\index{upvpotaa.f90@{upvpotaa.f90}!upvpotaa@{upvpotaa}}
+\index{upvpotaa@{upvpotaa}!upvpotaa.f90@{upvpotaa.f90}}
+\doxysubsubsection{\texorpdfstring{upvpotaa()}{upvpotaa()}}
+{\footnotesize\ttfamily \label{upvpotaa_8f90_a25b94c77dd5a5b5b15f63f0612e520d5} 
+real(8) function upvpotaa (\begin{DoxyParamCaption}\item[{real(8), dimension(nion)}]{zeta}{, }\item[{real(8), dimension(nion, nion)}]{iond}{, }\item[{integer}]{nion}{, }\item[{real(8)}]{kappa}{, }\item[{real(8)}]{lbox}{}\end{DoxyParamCaption})}
+
+
+
+Calculate ion-\/ion potential energy with Ewald summation. 
+
+This function computes the ion-\/ion electrostatic potential energy using either direct Coulomb interaction (for isolated systems) or Ewald summation (for periodic boundary conditions). The calculation includes both the real-\/space and self-\/interaction contributions.\hypertarget{upvpotaa_8f90_autotoc_md70}{}\doxysubsubsection{\texorpdfstring{Parameters}{Parameters}}\label{upvpotaa_8f90_autotoc_md70}
+ZETA \+: real\texorpdfstring{$\ast$}{*}8 array, in Array of ion charges (NION). IOND \+: real\texorpdfstring{$\ast$}{*}8 array, in Matrix of ion-\/ion distances (NION × NION). NION \+: integer, in Number of ions in the system. KAPPA \+: real\texorpdfstring{$\ast$}{*}8, in Ewald parameter for splitting the Coulomb interaction. LBOX \+: real\texorpdfstring{$\ast$}{*}8, in Box length for periodic boundary conditions. If LBOX ≤ 0\+: isolated system (direct Coulomb). If LBOX \texorpdfstring{$>$}{>} 0\+: periodic system (Ewald summation).\hypertarget{upvpotaa_8f90_autotoc_md71}{}\doxysubsubsection{\texorpdfstring{Returns}{Returns}}\label{upvpotaa_8f90_autotoc_md71}
+real\texorpdfstring{$\ast$}{*}8 Total ion-\/ion potential energy including self-\/interaction correction.\hypertarget{upvpotaa_8f90_autotoc_md72}{}\doxysubsubsection{\texorpdfstring{Notes}{Notes}}\label{upvpotaa_8f90_autotoc_md72}
+
+\begin{DoxyItemize}
+\item For isolated systems (LBOX ≤ 0)\+: uses direct Coulomb interaction.
+\item For periodic systems (LBOX \texorpdfstring{$>$}{>} 0)\+: uses Ewald summation with\+:
+\begin{DoxyItemize}
+\item Real-\/space contribution using complementary error function.
+\item Self-\/interaction correction to avoid double-\/counting.
+\end{DoxyItemize}
+\item Includes nearest-\/neighbor interactions for periodic systems.
+\item Uses SIMD vectorization for performance optimization.
+\item The self-\/interaction term is\+: -\/2\texorpdfstring{$\ast$}{*}κ\texorpdfstring{$\ast$}{*}ε₀/√π \texorpdfstring{$\ast$}{*} Σ(zeta²).
+\end{DoxyItemize}\hypertarget{upvpotaa_8f90_autotoc_md73}{}\doxysubsubsection{\texorpdfstring{Algorithm}{Algorithm}}\label{upvpotaa_8f90_autotoc_md73}
+For isolated systems\+: E = Σᵢⱼ 2\texorpdfstring{$\ast$}{*}zeta(i)\texorpdfstring{$\ast$}{*}zeta(j)\texorpdfstring{$\ast$}{*}veps(iond(i,j))
+
+For periodic systems\+: E\+\_\+real = Σᵢⱼ 2\texorpdfstring{$\ast$}{*}zeta(i)\texorpdfstring{$\ast$}{*}zeta(j)\texorpdfstring{$\ast$}{*}erfc(κ\texorpdfstring{$\ast$}{*}rᵢⱼ)/rᵢⱼ E\+\_\+self = -\/2\texorpdfstring{$\ast$}{*}κ\texorpdfstring{$\ast$}{*}ε₀/√π \texorpdfstring{$\ast$}{*} Σ(zeta²) E\+\_\+total = E\+\_\+real + E\+\_\+self\hypertarget{upvpotaa_8f90_autotoc_md74}{}\doxysubsubsection{\texorpdfstring{Example}{Example}}\label{upvpotaa_8f90_autotoc_md74}
+Used in quantum Monte Carlo calculations for ion-\/ion interactions. Initialize potential energy
+
+Isolated system\+: direct Coulomb interaction
+
+No self-\/interaction correction for isolated systems
+
+Periodic system\+: Ewald summation
+
+Calculate real-\/space contribution with nearest neighbors
+
+Self-\/interaction correction for periodic systems
+
+Return total potential energy including self-\/interaction
+
+Definition at line \mbox{\hyperlink{upvpotaa_8f90_source_l00066}{66}} of file \mbox{\hyperlink{upvpotaa_8f90_source}{upvpotaa.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacedielectric}{dielectric}}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}},\ x\_neigh,\ neigh,\ dist\_shift,\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ i,\ j,\ ii,\ jj,\ nion}
+\DoxyCodeLine{00071\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ derfc,\ x\_shift(3),\ cost\_z}
+\DoxyCodeLine{00072\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ zeta(nion),\ iond(nion,\ nion),\ kappa,\ LBox,\ pot\_aa,\ upvpotaa,\ eself1b}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{parameter}\ ::\ PI\ =\ 3.14159265358979323846d0}
+\DoxyCodeLine{00074\ \textcolor{comment}{}}
+\DoxyCodeLine{00075\ \textcolor{comment}{!>\ @brief\ Initialize\ potential\ energy}}
+\DoxyCodeLine{00076\ \ \ \ \ pot\_aa\ =\ 0.d0}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}}\ .le.\ 0.d0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00079\ \textcolor{comment}{!>\ @brief\ Isolated\ system:\ direct\ Coulomb\ interaction}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(i)*\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(j)\ .ne.\ 0.d0)\ \&}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \&pot\_aa\ =\ pot\_aa\ +\ 2.d0*\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(i)*\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(j)*\mbox{\hyperlink{namespacedielectric_a3fa3ac3daf04f9ba04649720579d2965}{veps}}(\mbox{\hyperlink{namespaceallio_aeccf155f6d693b1bfe715cd3f241f647}{iond}}(i,\ j))}
+\DoxyCodeLine{00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00086\ \textcolor{comment}{!>\ @brief\ No\ self-\/interaction\ correction\ for\ isolated\ systems}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ eself1b\ =\ 0.d0}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{else}\textcolor{comment}{}}
+\DoxyCodeLine{00089\ \textcolor{comment}{!>\ @brief\ Periodic\ system:\ Ewald\ summation}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\_z\ =\ 2.d0*\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(i)*\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(j)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jj\ =\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}*(j\ -\/\ 1)\ +\ i}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\_z\ .ne.\ 0.d0)\ \textcolor{keywordflow}{then}\textcolor{comment}{}}
+\DoxyCodeLine{00095\ \textcolor{comment}{!>\ @brief\ Calculate\ real-\/space\ contribution\ with\ nearest\ neighbors}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#ifdef\ \_SIMD}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ simd}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ ii\ =\ 1,\ neigh}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_shift(ii)\ =\ dsqrt((\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(1,\ jj)\&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ x\_neigh(ii,\ 1))**2\ +\ (\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(2,\ jj)\&}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ x\_neigh(ii,\ 2))**2\ +\ (\mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}}(3,\ jj)\&}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ x\_neigh(ii,\ 3))**2)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\_shift(ii)\ =\ cost\_z*\mbox{\hyperlink{namespacedielectric_a680174dffcbc98fe20e252c1a319d1ce}{rep\_erfc}}(dist\_shift(ii),\ kappa)}
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pot\_aa\ =\ pot\_aa\ +\ sum(dist\_shift(1:neigh))}
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}\textcolor{comment}{}}
+\DoxyCodeLine{00110\ \textcolor{comment}{!>\ @brief\ Self-\/interaction\ correction\ for\ periodic\ systems}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ eself1b\ =\ -\/2*kappa*\mbox{\hyperlink{namespacedielectric_a431b1d0ee8d96544368f9a2c67e5c880}{epsilon0}}/dsqrt(pi)*sum(\mbox{\hyperlink{namespaceallio_ada9dc0a477ab383406d1df202e401441}{zeta}}(1:\mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}})**2)}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keywordflow}{\ \ \ \ end\ if}\textcolor{comment}{}}
+\DoxyCodeLine{00114\ \textcolor{comment}{!>\ @brief\ Return\ total\ potential\ energy\ including\ self-\/interaction}}
+\DoxyCodeLine{00115\ \ \ \ \ \mbox{\hyperlink{upvpotaa_8f90_a25b94c77dd5a5b5b15f63f0612e520d5}{upvpotaa}}\ =\ pot\_aa\ +\ eself1b}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{dielectric_8f90_source_l00037}{dielectric\+::epsilon0}}, \mbox{\hyperlink{allio_8f90_source_l00908}{allio\+::iond}}, \mbox{\hyperlink{allio_8f90_source_l00847}{allio\+::iond\+\_\+cart}}, \mbox{\hyperlink{allio_8f90_source_l01440}{allio\+::lbox}}, \mbox{\hyperlink{allio_8f90_source_l00259}{allio\+::nion}}, \mbox{\hyperlink{allio_8f90_source_l01119}{allio\+::rank}}, \mbox{\hyperlink{dielectric_8f90_source_l00204}{dielectric\+::rep\+\_\+erfc()}}, \mbox{\hyperlink{upvpotaa_8f90_source_l00067}{upvpotaa()}}, \mbox{\hyperlink{dielectric_8f90_source_l00134}{dielectric\+::veps()}}, and \mbox{\hyperlink{allio_8f90_source_l00932}{allio\+::zeta}}.
+
+
+
+Referenced by \mbox{\hyperlink{initialize__environment_8f90_source_l00023}{initialize\+\_\+environment()}}, and \mbox{\hyperlink{upvpotaa_8f90_source_l00067}{upvpotaa()}}.
+

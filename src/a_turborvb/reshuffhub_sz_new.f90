@@ -13,6 +13,90 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Reshuffle walker data for parallel DMC with Sz conservation
+!> @details    This subroutine handles the redistribution of walker data across
+!>             processes in parallel DMC calculations with Sz conservation.
+!>             It copies walker configurations, energies, gradients, and other
+!>             quantities according to the branching table jbra.
+!> @param[in]  Lz          Leading dimension for table arrays
+!> @param[in]  Lzr         Leading dimension for tabler arrays
+!> @param[in]  Ltab        Leading dimension for tabpip arrays
+!> @param[in]  Ltabb       Leading dimension for tmu arrays
+!> @param[in]  nelnion     Number of electron-ion distances
+!> @param[in]  nw          Number of walkers
+!> @param[in]  np          Number of parameters
+!> @param[in]  jbra        Branching table
+!> @param[in,out] kel      Electron coordinates
+!> @param[in,out] dist     Electron-ion distances
+!> @param[in,out] econf    Configuration energies
+!> @param[in,out] table    Table arrays
+!> @param[in,out] tabler   Regularized table arrays
+!> @param[in,out] tabpip   Tabpip arrays
+!> @param[in,out] winv     Winv matrices
+!> @param[in]  nel2wt      Dimension of winv
+!> @param[in,out] winvj    Winvj matrices
+!> @param[in]  nel2wtj     Dimension of winvj
+!> @param[in,out] winvup   Winvup matrices
+!> @param[in]  nel2upt     Dimension of winvup
+!> @param[in,out] winvdo   Winvdo matrices
+!> @param[in]  nel2dot     Dimension of winvdo
+!> @param[in,out] ainvup   Ainvup matrices
+!> @param[in]  nel2up      Dimension of ainvup
+!> @param[in,out] wsto     Wsto arrays
+!> @param[in,out] diagfn   Diagonal function values
+!> @param[in,out] diag     Diagonal values
+!> @param[in,out] psiln    Log of psi values
+!> @param[in,out] psisn    Sign of psi values
+!> @param[in,out] enert    Energy arrays
+!> @param[in,out] vpot     Potential arrays
+!> @param[in,out] vpotreg  Regularized potential arrays
+!> @param[in,out] enertrue True energy arrays
+!> @param[in,out] diffuse  Diffusion arrays
+!> @param[in]  nelkel      Dimension of kel
+!> @param[in,out] tmu      Tmu arrays
+!> @param[in,out] naccm    Acceptance counters
+!> @param[in,out] winvbar  Winvbar matrices
+!> @param[in]  nel2bar     Dimension of winvbar
+!> @param[in,out] winvjbar Winvjbar matrices
+!> @param[in,out] winvjbarsz Winvjbarsz matrices
+!> @param[in]  nel2jbar    Dimension of winvjbar
+!> @param[in]  nel2jbarsz  Dimension of winvjbarsz
+!> @param[in,out] ivic     Ivic arrays
+!> @param[in,out] pseudolocal Pseudolocal arrays
+!> @param[in]  nel         Number of electrons
+!> @param[in]  indt        Indt parameter
+!> @param[in]  ncore       Number of core electrons
+!> @param[in,out] gradtot  Total gradients
+!> @param[in,out] gradtotbar Total gradient bars
+!> @param[in,out] angle    Angle arrays
+!> @param[in,out] gradpsi  Psi gradients
+!> @param[in,out] gradpsibar Psi gradient bars
+!> @param[in]  n_gvec      Number of G vectors
+!> @param[in,out] sum_q_cos_gr Sum of q*cos(gr)
+!> @param[in,out] sum_q_sin_gr Sum of q*sin(gr)
+!> @param[in]  rank        Process rank
+!> @param[in]  nproc       Number of processes
+!> @param[out] ierr        Error flag
+!> @param[out] status      MPI status
+!> @param[in,out] psip     Work array
+!> @param[in]  skip        Skip parameter
+!> @param[in]  iessz       Sz conservation flag
+!> @param[in]  Lbox        Box length
+!> @param[in,out] psidetln Log of determinant
+!> @param[in,out] jastrowall_ee Electron-electron Jastrow
+!> @param[in]  dimee       Dimension of electron-electron Jastrow
+!> @param[in,out] jastrowall_ei Electron-ion Jastrow
+!> @param[in]  dimei       Dimension of electron-ion Jastrow
+!> @param[in,out] indtm    Indtm arrays
+!> @param[in]  yesivic     Ivic flag
+!> @param[in,out] vcut     Vcut arrays
+!> @param[in,out] diffkin  Kinetic energy differences
+!> @param[in,out] winvfn   Winvfn matrices
+!> @param[in]  nel2wtfn    Dimension of winvfn
+!> @param[in,out] winvbarfn Winvbarfn matrices
+!> @param[in]  nel2barfn   Dimension of winvbarfn
+!> @param[in,out] vpotsav_ee Saved electron-electron potentials
+!> @param[in]  nelsquare   Square of number of electrons
 subroutine reshuffhub(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
         &, dist, econf, table, tabler, tabpip, winv, nel2wt, winvj, nel2wtj         &
         &, winvup, nel2upt, winvdo, nel2dot, ainvup, nel2up, wsto                 &
@@ -507,6 +591,91 @@ subroutine reshuffhub(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
     return
 end subroutine reshuffhub
 
+!> @brief      Non-blocking version of reshuffhub for parallel DMC with Sz conservation
+!> @details    This subroutine handles the redistribution of walker data across
+!>             processes in parallel DMC calculations with Sz conservation using
+!>             non-blocking MPI communication. It copies walker configurations,
+!>             energies, gradients, and other quantities according to the branching
+!>             table jbra. Uses MPI_ISEND/MPI_IRECV for improved performance.
+!> @param[in]  Lz          Leading dimension for table arrays
+!> @param[in]  Lzr         Leading dimension for tabler arrays
+!> @param[in]  Ltab        Leading dimension for tabpip arrays
+!> @param[in]  Ltabb       Leading dimension for tmu arrays
+!> @param[in]  nelnion     Number of electron-ion distances
+!> @param[in]  nw          Number of walkers
+!> @param[in]  np          Number of parameters
+!> @param[in]  jbra        Branching table
+!> @param[in,out] kel      Electron coordinates
+!> @param[in,out] dist     Electron-ion distances
+!> @param[in,out] econf    Configuration energies
+!> @param[in,out] table    Table arrays
+!> @param[in,out] tabler   Regularized table arrays
+!> @param[in,out] tabpip   Tabpip arrays
+!> @param[in,out] winv     Winv matrices
+!> @param[in]  nel2wt      Dimension of winv
+!> @param[in,out] winvj    Winvj matrices
+!> @param[in]  nel2wtj     Dimension of winvj
+!> @param[in,out] winvup   Winvup matrices
+!> @param[in]  nel2upt     Dimension of winvup
+!> @param[in,out] winvdo   Winvdo matrices
+!> @param[in]  nel2dot     Dimension of winvdo
+!> @param[in,out] ainvup   Ainvup matrices
+!> @param[in]  nel2up      Dimension of ainvup
+!> @param[in,out] wsto     Wsto arrays
+!> @param[in,out] diagfn   Diagonal function values
+!> @param[in,out] diag     Diagonal values
+!> @param[in,out] psiln    Log of psi values
+!> @param[in,out] psisn    Sign of psi values
+!> @param[in,out] enert    Energy arrays
+!> @param[in,out] vpot     Potential arrays
+!> @param[in,out] vpotreg  Regularized potential arrays
+!> @param[in,out] enertrue True energy arrays
+!> @param[in,out] diffuse  Diffusion arrays
+!> @param[in]  nelkel      Dimension of kel
+!> @param[in,out] tmu      Tmu arrays
+!> @param[in,out] naccm    Acceptance counters
+!> @param[in,out] winvbar  Winvbar matrices
+!> @param[in]  nel2bar     Dimension of winvbar
+!> @param[in,out] winvjbar Winvjbar matrices
+!> @param[in,out] winvjbarsz Winvjbarsz matrices
+!> @param[in]  nel2jbar    Dimension of winvjbar
+!> @param[in]  nel2jbarsz  Dimension of winvjbarsz
+!> @param[in,out] ivic     Ivic arrays
+!> @param[in,out] pseudolocal Pseudolocal arrays
+!> @param[in]  nel         Number of electrons
+!> @param[in]  indt        Indt parameter
+!> @param[in]  ncore       Number of core electrons
+!> @param[in,out] gradtot  Total gradients
+!> @param[in,out] gradtotbar Total gradient bars
+!> @param[in,out] angle    Angle arrays
+!> @param[in,out] gradpsi  Psi gradients
+!> @param[in,out] gradpsibar Psi gradient bars
+!> @param[in]  n_gvec      Number of G vectors
+!> @param[in,out] sum_q_cos_gr Sum of q*cos(gr)
+!> @param[in,out] sum_q_sin_gr Sum of q*sin(gr)
+!> @param[in]  rank        Process rank
+!> @param[in]  nproc       Number of processes
+!> @param[out] ierr        Error flag
+!> @param[out] status      MPI status
+!> @param[in,out] psip     Work array
+!> @param[in]  skip        Skip parameter
+!> @param[in]  iessz       Sz conservation flag
+!> @param[in]  Lbox        Box length
+!> @param[in,out] psidetln Log of determinant
+!> @param[in,out] jastrowall_ee Electron-electron Jastrow
+!> @param[in]  dimee       Dimension of electron-electron Jastrow
+!> @param[in,out] jastrowall_ei Electron-ion Jastrow
+!> @param[in]  dimei       Dimension of electron-ion Jastrow
+!> @param[in,out] indtm    Indtm arrays
+!> @param[in]  yesivic     Ivic flag
+!> @param[in,out] vcut     Vcut arrays
+!> @param[in,out] diffkin  Kinetic energy differences
+!> @param[in,out] winvfn   Winvfn matrices
+!> @param[in]  nel2wtfn    Dimension of winvfn
+!> @param[in,out] winvbarfn Winvbarfn matrices
+!> @param[in]  nel2barfn   Dimension of winvbarfn
+!> @param[in,out] vpotsav_ee Saved electron-electron potentials
+!> @param[in]  nelsquare   Square of number of electrons
 subroutine reshuffhub_noblock(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
         &, dist, econf, table, tabler, tabpip, winv, nel2wt, winvj, nel2wtj         &
         &, winvup, nel2upt, winvdo, nel2dot, ainvup, nel2up, wsto                 &

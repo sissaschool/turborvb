@@ -1,0 +1,114 @@
+\doxysection{jastrow\+\_\+exp.\+f90}
+\hypertarget{jastrow__exp_8f90_source}{}\label{jastrow__exp_8f90_source}\index{src/a\_turborvb/jastrow\_exp.f90@{src/a\_turborvb/jastrow\_exp.f90}}
+\mbox{\hyperlink{jastrow__exp_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Calculate\ Jastrow\ factor\ for\ electron-\/electron\ correlation}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ function\ computes\ the\ Jastrow\ factor\ for\ electron-\/electron}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ correlation\ based\ on\ the\ distance\ between\ electrons.\ It\ supports}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ multiple\ functional\ forms\ including\ exponential,\ polynomial,\ and}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ spin-\/dependent\ forms.\ The\ function\ handles\ different\ parameterizations}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ specified\ by\ the\ iesd\ parameter.}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ rc\ \ \ \ \ \ \ Relative\ coordinates\ between\ electrons\ (3D\ vector)}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ vj\ \ \ \ \ \ \ Jastrow\ parameters\ array}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ iesd\ \ \ \ \ Jastrow\ functional\ form\ type}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ ispin\ \ \ \ Spin\ indicator\ (positive\ for\ parallel\ spins,\ negative\ for\ opposite)}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @return\ \ \ \ \ jastrow\ \ Jastrow\ factor\ value}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00027}\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{00027}}\ \textcolor{keyword}{function\ }\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}(rc,\ vj,\ iesd,\ ispin)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00029}00029\ \ \ \ \ real*8\ r,\ rc(*),\ rz,\ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}},\ vj(*)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesd,\ ispin}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00031}00031\ \ \ \ \ r\ =\ dsqrt(rc(1)**2\ +\ rc(2)**2\ +\ rc(3)**2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordflow}{select\ case}\ (iesd)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00033}00033\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ exponential\ form}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordflow}{case}\ (4)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0/vj(1)*(1.d0\ -\/\ dexp(-\/vj(1)*r))}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0/vj(1)*(1.d0\ -\/\ dexp(-\/vj(1)*r))}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00039}00039\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 1\ parameter\ 0.5*r/(1+b*r)}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordflow}{case}\ (1)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 2\ parameters\ rescaled\ 0.5*r/(1+b*r)\ \ r=(1-\/exp(-\/k*r))/k}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00049}00049\ \ \ \ \ \textcolor{keywordflow}{case}\ (6)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ r\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*r))/vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordflow}{case}\ (7)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vj(2)\ .gt.\ 1d-\/9)\ r\ =\ (1.d0\ -\/\ dexp(-\/vj(2)*r))/vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00060}00060\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keywordflow}{case}\ (5)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0/(vj(1)\ +\ vj(3)*vj(2))*\ \&}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ (1.d0\ +\ vj(3)\ -\/\ dexp(-\/vj(1)*r)\ -\/\ vj(3)*dexp(-\/vj(2)*r))}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ spin\ contaminated:\ up-\/up\ and\ up-\/down\ cusps}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 1\ parameter}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00070}00070\ \ \ \ \ \textcolor{keywordflow}{case}\ (-\/1)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ parallel\ \ spins}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ opposite\ \ spins}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00077}00077\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ asymmetric\ jastrow\ (xy\ ne\ z\ component)}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00080}00080\ \ \ \ \ \textcolor{keywordflow}{case}\ (-\/2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ rz\ =\ dsqrt(vj(1)**2*(rc(1)**2\ +\ rc(2)**2)\ +\ (vj(2)*rc(3))**2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ rz)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00085}00085\ \ \ \ \ \textcolor{keywordflow}{case}\ (3)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r*(1.d0/(1.d0\ +\ vj(1)*r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ +\ vj(3)*r/(1.d0\ +\ vj(2)*r)**2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ spin\ contaminated:\ up-\/up\ and\ up-\/down\ cusps}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ 2\ parameters}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00092}00092\ \ \ \ \ \textcolor{keywordflow}{case}\ (2)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ parallel\ \ spins}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ispin\ .gt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.25d0*r/(1.d0\ +\ vj(2)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ opposite\ spins}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 0.5d0*r/(1.d0\ +\ vj(1)*r)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ dexp(\mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}})}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ no\ jastrow}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{case}\ (0)}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}}\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00105}00105\ \textcolor{keywordflow}{\ \ \ \ end\ select}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00107}00107\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{jastrow__exp_8f90_source_l00108}00108\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

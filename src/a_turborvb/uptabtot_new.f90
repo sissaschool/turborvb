@@ -13,6 +13,138 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Update total table arrays for wave function evaluation
+!> @details    Updates all table arrays required for wave function evaluation including
+!>             winv, winvup, winvdo, tabpip, and related arrays. Handles electron-ion
+!>             interactions, pseudopotentials, Jastrow factors, and periodic boundary
+!>             conditions. Supports both VMC and DMC calculations with complex and real
+!>             wave functions.
+!> @param[in]  nelup          Number of up electrons
+!> @param[in]  neldo          Number of down electrons
+!> @param[in]  nelorb         Number of orbitals
+!> @param[in]  nelorbh        Number of orbitals (half)
+!> @param[in]  jel            Index of moving electron
+!> @param[in,out] kel         Electron positions array
+!> @param[in,out] winv        Winv array
+!> @param[in,out] winvup      Winv array for up electrons
+!> @param[in,out] winvdo      Winv array for down electrons
+!> @param[in,out] ainv        Ainv array
+!> @param[in,out] psiln       Psi log value
+!> @param[in,out] psisn       Psi s value
+!> @param[in]  epst           Epsilon parameter
+!> @param[in,out] psip        Work array
+!> @param[in,out] rcart       Cartesian coordinates
+!> @param[in,out] dist        Distance array
+!> @param[in,out] dists       Distance array s
+!> @param[in,out] ainvs       Ainv array s
+!> @param[in,out] winvs       Winv array s
+!> @param[in,out] psinew      New psi array
+!> @param[in]  indt           Index offset for derivatives
+!> @param[in]  indt4          Index offset 4
+!> @param[in]  indt4j         Index offset 4j
+!> @param[in]  indtc          Index tc
+!> @param[in,out] tabpip      Table of pip values
+!> @param[in]  alat           Lattice parameter
+!> @param[in]  ivic           IVIC array
+!> @param[in]  plat           Platform array
+!> @param[in]  rion           Ion positions
+!> @param[in,out] vpot        Potential
+!> @param[in]  iesd           Jastrow parameter type
+!> @param[in]  vj             Jastrow parameters
+!> @param[in]  zeta           Zeta array
+!> @param[in]  dup            Dup array
+!> @param[in]  nshell         Number of shells
+!> @param[in]  nshelldo       Number of shells down
+!> @param[in]  ioptorb        Orbital options
+!> @param[in]  ioccup         Occupation array
+!> @param[in]  ioccdo         Occupation array down
+!> @param[in]  itest          Test parameter
+!> @param[in,out] tmu         Tmu array
+!> @param[in]  nion           Number of ions
+!> @param[in,out] r           R array
+!> @param[in,out] rmu         Rmu array
+!> @param[in]  kion           Kion array
+!> @param[in,out] winvj       Winvj array
+!> @param[in]  ioccj          Ioccj array
+!> @param[in]  kionj          Kionj array
+!> @param[in]  vju            Vju array
+!> @param[in]  nelorbj        Number of Jastrow orbitals
+!> @param[in]  nelorbjh       Number of Jastrow orbitals half
+!> @param[in]  ioptorbj       Jastrow orbital options
+!> @param[in]  nshellj        Number of Jastrow shells
+!> @param[in,out] winvsj      Winvsj array
+!> @param[in,out] winvbar     Winvbar array
+!> @param[in,out] detmat      Determinant matrix
+!> @param[in,out] winvjbar    Winvjbar array
+!> @param[in,out] winvjbarn   Winvjbarn array
+!> @param[in,out] winvjbarsz  Winvjbarsz array
+!> @param[in,out] winvjbarszn Winvjbarszn array
+!> @param[in,out] jasmat      Jastrow matrix
+!> @param[in,out] jasmatsz    Jastrow matrix sz
+!> @param[in]  iflagnorm      Normalization flag
+!> @param[in]  cnorm          Normalization constant
+!> @param[in]  iflagtab       Table flag
+!> @param[in,out] ratio       Ratio array
+!> @param[in]  ncore          Number of core electrons
+!> @param[in]  lmax           Maximum angular momentum
+!> @param[in]  nintpseudo     Number of pseudopotential integrals
+!> @param[in]  prefactor      Prefactor array
+!> @param[in]  rcutoff        Cutoff radius
+!> @param[in]  parshell       Shell parameters
+!> @param[in]  nparpshell     Number of shell parameters
+!> @param[in]  kindion        Kind of ions
+!> @param[in]  pshell         Shell array
+!> @param[in]  wpseudo        Pseudopotential array
+!> @param[in]  legendre       Legendre array
+!> @param[in]  versor         Versor array
+!> @param[in]  wintpseudo     Pseudopotential integrals
+!> @param[in]  jpseudo        Pseudopotential j
+!> @param[in,out] pseudolocal Pseudolocal array
+!> @param[in]  tcost          Cost array
+!> @param[in]  istart         Start index
+!> @param[in]  costz          Cost z array
+!> @param[in]  costz3         Cost z3 array
+!> @param[in]  ioptpseudo     Pseudopotential options
+!> @param[in]  angle          Angle array
+!> @param[in]  iessz          Spin-dependent flag
+!> @param[in]  keln           Keln array
+!> @param[in]  oldkappa       Old kappa
+!> @param[in]  LBox           Box length
+!> @param[in,out] rmucos      Rmu cos array
+!> @param[in,out] rmusin      Rmu sin array
+!> @param[in]  walker         Walker index
+!> @param[in]  n_body_on      N-body interaction flag
+!> @param[in,out] jastrowall_ee Electron-electron Jastrow array
+!> @param[in,out] jasnew_ee   New electron-electron Jastrow array
+!> @param[in,out] jastrowall_ei Electron-ion Jastrow array
+!> @param[in,out] jasnew_ei   New electron-ion Jastrow array
+!> @param[in,out] timepip     Time for pip calculation
+!> @param[in,out] timewf      Time for wave function calculation
+!> @param[in]  niesd          Number of Jastrow parameters
+!> @param[in]  versoralat     Versor alat array
+!> @param[in]  iesrandoma     Random flag
+!> @param[in]  nshelltot      Total number of shells
+!> @param[in]  indtm          Index array
+!> @param[in,out] psidetdmc   Psi determinant DMC
+!> @param[in,out] mu_c        Mu c array
+!> @param[in,out] projm       Projection matrix
+!> @param[in]  nelorb_c       Number of core orbitals
+!> @param[in]  firstmol       First molecule
+!> @param[in]  nmol           Number of molecules
+!> @param[in]  yesfast        Fast calculation flag
+!> @param[in,out] vpotreg     Regularized potential
+!> @param[in]  cutreg         Cutoff for regularization
+!> @param[in]  indpar_tab     Index parameter table
+!> @param[in]  indorb_tab     Index orbital table
+!> @param[in]  indshell_tab   Index shell table
+!> @param[in]  indparj_tab    Index parameter Jastrow table
+!> @param[in]  indorbj_tab    Index orbital Jastrow table
+!> @param[in]  indshellj_tab  Index shell Jastrow table
+!> @param[in,out] detmat_c    Determinant matrix c
+!> @param[in,out] winvbarfn   Winvbar function
+!> @param[in,out] winvfn      Winv function
+!> @param[in]  contraction    Contraction flag
+!> @param[in,out] vpotsav_ee  Saved electron-electron potential
 subroutine uptabtot(nelup, neldo, nelorb, nelorbh, jel            &
         &, kel, winv, winvup, winvdo, ainv, psiln, psisn, epst                     &
         &, psip, rcart, dist, dists, ainvs, winvs, psinew                         &

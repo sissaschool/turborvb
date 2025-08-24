@@ -1,0 +1,969 @@
+\doxysection{src/a\+\_\+prep/writeout\+\_\+finalize.f90 File Reference}
+\hypertarget{writeout__finalize_8f90}{}\label{writeout__finalize_8f90}\index{src/a\_prep/writeout\_finalize.f90@{src/a\_prep/writeout\_finalize.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{writeout__finalize_8f90_a2dee16ecc415af4a80bbb60a62031230}{write\+\_\+output\+\_\+and\+\_\+finalize}}
+\begin{DoxyCompactList}\small\item\em Writes output files and finalizes the DFT calculation. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4}{print\+\_\+calculation\+\_\+outputs}} ()
+\begin{DoxyCompactList}\small\item\em Prints final calculation outputs and timing information. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{writeout__finalize_8f90_a96d0fdb98b8e3942bd8404812297402b}{write\+\_\+total\+\_\+density}}
+\begin{DoxyCompactList}\small\item\em Writes total density to output files. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{writeout__finalize_8f90_a39c7642387aef9f31dbbc6d56b435014}{sortr\+\_\+molecular}} (moleculardo, molecularup, eigup, eigdo, nelorbh, bands, rank)
+\begin{DoxyCompactList}\small\item\em Sorts molecular orbitals for real wavefunctions based on overlap. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{writeout__finalize_8f90_a445c7c554e51dba23faaf3e071840fd9}{sort\+\_\+molecular}} (moleculardo, molecularup, eigup, eigdo, nelorbh, bands, conjugate, rank)
+\begin{DoxyCompactList}\small\item\em Sorts molecular orbitals for complex wavefunctions based on overlap. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{writeout__finalize_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4}\index{writeout\_finalize.f90@{writeout\_finalize.f90}!print\_calculation\_outputs@{print\_calculation\_outputs}}
+\index{print\_calculation\_outputs@{print\_calculation\_outputs}!writeout\_finalize.f90@{writeout\_finalize.f90}}
+\doxysubsubsection{\texorpdfstring{print\_calculation\_outputs()}{print\_calculation\_outputs()}}
+{\footnotesize\ttfamily \label{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4} 
+subroutine write\+\_\+output\+\_\+and\+\_\+finalize\+::print\+\_\+calculation\+\_\+outputs}
+
+
+
+Prints final calculation outputs and timing information. 
+
+This subroutine prints convergence status, final energies, Fermi energy, Hartree energy, and timing information for the DFT calculation. 
+
+Definition at line \mbox{\hyperlink{writeout__finalize_8f90_source_l00472}{472}} of file \mbox{\hyperlink{writeout__finalize_8f90_source}{writeout\+\_\+finalize.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iter\ .ge.\ maxit)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Warning\ Turbo-\/DFT\ \ terminates\ without\ convergence,\ Error=\ '}\textcolor{comment}{,\ real(errsav)}}
+\DoxyCodeLine{00478\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 101)\ \textcolor{stringliteral}{'\ OK\ Turbo-\/DFT\ converged\ \ with\ energy\ tollerance\ \ '}\textcolor{comment}{,\ real(errsav),\ }\textcolor{stringliteral}{'<'}\textcolor{comment}{,\ real(epsdft)}}
+\DoxyCodeLine{00480\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,X,I5)'})\ \textcolor{stringliteral}{'\ \#\ Iterations\ ='},\ iter}
+\DoxyCodeLine{00481\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(typeopt,\ 2)\ .eq.\ 1\ .and.\ yespassed)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ variational\ DFT\ \ energy\ (Ha)\ =\ '},\ edftp}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ edftvar\ =\ edftp}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mod(typeopt,\ 2)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ variational\ DFT\ \ energy\ (Ha)\ =\ '},\ edftvar}
+\DoxyCodeLine{00487\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ self\ consistent\ energy\ (Ha)\ ='},\ edft}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh\ .and.\ corr\_hartree\ .and.\ iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ estimated\ energy\ (corrected\ Hartree)\ '}\textcolor{comment}{,\ edftvar\ +\ ehartree\ -\/\ eh\_ew}}
+\DoxyCodeLine{00491\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ exchange\ \ energy\ \ \ \ \ \ \ \ \ \ \ \ ='},\ exchange}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ correlation\ \ energy\ \ \ \ \ \ \ \ \ ='},\ ecorr}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 101)\ \textcolor{stringliteral}{'\ Final\ Fermi\ energy\ \ ='},\ efermi,\ \textcolor{stringliteral}{'Ha\ ='},\ efermi*energy\_unit\textcolor{comment}{,\ }\textcolor{stringliteral}{'eV'}}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yeslsda)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ total\ magnetization\ (a.u.)\ '},\ spingrid\textcolor{comment}{/2.d0}}
+\DoxyCodeLine{00498\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ (QE\ conv.\ sum\ q=/0)\ (Ha)\ ='}\textcolor{comment}{,\ vh\_test}}
+\DoxyCodeLine{00502\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ on\ a\ mesh\ \ ='},\ vh\_att}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ corr\_hartree)\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ no\ Ewald\ corrected\ (Ha)\ ='}\textcolor{comment}{,\ eh\_ew}}
+\DoxyCodeLine{00504\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Ewald\ contribution\ (QE\ conv)\ =\ '},\ vpotaa/2.d0}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Eself\ (Qbox\ conv)\ =\ '},\ kappanew/dsqrt(pi)*sum\textcolor{comment}{(zetar(1:nion)**2)}}
+\DoxyCodeLine{00506\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ E\_sr\ (Qbox\ conv)\ =\ '},\ \&}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&vpotaa/2.d0\ +\ kappanew/dsqrt(pi)*sum(zetar(1:nion)*\textcolor{comment}{*2)}}
+\DoxyCodeLine{00508\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy(H)\ \ ='},\ ehartree}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh)\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ larger\ mesh\ energy\ (Ha)\ ='}\textcolor{comment}{,\ vh\_test}}
+\DoxyCodeLine{00511\ \textcolor{comment}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (corr\_hartree\ .and.\ scale\_hartree\ .gt.\ 0)\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ rescaled\ Hartree\ density\ factor\ ='}\textcolor{comment}{,\ scale\_hartreen}}
+\DoxyCodeLine{00513\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A)'})\ \textcolor{stringliteral}{'\ Turbo-\/DFT\ TIMINGS\ '}}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ (sec.)\ \ ='},\ time\_total}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ initialization\ time\ (sec.)\ \ ='},\ init\_time}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ loading\ time\ matrices\ (sec.)\ \ ='},\ loading\_time}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ diagonalization\ \ time\ (sec.)\ ='},\ diag\_time}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 102)\ \textcolor{stringliteral}{'\ Total/Upload\ FFT\ \ time\ (sec.)\ ='},\ time\_fft,\ time\_uploadfft}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ self-\/consistent\ cycle\ time\ (sec.)\ \ ='},\ cycle\_time}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ density\ symmetrization\ time\ (sec.)\ ='},\ symtime}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ dgemm\ ='},\ dgemm\_time}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ zgemm\ ='},\ zgemm\_time}
+\DoxyCodeLine{00526\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (diag\_time\ .gt.\ loading\_time)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ you\ should\ run\ with\ a\ smaller\ number\ of\ processors\ !!!\ '}}
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\#ifdef\ \_\_DOOMP}}
+\DoxyCodeLine{00530\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Remind\ the\ diagonalization\ part\ is\ not\ OpenMP\ parallel\ so\ far\ '}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ 100\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ f28.15)}
+\DoxyCodeLine{00538\ 101\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ f28.15,\ x,\ a,\ f28.15,\ x,\ a)}
+\DoxyCodeLine{00539\ 102\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ 2f28.15)}
+\DoxyCodeLine{00540\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{setup_8f90_source_l00074}{setup\+::corr\+\_\+hartree}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::cycle\+\_\+time}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::dgemm\+\_\+time}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::diag\+\_\+time}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::ecorr}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::edft}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::edftp}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::edftvar}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::eh\+\_\+ew}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::ehartree}}, \mbox{\hyperlink{setup_8f90_source_l00047}{setup\+::epsdft}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::errsav}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::exchange}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::init\+\_\+time}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00033}{freeelmod\+\_\+complex\+::iter}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::kappanew}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::loading\+\_\+time}}, \mbox{\hyperlink{setup_8f90_source_l00037}{setup\+::maxit}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::scale\+\_\+hartree}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::scale\+\_\+hartreen}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::spingrid}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::symtime}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::time\+\_\+fft}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::time\+\_\+total}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::time\+\_\+uploadfft}}, \mbox{\hyperlink{setup_8f90_source_l00039}{setup\+::typeopt}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::vh\+\_\+att}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::vh\+\_\+test}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::vpotaa}}, \mbox{\hyperlink{setup_8f90_source_l00059}{setup\+::yeslsda}}, \mbox{\hyperlink{setup_8f90_source_l00064}{setup\+::yespassed}}, and \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::zgemm\+\_\+time}}.
+
+
+
+Referenced by \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}.
+
+\Hypertarget{writeout__finalize_8f90_a445c7c554e51dba23faaf3e071840fd9}\index{writeout\_finalize.f90@{writeout\_finalize.f90}!sort\_molecular@{sort\_molecular}}
+\index{sort\_molecular@{sort\_molecular}!writeout\_finalize.f90@{writeout\_finalize.f90}}
+\doxysubsubsection{\texorpdfstring{sort\_molecular()}{sort\_molecular()}}
+{\footnotesize\ttfamily \label{writeout__finalize_8f90_a445c7c554e51dba23faaf3e071840fd9} 
+subroutine sort\+\_\+molecular (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelorbh, bands), intent(inout)}]{moleculardo}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(nelorbh, bands), intent(in)}]{molecularup}{, }\item[{real(8), dimension(bands), intent(in)}]{eigup}{, }\item[{real(8), dimension(bands), intent(in)}]{eigdo}{, }\item[{integer, intent(in)}]{nelorbh}{, }\item[{integer, intent(in)}]{bands}{, }\item[{logical, intent(in)}]{conjugate}{, }\item[{integer, intent(in)}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Sorts molecular orbitals for complex wavefunctions based on overlap. 
+
+This subroutine sorts down-\/spin molecular orbitals according to their overlap with up-\/spin orbitals for complex wavefunctions. It handles complex conjugation and ensures proper pairing between up and down orbitals. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em moleculardo} & Down-\/spin molecular orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em molecularup} & Up-\/spin molecular orbitals \\
+\hline
+\mbox{\texttt{in}}  & {\em eigup} & Up-\/spin eigenvalues \\
+\hline
+\mbox{\texttt{in}}  & {\em eigdo} & Down-\/spin eigenvalues \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbh} & Number of basis functions \\
+\hline
+\mbox{\texttt{in}}  & {\em bands} & Number of bands \\
+\hline
+\mbox{\texttt{in}}  & {\em conjugate} & Flag for complex conjugation \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Rank of current process \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{writeout__finalize_8f90_source_l00727}{727}} of file \mbox{\hyperlink{writeout__finalize_8f90_source}{writeout\+\_\+finalize.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00728\ }
+\DoxyCodeLine{00729\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00730\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00731\ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{00732\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelorbh,\ bands,\ rank}
+\DoxyCodeLine{00733\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{intent(in)}\ ::\ conjugate}
+\DoxyCodeLine{00734\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(in)}\ ::\ molecularup(nelorbh,\ bands)}
+\DoxyCodeLine{00735\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{intent(inout)}\ ::\ moleculardo(nelorbh,\ bands)}
+\DoxyCodeLine{00736\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(in)}\ ::\ eigup(bands),\ eigdo(bands)}
+\DoxyCodeLine{00737\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00738\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{00739\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ j\_min}
+\DoxyCodeLine{00740\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ done}
+\DoxyCodeLine{00741\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ distmax,\ dist,\ cost,\ over}
+\DoxyCodeLine{00742\ \ \ \ \ \textcolor{keywordtype}{complex(8)},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ molecular\_sav}
+\DoxyCodeLine{00743\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ ::\ overc,\ phase\_min}
+\DoxyCodeLine{00744\ }
+\DoxyCodeLine{00745\ \ \ \ \ \textcolor{keyword}{allocate}\ (molecular\_sav(nelorbh,\ bands))}
+\DoxyCodeLine{00746\ \ \ \ \ \textcolor{keyword}{allocate}\ (done(bands))}
+\DoxyCodeLine{00747\ }
+\DoxyCodeLine{00748\ \ \ \ \ done\ =\ .false.}
+\DoxyCodeLine{00749\ \ \ \ \ distmax\ =\ max(eigup(bands),\ eigdo(bands))\ -\/\ min(eigup(1),\ eigdo(1))\ +\ 1}
+\DoxyCodeLine{00750\ \ \ \ \ molecular\_sav\ =\ moleculardo}
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00752\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ sorting\ molecular\ according\ to\ momentum\ conservation\ in\ AGP'},\ distmax}
+\DoxyCodeLine{00753\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ bands}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \ \ dist\ =\ distmax}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \ \ j\_min\ =\ 0}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ bands}
+\DoxyCodeLine{00757\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (conjugate)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overc\ =\ sum(molecularup(:,\ i)*conjg(molecular\_sav(:,\ j)))\&}
+\DoxyCodeLine{00759\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /sqrt(sum(abs(molecularup(:,\ i))**2)*sum(abs(molecular\_sav(:,\ j))**2))}
+\DoxyCodeLine{00760\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00761\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overc\ =\ sum(molecularup(:,\ i)*molecular\_sav(:,\ j))\&}
+\DoxyCodeLine{00762\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /sqrt(sum(abs(molecularup(:,\ i))**2)*sum(abs(molecular\_sav(:,\ j))**2))}
+\DoxyCodeLine{00763\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \ \ \ \ \ \ over\ =\ abs(overc)}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ cost=abs(eigup(i)-\/eigdo(j))-\/over}}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs((eigup(i)\ -\/\ eigdo(j))*(1.d0\ -\/\ over))}
+\DoxyCodeLine{00767\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ done(j)\ .and.\ cost\ .lt.\ dist)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\ =\ cost}
+\DoxyCodeLine{00769\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (conjugate)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00770\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_min\ =\ overc/over}
+\DoxyCodeLine{00771\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00772\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_min\ =\ conjg(overc/over)}
+\DoxyCodeLine{00773\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00774\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\_min\ =\ j}
+\DoxyCodeLine{00775\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00776\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00777\ }
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\_min\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00779\ \ \ \ \ \ \ \ \ \ \ \ \ done(j\_min)\ =\ .true.}
+\DoxyCodeLine{00780\ }
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ \ \ moleculardo(:,\ i)\ =\ phase\_min*molecular\_sav(:,\ j\_min)}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ i\ .ne.\ j\_min)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ changed\ order\ '},\ i,\ j\_min}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00784\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ not\ found\ molecular\ orbital\ \#'},\ i}
+\DoxyCodeLine{00785\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00786\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00787\ \ \ \ \ \textcolor{keyword}{deallocate}\ (done,\ molecular\_sav)}
+\DoxyCodeLine{00788\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00789\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}.
+
+\Hypertarget{writeout__finalize_8f90_a39c7642387aef9f31dbbc6d56b435014}\index{writeout\_finalize.f90@{writeout\_finalize.f90}!sortr\_molecular@{sortr\_molecular}}
+\index{sortr\_molecular@{sortr\_molecular}!writeout\_finalize.f90@{writeout\_finalize.f90}}
+\doxysubsubsection{\texorpdfstring{sortr\_molecular()}{sortr\_molecular()}}
+{\footnotesize\ttfamily \label{writeout__finalize_8f90_a39c7642387aef9f31dbbc6d56b435014} 
+subroutine sortr\+\_\+molecular (\begin{DoxyParamCaption}\item[{real(8), dimension(nelorbh, bands), intent(inout)}]{moleculardo}{, }\item[{real(8), dimension(nelorbh, bands), intent(inout)}]{molecularup}{, }\item[{real(8), dimension(bands), intent(inout)}]{eigup}{, }\item[{real(8), dimension(bands), intent(inout)}]{eigdo}{, }\item[{integer, intent(in)}]{nelorbh}{, }\item[{integer, intent(in)}]{bands}{, }\item[{integer, intent(in)}]{rank}{}\end{DoxyParamCaption})}
+
+
+
+Sorts molecular orbitals for real wavefunctions based on overlap. 
+
+This subroutine sorts down-\/spin molecular orbitals according to their overlap with up-\/spin orbitals. It ensures proper pairing between up and down orbitals for real wavefunctions. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in,out}}  & {\em moleculardo} & Down-\/spin molecular orbitals \\
+\hline
+\mbox{\texttt{in,out}}  & {\em molecularup} & Up-\/spin molecular orbitals \\
+\hline
+\mbox{\texttt{in,out}}  & {\em eigup} & Up-\/spin eigenvalues \\
+\hline
+\mbox{\texttt{in,out}}  & {\em eigdo} & Down-\/spin eigenvalues \\
+\hline
+\mbox{\texttt{in}}  & {\em nelorbh} & Number of basis functions \\
+\hline
+\mbox{\texttt{in}}  & {\em bands} & Number of bands \\
+\hline
+\mbox{\texttt{in}}  & {\em rank} & Rank of current process \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{writeout__finalize_8f90_source_l00659}{659}} of file \mbox{\hyperlink{writeout__finalize_8f90_source}{writeout\+\_\+finalize.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00660\ }
+\DoxyCodeLine{00661\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00662\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00663\ \ \ \ \ \textcolor{comment}{!\ input}}
+\DoxyCodeLine{00664\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{intent(in)}\ ::\ nelorbh,\ bands,\ rank}
+\DoxyCodeLine{00665\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{intent(inout)}\ ::\ moleculardo(nelorbh,\ bands),\ molecularup(nelorbh,\ bands),\ eigup(bands),\ eigdo(bands)}
+\DoxyCodeLine{00666\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00667\ \ \ \ \ \textcolor{comment}{!\ local}}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ j\_min}
+\DoxyCodeLine{00669\ \ \ \ \ \textcolor{keywordtype}{logical}\ ::\ conjugate}
+\DoxyCodeLine{00670\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ distmax,\ dist,\ cost,\ over}
+\DoxyCodeLine{00671\ \ \ \ \ \textcolor{keywordtype}{logical},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ done}
+\DoxyCodeLine{00672\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ molecular\_sav}
+\DoxyCodeLine{00673\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ phase\_min,\ overc}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{keyword}{allocate}\ (molecular\_sav(nelorbh,\ bands))}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{keyword}{allocate}\ (done(bands))}
+\DoxyCodeLine{00677\ \ \ \ \ done\ =\ .false.}
+\DoxyCodeLine{00678\ \ \ \ \ distmax\ =\ max(eigup(bands),\ eigdo(bands))\ -\/\ min(eigup(1),\ eigdo(1))\ +\ 1}
+\DoxyCodeLine{00679\ \ \ \ \ molecular\_sav\ =\ moleculardo}
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ sorting\ molecular\ according\ to\ momentum\ conservation\ in\ AGP'},\ distmax}
+\DoxyCodeLine{00681\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ bands}
+\DoxyCodeLine{00682\ \ \ \ \ \ \ \ \ dist\ =\ distmax}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ j\_min\ =\ 0}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ bands}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \ \ \ \ overc\ =\ sum(molecularup(:,\ i)*molecular\_sav(:,\ j))\&}
+\DoxyCodeLine{00686\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ /sqrt(sum(molecularup(:,\ i)**2)*sum(molecular\_sav(:,\ j)**2))}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ \ \ \ \ \ \ over\ =\ abs(overc)}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ cost=abs(eigup(i)-\/eigdo(j))-\/over}}
+\DoxyCodeLine{00690\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ abs((eigup(i)\ -\/\ eigdo(j))*(1.d0\ -\/\ over))}
+\DoxyCodeLine{00691\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ done(j)\ .and.\ cost\ .lt.\ dist)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00692\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dist\ =\ cost}
+\DoxyCodeLine{00693\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\_min\ =\ j}
+\DoxyCodeLine{00694\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phase\_min\ =\ overc/over}
+\DoxyCodeLine{00695\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00696\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00697\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (j\_min\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ \ \ \ \ \ \ done(j\_min)\ =\ .true.}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \ \ \ \ moleculardo(:,\ i)\ =\ phase\_min*molecular\_sav(:,\ j\_min)}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0\ .and.\ i\ .ne.\ j\_min)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ changed\ order\ '},\ i,\ j\_min}
+\DoxyCodeLine{00701\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ ERROR\ not\ found\ molecular\ orbital\ \#'},\ i}
+\DoxyCodeLine{00703\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00704\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00705\ \ \ \ \ \textcolor{keyword}{deallocate}\ (done,\ molecular\_sav)}
+\DoxyCodeLine{00706\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00707\ }
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}.
+
+\Hypertarget{writeout__finalize_8f90_a2dee16ecc415af4a80bbb60a62031230}\index{writeout\_finalize.f90@{writeout\_finalize.f90}!write\_output\_and\_finalize@{write\_output\_and\_finalize}}
+\index{write\_output\_and\_finalize@{write\_output\_and\_finalize}!writeout\_finalize.f90@{writeout\_finalize.f90}}
+\doxysubsubsection{\texorpdfstring{write\_output\_and\_finalize()}{write\_output\_and\_finalize()}}
+{\footnotesize\ttfamily \label{writeout__finalize_8f90_a2dee16ecc415af4a80bbb60a62031230} 
+subroutine write\+\_\+output\+\_\+and\+\_\+finalize}
+
+
+
+Writes output files and finalizes the DFT calculation. 
+
+This subroutine writes final results to output files, saves converged eigenvectors and eigenvalues, writes scratch files for continuation, and performs final cleanup operations. It handles both self-\/consistent and non-\/self-\/consistent runs. 
+
+Definition at line \mbox{\hyperlink{writeout__finalize_8f90_source_l00021}{21}} of file \mbox{\hyperlink{writeout__finalize_8f90_source}{writeout\+\_\+finalize.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}}}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefreeelmod__complex}{freeelmod\_complex}}}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacefourier__module}{fourier\_module}}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceparallel__module}{parallel\_module}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceparallel__module_a1f2c4701aea822cb733899d05fd72981}{collect\_from\_pools}}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordtype}{integer}\ ::\ i,\ j,\ ir,\ ic}
+\DoxyCodeLine{00033\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ eigvU,\ eigvD}
+\DoxyCodeLine{00034\ \ \ \ \ real*8,\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ molecorbtimeso,\ over\_part,\ over\_new}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{logical}\ is\_same\_up(3),\ is\_same\_down(3)}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{!\ write\ scratch\ files\ with\ final\ quantities}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{!\ writing\ the\ final\ distributed\ density/spin\ in\ the\ second\ record}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!\ of\ scratch\ files\ for\ each\ processor\ (for\ continuation)}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}}\ =\ \mbox{\hyperlink{namespacesetup_a1f483e9b2671dbd6b0042906a3a93039}{dentnew}}}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}}\ =\ \mbox{\hyperlink{namespacesetup_a388cd3056d74bd7265fec1765e22d913}{spintnew}}}
+\DoxyCodeLine{00045\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ rewind(\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh)\ \textcolor{keyword}{read}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}},\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}}}
+\DoxyCodeLine{00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{!\ collects\ eigenvalues\ and\ occupations\ from\ pools}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00060\ \ \ \ \ \mbox{\hyperlink{namespacesetup_a9fbee004b9de43a9374d41c8b25e60f4}{errsav}}\ =\ \mbox{\hyperlink{namespacesetup_adaf566c7c492a87bb27a445ce4f4d7dc}{errdft}}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ compute\_bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespaceparallel__module_a1f2c4701aea822cb733899d05fd72981}{collect\_from\_pools}}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4}{print\_calculation\_outputs}}()}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{!\ be\ sure\ all\ processors\ in\ the\ pool\ have\ consistent\ wavefunction}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(\mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}},\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}),\ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \&}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_bcast(\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}},\ \textcolor{keyword}{size}(\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}),\ mpi\_double\_precision,\ 0,\ commrep\_mpi,\ ierr)}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{!\ use\ molecorb\_old/molecorbdo\_old\ to\ save\ the\ converged\ eigenvectors}}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ symmagp\ .and.\ (opposite\_phase\ .or.\ ipc\ .eq.\ 1)\ .and.\ \mbox{\hyperlink{namespacesetup_a7778c079b63edb81b5230d992d0ec762}{try\_translation}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ sorting\ down\ molecular\ orbitals\ '}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ Here\ molecorb\ -\/-\/>\ over\ x\ molecorb}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (molecorbtimeso(ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}))}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ molecorbtimeso\ =\ 0.d0}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ ir\ =\ 0}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ ic\ =\ 0}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (descla(lambda\_node\_)\ >\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_part(ipc*\mbox{\hyperlink{namespacesetup_af8a8ccb490cac591431a2a87d78a8bfa}{nlax}},\ \mbox{\hyperlink{namespacesetup_af8a8ccb490cac591431a2a87d78a8bfa}{nlax}}))}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (over\_new(ipc*\mbox{\hyperlink{namespacesetup_af8a8ccb490cac591431a2a87d78a8bfa}{nlax}},\ \mbox{\hyperlink{namespacesetup_af8a8ccb490cac591431a2a87d78a8bfa}{nlax}}))}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ ir\ =\ descla(ilar\_)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ ic\ =\ descla(ilac\_)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ over\_part\ =\ 0.d0}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ over\_new\ =\ 0.d0}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ descla(nlac\_)}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ descla(nlar\_)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ over\_part(2*i\ -\/\ 1,\ j)\ =\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}(2*(i\ +\ ir\ -\/\ 1)\ -\/\ 1,\ (j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ over\_part(2*i,\ j)\ =\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}(2*(i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ over\_part(i,\ j)\ =\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}(i\ +\ ir\ -\/\ 1,\ (j\ +\ ic\ -\/\ 1))}
+\DoxyCodeLine{00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pzgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zone,\ \mbox{\hyperlink{namespacesetup_a5d090c9e2da2e51ad4ae9f9f269c8294}{oversl}},\ 1,\ 1,\&}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}},\ over\_part,\ 1,\ 1,\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}},\ zzero,\ over\_new,\ 1,\ 1,\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}})}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }pdgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1.d0,\ \mbox{\hyperlink{namespacesetup_a5d090c9e2da2e51ad4ae9f9f269c8294}{oversl}},\ 1,\ 1,\&}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}},\ over\_part,\ 1,\ 1,\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}},\ 0.d0,\ over\_new,\ 1,\ 1,\ \mbox{\hyperlink{namespacesetup_a58948e01812acf8de0290a134e0593b5}{desch}})}
+\DoxyCodeLine{00109\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00110\ \textcolor{comment}{!\ MMM}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ descla(nlac\_)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ descla(nlar\_)}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((j\ +\ ic\ -\/\ 1)\ <=\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbtimeso(2*(i\ +\ ir\ -\/\ 1)\ -\/\ 1,\ (j\ +\ ic\ -\/\ 1))\ =\ over\_new(2*i\ -\/\ 1,\ j)}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbtimeso(2*(i\ +\ ir\ -\/\ 1),\ (j\ +\ ic\ -\/\ 1))\ =\ over\_new(2*i,\ j)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ molecorbtimeso(i\ +\ ir\ -\/\ 1,\ (j\ +\ ic\ -\/\ 1))\ =\ over\_new(i,\ j)}
+\DoxyCodeLine{00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00122\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (over\_part,\ over\_new)}
+\DoxyCodeLine{00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}}*\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ molecorbtimeso,\ commrep\_mpi,\ -\/1)}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zone,\ \mbox{\hyperlink{namespacesetup_a5d8080f0dddcac3107b098e528f37d31}{overs}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zzero,\ molecorbtimeso,\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}})}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1.d0,\ \mbox{\hyperlink{namespacesetup_a5d8080f0dddcac3107b098e528f37d31}{overs}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 0.d0,\ molecorbtimeso,\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}})}
+\DoxyCodeLine{00135\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Molecular\ x\ over\ '}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ i,\ sum(abs(molecorbtimeso(:,\ i)))}
+\DoxyCodeLine{00142\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{writeout__finalize_8f90_a445c7c554e51dba23faaf3e071840fd9}{sort\_molecular}}(\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}},\ molecorbtimeso\&}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}},\ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ .false.,\ rank)}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{writeout__finalize_8f90_a39c7642387aef9f31dbbc6d56b435014}{sortr\_molecular}}(\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}},\ molecorbtimeso\&}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}},\ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ rank)}
+\DoxyCodeLine{00150\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (molecorbtimeso)}
+\DoxyCodeLine{00152\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_aeac9579fd15197ac3602af9f6c6ff73a}{contracted\_on}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ nelorbh,\ \mbox{\hyperlink{namespacesetup_a4e0b0ab3de8015565f7b538faf8c4153}{nelocc}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1.d0,\ mu\_c,\ nelorbh,\ \&}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 0.d0,\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}},\ nelorbh)}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \&}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ nelorbh,\ \mbox{\hyperlink{namespacesetup_aca4ce2265d2f827a5f837df5a034afc4}{neloccdo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1.d0,\ mu\_c,\ \&}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbh,\ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 0.d0,\ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ nelorbh)}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ nelorbh,\ \mbox{\hyperlink{namespacesetup_a4e0b0ab3de8015565f7b538faf8c4153}{nelocc}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zone,\ mu\_c,\ nelorbh,\ \&}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zzero,\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}},\ nelorbh)}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }zgemm(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ nelorbh,\ \mbox{\hyperlink{namespacesetup_aca4ce2265d2f827a5f837df5a034afc4}{neloccdo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zone,\ mu\_c,\ \&}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelorbh,\ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}},\ \mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ zzero,\ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ nelorbh)}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ =\ \mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ =\ \mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})}
+\DoxyCodeLine{00173\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{!\ \ \ Make\ some\ space\ for\ future\ allocations}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_aaed5ae15cbc53168a5e6e431c7457e2c}{molecorb}})}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a4ca4d1f94ef8febe2c5a1baa8553407a}{molecorbdo}})}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a8897fd775ec31c5131e02e36d49c3789}{memlarge}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_ab6c157b4179ed4673412bec2b1dfa660}{wf}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab6c157b4179ed4673412bec2b1dfa660}{wf}})}
+\DoxyCodeLine{00180\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefourier__module_abf26ac923618d7481f458ce702d73be9}{fp}},\ \mbox{\hyperlink{namespacefourier__module_a007eb184da3b25b6b351c23c1b8a1240}{sndbuf}},\ \mbox{\hyperlink{namespacefourier__module_a4e43457e14db175f4d0799535f8267d3}{rcvbuf}})}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefourier__module_abf26ac923618d7481f458ce702d73be9}{fp}})}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{comment}{!\ only\ for\ SC\ update\ the\ dup\_c\ vector\ with\ the\ new\ molecular\ orbitals}}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ compute\_bands)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ NB:\ the\ QMC\ assumes\ an\ hermitian\ Lambda\_ij\ in\ this\ case,\ therefore}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ this\ is\ not\ the\ case\ (as\ for\ molecorbdo\ !=\ dconj(molecorb))\ then}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ the\ calculation\ of\ the\ phase\ is\ not\ working.}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ this\ case\ corresponds\ to:}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ symmagp\ =\ .true.}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ yes\_hermite\ =\ .true.}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (opposite\_phase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ conjugate\ the\ down-\/spin\ orbital\ in\ the\ case\ of\ a\ yes\_hermite=.true.}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ for\ both\ symmetric\ and\ non\ symmetric\ AGP}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2\ .or.\ \mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}}\ =\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast__b_8f90_a0a91ea1764f939561f052d2128132a13}{conjmat}}(nelorb,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ nelorb)}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \&}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ Warning:\ eigenvectors\ of\ down\ spin\ electrons\ are\ complex\ conjugate\ of\ the\ up\ spin\ ones!\ '}}
+\DoxyCodeLine{00214\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00215\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacesetup_a7778c079b63edb81b5230d992d0ec762}{try\_translation}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning:\ sorting\ down\ eigenvectors\ \&}}
+\DoxyCodeLine{00218\ \textcolor{stringliteral}{}\textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ to\ attempt\ a\ translation\ invariant\ AGP\ (use\ random\ twists)\ '}}
+\DoxyCodeLine{00219\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ this\ case\ corresponds\ to:}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ symmagp\ =\ .true.}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ yes\_hermite\ =\ .false.}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ It\ is\ never\ used\ since\ Hamiltonian\ does\ not\ conserve\ this\ symmetry.}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ipc\ .eq.\ 2\ .and.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ the\ case\ of\ a\ non-\/hermitian\ and\ symmetric\ AGP,\ the}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ eigenvectors\ up\ are\ simply\ equal\ to\ the\ eigenvectors\ down}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning:\ eigenvectors\ of\ down\ spin\ electrons\ are\ equal\ to\ the\ up\ spin\ ones!\ '}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}}\ =\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ this\ case\ is\ only\ for\ test}}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (ipc\ .eq.\ 2\ .and.\ .not.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (opposite\_phase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning:\ eigenvectors\ of\ down\ spin\ electrons\ are\ complex\ conjugate\ of\ the\ up\ spin\ ones!\ '}}
+\DoxyCodeLine{00241\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}}\ =\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{compute__fast__b_8f90_a0a91ea1764f939561f052d2128132a13}{conjmat}}(nelorb,\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ nelorb)}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (same\_phase)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}}\ =\ \mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning:\ eigenvectors\ of\ down\ spin\ electrons\ are\ equal\ to\ the\ up\ spin\ ones!\ '}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (.not.\ symmagp)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Warning:\ non-\/symmetric\ AGP.\ No\ constraints\ are\ imposed\ on\ the\ molecular\ orbitals.\ '}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ fill\ fort.10\ with\ new\ molecular\ orbitals\ and\ update\ all\ variables}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ necessary\ to\ write\_fort10()}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{update__fort10_8f90_aa24943b41d4fe4b42f3c7d0f1be14770}{update\_fort10}}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write\ the\ final\ wave\ function.\ If\ k-\/points\ sampling,\ write\ one}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ wf\ for\ each\ k-\/point\ if\ the\ flag\ yeswrite10\ is\ set\ to\ .true.}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_addf0bed17992c7b29103952557f372a3}{zero\_jas}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\_c\ =\ 0.d0}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jasmat\ =\ 0.d0}
+\DoxyCodeLine{00275\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00276\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a89576f13245889abad4f3fb81479c95c}{newj\_onebody}}(1)\ .gt.\ 0\ .and.\ abs(iesdr)\ .gt.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(niesd)\ .le.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vj(abs(niesd))\ =\ \mbox{\hyperlink{namespacesetup_a89576f13245889abad4f3fb81479c95c}{newj\_onebody}}(1)}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 2,\ niesd}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vj(j)\ =\ \mbox{\hyperlink{namespacesetup_a89576f13245889abad4f3fb81479c95c}{newj\_onebody}}(j\ -\/\ 1)}
+\DoxyCodeLine{00283\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00284\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00285\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (manyfort10\ .and.\ yeswrite10\ .and.\ rankrep\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Writing\ final\ wave\ functions\ for\ all\ k-\/points!'}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ rewind(\mbox{\hyperlink{namespacesetup_a5362cbb59580310c7e8249ebcc87f2d3}{unit\_scratch\_fort10}})}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelup\ =\ nint(sum(\mbox{\hyperlink{namespacesetup_a492fd53816af450745f868143499d9a5}{occupations}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})))}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ neldo\ =\ nint(sum(\mbox{\hyperlink{namespacesetup_a8d02dd2045e3331b1df5a53c634ddff2}{occupationdo}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})))}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nel\ =\ nelup\ +\ neldo}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ neldo\ =\ (nint(sum(\mbox{\hyperlink{namespacesetup_a492fd53816af450745f868143499d9a5}{occupations}}(1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})))\ -\/\ ndiff)/2}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nelup\ =\ neldo\ +\ ndiff}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nel\ =\ nelup\ +\ neldo}
+\DoxyCodeLine{00298\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }write\_fort10(\mbox{\hyperlink{namespacesetup_a5362cbb59580310c7e8249ebcc87f2d3}{unit\_scratch\_fort10}})}
+\DoxyCodeLine{00300\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ write\ the\ final\ wavefunction\ for\ the\ first\ k-\/point\ in\ fort.10\_new}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ manyfort10)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Write\ the\ parameters\ of\ the\ final\ wavefunction!'}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10\_new'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'},\ position=\textcolor{stringliteral}{'rewind'})}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }write\_fort10(\mbox{\hyperlink{namespacesetup_a3eec400f70184ef6b8aa0f26bf6991c4}{ufort10}})}
+\DoxyCodeLine{00310\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00311\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ .not.\ compute\_bands}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{call\ }mpi\_barrier(mpi\_comm\_world,\ ierr)}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ barrier}}
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{comment}{!\ deallocate\ all\ local\ variables}}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\#ifdef\ \_\_SCALAPACK}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a2c26e7507e443760ef766c0a340cfbba}{molecorbl}},\ \mbox{\hyperlink{namespacesetup_a5d090c9e2da2e51ad4ae9f9f269c8294}{oversl}},\ \mbox{\hyperlink{namespacesetup_a24bfb34d1aebeea71c66387b1eada4d2}{overhaml}},\ \mbox{\hyperlink{namespacesetup_aec9496e546b0047049609537990cc809}{hamiltl}})}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a6ffc8719bfae0cf8701362dfb5884a93}{molecorbldo}},\ \mbox{\hyperlink{namespacesetup_a5b1a71ce58578e55ca302dbd269cfda8}{hamiltldo}})}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \&}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ad286a8134fd05708d92eabacf80343b1}{oversldo}},\ \mbox{\hyperlink{namespacesetup_a49b88101cc8a1146018f70e04a193fa3}{umatldo}},\ \mbox{\hyperlink{namespacesetup_aad9dcf08092070efe0f388a72270117a}{overhamldo}},\ \mbox{\hyperlink{namespacesetup_a1becef0a26095f5db382b338cf330814}{umatl}})}
+\DoxyCodeLine{00327\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}},\ \mbox{\hyperlink{namespacesetup_a5d8080f0dddcac3107b098e528f37d31}{overs}},\ \mbox{\hyperlink{namespacesetup_ae7feecab9d7ff8e7b915ad367b569a91}{overham}},\ \mbox{\hyperlink{namespacesetup_a52bac3fe7f8307bc9f76e783a9ee94e3}{hamilt}})}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ \mbox{\hyperlink{namespacesetup_aada297daaea0cb01a102b05ba49c8eed}{hamiltdo}})}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a30fb27eaf4dade95aa42abe056c9ea62}{oversdo}},\ \mbox{\hyperlink{namespacesetup_a0748d85afa57487cd732408d06ea4a49}{overhamdo}})}
+\DoxyCodeLine{00333\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a0ef8faa18f3d5b9ccdb3ca00635a9aab}{overinvsl}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a0ef8faa18f3d5b9ccdb3ca00635a9aab}{overinvsl}})}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a3f4a77993ea56389e4dde35344e5dba1}{epssr}}\ .ne.\ 0)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a2b4b52adfcaf4332573b81c21c31d238}{overinvs}},\ \mbox{\hyperlink{namespacesetup_a0ef8faa18f3d5b9ccdb3ca00635a9aab}{overinvsl}})}
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a64a75e5c98c736793f38ac6ad06ee458}{molecorb\_old}},\ \mbox{\hyperlink{namespacesetup_a5d8080f0dddcac3107b098e528f37d31}{overs}},\ \mbox{\hyperlink{namespacesetup_ae7feecab9d7ff8e7b915ad367b569a91}{overham}},\ \mbox{\hyperlink{namespacesetup_a52bac3fe7f8307bc9f76e783a9ee94e3}{hamilt}})}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab74e743512e55adfda2421a574991853}{molecorbdo\_old}},\ \mbox{\hyperlink{namespacesetup_aada297daaea0cb01a102b05ba49c8eed}{hamiltdo}})}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \&}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a30fb27eaf4dade95aa42abe056c9ea62}{oversdo}},\ \mbox{\hyperlink{namespacesetup_a0748d85afa57487cd732408d06ea4a49}{overhamdo}},\ \mbox{\hyperlink{namespacesetup_a1becef0a26095f5db382b338cf330814}{umatl}},\ \mbox{\hyperlink{namespacesetup_a49b88101cc8a1146018f70e04a193fa3}{umatldo}})}
+\DoxyCodeLine{00342\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .lt.\ 0\ .or.\ \mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .eq.\ 3)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_abc63ddfcbc6d5828d63d1138d0be6fce}{molecorbdos}})}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_aa8a86c8af88ee84b4b4b39fd14128ef2}{molecorbs}})}
+\DoxyCodeLine{00348\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefreeelmod__complex_af34b240096ebeca469fcc2e487420234}{nozeroc\_in}},\ \mbox{\hyperlink{namespacefreeelmod__complex_abd0a4fdd2d170d93198bd56482499f31}{jbradetc\_in}},\ \mbox{\hyperlink{namespacefreeelmod__complex_a7542abfb34e5a34696d739f630fa4302}{jbradetnc\_in}})}
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacefreeelmod__complex_a8bf881e4d78c98e3c92a79e80c60462c}{nozerojc\_in}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefreeelmod__complex_a8bf881e4d78c98e3c92a79e80c60462c}{nozerojc\_in}})}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacefreeelmod__complex_a4819f8b4754a7293f9445ab4f157457c}{jbrajc\_in}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefreeelmod__complex_a4819f8b4754a7293f9445ab4f157457c}{jbrajc\_in}})}
+\DoxyCodeLine{00353\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacefreeelmod__complex_a2cbc9b5fa672ec4aea78f0ab0829d676}{jbrajnc\_in}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefreeelmod__complex_a2cbc9b5fa672ec4aea78f0ab0829d676}{jbrajnc\_in}})}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab7245be08c402ec9c974d157d58c430e}{eigmol}},\ \mbox{\hyperlink{namespacesetup_a478c64e44117d8a37618a1966b20cc4d}{newocc}},\ \mbox{\hyperlink{namespacesetup_a1cf868d3bc94635a5af7d123ba8da3c5}{oldocc}},\ \mbox{\hyperlink{namespacesetup_a492fd53816af450745f868143499d9a5}{occupations}},\ \mbox{\hyperlink{namespacesetup_ab1c1eeb0d83862f08344c14870e004ee}{eigmoldo}},\ \mbox{\hyperlink{namespacesetup_a7cf13177da76011305143be45cd25075}{oldoccdo}},\ \mbox{\hyperlink{namespacesetup_a8d02dd2045e3331b1df5a53c634ddff2}{occupationdo}},\ \&}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a4731cef2026b5d97592f5d411d09e1eb}{occupations\_sav}},\ \mbox{\hyperlink{namespacesetup_ac5c78489cc6dd0dc4f3816eeb860c22e}{eigmol\_sav}},\ \mbox{\hyperlink{namespacesetup_ad5e0ae887e185eb2746391a3808e5d28}{occupationsdo\_sav}},\ \mbox{\hyperlink{namespacesetup_a273b3e849eeee114050286488dbdaf65}{eigmat\_down}})}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a644e9aa4fe8a0b7ee791e5805671cbff}{eigmoldo\_sav}})}
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefourier__module_ac7be4895619d0fabd590cc092ab4ede9}{vhartree}},\ \mbox{\hyperlink{namespacesetup_a2c55fbd6cb43d6632a36c98812b23644}{dentold}},\ \mbox{\hyperlink{namespacesetup_ac7fbbf78e830282e3ddb43669d694c50}{premat}},\ \mbox{\hyperlink{namespacefourier__module_aaa668758d2935ebc630a8eded06cc010}{vhartreeq}})}
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a565b483da38ee172ee6ca9eef9ba12b5}{spintold}})}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_addad533ab6fb8787baf9d8492b679076}{yesgrad}})\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a168f9a72c9e99f3b0f84ea61e1530077}{gradt}})}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab318da5f304d9d87915afc86f2486b95}{dent\_after}},\ \mbox{\hyperlink{namespacesetup_a8016806b694152331eac7df4e8595386}{dent\_before}},\ \mbox{\hyperlink{namespacesetup_a1f483e9b2671dbd6b0042906a3a93039}{dentnew}})}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a11d949296f4f9f1ad998de4177ed85e0}{spint\_after}},\ \mbox{\hyperlink{namespacesetup_ae4b2ca6b73614175b5665cddf6a802a2}{spint\_before}},\ \mbox{\hyperlink{namespacesetup_a388cd3056d74bd7265fec1765e22d913}{spintnew}})}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordflow}{elseif}\ (\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .eq.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab318da5f304d9d87915afc86f2486b95}{dent\_after}},\ \mbox{\hyperlink{namespacesetup_a8016806b694152331eac7df4e8595386}{dent\_before}},\ \mbox{\hyperlink{namespacesetup_aca68939e1313307c0651a937f3d7247f}{dent\_aftern}},\ \mbox{\hyperlink{namespacesetup_ace2458ed8b7d9753f9e69566f3c149a5}{mixingtrue}})}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a11d949296f4f9f1ad998de4177ed85e0}{spint\_after}},\ \mbox{\hyperlink{namespacesetup_ae4b2ca6b73614175b5665cddf6a802a2}{spint\_before}},\ \mbox{\hyperlink{namespacesetup_aedf4c6b4b1f5c6de9ec1b37a7dd57d93}{spint\_aftern}})}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a2e5a2464a150d2b02400700f4c4854bd}{overjac}},\ \mbox{\hyperlink{namespacesetup_a875e3d8928ae2251f9dc658676477205}{jac}},\ \mbox{\hyperlink{namespacesetup_a38c861d1d09e5a6bc96999702529f2fd}{mataux}},\ \mbox{\hyperlink{namespacesetup_ae5d7b2d2daf8f8532f35ef7ecb661533}{vetaux}})}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_aa3ef96b6a98d641605fdeb216c8cbd88}{jaccond}}\ .gt.\ 0.d0)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ab4f1c7ad428675d2257b6699b8089f1a}{sjac}},\ \mbox{\hyperlink{namespacesetup_a3daa39280ccd3ca7c137efcdbf960cd3}{sojac}},\ \mbox{\hyperlink{namespacesetup_a4f42b5cd84b6df79c9b5a6cec5b62979}{ujac}},\ \mbox{\hyperlink{namespacesetup_a537030b63eb7eb13c73ddc65c7ff6e55}{vjac}})}
+\DoxyCodeLine{00371\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00372\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a9c34586bf7a8f513c72d87a0d9070f32}{volmesh\_proc}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a9c34586bf7a8f513c72d87a0d9070f32}{volmesh\_proc}})}
+\DoxyCodeLine{00373\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}}\ .eq.\ 4)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a6e60b05e090504c4f94b5f0ce17af2c9}{eigmolo}})}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_ad6d15d7d9f8364a90e5ecec32b10f80b}{eigmolodo}})}
+\DoxyCodeLine{00376\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a793f66e7be564e1188edc770e8bacdb9}{spin\_input}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a793f66e7be564e1188edc770e8bacdb9}{spin\_input}})}
+\DoxyCodeLine{00378\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a72be06f6f41edb789f3be565d21e9ff2}{charge\_input}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a72be06f6f41edb789f3be565d21e9ff2}{charge\_input}})}
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_acfb726343bd10ca3bd3cb5024f84d68c}{gridspin}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_acfb726343bd10ca3bd3cb5024f84d68c}{gridspin}},\ \mbox{\hyperlink{namespacesetup_a68e5644261b5d44808883bee4ac3f980}{gridnospin}})}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a9dfa540361d3535754d95553b22ab810}{gridcharge}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a9dfa540361d3535754d95553b22ab810}{gridcharge}},\ \mbox{\hyperlink{namespacesetup_a97bd84f2ca9ce2499a5e61f2cd516b80}{gridnocharge}})}
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(ipsip))\ \textcolor{keyword}{deallocate}\ (ipsip)}
+\DoxyCodeLine{00382\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(psip))\ \textcolor{keyword}{deallocate}\ (psip)}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{comment}{!\ useful\ only\ for\ writing\ the\ w.f.}}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{comment}{!\ useless\ in\ the\ NonSC\ case}}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacefreeelmod__complex_aa9035320ca446f62fefc18eab259797a}{nmoltot}}\ .gt.\ molecular)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ iscraipsip\ =\ max(iscraipsip,\ iesupr\_c\ +\ iesupind)}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ molecular\ =\ \mbox{\hyperlink{namespacefreeelmod__complex_aa9035320ca446f62fefc18eab259797a}{nmoltot}}\ \textcolor{comment}{!\ redefine\ the\ number\ or\ molecular}}
+\DoxyCodeLine{00388\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacefourier__module_a49c093c2f91db91aa13c4d477d84ec53}{nx8}},\ \mbox{\hyperlink{namespacefourier__module_afc49709d3de1922b5e3e0dde789ece73}{nxny8}},\ \mbox{\hyperlink{namespacefourier__module_a1b78b770f46256f23dc568c2fba4b8d6}{ind\_init}},\ \mbox{\hyperlink{namespacefourier__module_a53e82a44099b69cbb4bc722ffe74646e}{nx\_proc}},\ \mbox{\hyperlink{namespacefourier__module_a9654d3e40c959c4deb6dcb4d6205b80c}{nxny\_proc}},\ \mbox{\hyperlink{namespacefourier__module_aca018d17245814c75eb0dc24567847f9}{ncub\_min}},\ \mbox{\hyperlink{namespacefourier__module_a41c31cf82ec7b3e8320b423b62891295}{ncub\_max}})}
+\DoxyCodeLine{00392\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keyword}{allocate}\ (ipsip(iscraipsip))}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keyword}{allocate}\ (psip(iscramax))}
+\DoxyCodeLine{00396\ \ \ \ \ ipsip\ =\ 0}
+\DoxyCodeLine{00397\ \ \ \ \ psip\ =\ 0.d0}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00399\ \ \ \ \ \textcolor{comment}{!\ write\ quantities\ to\ be\ saved\ to\ scratch\ file\ "{}TurboDFT.sav"{}}}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(a)'})\ \textcolor{stringliteral}{'\ Writing\ scratch\ files\ '}}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a16dffcbb430c5402663492ccc0abec6d}{write\_den}})\ \textcolor{keyword}{call\ }\mbox{\hyperlink{writeout__finalize_8f90_a96d0fdb98b8e3942bd8404812297402b}{write\_total\_density}}()}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (eigvu(ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}))}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ eigvu\ =\ 0.d0}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (eigvd(ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ \mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}}))}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvd\ =\ 0.d0}
+\DoxyCodeLine{00410\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nk}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvu(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ =\ \mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ i)}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvd(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ =\ \mbox{\hyperlink{namespacesetup_a0b062402d14b2b73b7d4547140144c89}{molecorbdo\_sav}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ i)}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_ac9cb2ed745092dffbfa886eb8564def8}{unit\_scratch\_eigenvects}})\ eigvu,\ eigvd}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eigvu(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}})\ =\ \mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}}(1:ipc*\mbox{\hyperlink{namespacesetup_ae81899fedbfad9e6f0e96a8282af1213}{nelorbu}},\ 1:\mbox{\hyperlink{namespacesetup_a5ff4198d725de59b59f5bf003e8533e2}{bands}},\ i)}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_ac9cb2ed745092dffbfa886eb8564def8}{unit\_scratch\_eigenvects}})\ eigvu}
+\DoxyCodeLine{00419\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00420\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (eigvu)}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}}\ .or.\ ipc\ .eq.\ 2)\ \textcolor{keyword}{deallocate}\ (eigvd)}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})}
+\DoxyCodeLine{00424\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00425\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00426\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{comment}{!\ print\ final\ density\ in\ xcrysden\ format}}
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00429\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a16dffcbb430c5402663492ccc0abec6d}{write\_den}})\ \textcolor{keyword}{call\ }\mbox{\hyperlink{printden_8f90_aaed9819fbb237182bf563341c735abd4}{printden}}(\mbox{\hyperlink{namespacesetup_a62260a160ccf2f86fa265fae9e15b954}{rion\_ref}},\ \mbox{\hyperlink{namespacesetup_a9eadcaab0d352fcd73d994966224ea40}{rion\_shift}},\ \mbox{\hyperlink{namespacefourier__module_aee50dda90e4ccd1df21c69c776a43c8d}{nxl}},\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}})}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}})}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}})}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}})}
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}})}
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}})}
+\DoxyCodeLine{00437\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_acfc255da001e11a8fa3a2adef625f6b1}{molecorb\_sav}})}
+\DoxyCodeLine{00438\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a0b062402d14b2b73b7d4547140144c89}{molecorbdo\_sav}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a0b062402d14b2b73b7d4547140144c89}{molecorbdo\_sav}})}
+\DoxyCodeLine{00439\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{comment}{!\ close\ all\ files}}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_a3eec400f70184ef6b8aa0f26bf6991c4}{ufort10}})}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (11)}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npsa\ .ne.\ 0)\ \textcolor{keyword}{close}\ (8)\ \textcolor{comment}{!\ pseudopotential}}
+\DoxyCodeLine{00446\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{comment}{!\ close\ scratch\ files}}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{comment}{!\ \ \ if(writescratch.eq.0)\ then}}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{if}\ (writescratch\ .eq.\ 0)\ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_a3312bfac82d4dc8c32a57d3da708df28}{unit\_scratch\_distributed}})}
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{keywordflow}{if}\ (yeswrite10\ .and.\ rankrep\ .eq.\ 0\ .and.\ manyfort10)\ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_a5362cbb59580310c7e8249ebcc87f2d3}{unit\_scratch\_fort10}})}
+\DoxyCodeLine{00453\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_ac9cb2ed745092dffbfa886eb8564def8}{unit\_scratch\_eigenvects}})}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a7dd8e2edd9fdd4b75a412eb4b2832966}{print\_energies}})\ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_a7974244276d5c4b46f2ed4c2a9045783}{unit\_print\_energies}})}
+\DoxyCodeLine{00457\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{comment}{!\ deallocate\ all\ variables\ allocated\ by\ DFT/QMC\ routines}}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keyword}{call\ }deallocate\_all}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{00467\ \textcolor{comment}{}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Prints\ final\ calculation\ outputs\ and\ timing\ information}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ \ \ \ !>\ @details\ This\ subroutine\ prints\ convergence\ status,\ final\ energies,}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ Fermi\ energy,\ Hartree\ energy,\ and\ timing\ information\ for}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ DFT\ calculation.}}
+\DoxyCodeLine{00472\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4}{print\_calculation\_outputs}}()}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacefreeelmod__complex_a799bf1708b6d89a267514542e89d692d}{iter}}\ .ge.\ \mbox{\hyperlink{namespacesetup_aea810580c3955e3bfd9015f6de6d88ee}{maxit}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Warning\ Turbo-\/DFT\ \ terminates\ without\ convergence,\ Error=\ '},\ real(\mbox{\hyperlink{namespacesetup_a9fbee004b9de43a9374d41c8b25e60f4}{errsav}})}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 101)\ \textcolor{stringliteral}{'\ OK\ Turbo-\/DFT\ converged\ \ with\ energy\ tollerance\ \ '},\ real(\mbox{\hyperlink{namespacesetup_a9fbee004b9de43a9374d41c8b25e60f4}{errsav}}),\ \textcolor{stringliteral}{'<'},\ real(\mbox{\hyperlink{namespacesetup_a4e9aa324614e41d752ac442f1adf8ce9}{epsdft}})}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A,X,I5)'})\ \textcolor{stringliteral}{'\ \#\ Iterations\ ='},\ \mbox{\hyperlink{namespacefreeelmod__complex_a799bf1708b6d89a267514542e89d692d}{iter}}}
+\DoxyCodeLine{00481\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}},\ 2)\ .eq.\ 1\ .and.\ \mbox{\hyperlink{namespacesetup_abe0b98c60ccb9a025a3447b819d1794b}{yespassed}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ variational\ DFT\ \ energy\ (Ha)\ =\ '},\ \mbox{\hyperlink{namespacesetup_ac5234a784844a05e879ed6c4ef1cb28b}{edftp}}}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a5bd9228a52b294e89089dc0272456845}{edftvar}}\ =\ \mbox{\hyperlink{namespacesetup_ac5234a784844a05e879ed6c4ef1cb28b}{edftp}}}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (mod(\mbox{\hyperlink{namespacesetup_af939b044f4ef2b960518c13aac4635d2}{typeopt}},\ 2)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ variational\ DFT\ \ energy\ (Ha)\ =\ '},\ \mbox{\hyperlink{namespacesetup_a5bd9228a52b294e89089dc0272456845}{edftvar}}}
+\DoxyCodeLine{00487\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ self\ consistent\ energy\ (Ha)\ ='},\ \mbox{\hyperlink{namespacesetup_aa0adef96daadddfde64fe2c3d5b35146}{edft}}}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh\ .and.\ \mbox{\hyperlink{namespacesetup_a68c58b794a55da589651e54081436267}{corr\_hartree}}\ .and.\ iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ estimated\ energy\ (corrected\ Hartree)\ '},\ \mbox{\hyperlink{namespacesetup_a5bd9228a52b294e89089dc0272456845}{edftvar}}\ +\ \mbox{\hyperlink{namespacesetup_adf616f4a5ff5f1f064c8859d175519d8}{ehartree}}\ -\/\ \mbox{\hyperlink{namespacesetup_aa27aad631b02bc237b8156343aedda0c}{eh\_ew}}}
+\DoxyCodeLine{00491\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ exchange\ \ energy\ \ \ \ \ \ \ \ \ \ \ \ ='},\ \mbox{\hyperlink{namespacesetup_ad760edb0c59d6daa29a95d4c929e055f}{exchange}}}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ correlation\ \ energy\ \ \ \ \ \ \ \ \ ='},\ \mbox{\hyperlink{namespacesetup_a7f06bb001964278e9b9b49c4d19f8a10}{ecorr}}}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 101)\ \textcolor{stringliteral}{'\ Final\ Fermi\ energy\ \ ='},\ efermi,\ \textcolor{stringliteral}{'Ha\ ='},\ efermi*energy\_unit,\ \textcolor{stringliteral}{'eV'}}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ total\ magnetization\ (a.u.)\ '},\ \mbox{\hyperlink{namespacesetup_a615baf3eda7596070ab3ea1fbc39c5ed}{spingrid}}/2.d0}
+\DoxyCodeLine{00498\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iespbc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ (QE\ conv.\ sum\ q=/0)\ (Ha)\ ='},\ \mbox{\hyperlink{namespacesetup_af19a1481d700387208e84426b30b67e0}{vh\_test}}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ on\ a\ mesh\ \ ='},\ \mbox{\hyperlink{namespacesetup_a6324ac2d542996fab307fd99f751ca5d}{vh\_att}}}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespacesetup_a68c58b794a55da589651e54081436267}{corr\_hartree}})\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy\ no\ Ewald\ corrected\ (Ha)\ ='},\ \mbox{\hyperlink{namespacesetup_aa27aad631b02bc237b8156343aedda0c}{eh\_ew}}}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Ewald\ contribution\ (QE\ conv)\ =\ '},\ \mbox{\hyperlink{namespacesetup_abcd1be8ad49103d226f804e24fdc370e}{vpotaa}}/2.d0}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Eself\ (Qbox\ conv)\ =\ '},\ \mbox{\hyperlink{namespacesetup_a29967ed775457d01fe05ba02d694d18d}{kappanew}}/dsqrt(pi)*sum(zetar(1:nion)**2)}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ E\_sr\ (Qbox\ conv)\ =\ '},\ \&}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\mbox{\hyperlink{namespacesetup_abcd1be8ad49103d226f804e24fdc370e}{vpotaa}}/2.d0\ +\ \mbox{\hyperlink{namespacesetup_a29967ed775457d01fe05ba02d694d18d}{kappanew}}/dsqrt(pi)*sum(zetar(1:nion)**2)}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ energy(H)\ \ ='},\ \mbox{\hyperlink{namespacesetup_adf616f4a5ff5f1f064c8859d175519d8}{ehartree}}}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (double\_mesh)\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ Hartree\ larger\ mesh\ energy\ (Ha)\ ='},\ \mbox{\hyperlink{namespacesetup_af19a1481d700387208e84426b30b67e0}{vh\_test}}}
+\DoxyCodeLine{00511\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a68c58b794a55da589651e54081436267}{corr\_hartree}}\ .and.\ \mbox{\hyperlink{namespacesetup_ae54eb972dc9fdb241a968493d1991171}{scale\_hartree}}\ .gt.\ 0)\ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Final\ rescaled\ Hartree\ density\ factor\ ='},\ \mbox{\hyperlink{namespacesetup_aa5503cedc8a7860bc7c8e539e84d2bef}{scale\_hartreen}}}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ \textcolor{stringliteral}{'(A)'})\ \textcolor{stringliteral}{'\ Turbo-\/DFT\ TIMINGS\ '}}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ (sec.)\ \ ='},\ \mbox{\hyperlink{namespacesetup_ae7fd7ff0f236ea3c3546e25b33130c9f}{time\_total}}}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ initialization\ time\ (sec.)\ \ ='},\ \mbox{\hyperlink{namespacesetup_ac1fcba42c9bdff7d8da76251462e8e8c}{init\_time}}}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ loading\ time\ matrices\ (sec.)\ \ ='},\ \mbox{\hyperlink{namespacesetup_ad648bd048a7cd8717a7f4019c370e325}{loading\_time}}}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ diagonalization\ \ time\ (sec.)\ ='},\ \mbox{\hyperlink{namespacesetup_ac3ca99f746d55e86f529519a588d93b8}{diag\_time}}}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 102)\ \textcolor{stringliteral}{'\ Total/Upload\ FFT\ \ time\ (sec.)\ ='},\ \mbox{\hyperlink{namespacesetup_a6de58d47c469bab1199ebe4c30d354d8}{time\_fft}},\ \mbox{\hyperlink{namespacesetup_a33d3d1b7bc74492de48433a6eb01278c}{time\_uploadfft}}}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ self-\/consistent\ cycle\ time\ (sec.)\ \ ='},\ \mbox{\hyperlink{namespacesetup_a186f81a02150a77586af336e55a7822f}{cycle\_time}}}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ density\ symmetrization\ time\ (sec.)\ ='},\ \mbox{\hyperlink{namespacesetup_a9a6780bfeadf69c53bcb4c1fb2162a8e}{symtime}}}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ dgemm\ ='},\ \mbox{\hyperlink{namespacesetup_a93307d5289836d945e9fa093300173ad}{dgemm\_time}}}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ 100)\ \textcolor{stringliteral}{'\ Total\ time\ zgemm\ ='},\ \mbox{\hyperlink{namespacesetup_a92871cdd7b6e173cdb7e4843295fcf32}{zgemm\_time}}}
+\DoxyCodeLine{00526\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_ac3ca99f746d55e86f529519a588d93b8}{diag\_time}}\ .gt.\ \mbox{\hyperlink{namespacesetup_ad648bd048a7cd8717a7f4019c370e325}{loading\_time}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ you\ should\ run\ with\ a\ smaller\ number\ of\ processors\ !!!\ '}}
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\#ifdef\ \_\_DOOMP}}
+\DoxyCodeLine{00530\ \textcolor{preprocessor}{}\textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Remind\ the\ diagonalization\ part\ is\ not\ OpenMP\ parallel\ so\ far\ '}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{}\textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ 100\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ f28.15)}
+\DoxyCodeLine{00538\ 101\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ f28.15,\ x,\ a,\ f28.15,\ x,\ a)}
+\DoxyCodeLine{00539\ 102\ \ \ \ \ \textcolor{keyword}{format}(a,\ x,\ 2f28.15)}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{writeout__finalize_8f90_acabecfd1e359d46ca18e01cd2a0428d4}{print\_calculation\_outputs}}}
+\DoxyCodeLine{00542\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{setup_8f90_source_l00043}{setup\+::bands}}, \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::buffer\+\_\+grid}}, \mbox{\hyperlink{setup_8f90_source_l00085}{setup\+::charge\+\_\+input}}, \mbox{\hyperlink{parallel__mod_8f90_source_l00382}{parallel\+\_\+module\+::collect\+\_\+from\+\_\+pools()}}, \mbox{\hyperlink{compute__fast__b_8f90_source_l03223}{conjmat()}}, \mbox{\hyperlink{setup_8f90_source_l00057}{setup\+::contracted\+\_\+on}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::dens\+\_\+grid}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::dent}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::dent\+\_\+after}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::dent\+\_\+aftern}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::dent\+\_\+before}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::dentnew}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::dentold}}, \mbox{\hyperlink{setup_8f90_source_l00131}{setup\+::desch}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::eigmat\+\_\+down}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::eigmol}}, \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::eigmol\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::eigmoldo}}, \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::eigmoldo\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::eigmolo}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::eigmolodo}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::epssr}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::errdft}}, \mbox{\hyperlink{setup_8f90_source_l00165}{setup\+::errsav}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00055}{fourier\+\_\+module\+::fp}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::gradt}}, \mbox{\hyperlink{setup_8f90_source_l00155}{setup\+::gridcharge}}, \mbox{\hyperlink{setup_8f90_source_l00155}{setup\+::gridnocharge}}, \mbox{\hyperlink{setup_8f90_source_l00155}{setup\+::gridnospin}}, \mbox{\hyperlink{setup_8f90_source_l00155}{setup\+::gridspin}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::hamilt}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::hamiltdo}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::hamiltl}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::hamiltldo}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00048}{fourier\+\_\+module\+::ind\+\_\+init}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::jac}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::jaccond}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::jbradetc\+\_\+in}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::jbradetnc\+\_\+in}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::jbrajc\+\_\+in}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::jbrajnc\+\_\+in}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::mataux}}, \mbox{\hyperlink{setup_8f90_source_l00058}{setup\+::memlarge}}, \mbox{\hyperlink{setup_8f90_source_l00181}{setup\+::mixingtrue}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorb}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorb\+\_\+old}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::molecorb\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorbdo}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorbdo\+\_\+old}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::molecorbdo\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorbdos}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::molecorbl}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::molecorbldo}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::molecorbs}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00047}{fourier\+\_\+module\+::ncub\+\_\+max}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00047}{fourier\+\_\+module\+::ncub\+\_\+min}}, \mbox{\hyperlink{setup_8f90_source_l00041}{setup\+::nelocc}}, \mbox{\hyperlink{setup_8f90_source_l00042}{setup\+::neloccdo}}, \mbox{\hyperlink{setup_8f90_source_l00120}{setup\+::nelorbu}}, \mbox{\hyperlink{setup_8f90_source_l00086}{setup\+::newj\+\_\+onebody}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::newocc}}, \mbox{\hyperlink{setup_8f90_source_l00121}{setup\+::nlax}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00033}{freeelmod\+\_\+complex\+::nmoltot}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::nozeroc\+\_\+in}}, \mbox{\hyperlink{freeelmod__complex__kpoints_8f90_source_l00037}{freeelmod\+\_\+complex\+::nozerojc\+\_\+in}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00049}{fourier\+\_\+module\+::nx8}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00050}{fourier\+\_\+module\+::nx\+\_\+proc}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00057}{fourier\+\_\+module\+::nxl}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00049}{fourier\+\_\+module\+::nxny8}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00050}{fourier\+\_\+module\+::nxny\+\_\+proc}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::occupationdo}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::occupations}}, \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::occupations\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::occupationsdo\+\_\+sav}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::oldocc}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::oldoccdo}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::overham}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::overhamdo}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::overhaml}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::overhamldo}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::overinvs}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::overinvsl}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::overjac}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::overs}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::oversdo}}, \mbox{\hyperlink{setup_8f90_source_l00148}{setup\+::oversl}}, \mbox{\hyperlink{setup_8f90_source_l00146}{setup\+::oversldo}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::premat}}, \mbox{\hyperlink{writeout__finalize_8f90_source_l00473}{print\+\_\+calculation\+\_\+outputs()}}, \mbox{\hyperlink{setup_8f90_source_l00071}{setup\+::print\+\_\+energies}}, \mbox{\hyperlink{printden_8f90_source_l00026}{printden()}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00055}{fourier\+\_\+module\+::rcvbuf}}, \mbox{\hyperlink{dsortx_8f90_source_l00444}{reduce\+\_\+base\+\_\+real()}}, \mbox{\hyperlink{setup_8f90_source_l00096}{setup\+::rion\+\_\+ref}}, \mbox{\hyperlink{setup_8f90_source_l00096}{setup\+::rion\+\_\+shift}}, \mbox{\hyperlink{setup_8f90_source_l00181}{setup\+::sjac}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00055}{fourier\+\_\+module\+::sndbuf}}, \mbox{\hyperlink{setup_8f90_source_l00181}{setup\+::sojac}}, \mbox{\hyperlink{writeout__finalize_8f90_source_l00728}{sort\+\_\+molecular()}}, \mbox{\hyperlink{writeout__finalize_8f90_source_l00660}{sortr\+\_\+molecular()}}, \mbox{\hyperlink{setup_8f90_source_l00084}{setup\+::spin\+\_\+input}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::spint}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::spint\+\_\+after}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::spint\+\_\+aftern}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::spint\+\_\+before}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::spint\+\_\+grid}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::spintnew}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::spintold}}, \mbox{\hyperlink{setup_8f90_source_l00076}{setup\+::try\+\_\+translation}}, \mbox{\hyperlink{setup_8f90_source_l00039}{setup\+::typeopt}}, \mbox{\hyperlink{setup_8f90_source_l00111}{setup\+::ufort10}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::ujac}}, \mbox{\hyperlink{setup_8f90_source_l00144}{setup\+::umatl}}, \mbox{\hyperlink{setup_8f90_source_l00144}{setup\+::umatldo}}, \mbox{\hyperlink{setup_8f90_source_l00116}{setup\+::unit\+\_\+print\+\_\+energies}}, \mbox{\hyperlink{setup_8f90_source_l00114}{setup\+::unit\+\_\+scratch\+\_\+densities}}, \mbox{\hyperlink{setup_8f90_source_l00112}{setup\+::unit\+\_\+scratch\+\_\+distributed}}, \mbox{\hyperlink{setup_8f90_source_l00115}{setup\+::unit\+\_\+scratch\+\_\+eigenvects}}, \mbox{\hyperlink{setup_8f90_source_l00113}{setup\+::unit\+\_\+scratch\+\_\+fort10}}, \mbox{\hyperlink{update__fort10_8f90_source_l00206}{update\+\_\+fort10()}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::vetaux}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00051}{fourier\+\_\+module\+::vhartree}}, \mbox{\hyperlink{fourier__mod_8f90_source_l00051}{fourier\+\_\+module\+::vhartreeq}}, \mbox{\hyperlink{setup_8f90_source_l00177}{setup\+::vjac}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::volmesh\+\_\+proc}}, \mbox{\hyperlink{setup_8f90_source_l00137}{setup\+::wf}}, \mbox{\hyperlink{setup_8f90_source_l00062}{setup\+::write\+\_\+den}}, \mbox{\hyperlink{writeout__finalize_8f90_source_l00550}{write\+\_\+total\+\_\+density()}}, \mbox{\hyperlink{setup_8f90_source_l00063}{setup\+::yesgrad}}, \mbox{\hyperlink{setup_8f90_source_l00059}{setup\+::yeslsda}}, and \mbox{\hyperlink{setup_8f90_source_l00077}{setup\+::zero\+\_\+jas}}.
+
+
+
+Referenced by \mbox{\hyperlink{prep_8f90_source_l00022}{main()}}.
+
+\Hypertarget{writeout__finalize_8f90_a96d0fdb98b8e3942bd8404812297402b}\index{writeout\_finalize.f90@{writeout\_finalize.f90}!write\_total\_density@{write\_total\_density}}
+\index{write\_total\_density@{write\_total\_density}!writeout\_finalize.f90@{writeout\_finalize.f90}}
+\doxysubsubsection{\texorpdfstring{write\_total\_density()}{write\_total\_density()}}
+{\footnotesize\ttfamily \label{writeout__finalize_8f90_a96d0fdb98b8e3942bd8404812297402b} 
+subroutine write\+\_\+total\+\_\+density}
+
+
+
+Writes total density to output files. 
+
+This subroutine gathers density data from all processors and writes the total charge and spin density to output files for non-\/self-\/consistent calculations. 
+
+Definition at line \mbox{\hyperlink{writeout__finalize_8f90_source_l00549}{549}} of file \mbox{\hyperlink{writeout__finalize_8f90_source}{writeout\+\_\+finalize.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00551\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}},\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}},\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}},\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}},\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}},\ \mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}}
+\DoxyCodeLine{00552\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacesetup}{setup}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}},\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}},\ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}},\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ \mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}},\ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}},\ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}},\ \&}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ proc,\ ind,\ i,\ j,\ k,\ ierr,\ indproc}
+\DoxyCodeLine{00557\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{"{}mpif.h"{}}}
+\DoxyCodeLine{00559\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00561\ \ \ \ \ \textcolor{comment}{!\ save\ the\ total\ density\ on\ a\ file\ for\ NonSC\ calculations}}
+\DoxyCodeLine{00562\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00563\ \ \ \ \ \textcolor{comment}{!\ fill\ total\ charge\ density}}
+\DoxyCodeLine{00564\ \ \ \ \ \textcolor{keyword}{allocate}\ (\mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}(\mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}},\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}},\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}))}
+\DoxyCodeLine{00565\ \ \ \ \ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}\ =\ 0.d0}
+\DoxyCodeLine{00566\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (\mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}(\mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}},\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}},\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}))}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}\ =\ 0.d0}
+\DoxyCodeLine{00569\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00570\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00571\ \textcolor{preprocessor}{}\ \ \ \ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}\ =\ 0.0d0}
+\DoxyCodeLine{00572\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}},\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ mpi\_double\_precision,\ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}\&}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00574\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ proc\ =\ 0,\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ -\/\ 1}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indproc\ .eq.\ proc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}(i,\ j,\ k)\ =\ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}(ind,\ proc\ +\ 1)}
+\DoxyCodeLine{00584\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ indproc\ +\ 1}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indproc\ .eq.\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})\ indproc\ =\ 0}
+\DoxyCodeLine{00587\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00588\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00589\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00590\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00591\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{comment}{!\ fill\ total\ spin\ density}}
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}\ =\ 0.d0}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(\mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}},\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ mpi\_double\_precision,\ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}\&}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespacesetup_aeba124bff705490a064bfecaa2497c9b}{meshproc}},\ mpi\_double\_precision,\ 0,\ \mbox{\hyperlink{namespaceallio_a4db894da2eb4eed1dd03c2afddc6a8ea}{commrep\_mpi}},\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}\ =\ 0.d0}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ 0}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ proc\ =\ 0,\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}}\ -\/\ 1}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (proc\ .eq.\ indproc)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}(i,\ j,\ k)\ =\ \mbox{\hyperlink{namespacesetup_a161778650e44310795e6f170ca5b48c3}{buffer\_grid}}(ind,\ proc\ +\ 1)}
+\DoxyCodeLine{00608\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ indproc\ =\ indproc\ +\ 1}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (indproc\ .eq.\ \mbox{\hyperlink{namespaceallio_a222a534e1d22f9b589030ac38e840e02}{nprocrep}})\ indproc\ =\ 0}
+\DoxyCodeLine{00611\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00612\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00613\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00614\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00615\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00616\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00617\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00618\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}(i,\ j,\ k)\ =\ \mbox{\hyperlink{namespacesetup_a2f5aa00bcfe3b8e8b85a2a5f63dc7563}{dent}}(i)}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}(i,\ j,\ k)\ =\ \mbox{\hyperlink{namespacesetup_a402eea057baea5977c4cbb13f6df5db8}{spint}}(i)}
+\DoxyCodeLine{00623\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00624\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00625\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00627\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{comment}{!\ write\ total\ density\ on\ scratch\ files}}
+\DoxyCodeLine{00628\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_a07dd5135249ecc7cff1cd18726db0650}{writescratch}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespacesetup_a2cffc5e23557778a451f147af7a3c42f}{yeslsda}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})\ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})\ \mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})\ \mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}}}
+\DoxyCodeLine{00634\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \textcolor{keyword}{close}\ (\mbox{\hyperlink{namespacesetup_adfd99b36470e7628411954433434b3c6}{unit\_scratch\_densities}})}
+\DoxyCodeLine{00636\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \ \ \ \ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a10cda57bb03f3c4cf4116496938e00e4}{dens\_grid}})}
+\DoxyCodeLine{00639\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{allocated}(\mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}}))\ \textcolor{keyword}{deallocate}\ (\mbox{\hyperlink{namespacesetup_a408e823462a583d0ce2c2f3c8b0007f2}{spint\_grid}})}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{setup_8f90_source_l00162}{setup\+::buffer\+\_\+grid}}, \mbox{\hyperlink{allio_8f90_source_l00386}{allio\+::commrep\+\_\+mpi}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::dens\+\_\+grid}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::dent}}, \mbox{\hyperlink{setup_8f90_source_l00095}{setup\+::meshproc}}, \mbox{\hyperlink{allio_8f90_source_l00387}{allio\+::nprocrep}}, \mbox{\hyperlink{allio_8f90_source_l00475}{allio\+::nx}}, \mbox{\hyperlink{allio_8f90_source_l00476}{allio\+::ny}}, \mbox{\hyperlink{allio_8f90_source_l00477}{allio\+::nz}}, \mbox{\hyperlink{allio_8f90_source_l01119}{allio\+::rank}}, \mbox{\hyperlink{setup_8f90_source_l00158}{setup\+::spint}}, \mbox{\hyperlink{setup_8f90_source_l00164}{setup\+::spint\+\_\+grid}}, \mbox{\hyperlink{setup_8f90_source_l00114}{setup\+::unit\+\_\+scratch\+\_\+densities}}, \mbox{\hyperlink{allio_8f90_source_l00185}{allio\+::writescratch}}, and \mbox{\hyperlink{setup_8f90_source_l00059}{setup\+::yeslsda}}.
+
+
+
+Referenced by \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}.
+

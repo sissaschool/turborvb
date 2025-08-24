@@ -1,0 +1,65 @@
+\doxysection{findmaxmat.\+f90}
+\hypertarget{findmaxmat_8f90_source}{}\label{findmaxmat_8f90_source}\index{src/m\_common/findmaxmat.f90@{src/m\_common/findmaxmat.f90}}
+\mbox{\hyperlink{findmaxmat_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Find\ maximum\ matrix\ indices\ for\ sparse\ matrix\ operations}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ determines\ the\ maximum\ row\ and\ column\ indices\ used\ in}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00019}00019\ \textcolor{comment}{!>\ a\ sparse\ matrix\ representation,\ which\ is\ useful\ for\ allocating\ memory}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00020}00020\ \textcolor{comment}{!>\ and\ optimizing\ matrix\ operations\ in\ quantum\ Monte\ Carlo\ calculations.}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00021}00021\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ iessw\ Number\ of\ active\ orbitals\ to\ consider\ (0\ =\ skip\ calculation)}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ nnozero\ Number\ of\ non-\/zero\ elements\ in\ the\ sparse\ matrix}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ nozero\ Array\ containing\ linear\ indices\ of\ non-\/zero\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ nelorbh\ Number\ of\ orbitals\ (matrix\ dimension)}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ jbradet\ Array\ mapping\ sparse\ matrix\ indices\ to\ orbital\ indices}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in,out]\ lastmol\ Maximum\ row/column\ index\ found\ (updated\ on\ output)}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00028}00028\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00030}00030\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00031}00031\ \textcolor{comment}{!>\ 1.\ Checks\ if\ calculation\ should\ be\ performed\ (iessw\ >\ 0)}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00032}00032\ \textcolor{comment}{!>\ 2.\ Iterates\ through\ all\ non-\/zero\ matrix\ elements}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00033}00033\ \textcolor{comment}{!>\ 3.\ For\ each\ element\ with\ valid\ jbradet\ mapping\ (1\ ≤\ jbradet(j)\ ≤\ iessw):}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00034}00034\ \textcolor{comment}{!>\ \ \ \ -\/\ Converts\ linear\ index\ to\ (row,\ column)\ coordinates}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00035}00035\ \textcolor{comment}{!>\ \ \ \ -\/\ Updates\ lastmol\ with\ the\ maximum\ of\ current\ lastmol,\ row,\ and\ column}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00036}00036\ \textcolor{comment}{!>\ 4.\ Only\ considers\ elements\ where\ both\ row\ and\ column\ are\ ≤\ nelorbh}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00037}00037\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @note\ The\ subroutine\ uses\ linear\ indexing\ where\ element\ (i,j)\ corresponds}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00039}00039\ \textcolor{comment}{!>\ \ \ \ \ \ \ to\ index\ (j-\/1)*nelorbh\ +\ i}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00040}00040\ \textcolor{comment}{!>\ @note\ If\ iessw\ =\ 0,\ the\ subroutine\ returns\ immediately\ without\ calculation}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00041}00041\ \textcolor{comment}{!>\ @note\ The\ subroutine\ updates\ lastmol\ in-\/place\ with\ the\ maximum\ value\ found}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00042}00042\ \textcolor{comment}{!>\ @note\ This\ is\ typically\ used\ for\ memory\ allocation\ and\ optimization\ purposes}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00043}\mbox{\hyperlink{findmaxmat_8f90_acf2adb0c22096275745cd04b8b8b63c8}{00043}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{findmaxmat_8f90_acf2adb0c22096275745cd04b8b8b63c8}{findmaxmat}}(iessw,\ nnozero,\ nozero,\ nelorbh,\ jbradet,\ lastmol)}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{integer}\ iessw,\ nelorbh,\ nozero(*),\ i,\ j,\ nnozero,\ jbradet(*),\ lastmol,\ ix,\ iy}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (iessw\ .eq.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00048}00048\ }
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00049}00049\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nnozero}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ i\ =\ jbradet(j)}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .ne.\ 0\ .and.\ i\ .le.\ iessw)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ iy\ =\ (nozero(j)\ -\/\ 1)/nelorbh\ +\ 1}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ ix\ =\ nozero(j)\ -\/\ (iy\ -\/\ 1)*nelorbh}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iy\ .le.\ nelorbh)\ lastmol\ =\ max(lastmol,\ ix,\ iy)}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00055}00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00056}00056\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{findmaxmat_8f90_source_l00059}00059\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

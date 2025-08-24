@@ -1,0 +1,522 @@
+\doxysection{jastrowgrad\+\_\+pbc\+\_\+b.\+f90}
+\hypertarget{jastrowgrad__pbc__b_8f90_source}{}\label{jastrowgrad__pbc__b_8f90_source}\index{src/c\_adjoint\_backward/jastrowgrad\_pbc\_b.f90@{src/c\_adjoint\_backward/jastrowgrad\_pbc\_b.f90}}
+\mbox{\hyperlink{jastrowgrad__pbc__b_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00002}00002\ \textcolor{comment}{!\ written\ by\ hand\ by\ S.\ Sorella\ on\ 11/8/2019}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00003}\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_a85188874cb26e213e42422224611ef5d}{00003}}\ \textcolor{keyword}{SUBROUTINE\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_a85188874cb26e213e42422224611ef5d}{jastrowgrad\_pbc\_b}}(rc,\ rcb,\ vj,\ vjb,\ iesd,\ jastrow,\ gradv\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00004}00004\ \ \ \ \ \ \ \ \ \&,\ gradvb,\ grad2,\ grad2b,\ ispin,\ constz,\ cellscaleb,\ metricb,\ car2cryb)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00005}00005\ \ \ \ \ \textcolor{keywordtype}{USE\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{ONLY}\ :\ \mbox{\hyperlink{namespaceconstants_afe94f5e7da8ab7d935bbd48ab2a704cf}{pi}}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00006}00006\ \ \ \ \ \textcolor{keywordtype}{USE\ }\mbox{\hyperlink{namespacecell}{cell}},\ \textcolor{keywordtype}{ONLY}\ :\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}},\ \mbox{\hyperlink{namespacecell_af903e110f7351964596c54677f3cac8b}{car2cry}},\ \mbox{\hyperlink{namespacecell_a5aa41c388b383ef09d5cfff706a7de19}{metric}},\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}},\ \mbox{\hyperlink{namespacecell_a1191977486da240e3200ef1915ea3bbc}{dmap}},\ \mbox{\hyperlink{namespacecell_a22e7bee0789f1ca87fc3a68f4eea6241}{ddmap}},\ \mbox{\hyperlink{namespacecell_ac8c9f1f844fa90c6b148e1f88f23f0bb}{cartesiantocrystal}},\ \mbox{\hyperlink{namespacecell_a7f828b3a25f1cf7624f6ed1e49c4a90d}{cartesiantocrystal\_b}}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00007}00007\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespaceallio_a5a4833da0ec6249ef91c9802990f1a51}{niesd}},\ \mbox{\hyperlink{namespaceallio_a17ea5d3a5d93356ea638fbcf5acb9daa}{norm\_metric}}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00008}00008\ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00009}00009\ \ \ \ \ real*8,\ \textcolor{keywordtype}{INTENT(IN)}\ ::\ \mbox{\hyperlink{namespaceallio_ab1f454e60e12179addfe9aedadac49b3}{vj}}(max(\mbox{\hyperlink{namespaceallio_a5a4833da0ec6249ef91c9802990f1a51}{niesd}},\ 1)),\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00010}00010\ \ \ \ \ \textcolor{keywordtype}{INTEGER},\ \textcolor{keywordtype}{INTENT(IN)}\ ::\ iesd,\ ispin}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00011}00011\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ rc(3),\ jastrow,\ grad,\ grad2,\ grad\_before,\ grad2\_before\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00012}00012\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ gradv(3),\ r,\ rc\_map(3),\ drc\_map(3),\ ddrc\_map(3)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00013}00013\ \ \ \ \ real*8\ rcb(3),\ gradb,\ grad2b,\ grad2\_beforeb,\ rc\_before(3)\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00014}00014\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ gradvb(3),\ rb,\ rc\_mapb(3),\ drc\_mapb(3),\ ddrc\_mapb(3)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00015}00015\ \ \ \ \ real*8\ vjb(*),\ cellscaleb(3),\ metricb(3,\ 3),\ car2cryb(3,\ 3)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00016}00016\ \ \ \ \ \textcolor{keywordtype}{integer}\ k,\ niesdu}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00020}00020\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00021}00021\ \ \ \ \ \textcolor{comment}{!\ \ first\ step\ vanish\ all\ adjoint\ arrays\ \ not\ passed}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00022}00022\ \ \ \ \ grad2\_beforeb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00023}00023\ \ \ \ \ gradb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00024}00024\ \ \ \ \ rc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00025}00025\ \ \ \ \ drc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00026}00026\ \ \ \ \ ddrc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00027}00027\ \ \ \ \ niesdu\ =\ max(\mbox{\hyperlink{namespaceallio_a5a4833da0ec6249ef91c9802990f1a51}{niesd}},\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00028}00028\ \ \ \ \ niesdu\ =\ min(2,\ niesdu)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00029}00029\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00030}00030\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ fast\ output}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordflow}{if}(constz.eq.0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00034}00034\ \ \ \ \ \textcolor{comment}{!\ working\ in\ the\ crystal\ reference}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00035}00035\ \ \ \ \ rc\_before\ =\ rc}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_ac8c9f1f844fa90c6b148e1f88f23f0bb}{cartesiantocrystal}}(rc,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ mapping\ function\ and\ its\ derivatives\ acting\ on\ crystal\ coordinates\ here}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ rc\_map(k)\ =\ \mbox{\hyperlink{namespacecell_a937a0006a5b129d7823d821216d4ec7a}{map}}(rc(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ drc\_map(k)\ =\ \mbox{\hyperlink{namespacecell_a1191977486da240e3200ef1915ea3bbc}{dmap}}(rc(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ ddrc\_map(k)\ =\ \mbox{\hyperlink{namespacecell_a22e7bee0789f1ca87fc3a68f4eea6241}{ddmap}}(rc(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ rc\_map(k)\ =\ constz\ *\ rc\_map(k)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ drc\_map(k)\ =\ constz\ *\ drc\_map(k)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ ddrc\_map(k)\ =\ constz\ *\ ddrc\_map(k)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00046}00046\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ use\ metric\ to\ perform\ the\ square}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00049}00049\ \ \ \ \ r\ =\ \mbox{\hyperlink{namespaceallio_a17ea5d3a5d93356ea638fbcf5acb9daa}{norm\_metric}}(rc\_map,\ \mbox{\hyperlink{namespacecell_a5aa41c388b383ef09d5cfff706a7de19}{metric}})}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keywordflow}{if}(r.le.1.\mbox{\hyperlink{namespaceallio_a2990e948ebed42ce54765defe9128b15}{d}}-\/9)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ there\ is\ nothing\ to\ differentiate}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{jastrowgrad__pbc_8f90_a51aff59696b0666ee4ac0c71e24093e3}{update\_jgrad}}(iesd,\ ispin,\ r,\ \mbox{\hyperlink{namespaceallio_ab1f454e60e12179addfe9aedadac49b3}{vj}},\ niesdu,\ jastrow,\ grad,\ grad2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00054}00054\ \ \ \ \ grad2\_before\ =\ grad2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00056}00056\ \ \ \ \ \textcolor{comment}{!\ \ BEGIN\ reverse\ algorithm}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keyword}{call\ \ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_af5b5fff88b4b5d039d48cf8c5afba1f2}{update\_all\_b}}(r,\ rb,\ grad,\ gradb,\ grad2\_before,\ grad2\_beforeb,\ rc\_map,\ rc\_mapb,\ drc\_map,\ drc\_mapb,\ ddrc\_map,\ ddrc\_mapb,\ \mbox{\hyperlink{namespacecell_a5aa41c388b383ef09d5cfff706a7de19}{metric}},\ metricb,\ \mbox{\hyperlink{namespacecell_af903e110f7351964596c54677f3cac8b}{car2cry}},\ car2cryb,\ gradvb,\ grad2b,\ constz)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00059}00059\ \ \ \ \ \textcolor{comment}{!\ \ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ grad2\_before=grad2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00061}00061\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00062}00062\ \ \ \ \ grad2b\ =\ grad2b\ +\ grad2\_beforeb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00063}00063\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keyword}{Call\ \ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_ad1980cfc9e69b2d4f5a0bc8349f0bf99}{update\_jgrad\_b}}(iesd,\ ispin,\ r,\ rb,\ \mbox{\hyperlink{namespaceallio_ab1f454e60e12179addfe9aedadac49b3}{vj}},\ vjb,\ jastrow\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ grad,\ gradb,\ grad2,\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00069}00069\ \ \ \ \ \textcolor{comment}{!\ \ reverse\ of\ r=norm\_metric(rc\_map,metric)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{up2bodypsi__b_8f90_a14f74fb733d111e7f3e5852d29bc98c3}{norm\_metric\_b}}(rc\_map,\ rc\_mapb,\ \mbox{\hyperlink{namespacecell_a5aa41c388b383ef09d5cfff706a7de19}{metric}},\ metricb,\ rb)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00073}00073\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00075}00075\ \ \ \ \ \textcolor{comment}{!\ \ do\ k=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ !\ mapping\ function\ and\ its\ derivatives\ acting\ on\ crystal\ coordinates\ here}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00077}00077\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ rc\_map(k)=constz*rc\_map(k)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00078}00078\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ drc\_map(k)=constz*drc\_map(k)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00079}00079\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ddrc\_map(k)=constz*ddrc\_map(k)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00080}00080\ \ \ \ \ \textcolor{comment}{!\ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00081}00081\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00082}00082\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ rc\_mapb(k)\ =\ rc\_mapb(k)\ *\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ drc\_mapb(k)\ =\ drc\_mapb(k)\ *\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ ddrc\_mapb(k)\ =\ ddrc\_mapb(k)\ *\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00089}00089\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00090}00090\ \ \ \ \ \textcolor{comment}{!\ do\ k=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00091}00091\ \ \ \ \ \textcolor{comment}{!\ \ \ \ rc\_map(k)=map(rc(k),cellscale(k))}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00092}00092\ \ \ \ \ \textcolor{comment}{!\ \ \ \ drc\_map(k)=dmap(rc(k),cellscale(k))}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00093}00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ ddrc\_map(k)=ddmap(rc(k),cellscale(k))}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00094}00094\ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00095}00095\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{cell_8f90_ab0d560f85c318f146a63fc1e4e0cf3e6}{ddmap\_b}}(rc(k),\ rcb(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k),\ cellscaleb(k),\ ddrc\_mapb(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{cell_8f90_acf5587151f4064af43a980761746caa4}{dmap\_b}}(rc(k),\ rcb(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k),\ cellscaleb(k),\ drc\_mapb(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{cell_8f90_a769aa28017d4f1f6ab700bd3327d0de9}{map\_b}}(rc(k),\ rcb(k),\ \mbox{\hyperlink{namespacecell_a276e2cf26a82dd6234a8e14b54d78517}{cellscale}}(k),\ cellscaleb(k),\ rc\_mapb(k))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00101}00101\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{namespacecell_a7f828b3a25f1cf7624f6ed1e49c4a90d}{cartesiantocrystal\_b}}(rc\_before,\ rcb,\ car2cryb,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00103}00103\ \textcolor{keyword}{END\ SUBROUTINE\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_a85188874cb26e213e42422224611ef5d}{jastrowgrad\_pbc\_b}}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00104}00104\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00106}\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_af5b5fff88b4b5d039d48cf8c5afba1f2}{00106}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_af5b5fff88b4b5d039d48cf8c5afba1f2}{update\_all\_b}}(r,\ rb,\ grad,\ gradb,\ grad2\_before,\ grad2\_beforeb,\ rc\_map,\ rc\_mapb,\ drc\_map,\ drc\_mapb,\ ddrc\_map,\ ddrc\_mapb,\ metric,\ metricb,\ car2cry,\ car2cryb,\ gradvb,\ grad2b,\ constz)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00107}00107\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00108}00108\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ grad,\ grad2,\ grad\_before,\ grad2\_before\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ gradv(3),\ cost,\ r,\ rc\_map(3),\ drc\_map(3),\ ddrc\_map(3)\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ vprime(3),\ vsecond(3),\ vprime\_prod(3,\ 3)\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ metric(3,\ 3),\ car2cry(3,\ 3),\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00112}00112\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ gradb,\ grad2b,\ grad\_beforeb,\ grad2\_beforeb\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ gradvb(3),\ costb,\ rb,\ hessb(3),\ rc\_mapb(3),\ drc\_mapb(3),\ ddrc\_mapb(3)\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ vprimeb(3),\ vsecondb(3),\ vprime\_prodb(3,\ 3)\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ metricb(3,\ 3),\ car2cryb(3,\ 3)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00116}00116\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ aux(3),\ vprime\_before(3),\ aux0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00117}00117\ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00119}00119\ \ \ \ \ \textcolor{comment}{!\ input\ -\/-\/>r,grad,grad2\_before,rc\_map,drc\_map,ddrc\_map,metric,car2cry}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00120}00120\ \ \ \ \ \textcolor{comment}{!\ output\ -\/-\/>\ gradv,grad2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00121}00121\ \ \ \ \ \textcolor{comment}{!\ constants-\/-\/>\ constz}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00123}00123\ \ \ \ \ cost\ =\ grad\ /\ r}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00124}00124\ \ \ \ \ grad2\ =\ (grad2\_before\ -\/\ cost)\ /\ r**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00125}00125\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00126}00126\ \textcolor{comment}{!\ \ \ grad2\_after1\ =\ grad2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00127}00127\ \ \ \ \ \textcolor{comment}{!\ once\ radial\ functions\ computed,\ compute\ now\ gradient\ and\ hessian}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00128}00128\ \ \ \ \ \textcolor{comment}{!\ vprime(:)=0.d0}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00129}00129\ \ \ \ \ \textcolor{comment}{!\ do\ i=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00130}00130\ \ \ \ \ \textcolor{comment}{!\ vprime(:)=vprime(:)+metric(:,i)*rc\_map(i)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00131}00131\ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00132}00132\ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'N'},\ 3,\ 3,\ 1.d0,\ metric,\ 3,\ rc\_map,\ 1,\ 0.d0,\ vprime,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00133}00133\ \ \ \ \ vprime\_before\ =\ vprime}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00134}00134\ \ \ \ \ vsecond(:)\ =\ ddrc\_map(:)\ *\ vprime(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00135}00135\ \ \ \ \ vprime(:)\ =\ drc\_map(:)\ *\ vprime(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00136}00136\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ vprime\_prod(i,\ j)\ =\ drc\_map(i)\ *\ metric(i,\ j)\ *\ drc\_map(j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ vprime\_prod(j,\ i)\ =\ vprime\_prod(i,\ j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00140}00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ vprime\_prod(i,\ i)\ =\ drc\_map(i)**2\ *\ metric(i,\ i)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00142}00142\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00143}00143\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00145}00145\ \ \ \ \ \textcolor{comment}{!\ gradv(:)=0.d0}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00146}00146\ \ \ \ \ \textcolor{comment}{!\ do\ i=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00147}00147\ \ \ \ \ \textcolor{comment}{!\ \ \ \ gradv(:)=gradv(:)+car2cry(i,:)*vprime(i)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00148}00148\ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keyword}{call\ }dgemv(\textcolor{stringliteral}{'T'},\ 3,\ 3,\ 1.d0,\ car2cry,\ 3,\ vprime,\ 1,\ 0.d0,\ gradv,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00150}00150\ \textcolor{comment}{!\ \ \ hess(:)\ =\ grad2\ *\ gradv(:)**2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00151}00151\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00152}00152\ \textcolor{comment}{!\ \ \ do\ i\ =\ 1,\ 3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00153}00153\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ j\ =\ i\ +\ 1,\ 3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00154}00154\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ hess(:)\ =\ hess(:)\ +\ 2.d0\ *\ cost\ *\ car2cry(i,\ :)\ *\ car2cry(j,\ :)\ *\ vprime\_prod(i,\ j)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00155}00155\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00156}00156\ \textcolor{comment}{!\ \ \ \ \ \ \ hess(:)\ =\ hess(:)\ +\ cost\ *\ car2cry(i,\ :)**2\ *\ (vprime\_prod(i,\ i)\ +\ vsecond(i))}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00157}00157\ \textcolor{comment}{!\ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00158}00158\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00159}00159\ \ \ \ \ \textcolor{comment}{!\ do\ i=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00160}00160\ \ \ \ \ \textcolor{comment}{!\ \ \ \ hess(:)=hess(:)+cost*car2cry(i,:)**2*vsecond(i)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00161}00161\ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00162}00162\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00163}00163\ \textcolor{comment}{!\ \ \ done\ before\ updating\ gradv}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00164}00164\ \textcolor{comment}{!\ \ \ gradv(:)\ =\ gradv(:)*cost/\ constz}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00165}00165\ \textcolor{comment}{!\ \ \ hess(:)\ =\ hess(:)\ /\ constz**2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00166}00166\ \textcolor{comment}{!\ \ \ grad2\ =\ sum(hess(:)/constz**2)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00167}00167\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00168}00168\ \ \ \ \ \textcolor{comment}{!\ BEGIN\ REVERSE\ ALGORITHM}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00170}00170\ \textcolor{comment}{!\ \ \ reverse\ of\ \ grad2\ =\ sum(hess(:)/constz**2)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00171}00171\ \textcolor{comment}{!\ \ \ hessb(:)\ =\ grad2b}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00172}00172\ \ \ \ \ hessb(:)\ =\ grad2b/\ constz**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00173}00173\ \ \ \ \ grad2b\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00174}00174\ \textcolor{comment}{!\ \ reverse\ of\ gradv(:)\ =\ gradv(:)*cost/\ constz}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00175}00175\ \ \ \ \ costb=sum(gradv(:)*gradvb(:))/constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00176}00176\ \ \ \ \ gradvb(:)\ =\ gradvb(:)*cost/\ constz}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00177}00177\ \ \ \ \ \textcolor{comment}{!\ vanish\ all\ internal\ variables}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00178}00178\ \ \ \ \ rc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00179}00179\ \ \ \ \ drc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00180}00180\ \ \ \ \ ddrc\_mapb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00181}00181\ \ \ \ \ vprimeb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00182}00182\ \ \ \ \ vsecondb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00183}00183\ \ \ \ \ vprime\_prodb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00186}00186\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ hess(:)=hess(:)+cost*car2cry(i,:)**2*(vprime\_prod(i,i)+vsecond(i))}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00187}00187\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00188}00188\ \ \ \ \ \ \ \ \ aux(:)\ =\ car2cry(i,\ :)**2\ *\ (vprime\_prod(i,\ i)\ +\ vsecond(i))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00189}00189\ \ \ \ \ \ \ \ \ costb\ =\ costb\ +\ sum(aux(:)\ *\ hessb(:))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00190}00190\ \ \ \ \ \ \ \ \ aux(:)\ =\ 2.d0\ *\ cost\ *\ car2cry(i,\ :)\ *\ (vprime\_prod(i,\ i)\ +\ vsecond(i))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00191}00191\ \ \ \ \ \ \ \ \ car2cryb(i,\ :)\ =\ car2cryb(i,\ :)\ +\ aux(:)\ *\ hessb(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00192}00192\ \ \ \ \ \ \ \ \ aux0\ =\ cost\ *\ sum(car2cry(i,\ :)**2\ *\ hessb(:))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00193}00193\ \ \ \ \ \ \ \ \ vprime\_prodb(i,\ i)\ =\ vprime\_prodb(i,\ i)\ +\ aux0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ vsecondb(i)\ =\ vsecondb(i)\ +\ aux0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00195}00195\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00196}00196\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00197}00197\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ hess(:)=hess(:)+2.d0*cost*car2cry(i,:)*car2cry(j,:)*vprime\_prod(i,j)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00199}00199\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ aux(:)\ =\ 2.d0\ *\ car2cry(i,\ :)\ *\ car2cry(j,\ :)\ *\ vprime\_prod(i,\ j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ costb\ =\ costb\ +\ sum(aux(:)\ *\ hessb(:))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ car2cryb(i,\ :)\ =\ car2cryb(i,\ :)\ +\ 2.d0\ *\ cost\ *\ car2cry(j,\ :)\ *\ vprime\_prod(i,\ j)\ *\ hessb(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ car2cryb(j,\ :)\ =\ car2cryb(j,\ :)\ +\ 2.d0\ *\ cost\ *\ car2cry(i,\ :)\ *\ vprime\_prod(i,\ j)\ *\ hessb(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ \ \ aux0\ =\ 2.d0\ *\ cost\ *\ sum(car2cry(i,\ :)\ *\ car2cry(j,\ :)\ *\ hessb(:))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ vprime\_prodb(i,\ j)\ =\ vprime\_prodb(i,\ j)\ +\ aux0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00206}00206\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00207}00207\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00208}00208\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00209}00209\ \ \ \ \ \textcolor{comment}{!\ hess(:)=grad2*gradv(:)**2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00210}00210\ \ \ \ \ grad2b\ =\ grad2b\ +\ sum(gradv(:)**2\ *\ hessb(:))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00211}00211\ \ \ \ \ gradvb(:)\ =gradvb(:)+2.d0\ *\ grad2\ *\ gradv(:)\ *\ hessb(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00212}00212\ \ \ \ \ hessb(:)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00213}00213\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00214}00214\ \ \ \ \ \textcolor{comment}{!\ \ call\ dgemv('T',3,3,1.d0,car2cry,3,vprime,1,0.d0,gradv,1)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00215}00215\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemv__b_8f90_a460c33e107c991335e02bd05428ddd7e}{dgemv\_b}}(\textcolor{stringliteral}{'T'},\ 3,\ 3,\ 1.d0,\ car2cry,\ 3,\ car2cryb,\ 3,\ vprime,\ 1,\ vprimeb,\ 1,\ 0.d0,\ gradvb,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00216}00216\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00217}00217\ \ \ \ \ \textcolor{comment}{!\ do\ i=1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00218}00218\ \ \ \ \ \textcolor{comment}{!\ \ \ \ do\ j=i+1,3}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00219}00219\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ vprime\_prod(i,j)=drc\_map(i)*metric(i,j)*drc\_map(j)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00220}00220\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ vprime\_prod(j,i)=vprime\_prod(i,j)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00221}00221\ \ \ \ \ \textcolor{comment}{!\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00222}00222\ \ \ \ \ \textcolor{comment}{!\ \ \ \ vprime\_prod(i,i)=drc\_map(i)**2*metric(i,i)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00223}00223\ \ \ \ \ \textcolor{comment}{!\ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00224}00224\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00225}00225\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ vprime\_prod(i,i)=drc\_map(i)**2*metric(i,i)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00226}00226\ \ \ \ \ \ \ \ \ drc\_mapb(i)\ =\ drc\_mapb(i)\ +\ 2.d0\ *\ drc\_map(i)\ *\ metric(i,\ i)\ *\ vprime\_prodb(i,\ i)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00227}00227\ \ \ \ \ \ \ \ \ metricb(i,\ i)\ =\ metricb(i,\ i)\ +\ drc\_map(i)**2\ *\ vprime\_prodb(i,\ i)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00228}00228\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ vprime\_prodb(i,\ j)\ =\ vprime\_prodb(j,\ i)\ +\ vprime\_prodb(i,\ j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ drc\_mapb(j)\ =\ drc\_mapb(j)\ +\ vprime\_prodb(i,\ j)\ *\ drc\_map(i)\ *\ metric(i,\ j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ drc\_mapb(i)\ =\ drc\_mapb(i)\ +\ vprime\_prodb(i,\ j)\ *\ drc\_map(j)\ *\ metric(i,\ j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ metricb(i,\ j)\ =\ metricb(i,\ j)\ +\ vprime\_prodb(i,\ j)\ *\ drc\_map(i)\ *\ drc\_map(j)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00233}00233\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00234}00234\ \textcolor{keywordflow}{\ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00235}00235\ \ \ \ \ \textcolor{comment}{!\ reverse\ of\ \ \ vprime(:)=drc\_map(:)*vprime(:)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00236}00236\ \ \ \ \ drc\_mapb(:)\ =\ drc\_mapb(:)\ +\ vprime\_before(:)\ *\ vprimeb(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00237}00237\ \ \ \ \ vprimeb(:)\ =\ vprimeb(:)\ *\ drc\_map(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00238}00238\ \ \ \ \ \textcolor{comment}{!\ \ reverse\ of\ vsecond(:)=ddrc\_map(:)*vprime(:)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00239}00239\ \ \ \ \ vprimeb(:)\ =\ vprimeb(:)\ +\ vsecondb(:)\ *\ ddrc\_map(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00240}00240\ \ \ \ \ ddrc\_mapb(:)\ =\ ddrc\_mapb(:)\ +\ vsecondb(:)\ *\ vprime\_before(:)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00241}00241\ \ \ \ \ \textcolor{comment}{!\ reverse\ of\ call\ dgemv('N',3,3,1.d0,metric,3,rc\_map,1,0.d0,vprime,1)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00242}00242\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemv__b_8f90_a460c33e107c991335e02bd05428ddd7e}{dgemv\_b}}(\textcolor{stringliteral}{'N'},\ 3,\ 3,\ 1.d0,\ metric,\ 3,\ metricb,\ 3,\ rc\_map,\ 1,\ rc\_mapb,\ 1,\ 0.d0,\ vprimeb,\ 1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00243}00243\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00244}00244\ \ \ \ \ \textcolor{comment}{!\ grad2=(grad2\_before-\/cost)/r**2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00245}00245\ \ \ \ \ costb\ =\ -\/grad2b\ /\ r**2\ +\ costb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00246}00246\ \ \ \ \ grad2\_beforeb\ =\ grad2b\ /\ r**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00247}00247\ \ \ \ \ rb\ =\ rb\ -\/\ 2.d0\ *\ (grad2\_before\ -\/\ cost)\ /\ r**3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00248}00248\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00249}00249\ \ \ \ \ \textcolor{comment}{!\ reverse\ of}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00250}00250\ \ \ \ \ \textcolor{comment}{!\ \ cost=grad/r}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00251}00251\ \ \ \ \ gradb\ =\ gradb\ +\ costb\ /\ r}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00252}00252\ \ \ \ \ rb\ =\ rb\ -\/\ grad\ /\ r**2\ *\ costb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00253}00253\ }
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00254}00254\ \ \ \ \ grad2b\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00255}00255\ \ \ \ \ gradvb\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00256}00256\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00257}00257\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_af5b5fff88b4b5d039d48cf8c5afba1f2}{update\_all\_b}}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00258}00258\ \textcolor{comment}{!\ \ \ \ \ \ \ \ Generated\ by\ TAPENADE\ \ \ \ \ (INRIA,\ Tropics\ team)}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00259}00259\ \textcolor{comment}{!\ \ Tapenade\ 3.3\ (r3163)\ -\/\ 09/25/2009\ 09:03}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00260}00260\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00261}00261\ \textcolor{comment}{!\ \ Differentiation\ of\ update\_jgrad\ in\ reverse\ (adjoint)\ mode:}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00262}00262\ \textcolor{comment}{!\ \ \ gradient,\ with\ respect\ to\ input\ variables:\ grad2\ r\ grad\ vj}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00263}00263\ \textcolor{comment}{!\ \ \ of\ linear\ combination\ of\ output\ variables:\ grad2\ r\ grad\ vj}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00264}\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_ad1980cfc9e69b2d4f5a0bc8349f0bf99}{00264}}\ \textcolor{keyword}{SUBROUTINE\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_ad1980cfc9e69b2d4f5a0bc8349f0bf99}{update\_jgrad\_b}}(iesd,\ ispin,\ r,\ rb,\ vj,\ vjb,\ jastrow,\ grad,\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00265}00265\ \ \ \ \ \ \ \ \ \&\ \ gradb,\ grad2,\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00266}00266\ \ \ \ \ \textcolor{keywordtype}{IMPLICIT\ NONE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00267}00267\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ iesd,\ ispin}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00268}00268\ \ \ \ \ real*8\ ::\ r,\ \mbox{\hyperlink{jastrow__exp_8f90_ab0e8d8005ef421ddb32c07ceee6c84fc}{jastrow}},\ grad,\ grad2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00269}00269\ \ \ \ \ real*8\ ::\ rb,\ gradb,\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00270}00270\ \ \ \ \ real*8\ ::\ fat,\ aux,\ aux2,\ aux3,\ vj(*)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00271}00271\ \ \ \ \ real*8\ ::\ fatb,\ auxb,\ aux2b,\ aux3b,\ vjb(*)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00272}00272\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ ::\ branch}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00273}00273\ \ \ \ \ real*8\ ::\ temp3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00274}00274\ \ \ \ \ real*8\ ::\ temp2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00275}00275\ \ \ \ \ real*8\ ::\ temp1}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00276}00276\ \ \ \ \ real*8\ ::\ temp0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00277}00277\ \ \ \ \ real*8\ ::\ temp13b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00278}00278\ \ \ \ \ real*8\ ::\ temp21b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00279}00279\ \ \ \ \ real*8\ ::\ temp24}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00280}00280\ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ dexp}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00281}00281\ \ \ \ \ real*8\ ::\ temp23}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00282}00282\ \ \ \ \ real*8\ ::\ temp22}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00283}00283\ \ \ \ \ real*8\ ::\ temp9b0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00284}00284\ \ \ \ \ real*8\ ::\ temp21}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00285}00285\ \ \ \ \ real*8\ ::\ temp20}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00286}00286\ \ \ \ \ real*8\ ::\ temp19b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00287}00287\ \ \ \ \ real*8\ ::\ tempb1}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00288}00288\ \ \ \ \ real*8\ ::\ tempb0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00289}00289\ \ \ \ \ real*8\ ::\ temp3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00290}00290\ \ \ \ \ real*8\ ::\ temp19}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00291}00291\ \ \ \ \ real*8\ ::\ temp18}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00292}00292\ \ \ \ \ real*8\ ::\ temp17}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00293}00293\ \ \ \ \ real*8\ ::\ temp16}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00294}00294\ \ \ \ \ real*8\ ::\ temp12b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00295}00295\ \ \ \ \ real*8\ ::\ temp6b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00296}00296\ \ \ \ \ real*8\ ::\ temp15}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00297}00297\ \ \ \ \ real*8\ ::\ temp20b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00298}00298\ \ \ \ \ real*8\ ::\ temp14}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00299}00299\ \ \ \ \ real*8\ ::\ temp13}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00300}00300\ \ \ \ \ real*8\ ::\ temp12}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00301}00301\ \ \ \ \ real*8\ ::\ temp11}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00302}00302\ \ \ \ \ real*8\ ::\ temp10}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00303}00303\ \ \ \ \ real*8\ ::\ temp15b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00304}00304\ \ \ \ \ real*8\ ::\ temp9b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00305}00305\ \ \ \ \ real*8\ ::\ temp18b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00306}00306\ \ \ \ \ real*8\ ::\ tempb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00307}00307\ \ \ \ \ real*8\ ::\ temp2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00308}00308\ \ \ \ \ real*8\ ::\ temp11b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00309}00309\ \ \ \ \ real*8\ ::\ temp5b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00310}00310\ \ \ \ \ \textcolor{keywordtype}{INTRINSIC}\ log}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00311}00311\ \ \ \ \ real*8\ ::\ temp14b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00312}00312\ \ \ \ \ real*8\ ::\ temp22b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00313}00313\ \ \ \ \ real*8\ ::\ temp1b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00314}00314\ \ \ \ \ real*8\ ::\ temp}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00315}00315\ \ \ \ \ real*8\ ::\ temp1b5}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00316}00316\ \ \ \ \ real*8\ ::\ temp1b4}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00317}00317\ \ \ \ \ real*8\ ::\ temp1b3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00318}00318\ \ \ \ \ real*8\ ::\ temp1b2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00319}00319\ \ \ \ \ real*8\ ::\ temp9}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00320}00320\ \ \ \ \ real*8\ ::\ temp1b1}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00321}00321\ \ \ \ \ real*8\ ::\ temp8}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00322}00322\ \ \ \ \ real*8\ ::\ temp1b0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00323}00323\ \ \ \ \ real*8\ ::\ temp7}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00324}00324\ \ \ \ \ real*8\ ::\ temp10b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00325}00325\ \ \ \ \ real*8\ ::\ temp6}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00326}00326\ \ \ \ \ real*8\ ::\ temp4b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00327}00327\ \ \ \ \ real*8\ ::\ temp5}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00328}00328\ \ \ \ \ real*8\ ::\ temp4}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00329}00329\ \ \ \ \ \textcolor{comment}{!\ input\ r\ output\ jastrow,\ grad,\ grad2}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00330}00330\ \ \ \ \ \textcolor{keywordflow}{SELECT\ CASE}\ \ (iesd)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00331}00331\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (4)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00332}00332\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ compute\ radial\ Jastrow\ function\ and\ its\ first\ and\ second\ derivatives\ at\ r}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00333}00333\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ done\ only\ for\ case(4)\ and\ case(-\/4),\ work\ in\ progress\ for\ the\ others}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00334}00334\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/(vj(1)\ *\ r))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00335}00335\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin\ .LT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ fatb\ =\ 0.5d0\ *\ gradb\ -\/\ 0.5d0\ *\ vj(1)\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ 0.5d0\ *\ fat\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00338}00338\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ fatb\ =\ 0.25d0\ *\ gradb\ -\/\ 0.25d0\ *\ vj(1)\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00340}00340\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ 0.25d0\ *\ fat\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00341}00341\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00342}00342\ \ \ \ \ \ \ \ \ tempb\ =\ fat\ *\ fatb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00343}00343\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ r\ *\ tempb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00344}00344\ \ \ \ \ \ \ \ \ rb\ =\ rb\ -\/\ vj(1)\ *\ tempb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00345}00345\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (-\/4)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00346}00346\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/(vj(1)\ *\ r))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00347}00347\ \ \ \ \ \ \ \ \ fatb\ =\ 0.5d0\ *\ gradb\ -\/\ 0.5d0\ *\ vj(1)\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00348}00348\ \ \ \ \ \ \ \ \ tempb0\ =\ fat\ *\ fatb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00349}00349\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ r\ *\ tempb0\ -\/\ 0.5d0\ *\ fat\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00350}00350\ \ \ \ \ \ \ \ \ rb\ =\ rb\ -\/\ vj(1)\ *\ tempb0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00351}00351\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (8)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00352}00352\ \ \ \ \ \ \ \ \ fat\ =\ dexp(-\/(vj(1)\ *\ r**3))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00353}00353\ \ \ \ \ \ \ \ \ temp1b\ =\ fat\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00354}00354\ \ \ \ \ \ \ \ \ temp0\ =\ r**4}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00355}00355\ \ \ \ \ \ \ \ \ fatb\ =\ 3.d0\ *\ r**2\ *\ gradb\ +\ (6.d0\ *\ r\ -\/\ 9.d0\ *\ (vj(1)\ *\ temp0))\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00356}00356\ \ \ \ \ \ \ \ \ temp\ =\ r**3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00357}00357\ \ \ \ \ \ \ \ \ tempb1\ =\ fat\ *\ fatb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00358}00358\ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ 3.d0\ *\ fat\ *\ 2\ *\ r\ *\ gradb\ -\/\ vj(1)\ *\ 3\ *\ r**2\ *\ tempb1\ +\ (6.d0\ -\/\ 9.d0\ *\ vj(1\&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&)\ *\ 4\ *\ r**3)\ *\ temp1b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00360}00360\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ temp\ *\ tempb1\ -\/\ 9.d0\ *\ temp0\ *\ temp1b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00361}00361\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00362}00362\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0\ /\ (1.d0\ +\ vj(1)\ *\ r)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00363}00363\ \ \ \ \ \ \ \ \ aux2\ =\ aux\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00364}00364\ \ \ \ \ \ \ \ \ aux3\ =\ aux2\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00365}00365\ \ \ \ \ \ \ \ \ aux3b\ =\ -\/(vj(1)\ *\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00366}00366\ \ \ \ \ \ \ \ \ aux2b\ =\ aux\ *\ aux3b\ +\ 0.5d0\ *\ gradb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00367}00367\ \ \ \ \ \ \ \ \ auxb\ =\ 2\ *\ aux\ *\ aux2b\ +\ aux2\ *\ aux3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00368}00368\ \ \ \ \ \ \ \ \ temp1b0\ =\ -\/(auxb\ /\ (vj(1)\ *\ r\ +\ 1.d0)**2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00369}00369\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ r\ *\ temp1b0\ -\/\ aux3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00370}00370\ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ vj(1)\ *\ temp1b0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00371}00371\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00372}00372\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin\ .GT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ 1.d0\ /\ (1.d0\ +\ vj(2)\ *\ r)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ aux2\ =\ aux\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ aux3\ =\ 0.5d0\ *\ aux2\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ aux3b\ =\ -\/(vj(2)\ *\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ 0.5d0\ *\ aux\ *\ aux3b\ +\ 0.25d0\ *\ gradb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ \ \ auxb\ =\ 2\ *\ aux\ *\ aux2b\ +\ 0.5d0\ *\ aux2\ *\ aux3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00379}00379\ \ \ \ \ \ \ \ \ \ \ \ \ temp1b1\ =\ -\/(auxb\ /\ (vj(2)\ *\ r\ +\ 1.d0)**2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ r\ *\ temp1b1\ -\/\ aux3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00381}00381\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ vj(2)\ *\ temp1b1}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00382}00382\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ 1.d0\ /\ (1.d0\ +\ vj(1)\ *\ r)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00384}00384\ \ \ \ \ \ \ \ \ \ \ \ \ aux2\ =\ aux\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ aux3\ =\ aux2\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ aux3b\ =\ -\/(vj(1)\ *\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ aux\ *\ aux3b\ +\ 0.5d0\ *\ gradb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ \ \ auxb\ =\ 2\ *\ aux\ *\ aux2b\ +\ aux2\ *\ aux3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ temp1b2\ =\ -\/(auxb\ /\ (vj(1)\ *\ r\ +\ 1.d0)**2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ r\ *\ temp1b2\ -\/\ aux3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ vj(1)\ *\ temp1b2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00392}00392\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00393}00393\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (-\/1)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00394}00394\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ cusp\ condition\ for\ parallel\ electrons}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00395}00395\ \ \ \ \ \ \ \ \ aux\ =\ 1.d0\ /\ (1.d0\ +\ vj(1)\ *\ r)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00396}00396\ \ \ \ \ \ \ \ \ aux2\ =\ aux\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00397}00397\ \ \ \ \ \ \ \ \ aux3\ =\ aux2\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00398}00398\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin\ .GT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ 0.5d0\ *\ aux3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ aux3b\ =\ -\/(0.5d0\ *\ vj(1)\ *\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ 0.25d0\ *\ gradb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00402}00402\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ -\/\ aux3\ *\ grad2b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00404}00404\ \ \ \ \ \ \ \ \ \ \ \ \ aux3b\ =\ -\/(vj(1)\ *\ grad2b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ 0.5d0\ *\ gradb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00406}00406\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00407}00407\ \ \ \ \ \ \ \ \ aux2b\ =\ aux2b\ +\ aux\ *\ aux3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00408}00408\ \ \ \ \ \ \ \ \ auxb\ =\ 2\ *\ aux\ *\ aux2b\ +\ aux2\ *\ aux3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00409}00409\ \ \ \ \ \ \ \ \ temp1b3\ =\ -\/(auxb\ /\ (vj(1)\ *\ r\ +\ 1.d0)**2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00410}00410\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ r\ *\ temp1b3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00411}00411\ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ vj(1)\ *\ temp1b3}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00412}00412\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (9)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00413}00413\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ not\ coded\ yet}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00414}00414\ \ \ \ \ \ \ \ \ aux2\ =\ vj(2)\ *\ (1\ +\ vj(1))\ /\ (4.d0\ *\ vj(1))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00415}00415\ \ \ \ \ \ \ \ \ aux\ =\ (1.d0\ -\/\ r\ /\ vj(2))**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00416}00416\ \ \ \ \ \ \ \ \ fat\ =\ 1.d0\ +\ vj(1)\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00417}00417\ \ \ \ \ \ \ \ \ temp8\ =\ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00418}00418\ \ \ \ \ \ \ \ \ temp5\ =\ vj(1)\ *\ aux\ /\ temp8}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00419}00419\ \ \ \ \ \ \ \ \ temp7\ =\ vj(2)**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00420}00420\ \ \ \ \ \ \ \ \ temp6b\ =\ -\/((2.d0\ /\ fat\ -\/\ 4.d0\ *\ temp5)\ *\ grad2b\ /\ temp7)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00421}00421\ \ \ \ \ \ \ \ \ temp6\ =\ aux2\ *\ vj(1)\ /\ temp7}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00422}00422\ \ \ \ \ \ \ \ \ temp5b\ =\ temp6\ *\ 4.d0\ *\ grad2b\ /\ temp8}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00423}00423\ \ \ \ \ \ \ \ \ temp2\ =\ vj(2)\ *\ fat}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00424}00424\ \ \ \ \ \ \ \ \ temp4\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00425}00425\ \ \ \ \ \ \ \ \ temp3b\ =\ 2.d0\ *\ (1.d0\ -\/\ temp4)\ *\ gradb\ /\ temp2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00426}00426\ \ \ \ \ \ \ \ \ aux2b\ =\ vj(1)\ *\ temp3b\ +\ vj(1)\ *\ temp6b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00427}00427\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux\ *\ temp5b\ +\ aux2\ *\ temp6b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00428}00428\ \ \ \ \ \ \ \ \ temp3\ =\ aux2\ *\ vj(1)\ /\ temp2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00429}00429\ \ \ \ \ \ \ \ \ temp4b\ =\ -\/(2.d0\ *\ temp3\ *\ gradb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00430}00430\ \ \ \ \ \ \ \ \ temp2b\ =\ -\/(temp3\ *\ temp3b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00431}00431\ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ fat\ *\ temp2b\ -\/\ temp4\ *\ temp4b\ -\/\ temp6\ *\ 2\ *\ vj(2)\ *\ temp6b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00432}00432\ \ \ \ \ \ \ \ \ fatb\ =\ vj(2)\ *\ temp2b\ -\/\ temp5\ *\ 2\ *\ fat\ *\ temp5b\ +\ temp6\ *\ 2.d0\ *\ grad2b\ /\ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00433}00433\ \ \ \ \ \ \ \ \ auxb\ =\ vj(1)\ *\ fatb\ +\ vj(1)\ *\ temp5b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00434}00434\ \ \ \ \ \ \ \ \ temp1\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00435}00435\ \ \ \ \ \ \ \ \ temp1b4\ =\ -\/(2\ *\ (1.d0\ -\/\ temp1)\ *\ auxb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00436}00436\ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ temp1b4\ +\ temp4b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00437}00437\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux\ *\ fatb\ +\ aux2\ *\ temp3b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00438}00438\ \ \ \ \ \ \ \ \ temp1b5\ =\ aux2b\ /\ (4.d0\ *\ vj(1))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00439}00439\ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ (vj(1)\ +\ 1)\ *\ temp1b5\ -\/\ temp1\ *\ temp1b4}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00440}00440\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ (vj(2)\ -\/\ vj(2)\ *\ (vj(1)\ +\ 1)\ /\ vj(1))\ *\ temp1b5}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00441}00441\ \ \ \ \ \textcolor{keywordflow}{CASE}\ (10)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00442}00442\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ not\ coded\ yet}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00443}00443\ \ \ \ \ \ \ \ \ aux2\ =\ vj(2)\ *\ (1\ +\ vj(1))\ /\ (4.d0\ *\ vj(1))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00444}00444\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin\ .GT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00445}00445\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ (1.d0\ -\/\ 0.5d0\ *\ r\ /\ vj(2))**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00446}00446\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00447}00447\ \ \ \ \ \ \ \ \ \ \ \ \ aux\ =\ (1.d0\ -\/\ r\ /\ vj(2))**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00448}00448\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00449}00449\ \ \ \ \ \ \ \ \ fat\ =\ 1.d0\ +\ vj(1)\ *\ aux}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00450}00450\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin\ .GT.\ 0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00451}00451\ \ \ \ \ \ \ \ \ \ \ \ \ temp17\ =\ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ temp14\ =\ vj(1)\ *\ aux\ /\ temp17}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ temp16\ =\ vj(2)**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00454}00454\ \ \ \ \ \ \ \ \ \ \ \ \ temp15b\ =\ -\/((0.5d0\ /\ fat\ -\/\ temp14)\ *\ grad2b\ /\ temp16)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00455}00455\ \ \ \ \ \ \ \ \ \ \ \ \ temp15\ =\ aux2\ *\ vj(1)\ /\ temp16}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00456}00456\ \ \ \ \ \ \ \ \ \ \ \ \ temp14b\ =\ temp15\ *\ grad2b\ /\ temp17}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ temp11\ =\ vj(2)\ *\ fat}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00458}00458\ \ \ \ \ \ \ \ \ \ \ \ \ temp13\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00459}00459\ \ \ \ \ \ \ \ \ \ \ \ \ temp12b\ =\ (1.d0\ -\/\ 0.5d0\ *\ temp13)\ *\ gradb\ /\ temp11}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00460}00460\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ vj(1)\ *\ temp12b\ +\ vj(1)\ *\ temp15b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00461}00461\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux\ *\ temp14b\ +\ aux2\ *\ temp15b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00462}00462\ \ \ \ \ \ \ \ \ \ \ \ \ temp12\ =\ aux2\ *\ vj(1)\ /\ temp11}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00463}00463\ \ \ \ \ \ \ \ \ \ \ \ \ temp13b\ =\ -\/(temp12\ *\ 0.5d0\ *\ gradb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00464}00464\ \ \ \ \ \ \ \ \ \ \ \ \ temp11b\ =\ -\/(temp12\ *\ temp12b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00465}00465\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ fat\ *\ temp11b\ -\/\ temp13\ *\ temp13b\ -\/\ temp15\ *\ 2\ *\ vj(2)\ *\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00466}00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ temp15b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00467}00467\ \ \ \ \ \ \ \ \ \ \ \ \ fatb\ =\ vj(2)\ *\ temp11b\ -\/\ temp14\ *\ 2\ *\ fat\ *\ temp14b\ +\ temp15\ *\ 0.5d0\ *\ grad2b\ /\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00468}00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00469}00469\ \ \ \ \ \ \ \ \ \ \ \ \ auxb\ =\ vj(1)\ *\ temp14b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00470}00470\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ temp13b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00471}00471\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux2\ *\ temp12b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00472}00472\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00473}00473\ \ \ \ \ \ \ \ \ \ \ \ \ temp24\ =\ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00474}00474\ \ \ \ \ \ \ \ \ \ \ \ \ temp21\ =\ vj(1)\ *\ aux\ /\ temp24}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00475}00475\ \ \ \ \ \ \ \ \ \ \ \ \ temp23\ =\ vj(2)**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00476}00476\ \ \ \ \ \ \ \ \ \ \ \ \ temp22b\ =\ -\/((2.d0\ /\ fat\ -\/\ 4.d0\ *\ temp21)\ *\ grad2b\ /\ temp23)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00477}00477\ \ \ \ \ \ \ \ \ \ \ \ \ temp22\ =\ aux2\ *\ vj(1)\ /\ temp23}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00478}00478\ \ \ \ \ \ \ \ \ \ \ \ \ temp21b\ =\ temp22\ *\ 4.d0\ *\ grad2b\ /\ temp24}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00479}00479\ \ \ \ \ \ \ \ \ \ \ \ \ temp18\ =\ vj(2)\ *\ fat}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00480}00480\ \ \ \ \ \ \ \ \ \ \ \ \ temp20\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00481}00481\ \ \ \ \ \ \ \ \ \ \ \ \ temp19b\ =\ 2.d0\ *\ (1.d0\ -\/\ temp20)\ *\ gradb\ /\ temp18}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00482}00482\ \ \ \ \ \ \ \ \ \ \ \ \ aux2b\ =\ vj(1)\ *\ temp19b\ +\ vj(1)\ *\ temp22b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00483}00483\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux\ *\ temp21b\ +\ aux2\ *\ temp22b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00484}00484\ \ \ \ \ \ \ \ \ \ \ \ \ temp19\ =\ aux2\ *\ vj(1)\ /\ temp18}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00485}00485\ \ \ \ \ \ \ \ \ \ \ \ \ temp20b\ =\ -\/(2.d0\ *\ temp19\ *\ gradb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00486}00486\ \ \ \ \ \ \ \ \ \ \ \ \ temp18b\ =\ -\/(temp19\ *\ temp19b)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00487}00487\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ fat\ *\ temp18b\ -\/\ temp20\ *\ temp20b\ -\/\ temp22\ *\ 2\ *\ vj(2)\ *\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00488}00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ temp22b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ fatb\ =\ vj(2)\ *\ temp18b\ -\/\ temp21\ *\ 2\ *\ fat\ *\ temp21b\ +\ temp22\ *\ 2.d0\ *\ grad2b\ /\ \&}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00490}00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ fat**2}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00491}00491\ \ \ \ \ \ \ \ \ \ \ \ \ auxb\ =\ vj(1)\ *\ temp21b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00492}00492\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ temp20b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00493}00493\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux2\ *\ temp19b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00494}00494\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00495}00495\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ aux\ *\ fatb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00496}00496\ \ \ \ \ \ \ \ \ auxb\ =\ auxb\ +\ vj(1)\ *\ fatb}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00497}00497\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{IF}\ (ispin.gt.0)\ \textcolor{keywordflow}{THEN}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00498}00498\ \ \ \ \ \ \ \ \ \ \ \ \ temp9\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00499}00499\ \ \ \ \ \ \ \ \ \ \ \ \ temp9b0\ =\ -\/(2\ *\ (1.d0\ -\/\ 0.5d0\ *\ temp9)\ *\ 0.5d0\ *\ auxb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00500}00500\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ temp9b0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00501}00501\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ -\/\ temp9\ *\ temp9b0}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00502}00502\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{ELSE}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00503}00503\ \ \ \ \ \ \ \ \ \ \ \ \ temp10\ =\ r\ /\ vj(2)}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00504}00504\ \ \ \ \ \ \ \ \ \ \ \ \ temp10b\ =\ -\/(2\ *\ (1.d0\ -\/\ temp10)\ *\ auxb\ /\ vj(2))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00505}00505\ \ \ \ \ \ \ \ \ \ \ \ \ rb\ =\ rb\ +\ temp10b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ -\/\ temp10\ *\ temp10b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00507}00507\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ END\ IF}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00508}00508\ \ \ \ \ \ \ \ \ temp9b\ =\ aux2b\ /\ (4.d0\ *\ vj(1))}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00509}00509\ \ \ \ \ \ \ \ \ vjb(2)\ =\ vjb(2)\ +\ (vj(1)\ +\ 1)\ *\ temp9b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00510}00510\ \ \ \ \ \ \ \ \ vjb(1)\ =\ vjb(1)\ +\ (vj(2)\ -\/\ vj(2)\ *\ (vj(1)\ +\ 1)\ /\ vj(1))\ *\ temp9b}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00511}00511\ \textcolor{keywordflow}{\ \ \ \ CASE\ DEFAULT}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00512}00512\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00513}00513\ \textcolor{keywordflow}{\ \ \ \ END\ SELECT}}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00514}00514\ \ \ \ \ grad2b\ =\ 0.0\_8}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00515}00515\ \ \ \ \ gradb\ =\ 0.0\_8}
+\DoxyCodeLine{\Hypertarget{jastrowgrad__pbc__b_8f90_source_l00516}00516\ \textcolor{keyword}{END\ SUBROUTINE\ }\mbox{\hyperlink{jastrowgrad__pbc__b_8f90_ad1980cfc9e69b2d4f5a0bc8349f0bf99}{update\_jgrad\_b}}}
+
+\end{DoxyCode}

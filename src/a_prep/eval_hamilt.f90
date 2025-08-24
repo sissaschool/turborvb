@@ -13,6 +13,31 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Evaluates Hamiltonian eigenvalues and eigenvectors in non-orthogonal basis
+!> @details This subroutine computes the first bands eigenvectors of a Hamiltonian
+!>          defined in a non-orthogonal basis. It handles ill-conditioned overlap
+!>          matrices by applying a stable diagonalization algorithm that removes
+!>          singular eigenvalues and reorthogonalizes eigenvectors. Supports both
+!>          serial and parallel (SCALAPACK) execution with different algorithms
+!>          for each case.
+!> @param[in] nelorb_c Number of basis functions
+!> @param[in] oversav Overlap matrix (not destroyed on output)
+!> @param[in] matsav Hamiltonian matrix (not destroyed on output)
+!> @param[out] molecorb Eigenvectors in original basis
+!> @param[out] eig Eigenvalues
+!> @param[in] lda Leading dimension of arrays
+!> @param[in] epsr Tolerance for eigenvalue filtering
+!> @param[in] eps_mach Machine precision
+!> @param[in] rank Rank of current process
+!> @param[in] optprint Print option flag
+!> @param[in] lworkr Work array size
+!> @param[in] iopt Option flag (1: initialization, 0: iteration)
+!> @param[in] premat Preconditioning matrix
+!> @param[out] eigmat Eigenvalue matrix
+!> @param[out] info Status flag
+!> @param[in] bands Number of bands to compute
+!> @param[in] nlax Leading dimension for SCALAPACK arrays
+!> @param[in] mincond Minimum condition number
 subroutine eval_hamilt(nelorb_c, oversav, matsav&
         &, molecorb, eig, lda, epsr, eps_mach, rank, optprint, lworkr, iopt&
         &, premat, eigmat, info, bands, nlax, mincond)
@@ -288,7 +313,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
 
 !     Here iopt=0  the standard one.
 
-            call pdspev_drv_ss('V', diag, nrlx, eig, vv, nrlx, desc(la_nrl_), n,&
+            call pdspev_drv_ss('V', diag, nrlx, eig, vv, nrlx, desc(la_nrl_), n, &
         & desc(la_npr_)*desc(la_npc_), desc(la_me_), desc(la_comm_), eps_mach, 0)
             !
             !  Redistribute matrix "vv" into "s"

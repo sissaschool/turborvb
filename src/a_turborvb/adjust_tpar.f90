@@ -13,8 +13,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-! sobroutine to automatically change tpar (the learning rate) during the
-
+!> @brief      Automatically adjust learning rate (tpar) during optimization
+!> @details    This subroutine automatically adjusts the learning rate (tpar) during
+!>             optimization based on the stability of energy and error measurements.
+!>             It monitors running averages and standard deviations of energy and error,
+!>             and increases or decreases tpar accordingly to maintain stable optimization.
+!>             The algorithm includes mechanisms to handle unstable behavior and
+!>             maintain a list of stable tpar values.
+!> @param[in]  i_main       Main iteration counter
+!> @param[in]  nweight      Number of weights
+!> @param[in]  energy       Current energy value
+!> @param[in]  error_energy Current energy error
+!> @param[in,out] tpar      Learning rate (adjusted by this subroutine)
+!> @param[in]  ngentry      Number of entries
+!> @param[in]  itestr4      Test parameter
 subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, itestr4)
 
     use allio, only: energy_list, error_energy_list, tpar_buffer_filled, &

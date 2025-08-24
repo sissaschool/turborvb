@@ -1,0 +1,169 @@
+\doxysection{zgemm\+\_\+b.\+f90}
+\hypertarget{zgemm__b_8f90_source}{}\label{zgemm__b_8f90_source}\index{src/c\_adjoint\_backward/zgemm\_b.f90@{src/c\_adjoint\_backward/zgemm\_b.f90}}
+\mbox{\hyperlink{zgemm__b_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00002}\mbox{\hyperlink{zgemm__b_8f90_a9057e4e66317074bc2de46f24cf66bed}{00002}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_a9057e4e66317074bc2de46f24cf66bed}{zgemm\_b}}(TRANSA,\ TRANSB,\ M,\ N,\ K,\ ALPHA,\ A,\ LDA,\ AB,\ LDAB,\ B,\ LDB,\ BB\&}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00003}00003\ \ \ \ \ \ \ \ \ \&,\ LDBB,\ BETA,\ CB,\ LDCB)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00004}00004\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}\ :\ \mbox{\hyperlink{namespaceconstants_afb527924a33f7c6dab078f97c310e95e}{zzero}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00005}00005\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00006}00006\ \ \ \ \ \textcolor{keywordtype}{CHARACTER*1}\ \ \ \ \ \ \ \ TRANSA,\ TRANSB}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00007}00007\ \ \ \ \ \textcolor{keywordtype}{CHARACTER*1}\ \ \ \ \ \ \ \ TRANSAB,\ TRANSBB}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00008}00008\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ I,J,M,\ N,\ K,\ LDA,\ LDAB,\ LDB,\ LDBB,\ LDCB}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00009}00009\ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ \ \ ALPHA,\ BETA,\ alphac,betac}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00010}00010\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00011}00011\ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ \ A(LDA,\ *),\ B(LDB,\ *)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00012}00012\ \ \ \ \ \textcolor{keywordtype}{COMPLEX*16}\ \ \ AB(LDAB,\ *),\ BB(LDBB,\ *),\ CB(LDCB,\ *)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00013}00013\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00014}00014\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ true\ dimensions:}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00016}00016\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ C(M,N)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00018}00018\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ CASE\ \ \ \ \ \ 'N'\ \ \ \ \ \ \ \ \ \ \ \ \ 'T'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00019}00019\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A(M,K)\ \ \ \ \ \ \ \ \ \ \ A(K,M)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00020}00020\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 'N'\ \ \ \ \ \ \ \ \ \ \ \ 'T'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00021}00021\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ B(K,N)\ \ \ \ \ \ \ \ \ \ \ B(N,K)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00022}00022\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ C\ is\ not\ used\ and\ is\ not\ passed.}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00023}00023\ \ \ \ \ \textcolor{comment}{!\ \ \ \ CB\ is\ instead\ used\ as\ an\ input\ and\ is\ modified\ in\ output}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00024}00024\ \ \ \ \ \textcolor{comment}{!\ \ \ \ A\ and\ B\ are\ input\ not\ modified\ output\ \ with\ some\ trick\ (see\ conja\ conjb\ ..)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00025}00025\ \ \ \ \ \textcolor{comment}{!\ \ \ \ Output\ \ AB\ and\ BB\ and\ CB}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00026}00026\ \ \ \ \ alphac\ =\ conjg(alpha)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00027}00027\ \ \ \ \ betac\ =\ conjg(beta)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00028}00028\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordflow}{if}(transa.eq.\textcolor{stringliteral}{'n'}.or.transa.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00030}00030\ \ \ \ \ \ \ \ \ transab\ =\ \textcolor{stringliteral}{'N'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ transab\ =\ \textcolor{stringliteral}{'T'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00033}00033\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordflow}{if}(transb.eq.\textcolor{stringliteral}{'n'}.or.transb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ transbb\ =\ \textcolor{stringliteral}{'N'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ transbb\ =\ \textcolor{stringliteral}{'T'}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00039}00039\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordflow}{if}(transab.eq.\textcolor{stringliteral}{'N'}.and.transbb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'C'},\ m,\ k,\ n,\ alphac,\ cb,\ ldcb,\ b,\ ldb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'N'},\ k,\ n,\ m,\ alphac,\ a,\ lda,\ cb,\ ldcb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00044}00044\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.eq.\textcolor{stringliteral}{'T'}.and.transbb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjar}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjbr}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ k,\ m,\ n,\ alphac,\ b,\ ldb,\ cb,\ ldcb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ k,\ n,\ m,\ alphac,\ a,\ lda,\ cb,\ ldcb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjar}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjbr}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00051}00051\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.eq.\textcolor{stringliteral}{'N'}.and.transbb.eq.\textcolor{stringliteral}{'T'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a78a80712ad9f77d5adb06ed68bb993f7}{conja}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjb}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ k,\ n,\ alphac,\ cb,\ ldcb,\ b,\ ldb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ k,\ m,\ alphac,\ cb,\ ldcb,\ a,\ lda,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a78a80712ad9f77d5adb06ed68bb993f7}{conja}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }conjb}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.eq.\textcolor{stringliteral}{'T'}.and.transbb.eq.\textcolor{stringliteral}{'T'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'C'},\ \textcolor{stringliteral}{'T'},\ k,\ m,\ n,\ alphac,\ b,\ ldb,\ cb,\ ldcb,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__tn_8f_a2221a0c78dd988f0f09bcfe895a897d8}{zgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'C'},\ n,\ k,\ m,\ alphac,\ cb,\ ldcb,\ a,\ lda,\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00061}00061\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_af6426d137040fcca9e002200caf28f37}{zscalmatrix}}(m,n,betac,cb,ldcb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00064}00064\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00066}00066\ \textcolor{keyword}{contains}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00068}\mbox{\hyperlink{zgemm__b_8f90_a78a80712ad9f77d5adb06ed68bb993f7}{00068}}\ \ \ \ \ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_a78a80712ad9f77d5adb06ed68bb993f7}{conja}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{integer}\ i,\ j}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00071}00071\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ j\ =\ 1,\ k}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00072}00072\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ i\ =\ 1,\ m}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00073}00073\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(i,\ j)\ =\ dconjg(a(i,\ j))}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00074}00074\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00075}00075\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00076}00076\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{conjmat\_}}(m,k,a,lda)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00077}00077\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_a78a80712ad9f77d5adb06ed68bb993f7}{conja}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keyword}{subroutine\ }conjar}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00081}00081\ \textcolor{comment}{!\ \ \ \ \ \ \ integer\ i,\ j}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00082}00082\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ j\ =\ 1,\ m}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00083}00083\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ i\ =\ 1,\ k}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00084}00084\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(i,\ j)\ =\ dconjg(a(i,\ j))}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00085}00085\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00086}00086\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00087}00087\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{conjmat\_}}(k,m,a,lda)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }conjar}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00090}00090\ \ \ \ \ \textcolor{keyword}{subroutine\ }conjb}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00092}00092\ \textcolor{comment}{!\ \ \ \ \ \ \ integer\ i,\ j}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00093}00093\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ j\ =\ 1,\ k}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00094}00094\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ i\ =\ 1,\ n}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00095}00095\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ dconjg(b(i,\ j))}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00096}00096\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00097}00097\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{conjmat\_}}(n,k,b,ldb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00099}00099\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }conjb}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00101}00101\ \ \ \ \ \textcolor{keyword}{subroutine\ }conjbr}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00103}00103\ \textcolor{comment}{!\ \ \ \ \ \ \ integer\ i,\ j}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00104}00104\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ j\ =\ 1,\ n}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00105}00105\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ i\ =\ 1,\ k}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00106}00106\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b(i,\ j)\ =\ dconjg(b(i,\ j))}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00107}00107\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00108}00108\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00109}00109\ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{conjmat\_}}(k,n,b,ldb)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00110}00110\ \ \ \ \ \textcolor{keyword}{end\ subroutine\ }conjbr}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00111}00111\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_a9057e4e66317074bc2de46f24cf66bed}{zgemm\_b}}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00112}\mbox{\hyperlink{zgemm__b_8f90_af6426d137040fcca9e002200caf28f37}{00112}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_af6426d137040fcca9e002200caf28f37}{zscalmatrix}}(m,n,alpha,a,lda)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00113}00113\ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00114}00114\ \textcolor{keywordtype}{integer}\ i,j,n,m,lda}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00115}00115\ \textcolor{keywordtype}{complex*16}\ \ alpha,a(lda*(n-\/1)+m)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00116}00116\ \textcolor{keywordtype}{complex*16},\ \textcolor{keywordtype}{parameter}::\ zero=dcmplx(0.d0,0.d0)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00117}00117\ \textcolor{keywordflow}{if}(alpha.ne.zero)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00118}00118\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00119}00119\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00120}00120\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00121}00121\ \textcolor{preprocessor}{}\textcolor{keywordflow}{do}\ j=1,n}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00122}00122\ \ \textcolor{keywordflow}{do}\ i=1,m}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00123}00123\ \ a(lda*(j-\/1)+i)=a(lda*(j-\/1)+i)*alpha}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00125}00125\ \textcolor{keywordflow}{enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00126}00126\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00127}00127\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do\ }}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00128}00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00129}00129\ \textcolor{preprocessor}{}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00130}00130\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00131}00131\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00132}00132\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00133}00133\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00134}00134\ \textcolor{preprocessor}{}\textcolor{keywordflow}{do}\ j=1,n}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00135}00135\ \ \textcolor{keywordflow}{do}\ i=1,m}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00136}00136\ \ a(lda*(j-\/1)+i)=zero}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00137}00137\ \textcolor{keywordflow}{\ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00138}00138\ \textcolor{keywordflow}{enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00139}00139\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00140}00140\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do\ }}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00141}00141\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00142}00142\ \textcolor{preprocessor}{}\textcolor{keywordflow}{endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00143}00143\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00144}00144\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00145}\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{00145}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{zgemm__b_8f90_a3f36c2ed5b17663d7cd0a28d457850f8}{conjmat\_}}(m,n,a,lda)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00146}00146\ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00147}00147\ \textcolor{keywordtype}{integer}\ i,j,n,m,lda}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00148}00148\ \textcolor{keywordtype}{complex*16}\ \ a(lda*(n-\/1)+m)}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00149}00149\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00150}00150\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00151}00151\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00152}00152\ \textcolor{preprocessor}{}\textcolor{keywordflow}{do}\ j=1,n}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00153}00153\ \ \textcolor{keywordflow}{do}\ i=1,m}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00154}00154\ \ a(lda*(j-\/1)+i)=dconjg(a(lda*(j-\/1)+i))}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00155}00155\ \textcolor{keywordflow}{\ enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00156}00156\ \textcolor{keywordflow}{enddo}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00157}00157\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00158}00158\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do\ }}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00159}00159\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00160}00160\ \textcolor{preprocessor}{}\textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00161}00161\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00162}00162\ }
+\DoxyCodeLine{\Hypertarget{zgemm__b_8f90_source_l00163}00163\ }
+
+\end{DoxyCode}

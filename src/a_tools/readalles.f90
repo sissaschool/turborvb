@@ -483,6 +483,10 @@ program er0read
     stop
 end
 
+!> @brief Runs gnuplot with the specified command file
+!> @details This subroutine executes gnuplot with the commands.story file
+!>          to generate plots from the command line interface.
+!> @param[in] command_line Command line string (unused in current implementation)
 subroutine run_gnuplot(command_line)
     implicit none
     character(50) command
@@ -493,6 +497,32 @@ subroutine run_gnuplot(command_line)
 
     return
 end
+
+!> @brief Sorts and organizes parameter values for optimization
+!> @details This subroutine reorganizes parameter values by putting long output
+!>          parameters (nnozero, nfreesz) at the end of the array. It processes
+!>          different parameter types including Jastrow, molecular orbitals,
+!>          and other variational parameters in a specific order.
+!> @param[in] maxk Maximum iteration index
+!> @param[in] nbuf Buffer size for energy arrays
+!> @param[in] ek Energy array (0:nbuf, *)
+!> @param[in] wkr Weight array (0:nbuf)
+!> @param[out] psip Sorted parameter array
+!> @param[in] nfreesz Number of free parameters
+!> @param[in] diesm Number of molecular orbital parameters
+!> @param[in] djas Number of Jastrow parameters
+!> @param[in] jorb Number of orbital parameters
+!> @param[in] nnozero Number of non-zero parameters
+!> @param[in] iesupr Number of super parameters
+!> @param[in] nion Number of ions
+!> @param[in] dieskin Number of kinetic energy parameters
+!> @param[in] ieskinr Number of kinetic energy reference parameters
+!> @param[out] ind Index for sorted parameters
+!> @param[in] yespar Logical array for parameter selection
+!> @param[in] iesup Super parameter flag
+!> @param[in] iessw Spin wave flag
+!> @param[in] ieskin Kinetic energy flag
+!> @param[in] nnozero_eagp Number of EAGP non-zero parameters
 subroutine sortpsip(maxk, nbuf, ek, wkr, psip, nfreesz, diesm, djas, jorb, nnozero &
                     , iesupr, nion, dieskin, ieskinr, ind, yespar, iesup, iessw, ieskin, nnozero_eagp)
     implicit none
@@ -567,6 +597,40 @@ subroutine sortpsip(maxk, nbuf, ek, wkr, psip, nfreesz, diesm, djas, jorb, nnoze
     return
 end
 
+!> @brief Defines parameter selection based on optimization criteria
+!> @details This subroutine determines which parameters should be optimized
+!>          based on their values and tolerances. It sorts parameters by
+!>          magnitude and selects the most important ones while respecting
+!>          maximum parameter limits (maxp). Handles different parameter
+!>          types with different tolerance criteria.
+!> @param[in] maxk Maximum iteration index
+!> @param[in] nbuf Buffer size for energy arrays
+!> @param[in] ek Energy array (0:nbuf, *)
+!> @param[in] wkr Weight array (0:nbuf)
+!> @param[in,out] psip Parameter array for sorting
+!> @param[in] nfreesz Number of free parameters
+!> @param[in] diesm Number of molecular orbital parameters
+!> @param[in] djas Number of Jastrow parameters
+!> @param[in] jorb Number of orbital parameters
+!> @param[in] nnozero Number of non-zero parameters
+!> @param[in] iesupr Number of super parameters
+!> @param[in] nion Number of ions
+!> @param[in] dieskin Number of kinetic energy parameters
+!> @param[in] ieskinr Number of kinetic energy reference parameters
+!> @param[out] ind Index for sorted parameters
+!> @param[out] yespar Logical array for parameter selection
+!> @param[in] ipsip Index array for sorting
+!> @param[out] diesm_short Number of selected molecular orbital parameters
+!> @param[out] iesupr_short Number of selected super parameters
+!> @param[out] jorb_short Number of selected orbital parameters
+!> @param[out] nfreesz_short Number of selected free parameters
+!> @param[out] nnozero_short Number of selected non-zero parameters
+!> @param[in] maxp Maximum number of parameters to select
+!> @param[in] iesup Super parameter flag
+!> @param[in] iessw Spin wave flag
+!> @param[in] ieskin Kinetic energy flag
+!> @param[in] nnozero_eagp Number of EAGP non-zero parameters
+!> @param[out] nnozero_eagp_short Number of selected EAGP parameters
 subroutine defyespar(maxk, nbuf, ek, wkr, psip, nfreesz, diesm, djas, jorb, nnozero&
         &, iesupr, nion, dieskin, ieskinr, ind, yespar, ipsip, diesm_short, iesupr_short&
         &, jorb_short, nfreesz_short, nnozero_short, maxp, iesup, iessw, ieskin&

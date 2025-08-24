@@ -65,6 +65,12 @@ contains
 
     ! orthonormalization of the basis set
 
+    !> @brief Allocates data vectors for exact diagonalization
+    !> @details This subroutine allocates memory for parameter arrays,
+    !>          points arrays, and normalization arrays used in exact
+    !>          diagonalization calculations.
+    !> @param[in] param_number_read Number of parameters
+    !> @param[in] points_number_read Number of integration points
     subroutine alloc_datavec_ed(param_number_read, points_number_read)
         integer, intent(in) :: param_number_read, points_number_read
         param_number = param_number_read
@@ -74,6 +80,10 @@ contains
         allocate (norm_ed(param_number/3))
     end subroutine alloc_datavec_ed
 
+    !> @brief Deallocates data vectors for exact diagonalization
+    !> @details This subroutine deallocates memory for parameter arrays,
+    !>          points arrays, and normalization arrays used in exact
+    !>          diagonalization calculations.
     subroutine dealloc_datavec_ed
         if (allocated(param0_ed)) deallocate (param0_ed)
         if (allocated(norm_ed)) deallocate (norm_ed)
@@ -81,6 +91,9 @@ contains
         if (allocated(points_ed)) deallocate (points_ed)
     end subroutine dealloc_datavec_ed
 
+    !> @brief Deallocates matrix setup arrays
+    !> @details This subroutine deallocates memory for basis set coefficients,
+    !>          overlap matrices, and other arrays used in matrix setup.
     subroutine dealloc_matrix_setup
         if (allocated(bs_coeff)) deallocate (bs_coeff)
         if (allocated(point2param)) deallocate (point2param)
@@ -90,6 +103,11 @@ contains
         if (allocated(proj)) deallocate (proj)
     end subroutine dealloc_matrix_setup
 
+    !> @brief Sets up matrices for exact diagonalization
+    !> @details This subroutine initializes the basis set, sets up integration
+    !>          grids, and prepares overlap matrices for exact diagonalization
+    !>          calculations. It handles parameter selection and weighted metrics.
+    !> @param[in] weights Weight factors for integration points
     subroutine matrix_setup(weights)
 
         implicit none
@@ -190,6 +208,9 @@ contains
 
     end subroutine matrix_setup
 
+    !> @brief Updates parameters after exact diagonalization
+    !> @details This subroutine updates the parameter array with optimized
+    !>          values obtained from exact diagonalization calculations.
     subroutine update_param_ed
 
         implicit none
@@ -206,6 +227,10 @@ contains
 
     end subroutine update_param_ed
 
+    !> @brief Computes overlap matrix for exact diagonalization
+    !> @details This subroutine computes the overlap matrix between basis
+    !>          functions and projection vectors for exact diagonalization
+    !>          calculations.
     subroutine overlap_matrix
 
         implicit none
@@ -251,6 +276,12 @@ contains
 
     end subroutine overlap_matrix
 
+    !> @brief Computes one-dimensional integral between two functions
+    !> @details This subroutine computes the overlap integral between two
+    !>          Gaussian functions with given parameters.
+    !> @param[in] p1 Parameters for first function (norm, power, exponent)
+    !> @param[in] p2 Parameters for second function (norm, power, exponent)
+    !> @param[out] integral Computed integral value
     subroutine oned_integral(p1, p2, integral)
 
         implicit none
@@ -265,6 +296,11 @@ contains
 
     end subroutine oned_integral
 
+    !> @brief Computes one-dimensional integral for projection
+    !> @details This subroutine computes the integral of a function
+    !>          for projection calculations in exact diagonalization.
+    !> @param[in] p1 Parameters for function (norm, power, exponent)
+    !> @param[out] integral Computed integral value
     subroutine oned_integral2(p1, integral)
 
         implicit none
@@ -279,6 +315,12 @@ contains
 
     end subroutine oned_integral2
 
+    !> @brief Performs orthonormalization of basis set
+    !> @details This subroutine orthonormalizes the basis set using
+    !>          either diagonal or Gram-Schmidt orthonormalization
+    !>          methods for exact diagonalization calculations.
+    !> @param[in] diag_type Type of orthonormalization (1=diagonal, 2=Gram-Schmidt)
+    !> @param[in] eps Tolerance for orthonormalization
     subroutine orthonormalization(diag_type, eps)
         ! it uses either the cholesky factorization and diagonalization or
         ! the Sorella and Cavazzoni algorithm for overlap matrix preconditioning

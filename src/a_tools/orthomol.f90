@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Molecular orbital orthogonalization program for TurboRVB
+!> @details This program performs orthogonalization of molecular orbitals
+!> in a TurboRVB wave function. It reads a fort.10 file, applies
+!> orthogonalization procedures, and outputs a new fort.10_new file
+!> with orthogonalized orbitals. The program supports both serial and
+!> parallel execution modes.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program orthomol
     use convertmod
     use allio
@@ -20,8 +29,8 @@ program orthomol
     logical yesbig
     integer rankn, nprocn, ithread, i
     !   AAA    Lines to be added just after all definitions of variables.
-    character(100) name_tool
-    character(20) str
+    character(100) name_tool  !< Tool name for help system
+    character(20) str         !< Command line argument
 
     namelist /mesh_info/ nbufd, nx, ny, nz, ax, ay, az, shift_origin, shiftx, shifty, shiftz
     namelist /molec_info/ nummol

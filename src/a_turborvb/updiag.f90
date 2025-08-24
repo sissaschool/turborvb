@@ -19,6 +19,36 @@
 ! is also computed.
 !------------------------------------------------------------------------
 
+!> @brief      Compute local energy with diagonal and off-diagonal parts for real wave functions
+!> @details    Computes the local energy including both diagonal and off-diagonal parts.
+!>             Handles regularization of the Coulomb potential and implements various
+!>             cutoff schemes for DMC calculations. Supports different regularization
+!>             types and handles nodal surface crossings.
+!> @param[in]  table        Table of wave function values
+!> @param[in]  tmu          Tmu array
+!> @param[out] diag         Diagonal energy contribution
+!> @param[out] enerc        Local energy
+!> @param[in]  winvup       Winv array for up electrons
+!> @param[in]  winvdo       Winv array for down electrons
+!> @param[in]  tabpip       Table of pip values
+!> @param[in]  nelup        Number of up electrons
+!> @param[in]  neldo        Number of down electrons
+!> @param[in]  nel          Total number of electrons
+!> @param[in]  indt         Index offset for derivatives
+!> @param[in]  indtupt      Index upt
+!> @param[in]  indteff      Effective index
+!> @param[in]  istart       Start index
+!> @param[in]  vpot         Potential
+!> @param[in]  vpotregr     Regularized potential array
+!> @param[in]  parcutg      Cutoff parameter
+!> @param[out] vcut         Cutoff value
+!> @param[out] kin          Kinetic energy array
+!> @param[in]  novar        No variation flag
+!> @param[out] flagsign     Sign flag
+!> @param[out] enertrue     True energy
+!> @param[out] vpotoff      Off-diagonal potential
+!> @param[out] kince        Kinetic energy per electron
+!> @param[out] vpotge       Potential per electron
 subroutine updiag(table, tmu, diag, enerc, winvup, winvdo, tabpip&
         &, nelup, neldo, nel, indt, indtupt, indteff, istart, vpot, vpotregr, parcutg&
         &, vcut, kin, novar, flagsign, enertrue, vpotoff, kince, vpotge)
@@ -185,6 +215,36 @@ end subroutine updiag
 !--------------------------------------------------------------------------!
 !--------------------------------------------------------------------------!
 
+!> @brief      Compute local energy with diagonal and off-diagonal parts for complex wave functions
+!> @details    Computes the local energy including both diagonal and off-diagonal parts for complex
+!>             wave functions. Handles regularization of the Coulomb potential and implements various
+!>             cutoff schemes for DMC calculations. Supports different regularization types and
+!>             handles nodal surface crossings with complex arithmetic.
+!> @param[in]  table        Complex table of wave function values
+!> @param[in]  tmu          Tmu array
+!> @param[out] diag         Diagonal energy contribution
+!> @param[out] enerc        Complex local energy
+!> @param[in]  winvup       Complex winv array for up electrons
+!> @param[in]  winvdo       Complex winv array for down electrons
+!> @param[in]  tabpip       Table of pip values
+!> @param[in]  nelup        Number of up electrons
+!> @param[in]  neldo        Number of down electrons
+!> @param[in]  nel          Total number of electrons
+!> @param[in]  indt         Index offset for derivatives
+!> @param[in]  indtupt      Index upt
+!> @param[in]  indteff      Effective index
+!> @param[in]  istart       Start index
+!> @param[in]  vpot         Potential
+!> @param[in]  vpotregr     Regularized potential array
+!> @param[in]  parcutg      Cutoff parameter
+!> @param[out] vcut         Cutoff value
+!> @param[out] kin          Kinetic energy array
+!> @param[in]  novar        No variation flag
+!> @param[out] flagsign     Sign flag
+!> @param[out] enertrue     Complex true energy
+!> @param[out] vpotoff      Off-diagonal potential
+!> @param[out] kince        Complex kinetic energy per electron
+!> @param[out] vpotge       Potential per electron
 subroutine updiag_complex(table, tmu, diag, enerc, winvup, winvdo, tabpip &
                           , nelup, neldo, nel, indt, indtupt, indteff, istart, vpot, vpotregr, parcutg &
                           , vcut, kin, novar, flagsign, enertrue, vpotoff, kince, vpotge)

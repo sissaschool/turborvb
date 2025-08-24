@@ -1,0 +1,96 @@
+\doxysection{periodic.\+f90}
+\hypertarget{periodic_8f90_source}{}\label{periodic_8f90_source}\index{src/a\_turborvb/periodic.f90@{src/a\_turborvb/periodic.f90}}
+\mbox{\hyperlink{periodic_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Apply\ periodic\ boundary\ conditions\ to\ ion\ positions}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ applies\ periodic\ boundary\ conditions\ to\ all}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ ion\ positions\ using\ the\ periodic\ function.\ It\ updates\ ion}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ coordinates\ and\ accumulates\ the\ sum\ of\ squared\ displacements}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ weighted\ by\ mass\ for\ each\ ion.}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in,out]\ rion\ \ \ \ \ \ Ion\ positions\ (3,\ nion)}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ \ \ \ nion\ \ \ \ \ \ Number\ of\ ions}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ \ \ \ cellscale\ Cell\ dimensions}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ \ \ \ dt4\ \ \ \ \ \ \ Time\ step\ parameter}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ \ \ \ mass\ \ \ \ \ \ Ion\ masses\ (3,\ nion)}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ \ \ \ sumx2\ \ \ \ \ Sum\ of\ squared\ displacements\ weighted\ by\ mass}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00027}\mbox{\hyperlink{periodic_8f90_a5ec2d8cadd854cb89a4e08c0fedc39d7}{00027}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{periodic_8f90_a5ec2d8cadd854cb89a4e08c0fedc39d7}{apply\_periodic}}(rion,\ nion,\ cellscale,\ dt4,\ mass,\ sumx2)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00029}00029\ \ \ \ \ real*8\ rion(3,\ nion),\ mass(3,\ nion),\ cellscale(3),\ dt4,\ sumx2\&}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00030}00030\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ px,\ px2,\ dt4u}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ i,\ j}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00032}00032\ \ \ \ \ sumx2\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nion}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00034}00034\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ 3}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ \ \ \ \ dt4u\ =\ dt4/mass(j,\ i)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{periodic_8f90_ac69dd0cafbf2118cec69d8f2a2928f22}{periodic}}(rion(j,\ i),\ cellscale(j),\ dt4u,\ px,\ px2)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ rion(j,\ i)\ =\ px}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \ \ sumx2\ =\ sumx2\ +\ px2*mass(j,\ i)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00039}00039\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00040}00040\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00042}00042\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00043}00043\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Apply\ periodic\ boundary\ condition\ to\ a\ single\ coordinate}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00044}00044\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ applies\ periodic\ boundary\ conditions\ to\ a}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00045}00045\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ single\ coordinate\ using\ a\ Gaussian-\/weighted\ sum\ over\ periodic}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ images.\ It\ finds\ the\ representative\ in\ [-\/L/2,\ L/2]\ and}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00047}00047\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ computes\ both\ the\ periodic\ coordinate\ and\ its\ square.}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00048}00048\ \textcolor{comment}{!>\ @param[in]\ \ x\ \ \ \ \ \ \ \ \ \ Input\ coordinate}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00049}00049\ \textcolor{comment}{!>\ @param[in]\ \ L\ \ \ \ \ \ \ \ \ \ Period\ length}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00050}00050\ \textcolor{comment}{!>\ @param[in]\ \ dt4\ \ \ \ \ \ \ \ Time\ step\ parameter\ for\ Gaussian\ weighting}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @param[out]\ periodicx\ \ Periodic\ coordinate}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @param[out]\ periodicx2\ Square\ of\ periodic\ coordinate}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00053}\mbox{\hyperlink{periodic_8f90_ac69dd0cafbf2118cec69d8f2a2928f22}{00053}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{periodic_8f90_ac69dd0cafbf2118cec69d8f2a2928f22}{periodic}}(x,\ L,\ dt4,\ periodicx,\ periodicx2)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00055}00055\ \ \ \ \ real*8\ periodicx,\ x,\ l,\ dt4,\ arg,\ xval,\ maxerror,\ num,\ den,\ num2\&}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ periodicx2,\ xmin}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00057}00057\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordtype}{integer}\ n}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00059}00059\ \ \ \ \ maxerror\ =\ dlamch(\textcolor{stringliteral}{'E'})}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00060}00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Finds\ the\ representative\ in\ [-\/L/2,L/2]}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00061}00061\ \ \ \ \ xmin\ =\ x\ -\/\ anint(x/l)*l}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00062}00062\ \ \ \ \ num\ =\ xmin}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00063}00063\ \ \ \ \ den\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00064}00064\ \ \ \ \ num2\ =\ xmin**2}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00065}00065\ \ \ \ \ n\ =\ 0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00066}00066\ \ \ \ \ arg\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00067}00067\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Positive\ n}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (arg\ .gt.\ maxerror)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ n\ =\ n\ +\ 1}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ xval\ =\ xmin\ +\ l*n}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ arg\ =\ dexp(-\/(xval**2\ -\/\ xmin**2)/dt4)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ num\ =\ num\ +\ xval*arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ num2\ =\ num2\ +\ xval**2*arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ den\ =\ den\ +\ arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00075}00075\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00076}00076\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Negative\ n}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00077}00077\ \ \ \ \ n\ =\ 0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00078}00078\ \ \ \ \ arg\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (arg\ .gt.\ maxerror)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ n\ =\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ xval\ =\ xmin\ +\ l*n}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ arg\ =\ dexp(-\/(xval**2\ -\/\ xmin**2)/dt4)}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ num\ =\ num\ +\ xval*arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ num2\ =\ num2\ +\ xval**2*arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ den\ =\ den\ +\ arg}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00087}00087\ \ \ \ \ periodicx\ =\ num/den}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00088}00088\ \ \ \ \ periodicx2\ =\ num2/den}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00089}00089\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{periodic_8f90_source_l00090}00090\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

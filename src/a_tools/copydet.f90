@@ -13,6 +13,17 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @file copydet.f90
+!> @brief Program for copying determinant parameters between TurboRVB wave functions
+!> @details This program reads two TurboRVB wave functions (fort.10 and fort.10_new) and copies
+!> determinant parameters from one to the other. It handles orbital mapping, parameter scaling,
+!> and supports various modes including k-points calculations, ion position copying, and
+!> contracted orbital parameter transfer. Similar to copyjas.f90 but for determinant parts.
+
+!> @brief Main program for copying determinant parameters between wave functions
+!> @details Reads source and target wave functions, maps orbitals between different bases,
+!> copies determinant parameters with appropriate scaling, and supports multiple operation modes
+!> including k-points, ion position copying, and parameter transfer.
 program copydet
 
     use allio
@@ -302,6 +313,23 @@ program copydet
     stop
 
 end program copydet
+
+!> @brief Maps orbitals between different basis sets for determinant copying
+!> @details Creates a mapping between orbitals in different basis sets for determinant
+!> parameter copying. Maps orbitals based on atom type and orbital type matching.
+!> Uses address-based matching to ensure proper orbital correspondence between
+!> source and target wave functions.
+!> @param[in] nshell_c Number of shells in the source basis
+!> @param[in] mult_c Multiplicity array for source basis
+!> @param[in] ioccup_c Occupation array for source basis
+!> @param[in] kion_c Ion type array for source basis
+!> @param[in] ioptorb_c Orbital type array for source basis
+!> @param[in] nshell Number of shells in target basis
+!> @param[in] mult Multiplicity array for target basis
+!> @param[in] ioccup Occupation array for target basis
+!> @param[in] kion Ion type array for target basis
+!> @param[in] ioptorb Orbital type array for target basis
+!> @param[out] map Mapping array between orbitals
 subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nshell, mult, ioccup, kion, ioptorb, map)
     implicit none
     integer nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew, adr, adrnew
@@ -359,6 +387,16 @@ subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nshell, mult, 
     end do
     return
 end
+
+!> @brief Copies determinant parameters between wave functions
+!> @details Copies determinant matrix elements from old to new wave function using
+!> orbital mapping. Handles both positive and negative mapping indices.
+!> Direct element-by-element copying without scaling or subsystem considerations.
+!> @param[in] jastrow_old Source determinant matrix
+!> @param[in] nelorbj_old Number of orbitals in source
+!> @param[out] jastrow_new Target determinant matrix
+!> @param[in] nelorbj_new Number of orbitals in target
+!> @param[in] mapj Orbital mapping array
 subroutine copyin(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj)
     implicit none
     integer nelorbj_old, nelorbj_new, i, j
@@ -379,6 +417,18 @@ subroutine copyin(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj)
     end do
     return
 end
+
+!> @brief Copies determinant parameters from 2-component to 1-component wave function
+!> @details Handles copying of determinant parameters when converting from a 2-component
+!> (spin-up/spin-down) wave function to a 1-component wave function with appropriate scaling.
+!> Applies scaling factors based on electron numbers for proper normalization.
+!> @param[in] jastrow_old Source determinant matrix (2-component)
+!> @param[in] nelorbj_old Number of orbitals in source
+!> @param[out] jastrow_new Target determinant matrix (1-component)
+!> @param[in] nelorbj_new Number of orbitals in target
+!> @param[in] mapj Orbital mapping array
+!> @param[in] nelup Number of spin-up electrons
+!> @param[in] neldo Number of spin-down electrons
 subroutine copyin2to1(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj, nelup, neldo)
     implicit none
     integer nelorbj_old, nelorbj_new, i, j, nelup, neldo, nelorbh
@@ -412,6 +462,15 @@ subroutine copyin2to1(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj, 
     return
 end
 
+!> @brief Copies determinant parameters with spin-z component handling
+!> @details Copies determinant matrix elements with special handling for spin-z components.
+!> Applies different signs for cross-spin terms to maintain proper spin symmetry.
+!> Handles spin-up/spin-down matrix elements with appropriate sign conventions.
+!> @param[in] jastrow_old Source determinant matrix
+!> @param[in] nelorbj_old Number of orbitals in source
+!> @param[out] jastrow_new Target determinant matrix
+!> @param[in] nelorbj_new Number of orbitals in target
+!> @param[in] mapj Orbital mapping array
 subroutine copyinsz(jastrow_old, nelorbj_old, jastrow_new, nelorbj_new, mapj)
     implicit none
     integer nelorbj_old, nelorbj_new, i, j, nelorbjh

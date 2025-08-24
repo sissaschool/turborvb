@@ -13,6 +13,23 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Perform hopping moves for quantum Monte Carlo with periodic boundary conditions
+!> @details This subroutine implements a hopping algorithm for quantum Monte Carlo simulations
+!> where particles can move between different ion positions. With probability |tjasder|,
+!> the particle performs a hopping move to a randomly selected ion position (different from
+!> the current minimum position). With probability 1-|tjasder|, the particle performs a
+!> regular displacement move. The hopping move satisfies detailed balance by considering
+!> both forward and backward hopping directions with equal probability. The subroutine
+!> also handles periodic boundary conditions for the simulation box.
+!> @param[in] nion Number of ions in the system
+!> @param[in] jn Index of the coordinate being updated (1, 2, or 3 for x, y, z)
+!> @param[in,out] dstep Displacement step size (set to 0 for hopping moves)
+!> @param[in,out] rcart Cartesian coordinates of the particle
+!> @param[in] rion Cartesian coordinates of all ions
+!> @param[in] imin Index of the current minimum ion position
+!> @param[out] itry Index of the target ion for hopping
+!> @param[in] tjasder Jastrow derivative parameter controlling hopping probability
+!> @param[in] LBox Simulation box length for periodic boundary conditions
 subroutine hopping(nion, jn, dstep, rcart                         &
         &, rion, imin, itry, tjasder, LBox)
     use Cell

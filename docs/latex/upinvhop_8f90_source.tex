@@ -1,0 +1,192 @@
+\doxysection{upinvhop.\+f90}
+\hypertarget{upinvhop_8f90_source}{}\label{upinvhop_8f90_source}\index{src/c\_adjoint\_forward/upinvhop.f90@{src/c\_adjoint\_forward/upinvhop.f90}}
+\mbox{\hyperlink{upinvhop_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00016}\mbox{\hyperlink{upinvhop_8f90_afa0585eb4fd42cf9cb53e2a668437c02}{00016}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{upinvhop_8f90_afa0585eb4fd42cf9cb53e2a668437c02}{upinvhop}}(nelorb,\ nelorb5,\ nelc,\ ainv,\ winv\ \&}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00017}00017\ \ \ \ \ \ \ \ \ \&,\ psiln,\ psisn,\ epst,\ psip,\ nelup,\ neldo,\ ainvs,\ winvs,\ update\_psi)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_abfe8aa549aa31d27718230957e99d8eb}{ipc}},\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}},\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}},\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}},\ \mbox{\hyperlink{namespaceconstants_a059d205b3a81f15fb062bbb949338f81}{yes\_ontarget}}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a981ec650cb5feecf1f7a71c024218591}{nelup\_mat}}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00021}00021\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00022}00022\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00023}00023\ \ \ \ \ \textcolor{comment}{!SSS\ attenzione\ alla\ dichiarazione\ di\ ainv!}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{integer}\ nel,\ j,\ i,\ nelc,\ nelcdo,\ nelorb,\ nelorb5,\ nelup,\ neldo,\ ierr}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00025}00025\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ epst,\ psiln,\ psisn}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00026}00026\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ainv(nelup\_mat*ipc,\ nelup\_mat),\ ainvs(nelup\_mat*ipc,\ 2),\ \&}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00027}00027\ \ \ \ \ \ \ \ \ winvs(*),\ winv(nelorb5*ipc,\ *)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00028}00028\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ gr}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00029}00029\ \ \ \ \ \textcolor{comment}{!\ scratch\ vectors\ for\ complex\ wf}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00030}00030\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ psip(ipc*(nelup\_mat\ +\ 3*(ipf\ -\/\ 1)*nelup\_mat))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ gc,\ phs}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{logical}\ update\_psi}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00034}00034\ \ \ \ \ \textcolor{comment}{!\ calculation\ prefactor}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00035}00035\ \ \ \ \ \textcolor{comment}{!\ nelc\ is\ the\ \#\ electrons\ that\ moves\ nelc<=nelup\ up\ spin,}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00036}00036\ \ \ \ \ \textcolor{comment}{!\ otherwise\ down\ spin}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!\ jold\ is\ its\ position}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ indtc\ is\ the\ direction\ where\ it\ moves\ according\ to\ table\ ivi}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!\ here\ winv(nelorb5,nel)\ are\ the\ wavefunction\ orbitals}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00041}00041\ \ \ \ \ \textcolor{comment}{!\ compute\ the\ wavefunction\ in\ the\ new\ position\ r}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00042}00042\ \ \ \ \ \textcolor{comment}{!\ update\ new\ functions}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00043}00043\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00044}00044\ \ \ \ \ nel\ =\ neldo\ +\ nelup}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (ipf\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{comment}{!In\ the\ pfaffian\ case\ the\ update\ is\ done\ using\ a\ matrix\ matrix\ product}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{!of\ an\ auxiliary\ vector\ by\ itself,\ recovering\ the\ expression\ in\ the}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \textcolor{comment}{!book\ (Becca,\ Sorella)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ if(update\_psi)\ winv(1:nelorb*ipc,nelc)=winvs(1:nelorb*ipc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{upinvhop__fnf__new_8f90_a4c27be52dd9f38ea8ca4470d474b51c7}{dcopy\_vec}}(nelorb*ipc,\ winvs,\ winv(1,\ nelc))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00052}00052\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00053}00053\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(2*nelc-\/1:2*nelc,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00054}00054\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00055}00055\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ dcmplx(ainvs(nelc*2\ -\/\ 1,\ 2)\ +\ 1.d0,\ ainvs(nelc*2,\ 2))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phs\ =\ log(gc)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn\ +\ aimag(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ real(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00060}00060\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00062}00062\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00063}00063\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(nelc:nelc,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00064}00064\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00065}00065\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ ainvs(nelc,\ 2)\ +\ 1.d0}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn*sign(1.d0,\ gr)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ log(abs(gr))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00070}00070\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ psip(1:nelup\_mat*ipc)=ainv(1:nelup\_mat*ipc,nelc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ psip(nelup\_mat*ipc+1:2*nelup\_mat*ipc)=-\/ainvs(1:nelup\_mat*ipc,2)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ psip(nelup\_mat*ipc*2+1:3*nelup\_mat*ipc)=-\/ainvs(1:nelup\_mat*ipc,2)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ psip(nelup\_mat*ipc*3+1:4*nelup\_mat*ipc)=-\/ainv(1:nelup\_mat*ipc,nelc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00075}00075\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00076}00076\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00077}00077\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00078}00078\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00079}00079\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ ipc*nelup\_mat}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ psip(i)\ =\ ainv(i,\ nelc)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ psip(nelup\_mat*ipc\ +\ i)\ =\ -\/ainvs(i,\ 2)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ psip(nelup\_mat*ipc*2\ +\ i)\ =\ -\/ainvs(i,\ 2)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ psip(nelup\_mat*ipc*3\ +\ i)\ =\ -\/ainv(i,\ nelc)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ \mbox{\hyperlink{namespaceconstants_a4428e32144a28bd8624ea06b02350f8d}{zone}}/gc}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!call\ zgemm\ ('N','T',nelup\_mat,\ nelup\_mat,2,\ gc,\ psip,\ nelup\_mat,\ psip(nelup\_mat*ipc*2+1)\&}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \&,\ nelup\_mat,\ zone,\ ainv,\ nelup\_mat)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zger2_8f_a71e5c216281ee850191f01773ab3fc6c}{zger2}}(nelup\_mat,\ nelup\_mat,\ gc,\ psip,\ nelup\_mat,\ psip(4*nelup\_mat\ +\ 1),\ nelup\_mat,\ ainv,\ nelup\_mat)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ 1.d0/gr}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Symmetric\ update\ deprecated\ as\ the\ antisymmetrization\ may\ be\ slow:}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ unthreaded,\ unvectorized,\ cash\ limited...}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ dger(nelup\_mat,nelup\_mat,2*g(1),psip,1,psip(2*nelup\_mat+1),1,ainv,nelup\_mat)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ do\ i=1,nelup\_mat}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ainv(i,i)=0.d0}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ do\ j=i+1,nelup\_mat}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ainv(i,j)=0.5d0*(ainv(i,j)-\/ainv(j,i))}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ ainv(j,i)=-\/ainv(i,j)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ call\ dgemm\ ('N','T',nelup\_mat,\ nelup\_mat,\ 2,\ g(1),\ psip\&}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \&,\ nelup\_mat,\ psip(nelup\_mat*2+1),\ nelup\_mat,\ 1.d0,\ ainv,\ nelup\_mat)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dger2_8f_aa40b81f0ac3b9fab3bbeeaeb05272c10}{dger2}}(nelup\_mat,\ nelup\_mat,\ gr,\ psip,\ nelup\_mat,\ psip(2*nelup\_mat\ +\ 1),\ nelup\_mat,\ ainv,\ nelup\_mat)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00106}00106\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00107}00107\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00108}00108\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nelc\ .le.\ nelup)\ \textcolor{keywordflow}{then}\ \textcolor{comment}{!\ up\ spin\ electrons}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ update\ basis\ orbitals}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(update\_psi)\ winv(1:nelorb*ipc,nelc)=winvs(1:nelorb*ipc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{upinvhop__fnf__new_8f90_a4c27be52dd9f38ea8ca4470d474b51c7}{dcopy\_vec}}(nelorb*ipc,\ winvs,\ winv(1,\ nelc))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ update\ ratio}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00114}00114\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00116}00116\ \textcolor{preprocessor}{\#ifdef\ \ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00117}00117\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(2*nelc-\/1:2*nelc,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00118}00118\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00119}00119\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ dcmplx(ainvs(nelc*2\ -\/\ 1,\ 2)\ +\ 1.d0,\ ainvs(nelc*2,\ 2))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phs\ =\ log(gc)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn\ +\ aimag(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ real(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00124}00124\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00126}00126\ \textcolor{preprocessor}{\#ifdef\ \ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00127}00127\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(nelc:nelc,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00128}00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00129}00129\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ ainvs(nelc,\ 2)\ +\ 1.d0}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn*sign(1.d0,\ gr)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ log(abs(gr))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00133}00133\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00134}00134\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ psip(1:nelup*ipc)=ainv(1:nelup*ipc,nelc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upinvhop__fnf__new_8f90_a4c27be52dd9f38ea8ca4470d474b51c7}{dcopy\_vec}}(nelup*ipc,\ ainv(1,\ nelc),\ psip)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}}/gc}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgeru_8f_a4a2a203738592a9b5c9c79eabaf94414}{zgeru\_}}(nelup,\ nelup,\ gc,\ psip,\ 1,\ ainvs(1,\ 2),\ 1,\ ainv,\ nelup)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ -\/1.d0/gr}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dger_8f_a5b959bc754fff3061a51f26493840d20}{dger\_}}(nelup,\ nelup,\ gr,\ psip,\ 1,\ ainvs(1,\ 2),\ 1,\ ainv,\ nelup)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00143}00143\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00144}00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{!\ down\ spin\ electrons}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(update\_psi)\ winv(1:nelorb*ipc,nelc)=winvs(1:nelorb*ipc)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keyword}{call\ }\mbox{\hyperlink{upinvhop__fnf__new_8f90_a4c27be52dd9f38ea8ca4470d474b51c7}{dcopy\_vec}}(nelorb*ipc,\ winvs,\ winv(1,\ nelc))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ nelcdo\ =\ nelc\ -\/\ nelup}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00149}00149\ \textcolor{preprocessor}{\#ifdef\ \ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00150}00150\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(2*nelcdo-\/1:2*nelcdo,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00151}00151\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00152}00152\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ dcmplx(ainvs(2*nelcdo\ -\/\ 1,\ 2)\ +\ 1.d0,\ ainvs(2*nelcdo,\ 2))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ phs\ =\ log(gc)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn\ +\ aimag(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ real(phs)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00157}00157\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00159}00159\ \textcolor{preprocessor}{\#ifdef\ \ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00160}00160\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ update\ from(ainvs(nelcdo:nelcdo,2))\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00161}00161\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00162}00162\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ ainvs(nelcdo,\ 2)\ +\ 1.d0}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (update\_psi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psisn\ =\ psisn*sign(1.d0,\ gr)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psiln\ =\ psiln\ +\ log(abs(gr))}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00166}00166\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00167}00167\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00168}00168\ }
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 2)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upinvhop__fnf__new_8f90_ae3cdc6df37306d504cf0e6626fffa87e}{up\_ainv\_down}}(psip,\ ainv,\ nelup,\ nelcdo)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gc\ =\ \mbox{\hyperlink{namespaceconstants_adb4e298be7585bae737e6e58f3420de6}{zmone}}/gc}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{zgeru_8f_a4a2a203738592a9b5c9c79eabaf94414}{zgeru\_}}(nelup,\ nelup,\ gc,\ ainvs(1,\ 2),\ 1,\ psip,\ 1,\ ainv,\ nelup)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00174}00174\ \textcolor{preprocessor}{\#ifdef\ \ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00175}00175\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ \ distribute\ parallel\ do\ if(yes\_ontarget)}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00176}00176\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00177}00177\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nelup}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ psip(i)\ =\ ainv(nelcdo,\ i)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00179}00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gr\ =\ -\/1.d0/gr}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dger_8f_a5b959bc754fff3061a51f26493840d20}{dger\_}}(nelup,\ nelup,\ gr,\ ainvs(1,\ 2),\ 1,\ psip,\ 1,\ ainv,\ nelup)}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00182}00182\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00183}00183\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ end\ if}\ \textcolor{comment}{!\ endif\ ipf=2}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upinvhop_8f90_source_l00186}00186\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{upinvhop_8f90_afa0585eb4fd42cf9cb53e2a668437c02}{upinvhop}}}
+
+\end{DoxyCode}

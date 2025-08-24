@@ -1,0 +1,254 @@
+\doxysection{src/a\+\_\+makefort10/cubicsym.f90 File Reference}
+\hypertarget{cubicsym_8f90}{}\label{cubicsym_8f90}\index{src/a\_makefort10/cubicsym.f90@{src/a\_makefort10/cubicsym.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{cubicsym_8f90_a275bebb13d89e7226778905da318466a}{cubicsym}} (at, is, isname, nrot)
+\begin{DoxyCompactList}\small\item\em Generate symmetry operations for cubic and lower-\/symmetry Bravais lattices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{cubicsym_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{cubicsym_8f90_a275bebb13d89e7226778905da318466a}\index{cubicsym.f90@{cubicsym.f90}!cubicsym@{cubicsym}}
+\index{cubicsym@{cubicsym}!cubicsym.f90@{cubicsym.f90}}
+\doxysubsubsection{\texorpdfstring{cubicsym()}{cubicsym()}}
+{\footnotesize\ttfamily \label{cubicsym_8f90_a275bebb13d89e7226778905da318466a} 
+subroutine cubicsym (\begin{DoxyParamCaption}\item[{real(dp), dimension(3, 3)}]{at}{, }\item[{integer, dimension(3, 3, 48)}]{is}{, }\item[{character, dimension(48)}]{isname}{, }\item[{integer}]{nrot}{}\end{DoxyParamCaption})}
+
+
+
+Generate symmetry operations for cubic and lower-\/symmetry Bravais lattices. 
+
+This subroutine provides symmetry operations for all cubic and lower-\/symmetry Bravais lattices (Hexagonal and Trigonal excepted). It generates rotation matrices and their names for crystallographic symmetry operations.
+
+The subroutine works by\+:
+\begin{DoxyEnumerate}
+\item Computing the overlap matrix between direct lattice vectors
+\item Testing each of 24 possible symmetry operations
+\item Checking if the operation preserves the lattice structure
+\item Adding inversion symmetry (all Bravais lattices have inversion)
+\end{DoxyEnumerate}
+
+The symmetry operations include\+:
+\begin{DoxyItemize}
+\item Identity and inversion
+\item 90°, 120°, and 180° rotations around various axes
+\item Combinations of rotations and inversions
+\end{DoxyItemize}
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em at} & Real\texorpdfstring{$\ast$}{*}8(3,3) Direct lattice vectors matrix \\
+\hline
+\mbox{\texttt{out}}  & {\em is} & Integer(3,3,48) Symmetry matrices in crystal coordinates \\
+\hline
+\mbox{\texttt{out}}  & {\em isname} & Character(48)\texorpdfstring{$\ast$}{*}45 Names of symmetry operations \\
+\hline
+\mbox{\texttt{out}}  & {\em nrot} & Integer Number of symmetry operations found \\
+\hline
+ & {\em at} & Input/output variables for symmetry operations\\
+\hline
+\end{DoxyParams}
+Variables that define the lattice structure and store the generated symmetry operations and their descriptions. Local variables for symmetry operation calculations
+
+Variables used internally for computing symmetry operations, including rotation matrices, overlap calculations, and temporary storage.
+
+Definition at line \mbox{\hyperlink{cubicsym_8f90_source_l00039}{39}} of file \mbox{\hyperlink{cubicsym_8f90_source}{cubicsym.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{!-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{!\ Provides\ symmetry\ operations\ for\ all\ cubic\ and\ lower-\/symmetry}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{!\ bravais\ lattices\ (Hexagonal\ and\ Trigonal\ excepted)}}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacekinds}{kinds}}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Input/output\ variables\ for\ symmetry\ operations}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ !>\ @details\ Variables\ that\ define\ the\ lattice\ structure\ and\ store}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ the\ generated\ symmetry\ operations\ and\ their\ descriptions.}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ first\ the\ input/output\ variables}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00053\ \textcolor{keywordtype}{\ \ \ \ real}(DP)\ ::\ at(3,\ 3)}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{!\ input:\ the\ direct\ lattice\ vectors}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ is(3,\ 3,\ 48),\ nrot}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{!\ output:\ the\ symmetry\ matrices}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{!\ output:\ the\ number\ of\ symmetry\ matrices}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{character}\ ::\ isname(48)*45}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{!\ output:\ full\ name\ of\ the\ rotational\ part\ of}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ each\ selected\ symmetry\ operation}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{!}\textcolor{comment}{}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ !>\ @brief\ Local\ variables\ for\ symmetry\ operation\ calculations}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ !>\ @details\ Variables\ used\ internally\ for\ computing\ symmetry\ operations,}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ !>\ \ \ \ \ \ \ \ \ \ including\ rotation\ matrices,\ overlap\ calculations,\ and\ temporary\ storage.}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{!\ \ \ \ here\ the\ local\ variables}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00067\ \textcolor{keywordtype}{\ \ \ \ real}(DP)\ ::\ s(3,\ 3,\ 24),\ overlap(3,\ 3),\ rat(3),\ rot(3,\ 3),\ \&}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{!\ the\ s\ matrices\ in\ real\ variables}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{!\ overlap\ matrix\ between\ direct\ lattice}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!\ the\ rotated\ of\ a\ direct\ vector\ (\ cartesian\ )}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ the\ rotated\ of\ a\ direct\ vector\ (\ crystal\ axis\ )}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!\ component\ of\ the\ s\ matrix\ in\ axis\ basis}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ jpol,\ kpol,\ mpol,\ irot}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{!\ counters\ over\ the\ polarizations\ and\ the\ rotations}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{character}\ ::\ sname(48)*45}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{!\ full\ name\ of\ the\ rotational\ part\ of\ each\ symmetry\ operation}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{data}\ s/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ \&}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ \&}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ \&}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ \&}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ 0.d0,\ 1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ \&}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ 0.d0,\ -\/1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ \&}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ 0.d0,\ -\/1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ \&}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ 0.d0,\ 1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ \&}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ 1.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ -\/1.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ -\/1.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ 0.d0,\ 0.d0,\ 1.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ 0.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ 1.d0,\ -\/1.d0,\ 0.d0,\ 0.d0,\ \&}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ 0.d0,\ 1.d0,\ 0.d0,\ 0.d0,\ 0.d0,\ -\/1.d0,\ -\/1.d0,\ 0.d0,\ 0.d0/}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keyword}{data}\ sname/\&}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'identity\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,1]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,0]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,0]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,0]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,0]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,-\/1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,1]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,1]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,0,1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,0]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,-\/1,0]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,1]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,-\/1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,0,0]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'\ 90\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,0]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,-\/1,-\/1]\ \ \ \ '},\ \&}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,1,1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,-\/1,1]\ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,1,-\/1]\ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,1]\ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,-\/1]\ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'120\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,-\/1]\ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inversion\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ '},\ \&}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,1]\ \ '},\ \&}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,0]\ \ '},\ \&}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,0]\ \ '},\ \&}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,0]\ \ '},\ \&}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,0]\ '},\ \&}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,-\/1]\ '},\ \&}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,0,1]\ \ '},\ \&}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,1]\ \ '},\ \&}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,0,1]\ '},\ \&}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,0]\ \ '},\ \&}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [0,-\/1,0]\ '},\ \&}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,1]\ \ '},\ \&}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 180\ deg\ rotation\ -\/\ cart.\ axis\ [0,1,-\/1]\ '},\ \&}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,0,0]\ '},\ \&}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ \ 90\ deg\ rotation\ -\/\ cart.\ axis\ [1,0,0]\ \ '},\ \&}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,-\/1,-\/1]'},\ \&}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,1,1]\ '},\ \&}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,-\/1,1]'},\ \&}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [-\/1,1,-\/1]'},\ \&}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,1]\ \ '},\ \&}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,1]\ '},\ \&}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [1,-\/1,-\/1]'},\ \&}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \textcolor{stringliteral}{'inv.\ 120\ deg\ rotation\ -\/\ cart.\ axis\ [1,1,-\/1]\ '}/}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{do}\ jpol\ =\ 1,\ 3}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ kpol\ =\ 1,\ 3}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ overlap(kpol,\ jpol)\ =\ at(1,\ kpol)*at(1,\ jpol)\ +\ \&}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ at(2,\ kpol)*at(2,\ jpol)\ +\ \&}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ at(3,\ kpol)*at(3,\ jpol)}
+\DoxyCodeLine{00159\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00160\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{!\ \ \ \ then\ its\ inverse}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keyword}{call\ }invmat(3,\ overlap,\ overlap,\ \textcolor{keywordtype}{value})}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \ \ nrot\ =\ 1}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordflow}{do}\ irot\ =\ 1,\ 24}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ for\ each\ possible\ symmetry}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jpol\ =\ 1,\ 3}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ mpol\ =\ 1,\ 3}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ compute,\ in\ cartesian\ coordinates\ the\ rotated\ vector}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rat(mpol)\ =\ s(mpol,\ 1,\ irot)*at(1,\ jpol)\ +\ \&}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ s(mpol,\ 2,\ irot)*at(2,\ jpol)\ +\ \&}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ s(mpol,\ 3,\ irot)*at(3,\ jpol)}
+\DoxyCodeLine{00179\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ kpol\ =\ 1,\ 3}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ the\ rotated\ vector\ is\ projected\ on\ the\ direct\ lattice}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rot(kpol,\ jpol)\ =\ at(1,\ kpol)*rat(1)\ +\ \&}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ at(2,\ kpol)*rat(2)\ +\ \&}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ at(3,\ kpol)*rat(3)}
+\DoxyCodeLine{00188\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00189\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ and\ the\ inverse\ of\ the\ overlap\ matrix\ is\ applied}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jpol\ =\ 1,\ 3}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ kpol\ =\ 1,\ 3}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{value}\ =\ overlap(jpol,\ 1)*rot(1,\ kpol)\ +\ \&}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ overlap(jpol,\ 2)*rot(2,\ kpol)\ +\ \&}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ overlap(jpol,\ 3)*rot(3,\ kpol)}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(dble(nint(\textcolor{keywordtype}{value}))\ -\/\ \textcolor{keywordtype}{value})\ >\ 1.0d-\/8)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ if\ a\ noninteger\ is\ obtained,\ this\ implies\ that\ this\ operation}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ is\ not\ a\ symmetry\ operation\ for\ the\ given\ lattice}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{go\ to}\ 10}
+\DoxyCodeLine{00204\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is(kpol,\ jpol,\ nrot)\ =\ nint(\textcolor{keywordtype}{value})}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ isname(nrot)\ =\ sname(irot)}
+\DoxyCodeLine{00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ nrot\ =\ nrot\ +\ 1}
+\DoxyCodeLine{00210\ 10\ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{00211\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00212\ \ \ \ \ nrot\ =\ nrot\ -\/\ 1}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ set\ the\ inversion\ symmetry\ (\ Bravais\ lattices\ have\ always\ inversion\ )}}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordflow}{do}\ irot\ =\ 1,\ nrot}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ kpol\ =\ 1,\ 3}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ jpol\ =\ 1,\ 3}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is(kpol,\ jpol,\ irot\ +\ nrot)\ =\ -\/is(kpol,\ jpol,\ irot)}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ isname(irot\ +\ nrot)\ =\ sname(irot\ +\ 24)}
+\DoxyCodeLine{00221\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00222\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00223\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \ \ nrot\ =\ 2*nrot}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{makefort10_8f90_source_l01076}{write\+\_\+xsf()}}.
+

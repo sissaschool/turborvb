@@ -1,0 +1,86 @@
+\doxysection{branchingo.\+f90}
+\hypertarget{branchingo_8f90_source}{}\label{branchingo_8f90_source}\index{src/a\_turborvb/branchingo.f90@{src/a\_turborvb/branchingo.f90}}
+\mbox{\hyperlink{branchingo_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Optimized\ branching\ algorithm\ for\ DMC\ walker\ management}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ implements\ an\ optimized\ branching\ algorithm\ for}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ DMC\ walker\ management.\ It\ performs\ branching\ within\ each\ pool}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ containing\ nw/nk\ walkers\ for\ decoupled\ VMC/DMC\ calculations.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ The\ algorithm\ uses\ optimized\ branching\ with\ or\ without\ sorting}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ to\ efficiently\ redistribute\ walkers\ based\ on\ their\ weights.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ nw\ \ \ \ \ \ \ \ \ \ Number\ of\ walkers}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in,out]\ wconfn\ \ \ Walker\ configuration\ weights}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[out]\ weight\ \ \ \ \ \ Total\ weight}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in,out]\ zeta\ \ \ \ \ Branching\ parameters}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ icdiff\ \ \ \ \ \ Number\ of\ different\ configurations}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in,out]\ ipip\ \ \ \ \ Integer\ work\ array}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ jbra\ \ \ \ \ \ \ \ Branching\ table}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00029}\mbox{\hyperlink{branchingo_8f90_af7fdd5f94423f33619ef842fd377de00}{00029}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{branchingo_8f90_af7fdd5f94423f33619ef842fd377de00}{branchingo}}(nw,\ wconfn,\ weight,\ zeta,\ icdiff,\ ipip,\ jbra)}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ nw,\ i,\ j,\ ipip(*),\ ind,\ icdiff,\ ni}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ jbra(*)}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00035}00035\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ zeta(*),\ weight,\ try,\ tryp,\ wm,\ dstep,\ cost,\ wconfn(*)}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00036}00036\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00037}00037\ \ \ \ \ \textcolor{comment}{!\ in\ case\ of\ decoupled\ VMC/DMC\ calculations,\ perform}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00038}00038\ \ \ \ \ \textcolor{comment}{!\ the\ branching\ within\ each\ pool\ which\ contains}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!\ nw/nk\ walkers.}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00040}00040\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00041}00041\ \ \ \ \ weight\ =\ dabs(wconfn(1))}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nw}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ weight\ =\ weight\ +\ dabs(wconfn(i))}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00044}00044\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ optimized\ branching\ with\ or\ without\ sorttf}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00047}00047\ \ \ \ \ dstep\ =\ zeta(nw\ +\ 1)/dble(nw)}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Optimized\ branching}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00049}00049\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ zeta(i)\ =\ weight*(dstep\ +\ (i\ -\/\ 1)/dble(nw))}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00052}00052\ \ \ \ \ zeta(nw\ +\ 1)\ =\ weight\ +\ 1.d0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00054}00054\ \ \ \ \ ind\ =\ 1}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00055}00055\ \ \ \ \ try\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00056}00056\ \ \ \ \ icdiff\ =\ 0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00057}00057\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ tryp\ =\ try\ +\ dabs(wconfn(i))}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ ni\ =\ 0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (zeta(ind)\ .lt.\ tryp\ .and.\ zeta(ind)\ .ge.\ try)}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ jbra(ind)\ =\ i}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ ni\ =\ ni\ +\ 1}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00064}00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ try\ =\ tryp}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ni\ .ne.\ 0)\ icdiff\ =\ icdiff\ +\ 1}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00067}00067\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00069}00069\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ now\ I\ have\ to\ permute\ the\ indices\ according\ to\ jbra}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00070}00070\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ vectorized\ reshuffling}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00071}00071\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ before\ I\ make\ a\ permutation\ to\ optimize\ the\ reshuffling}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00072}00072\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{upjbra}}(nw,\ jbra,\ ipip,\ ipip(nw\ +\ 1))}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ wconfn(i)\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00076}00076\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00077}00077\ \ \ \ \ weight\ =\ weight/nw}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00079}00079\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{branchingo_8f90_source_l00080}00080\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

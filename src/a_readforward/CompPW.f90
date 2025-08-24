@@ -13,6 +13,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes plane wave matrix for correlation functions
+!> @details This subroutine computes the plane wave matrix pwmat by
+!>          calling cossin for each particle position. It evaluates
+!>          plane wave contributions for correlation function calculations.
+!> @param[in] rcord Particle coordinates (ndim, nparts)
+!> @param[in] ndim Dimension of coordinate space
+!> @param[in] nparts Number of particles
+!> @param[in] nvects Number of wave vectors
+!> @param[in] rkcomp Wave vector components (ndim, *)
+!> @param[out] pwmat Plane wave matrix (2*nvects, nparts)
+!> @param[in] ddim Dimension parameter for cossin
+!> @param[in] vdim Vector dimension array
 subroutine CompPW(rcord, ndim, nparts, nvects, rkcomp, pwmat, ddim, vdim)
     !    compute pw matrix pwmat
 

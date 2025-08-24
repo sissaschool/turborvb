@@ -74,6 +74,41 @@ module mod_orbital
 
 contains
 
+    !> @brief Read orbital definitions from input file
+    !> @details This subroutine reads orbital definitions for both determinant
+    !>          and Jastrow orbitals from the input file. It processes each
+    !>          atom's orbital shells, counts the total number of orbitals
+    !>          and parameters, and allocates the necessary arrays.
+    !>          
+    !>          The subroutine handles:
+    !>          - Determinant orbitals (detorb)
+    !>          - Jastrow orbitals (jasorb)
+    !>          - Shell counting and parameter estimation
+    !>          - Atomic Jastrow matrices
+    !>          - Hybrid orbital generation
+    !>          
+    !> @param[in] natoms Number of atoms
+    !> @param[in] nel Number of electrons
+    !> @param[in] noonebody Logical flag to exclude one-body terms
+    !> @param[in] zeta Zeta parameters for atoms (2, natoms)
+    !> @param[out] J3_off Logical array disabling J3 terms for specific atoms
+    !> @param[out] cut_hybrid Array specifying hybrid orbital cuts per atom
+    !> @param[out] detorb Determinant orbitals array
+    !> @param[out] ndetorb Number of determinant orbitals
+    !> @param[out] totshelldet Total number of determinant shells
+    !> @param[out] ndetpar Number of determinant parameters
+    !> @param[out] jasorb Jastrow orbitals array
+    !> @param[out] njasorb Number of Jastrow orbitals
+    !> @param[out] totshelljas Total number of Jastrow shells
+    !> @param[out] njaspar Number of Jastrow parameters
+    !> @param[in] orbtype Orbital type for determinant
+    !> @param[in] jorbtype Orbital type for Jastrow
+    !> @param[in] funit Input file unit
+    !> @param[in] shiftbeta Beta shift parameter
+    !> @param[in] complexfort10 Logical flag for complex fort.10
+    !> @param[in] symmagp Logical flag for Hermitian constraints
+    !> @param[in] ncell Number of cells
+    !> @param[in] scale_jasfat Scaling factor for Jastrow fatness
     subroutine read_orbitals(natoms, nel, noonebody, zeta, J3_off, cut_hybrid, detorb, ndetorb&
             &, totshelldet, ndetpar, jasorb, njasorb, totshelljas, njaspar, orbtype, jorbtype&
             &, funit, shiftbeta, complexfort10, symmagp, ncell, scale_jasfat)
@@ -248,6 +283,25 @@ contains
     ! to each atom and computes the total # of parameters.
     !-----------------------------------------------------------------
 
+    !> @brief Count orbitals and parameters from input file
+    !> @details This subroutine reads orbital definitions from the input file
+    !>          and counts the total number of orbitals and parameters needed
+    !>          for both determinant and Jastrow orbitals.
+    !>          
+    !>          The subroutine handles:
+    !>          - Different orbital types (normal, tempered, mixed)
+    !>          - Complex coefficients for contracted orbitals
+    !>          - Hybrid orbital counting
+    !>          - Parameter validation
+    !>          
+    !> @param[in] funit Input file unit
+    !> @param[in] nshell Number of shells
+    !> @param[in] nhyb Number of hybrid orbitals
+    !> @param[in] orbtype Orbital type string
+    !> @param[in,out] norb Number of orbitals (output)
+    !> @param[in,out] npar Number of parameters (output)
+    !> @param[in] complexfort10 Logical flag for complex fort.10
+    !> @param[in] ipf Pfaffian flag
     subroutine counting_orb(funit, nshell, nhyb, orbtype, norb, npar, complexfort10, ipf)
         implicit none
         integer, intent(in) :: funit, nshell, nhyb, ipf
@@ -326,6 +380,32 @@ contains
     ! and Jastrow, such as orbitals types, # of parameters and so on.
     ! -----------------------------------------------------------------------
 
+    !> @brief Read orbital shells and store orbital information
+    !> @details This subroutine reads orbital shell definitions from the input file
+    !>          and stores all information related to orbitals including types,
+    !>          parameters, and transformation vectors.
+    !>          
+    !>          The subroutine handles:
+    !>          - Different orbital types (s, p, d, f, g)
+    !>          - Parameter reading and validation
+    !>          - Hybrid orbital generation
+    !>          - Transformation vector setup
+    !>          - Complex coefficient handling
+    !>          
+    !> @param[out] orbitals Array of orbital structures
+    !> @param[in,out] iorb Current orbital index
+    !> @param[in,out] nunc Number of uncontracted orbitals
+    !> @param[in] ishell Starting shell index
+    !> @param[in] nshell Number of shells
+    !> @param[in] nhyb Number of hybrid orbitals
+    !> @param[in] orbtype Orbital type string
+    !> @param[in] kion Atom index
+    !> @param[in] funit Input file unit
+    !> @param[in] shiftbeta Beta shift parameter
+    !> @param[in] yesmolat Logical flag for molecular orbitals
+    !> @param[in] complexfort10 Logical flag for complex fort.10
+    !> @param[in] ipf Pfaffian flag
+    !> @param[in] symmagp Logical flag for Hermitian constraints
     subroutine read_shells(orbitals, iorb, nunc, ishell, nshell, nhyb, orbtype, kion, funit&
             &, shiftbeta, yesmolat, complexfort10, ipf, symmagp)
         implicit none
@@ -582,6 +662,20 @@ contains
 101     call errore("read_shells", " Error reading atomic shells! ", 1)
     end subroutine read_shells
 
+    !> @brief Adjust beta parameter for tempered orbitals
+    !> @details This subroutine adjusts the beta parameter used in tempered
+    !>          orbital generation based on the number of parameters and
+    !>          shift value.
+    !>          
+    !>          The subroutine:
+    !>          - Computes beta from alpha and nparm if beta < 0
+    !>          - Sets beta = 1.0 if beta = 0.0
+    !>          - Handles minimum alpha replacement for shiftbeta = -1
+    !>          
+    !> @param[in] nparm Number of parameters
+    !> @param[in,out] alpha Alpha parameter
+    !> @param[in,out] beta Beta parameter
+    !> @param[in] shiftbeta Beta shift parameter
     subroutine adjustbeta(nparm, alpha, beta, shiftbeta)
         implicit none
         integer, intent(in) :: nparm, shiftbeta
@@ -599,6 +693,32 @@ contains
         end if
     end subroutine adjustbeta
 
+    !> @brief Read atomic wave functions from files
+    !> @details This subroutine reads atomic wave function files for each atom
+    !>          and extracts orbital information for both determinant and Jastrow
+    !>          orbitals. It processes fort.10 files and builds the orbital arrays.
+    !>          
+    !>          The subroutine handles:
+    !>          - Reading atomic fort.10 files
+    !>          - Extracting orbital parameters and types
+    !>          - Building determinant and Jastrow orbital arrays
+    !>          - Setting up atomic matrices
+    !>          - Handling different atom types
+    !>          
+    !> @param[in] natoms Number of atoms
+    !> @param[in] izeta Zeta parameters for atoms (2, natoms)
+    !> @param[out] atomic_detmat Atomic determinant matrix
+    !> @param[out] detorb Determinant orbitals array
+    !> @param[out] ndetorb Number of determinant orbitals
+    !> @param[out] nshelldet Number of determinant shells
+    !> @param[out] ndetpar Number of determinant parameters
+    !> @param[out] jasorb Jastrow orbitals array
+    !> @param[out] njasorb Number of Jastrow orbitals
+    !> @param[in,out] nshelljas Number of Jastrow shells
+    !> @param[out] njaspar Number of Jastrow parameters
+    !> @param[in] mytype Atom type array
+    !> @param[in] atypes Atom types structure
+    !> @param[in] ntyp Number of atom types
     subroutine read_atoms(natoms, izeta, atomic_detmat, detorb, ndetorb, nshelldet&
             &, ndetpar, jasorb, njasorb, nshelljas, njaspar, mytype, atypes, ntyp)
 
@@ -881,6 +1001,19 @@ contains
         end if
     end subroutine read_atoms
 
+    !> @brief Print orbital information to log file
+    !> @details This subroutine prints detailed information about orbitals
+    !>          to the log file for debugging and verification purposes.
+    !>          
+    !>          The subroutine prints:
+    !>          - Orbital number and type
+    !>          - Atom and shell indices
+    !>          - Transformation vectors for p-orbitals
+    !>          - Other orbital properties
+    !>          
+    !> @param[in] orbitals Array of orbital structures
+    !> @param[in] norbitals Number of orbitals
+    !> @param[in] orbname Name identifier for the orbital set
     subroutine print_orbitals(orbitals, norbitals, orbname)
         implicit none
         integer, intent(in) :: norbitals
@@ -903,6 +1036,21 @@ contains
         end if
     end subroutine print_orbitals
 
+    !> @brief Apply symmetry operations to orbitals
+    !> @details This subroutine applies symmetry operations to orbitals and
+    !>          determines how each orbital transforms under each symmetry.
+    !>          It creates a mapping between orbitals and their symmetry
+    !>          transformed counterparts.
+    !>          
+    !>          The subroutine handles:
+    !>          - s, p, d, f, g orbital transformations
+    !>          - Sign changes under symmetry operations
+    !>          - Compatibility checking for each symmetry
+    !>          - Orbital mapping creation
+    !>          
+    !> @param[in] orb Array of orbital structures
+    !> @param[in] norb Number of orbitals
+    !> @param[out] orb_map Orbital mapping structure
     subroutine apply_symm_to_orbitals(orb, norb, orb_map)
         implicit none
         integer, intent(in) :: norb
@@ -1023,6 +1171,18 @@ contains
 
     end subroutine apply_symm_to_orbitals
 
+    !> @brief Apply symmetry operations to force components
+    !> @details This subroutine applies symmetry operations to force components
+    !>          (x, y, z directions) and determines how they transform under
+    !>          each symmetry operation.
+    !>          
+    !>          The subroutine:
+    !>          - Applies rotation matrices to force components
+    !>          - Determines which component maps to which
+    !>          - Handles sign changes under symmetry operations
+    !>          - Creates force component mapping
+    !>          
+    !> @param[out] orb_map Force component mapping (3, nsym)
     subroutine apply_symm_to_forces(orb_map)
         implicit none
         integer, intent(out) :: orb_map(3, nsym)
@@ -1060,6 +1220,24 @@ contains
 
     end subroutine apply_symm_to_forces
 
+    !> @brief Generate orbital indices for symmetry-equivalent orbitals
+    !> @details This subroutine generates indices that map orbitals to their
+    !>          symmetry-equivalent counterparts. It finds the largest parameter
+    !>          number less than the given parameter that is compatible with
+    !>          symmetry.
+    !>          
+    !>          The subroutine:
+    !>          - Checks for symmetry-equivalent orbitals
+    !>          - Maps orbitals to their reference counterparts
+    !>          - Handles atomic and orbital number matching
+    !>          - Creates index mapping array
+    !>          
+    !> @param[in] zeta Zeta parameters for atoms (2, natoms)
+    !> @param[in] natoms Number of atoms
+    !> @param[out] newidx Orbital index mapping array
+    !> @param[in] orb Array of orbital structures
+    !> @param[in] norb Number of orbitals
+    !> @param[in] indion Ion index array
     subroutine generate_orbidx(zeta, natoms, newidx, orb, norb, indion)
         implicit none
         integer, intent(in) :: norb, natoms, indion(natoms)
@@ -1099,6 +1277,30 @@ contains
         end if
     end subroutine generate_orbidx
 
+    !> @brief Generate parameter symmetries for orbital parameters
+    !> @details This subroutine generates symmetry relationships between
+    !>          orbital parameters, identifying which parameters are equivalent
+    !>          under symmetry operations. It handles both hybrid and non-hybrid
+    !>          orbitals and creates parameter equality structures.
+    !>          
+    !>          The subroutine handles:
+    !>          - Parameter symmetry identification
+    !>          - Hybrid orbital parameter handling
+    !>          - Cell replication for periodic systems
+    !>          - Zeta parameter equalization
+    !>          - Sign conventions for optimization
+    !>          
+    !> @param[out] eqpar Parameter equality structures
+    !> @param[in] orb Array of orbital structures
+    !> @param[in] orbidx Orbital index mapping
+    !> @param[in] orbidxz Orbital index mapping for zeta
+    !> @param[out] neq Number of parameter equalities
+    !> @param[in] ntotpar Total number of parameters
+    !> @param[in] ncell Number of cells
+    !> @param[in] norb Number of orbitals
+    !> @param[in] onlycontr Logical flag for contraction only
+    !> @param[in] ipf Pfaffian flag
+    !> @param[in] symmagp Logical flag for Hermitian constraints
     subroutine par_symm(eqpar, orb, orbidx, orbidxz, neq, ntotpar, ncell, norb, onlycontr, ipf, symmagp)
         implicit none
         integer, intent(in) :: ncell, norb, ntotpar, ipf
@@ -1473,6 +1675,19 @@ contains
         deallocate (pos, poseq, tmp)
     end subroutine par_symm
 
+    !> @brief Generate tempered orbital parameters
+    !> @details This subroutine generates the z parameters for tempered orbitals
+    !>          using the geometric progression formula: z(i) = alpha * beta^(i-1).
+    !>          
+    !>          The subroutine:
+    !>          - Computes geometric progression of parameters
+    !>          - Uses alpha as the base value
+    !>          - Uses beta as the progression ratio
+    !>          
+    !> @param[in] n Number of parameters to generate
+    !> @param[out] z Array of generated parameters
+    !> @param[in] alpha Base parameter value
+    !> @param[in] beta Progression ratio
     subroutine defz(n, alpha, beta, z)
         implicit none
         integer, intent(in) :: n

@@ -1,0 +1,295 @@
+\doxysection{src/a\+\_\+turborvb/energy.f90 File Reference}
+\hypertarget{energy_8f90}{}\label{energy_8f90}\index{src/a\_turborvb/energy.f90@{src/a\_turborvb/energy.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}{energy}} (lz, table, tabler, diag, wtot, veff, veffright, enerdiff, itest, npow, gamma, nel, istart, indtm, epscutdmc)
+\begin{DoxyCompactList}\small\item\em Compute energy components for real wave function matrix elements. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{energy_8f90_a60a48cf9ccdd9944d2dc9f41de347459}{energy\+\_\+complex}} (lz, table, tabler, diag, wtot, veff, veffright, enerdiff, itest, npow, gamma, nel, istart, indtm, epscutdmc)
+\begin{DoxyCompactList}\small\item\em Compute energy components for complex wave function matrix elements. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{energy_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9}\index{energy.f90@{energy.f90}!energy@{energy}}
+\index{energy@{energy}!energy.f90@{energy.f90}}
+\doxysubsubsection{\texorpdfstring{energy()}{energy()}}
+{\footnotesize\ttfamily \label{energy_8f90_a299d120c5a40dfc432ee6882af3d15a9} 
+subroutine energy (\begin{DoxyParamCaption}\item[{integer}]{lz}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{table}{, }\item[{real\texorpdfstring{$\ast$}{*}8, dimension(\texorpdfstring{$\ast$}{*})}]{tabler}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{diag}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{wtot}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{veff}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{veffright}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{enerdiff}{, }\item[{integer}]{itest}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{npow}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{gamma}{, }\item[{integer}]{nel}{, }\item[{integer}]{istart}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{indtm}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{epscutdmc}{}\end{DoxyParamCaption})}
+
+
+
+Compute energy components for real wave function matrix elements. 
+
+This subroutine computes various energy components from matrix elements table. It calculates wtot as the sum of \texorpdfstring{$\vert$}{|}\+G\+\_\+x\textquotesingle{},x\texorpdfstring{$\vert$}{|} where G\+\_\+x,x (diagonal part) is given by the lattice FN approximation\+: G\+\_\+x,x = diag + (1+gamma) \texorpdfstring{$\ast$}{*} veff. The matrix elements are processed differently based on their sign and position relative to the effective interaction range defined by istart and indtm. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em Lz} & Number of matrix elements \\
+\hline
+\mbox{\texttt{in}}  & {\em table} & Matrix elements for guiding function \\
+\hline
+\mbox{\texttt{in}}  & {\em tabler} & Matrix elements for Vsf function \\
+\hline
+\mbox{\texttt{in}}  & {\em diag} & Diagonal energy contribution \\
+\hline
+\mbox{\texttt{out}}  & {\em wtot} & Total weight sum \\
+\hline
+\mbox{\texttt{out}}  & {\em veff} & Effective potential for negative matrix elements \\
+\hline
+\mbox{\texttt{out}}  & {\em veffright} & Effective potential for positive matrix elements \\
+\hline
+\mbox{\texttt{out}}  & {\em enerdiff} & Energy difference between guiding and Vsf functions \\
+\hline
+\mbox{\texttt{in}}  & {\em itest} & Test flag for different calculation modes \\
+\hline
+\mbox{\texttt{in}}  & {\em npow} & Power parameter for energy calculation \\
+\hline
+\mbox{\texttt{in}}  & {\em gamma} & Gamma parameter for energy scaling \\
+\hline
+\mbox{\texttt{in}}  & {\em nel} & Number of electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Starting index for effective interaction \\
+\hline
+\mbox{\texttt{in}}  & {\em indtm} & Array defining effective interaction range per particle \\
+\hline
+\mbox{\texttt{in}}  & {\em epscutdmc} & DMC energy cutoff parameter \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{energy_8f90_source_l00037}{37}} of file \mbox{\hyperlink{energy_8f90_source}{energy.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a303497a92adb3fa171f8b165c8e57208}{typereg}}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ Lz,\ i,\ itest,\ index,\ nel,\ istart,\ ipart,\ indtm(*)}
+\DoxyCodeLine{00042\ \ \ \ \ real*8\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(*),\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(*),\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}},\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}},\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}},\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}},\ \mbox{\hyperlink{namespaceallio_ac62ecfb18a3cde2460550b904f03d61a}{npow}},\ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\&}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ \mbox{\hyperlink{namespaceallio_aeaa6c552d12532b0b0c9e3d981d86b3a}{epscutdmc}},\ costnpow,\ enerdiff}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ wtot\ is\ the\ sum\ over\ x'\ of\ \ |\ G\_x',x\ |\ where\ it\ is\ assumed\ that}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ G\_x,x\ (the\ diagonal\ part)\ is\ given\ by\ the\ lattice\ FN\ aproximation:}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ G\_x,x=\ diag+\ (1+gamma)\ veff}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Here\ |G\_x',x|\ =table(i)\ \ \ \ \ \ \ \ \ \ if\ \ \ table\ >\ 0\ and\ x'\ ne\ x}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Here\ |G\_x',x|\ =|gamma\ table(i)|\ \ if\ \ \ table\ <\ 0\ and\ x'\ ne\ x}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ veff\ =\ sum\_x'\ G\_\{x'.x\}\ <\ 0\ and\ x'\ ne\ x.}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ enerdiff\ =\ 0.d0}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{comment}{!\ \ \ if(itest.eq.1.or.itest.eq.3.or.itest.eq.-\/2.or.itest.eq.-\/3)\ then}}
+\DoxyCodeLine{00055\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}}
+\DoxyCodeLine{00056\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ 0.d0}
+\DoxyCodeLine{00057\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ 0.d0}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aeaa6c552d12532b0b0c9e3d981d86b3a}{epscutdmc}}\ .eq.\ 0.d0\ .and.\ \mbox{\hyperlink{namespaceallio_a303497a92adb3fa171f8b165c8e57208}{typereg}}\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a7fae86417eb57f923272263df99f4d68}{lz}}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}\ +\ 1}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ \mbox{\hyperlink{namespaceallio_ab01dde53d460cf3d51ab6fbb4905c17d}{istart}}\ .and.\ index\ .le.\ \mbox{\hyperlink{namespaceallio_a0739c4b469702ff569b74d7b63690a98}{indtm}}(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ .lt.\ 0.)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ .lt.\ 0.)\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00072\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00073\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ costnpow\ =\ \mbox{\hyperlink{namespaceallio_ac62ecfb18a3cde2460550b904f03d61a}{npow}}*(1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ The\ Guiding\ function\ ME\ are\ in\ table.\ The\ Vsf\ is\ defined\ in\ term}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ of\ a\ different\ wf\ with\ the\ same\ nodes,\ the\ corresponding\ ME\ are}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ written\ in\ tabler}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a7fae86417eb57f923272263df99f4d68}{lz}}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}\ +\ 1}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ \mbox{\hyperlink{namespaceallio_ab01dde53d460cf3d51ab6fbb4905c17d}{istart}}\ .and.\ index\ .le.\ \mbox{\hyperlink{namespaceallio_a0739c4b469702ff569b74d7b63690a98}{indtm}}(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ -\/\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}}*\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ +\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)*(1.d0\ -\/\ costnpow)\ +\ costnpow*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ costnpow*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ -\/\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}}*\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ +\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00100\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00101\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00102\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00103\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{comment}{!\ \ \ else}}
+\DoxyCodeLine{00106\ \textcolor{comment}{!\ \ \ \ \ \ \ veff\ =\ 0.d0}}
+\DoxyCodeLine{00107\ \textcolor{comment}{!\ \ \ \ \ \ \ veffright\ =\ 0.d0}}
+\DoxyCodeLine{00108\ \textcolor{comment}{!\ \ \ \ \ \ \ wtot\ =\ 0.d0}}
+\DoxyCodeLine{00109\ \textcolor{comment}{!\ \ \ \ \ \ \ costnpow\ =\ npow\ *\ (1.d0\ +\ gamma)}}
+\DoxyCodeLine{00110\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ Lz}}
+\DoxyCodeLine{00111\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)\ /\ nel\ +\ 1}}
+\DoxyCodeLine{00112\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(npow.ne.0.d0.and.table(i).gt.0.d0.and.index.ge.istart)\ then}}
+\DoxyCodeLine{00113\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)\ *\ (1.d0\ -\/\ costnpow)}}
+\DoxyCodeLine{00114\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ elseif(table(i).gt.0.d0)\ then}}
+\DoxyCodeLine{00115\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ table(i)}}
+\DoxyCodeLine{00116\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00117\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ table(i)\ *\ gamma}}
+\DoxyCodeLine{00118\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00119\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00120\ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00936}{allio\+::diag}}, \mbox{\hyperlink{allio_8f90_source_l00633}{allio\+::epscutdmc}}, \mbox{\hyperlink{allio_8f90_source_l00500}{allio\+::gamma}}, \mbox{\hyperlink{allio_8f90_source_l00605}{allio\+::npow}}, \mbox{\hyperlink{allio_8f90_source_l00934}{allio\+::table}}, \mbox{\hyperlink{allio_8f90_source_l00935}{allio\+::tabler}}, \mbox{\hyperlink{allio_8f90_source_l00490}{allio\+::typereg}}, \mbox{\hyperlink{allio_8f90_source_l00525}{allio\+::veff}}, \mbox{\hyperlink{allio_8f90_source_l00526}{allio\+::veffright}}, and \mbox{\hyperlink{allio_8f90_source_l00961}{allio\+::wtot}}.
+
+
+
+Referenced by \mbox{\hyperlink{adjust__tpar_8f90_source_l00031}{adjust\+\_\+tpar()}}, and \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+
+\Hypertarget{energy_8f90_a60a48cf9ccdd9944d2dc9f41de347459}\index{energy.f90@{energy.f90}!energy\_complex@{energy\_complex}}
+\index{energy\_complex@{energy\_complex}!energy.f90@{energy.f90}}
+\doxysubsubsection{\texorpdfstring{energy\_complex()}{energy\_complex()}}
+{\footnotesize\ttfamily \label{energy_8f90_a60a48cf9ccdd9944d2dc9f41de347459} 
+subroutine energy\+\_\+complex (\begin{DoxyParamCaption}\item[{integer}]{lz}{, }\item[{\mbox{\hyperlink{structcomplex}{complex}}(8), dimension(\texorpdfstring{$\ast$}{*})}]{table}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{tabler}{, }\item[{real(8)}]{diag}{, }\item[{real(8)}]{wtot}{, }\item[{real(8)}]{veff}{, }\item[{real(8)}]{veffright}{, }\item[{real(8)}]{enerdiff}{, }\item[{integer}]{itest}{, }\item[{real(8)}]{npow}{, }\item[{real(8)}]{gamma}{, }\item[{integer}]{nel}{, }\item[{integer}]{istart}{, }\item[{integer, dimension(\texorpdfstring{$\ast$}{*})}]{indtm}{, }\item[{real(8)}]{epscutdmc}{}\end{DoxyParamCaption})}
+
+
+
+Compute energy components for complex wave function matrix elements. 
+
+This subroutine computes various energy components from complex matrix elements table. Similar to the real version but handles complex matrix elements. It calculates wtot as the sum of \texorpdfstring{$\vert$}{|}\+G\+\_\+x\textquotesingle{},x\texorpdfstring{$\vert$}{|} where G\+\_\+x,x (diagonal part) is given by the lattice FN approximation. The matrix elements are processed differently based on their real part sign and position relative to the effective interaction range defined by istart and indtm. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em Lz} & Number of matrix elements \\
+\hline
+\mbox{\texttt{in}}  & {\em table} & Complex matrix elements for guiding function \\
+\hline
+\mbox{\texttt{in}}  & {\em tabler} & Real matrix elements for Vsf function \\
+\hline
+\mbox{\texttt{in}}  & {\em diag} & Diagonal energy contribution \\
+\hline
+\mbox{\texttt{out}}  & {\em wtot} & Total weight sum (real) \\
+\hline
+\mbox{\texttt{out}}  & {\em veff} & Effective potential for negative matrix elements \\
+\hline
+\mbox{\texttt{out}}  & {\em veffright} & Effective potential for positive matrix elements \\
+\hline
+\mbox{\texttt{out}}  & {\em enerdiff} & Energy difference between guiding and Vsf functions \\
+\hline
+\mbox{\texttt{in}}  & {\em itest} & Test flag for different calculation modes \\
+\hline
+\mbox{\texttt{in}}  & {\em npow} & Power parameter for energy calculation \\
+\hline
+\mbox{\texttt{in}}  & {\em gamma} & Gamma parameter for energy scaling \\
+\hline
+\mbox{\texttt{in}}  & {\em nel} & Number of electrons \\
+\hline
+\mbox{\texttt{in}}  & {\em istart} & Starting index for effective interaction \\
+\hline
+\mbox{\texttt{in}}  & {\em indtm} & Array defining effective interaction range per particle \\
+\hline
+\mbox{\texttt{in}}  & {\em epscutdmc} & DMC energy cutoff parameter \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{energy_8f90_source_l00149}{149}} of file \mbox{\hyperlink{energy_8f90_source}{energy.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_a303497a92adb3fa171f8b165c8e57208}{typereg}}}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{integer}\ Lz,\ i,\ itest,\ index,\ nel,\ istart,\ ipart,\ indtm(*)}
+\DoxyCodeLine{00155\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ tabler(*),\ diag,\ wtot,\ veff,\ gamma,\ npow,\ veffright\ \&}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ ,\ epscutdmc,\ costnpow,\ enerdiff}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordtype}{complex(8)}\ table(*)}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ enerdiff\ =\ 0.d0}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{comment}{!\ \ \ if(itest.eq.1.or.itest.eq.3.or.itest.eq.-\/2.or.itest.eq.-\/3)\ then}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{comment}{!\ for\ dmclrdmc}}
+\DoxyCodeLine{00164\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a8023984e5a94a5634beed638cdacc098}{diag}}}
+\DoxyCodeLine{00165\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ 0.d0}
+\DoxyCodeLine{00166\ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ 0.d0}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aeaa6c552d12532b0b0c9e3d981d86b3a}{epscutdmc}}\ .eq.\ 0.d0\ .and.\ \mbox{\hyperlink{namespaceallio_a303497a92adb3fa171f8b165c8e57208}{typereg}}\ .lt.\ 6)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a7fae86417eb57f923272263df99f4d68}{lz}}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}\ +\ 1}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ \mbox{\hyperlink{namespaceallio_ab01dde53d460cf3d51ab6fbb4905c17d}{istart}}\ .and.\ index\ .le.\ \mbox{\hyperlink{namespaceallio_a0739c4b469702ff569b74d7b63690a98}{indtm}}(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dreal(\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))\ .lt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ dreal(\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ +\ dreal(\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00177\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dreal(\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))\ .lt.\ 0.d0)\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ dreal(\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00180\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ costnpow\ =\ \mbox{\hyperlink{namespaceallio_ac62ecfb18a3cde2460550b904f03d61a}{npow}}*(1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a7fae86417eb57f923272263df99f4d68}{lz}}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ The\ Guiding\ function\ ME\ are\ in\ table.\ The\ Vsf\ is\ defined\ in\ term}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ of\ a\ different\ wf\ with\ the\ same\ nodes,\ the\ corresponding\ ME\ are}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ written\ in\ tabler}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}\ +\ 1}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_ac50e65d56f86ac129363ccc460957f92}{nel}}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ .ge.\ \mbox{\hyperlink{namespaceallio_ab01dde53d460cf3d51ab6fbb4905c17d}{istart}}\ .and.\ index\ .le.\ \mbox{\hyperlink{namespaceallio_a0739c4b469702ff569b74d7b63690a98}{indtm}}(ipart))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ -\/\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}}*\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ +\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ =\ \mbox{\hyperlink{namespaceallio_a9bcd31e91a7cb05838c2170e59719306}{veffright}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ costnpow*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)*(1.d0\ -\/\ costnpow)\ +\ costnpow*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00199\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ .lt.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enerdiff\ =\ enerdiff\ -\/\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*(\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)\ -\/\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i))}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ =\ \mbox{\hyperlink{namespaceallio_a7fb8b437cd79f76b57882cd8cf04e1fb}{veff}}\ +\ \mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ -\/\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}}*\mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)\ +\ (1.d0\ +\ \mbox{\hyperlink{namespaceallio_a2453c36e78cc14753951e722575df1f7}{gamma}})*\mbox{\hyperlink{namespaceallio_aa6b3c03642aa9f5f650c38fa4b5c9226}{tabler}}(i)}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ =\ \mbox{\hyperlink{namespaceallio_a7b884f9a1978051f18a4f750ae6dc0bb}{wtot}}\ +\ \mbox{\hyperlink{namespaceallio_ac2b76628bde897616591918094b796f5}{table}}(i)}
+\DoxyCodeLine{00207\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00209\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00210\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00211\ \textcolor{comment}{!\ \ \ else\ !\ itest}}
+\DoxyCodeLine{00212\ \textcolor{comment}{!\ \ \ \ \ \ \ !\ vmc\ case}}
+\DoxyCodeLine{00213\ \textcolor{comment}{!\ \ \ \ \ \ \ veff\ =\ 0.d0}}
+\DoxyCodeLine{00214\ \textcolor{comment}{!\ \ \ \ \ \ \ veffright\ =\ 0.d0}}
+\DoxyCodeLine{00215\ \textcolor{comment}{!\ \ \ \ \ \ \ wtot\ =\ 0.d0}}
+\DoxyCodeLine{00216\ \textcolor{comment}{!\ \ \ \ \ \ \ costnpow\ =\ npow\ *\ (1.d0\ +\ gamma)}}
+\DoxyCodeLine{00217\ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i\ =\ 1,\ Lz}}
+\DoxyCodeLine{00218\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)\ /\ nel\ +\ 1}}
+\DoxyCodeLine{00219\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(npow.ne.0.d0.and.dreal(table(i)).gt.0.d0.and.index.ge.istart)\ then}}
+\DoxyCodeLine{00220\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ dreal(table(i))\ *\ (1.d0\ -\/\ costnpow)\ \ !\ weight\ wtot\ remains\ real\ also\ in\ the\ case\ of\ complex\ w.f.}}
+\DoxyCodeLine{00221\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ elseif(dreal(table(i)).gt.0.d0)\ then}}
+\DoxyCodeLine{00222\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ +\ dreal(table(i))}}
+\DoxyCodeLine{00223\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00224\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wtot\ =\ wtot\ -\/\ dreal(table(i))\ *\ gamma}}
+\DoxyCodeLine{00225\ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00226\ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{00227\ \textcolor{comment}{!\ \ \ endif}}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00229\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00490}{allio\+::typereg}}.
+
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

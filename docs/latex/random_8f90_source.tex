@@ -1,0 +1,115 @@
+\doxysection{random.\+f90}
+\hypertarget{random_8f90_source}{}\label{random_8f90_source}\index{src/m\_common/random.f90@{src/m\_common/random.f90}}
+\mbox{\hyperlink{random_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Random\ configuration\ selection\ for\ quantum\ Monte\ Carlo\ moves}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00017}00017\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00018}00018\ \textcolor{comment}{!>\ This\ subroutine\ implements\ a\ random\ configuration\ selection\ algorithm}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00019}00019\ \textcolor{comment}{!>\ for\ quantum\ Monte\ Carlo\ calculations,\ particularly\ useful\ for}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00020}00020\ \textcolor{comment}{!>\ non-\/diagonal\ moves\ in\ variational\ Monte\ Carlo\ and\ diffusion\ Monte\ Carlo.}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00021}00021\ \textcolor{comment}{!>\ It\ uses\ a\ cumulative\ probability\ table\ to\ select\ configurations}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00022}00022\ \textcolor{comment}{!>\ based\ on\ their\ transition\ probabilities.}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00023}00023\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ L\ Number\ of\ particles\ or\ components\ per\ configuration}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ Lz\ Total\ number\ of\ possible\ configurations}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ ztry\ Random\ number\ in\ [diag,\ wtot]\ for\ configuration\ selection}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ table\ Probability\ table\ containing\ transition\ weights\ (ipc,\ *)}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ diag\ Diagonal\ element\ weight\ (lower\ bound\ for\ ztry)}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[out]\ iout\ Selected\ particle\ index\ within\ the\ configuration}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[out]\ indvic\ Selected\ configuration\ index}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[out]\ sign\ Sign\ of\ the\ selected\ transition\ (+1\ or\ -\/1)}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ npow\ Power\ parameter\ for\ transition\ weight\ modification}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in]\ gamma\ Gamma\ parameter\ for\ transition\ weight\ modification}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ istart\ Starting\ index\ for\ configuration\ selection}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ indtm\ Array\ of\ maximum\ indices\ for\ each\ particle}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ ipc\ Leading\ dimension\ of\ table\ array}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00037}00037\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00038}00038\ \textcolor{comment}{!>\ @details}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00039}00039\ \textcolor{comment}{!>\ The\ subroutine\ performs\ the\ following\ operations:}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00040}00040\ \textcolor{comment}{!>\ 1.\ Initializes\ cumulative\ probability\ with\ diagonal\ element}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00041}00041\ \textcolor{comment}{!>\ 2.\ Iterates\ through\ configurations\ until\ cumulative\ probability\ ≥\ ztry:}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00042}00042\ \textcolor{comment}{!>\ \ \ \ -\/\ Calculates\ configuration\ and\ particle\ indices}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00043}00043\ \textcolor{comment}{!>\ \ \ \ -\/\ Applies\ power\ and\ gamma\ modifications\ to\ transition\ weights}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00044}00044\ \textcolor{comment}{!>\ \ \ \ -\/\ Accumulates\ modified\ weights\ in\ cumulative\ probability}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00045}00045\ \textcolor{comment}{!>\ 3.\ Handles\ edge\ cases\ and\ roundoff\ errors:}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00046}00046\ \textcolor{comment}{!>\ \ \ \ -\/\ Adjusts\ index\ if\ final\ configuration\ has\ zero\ weight}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00047}00047\ \textcolor{comment}{!>\ \ \ \ -\/\ Ensures\ valid\ configuration\ selection}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00048}00048\ \textcolor{comment}{!>\ 4.\ Determines\ sign\ based\ on\ transition\ weight\ sign}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00049}00049\ \textcolor{comment}{!>\ 5.\ Returns\ selected\ configuration\ and\ particle\ indices}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00050}00050\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00051}00051\ \textcolor{comment}{!>\ @note\ The\ algorithm\ assumes\ diag\ <\ ztry\ ≤\ wtot\ (non-\/diagonal\ move)}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00052}00052\ \textcolor{comment}{!>\ @note\ Configuration\ index\ is\ calculated\ as:\ index\ =\ (i-\/1)/L\ +\ 1}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00053}00053\ \textcolor{comment}{!>\ @note\ Particle\ index\ is\ calculated\ as:\ ipart\ =\ i\ -\/\ (index-\/1)*L}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00054}00054\ \textcolor{comment}{!>\ @note\ Negative\ indvic\ indicates\ unrecoverable\ error\ (zero\ weight)}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00055}00055\ \textcolor{comment}{!>\ @note\ The\ subroutine\ handles\ both\ positive\ and\ negative\ transition\ weights}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00056}00056\ \textcolor{comment}{!>\ @note\ Power\ and\ gamma\ parameters\ modify\ transition\ weights\ for\ optimization}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00057}\mbox{\hyperlink{random_8f90_aca3757dbd74d29a2ce4f8a75292e17ed}{00057}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{random_8f90_aca3757dbd74d29a2ce4f8a75292e17ed}{random}}(L,\ Lz,\ ztry,\ table,\ diag,\ iout,\ indvic,\ sign\ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \&,\ npow,\ gamma,\ istart,\ indtm,\ ipc)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00060}00060\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipc,\ i,\ L,\ Lz,\ indvic,\ iout,\ index,\ ipart,\ istart,\ indtm(*)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00061}00061\ \ \ \ \ real*8\ diag,\ table(ipc,\ *),\ try,\ ztry,\ sign,\ gamma,\ cost,\ npow}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00063}00063\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ choose\ a\ random\ configuration\ given\ the\ table,wtot}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00064}00064\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ it\ is\ assumed\ that\ \ diag\ <\ ztry\ <=\ wtot\ ,i.e.\ non\ diagonal\ move}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00066}00066\ \ \ \ \ try\ =\ diag}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00067}00067\ \ \ \ \ i\ =\ 0}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00068}00068\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ztry\ .ge.\ try\ .and.\ i\ .lt.\ lz)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/l\ +\ 1}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ ipart\ =\ i\ -\/\ (index\ -\/\ 1)*l}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (npow\ .ne.\ 0.d0\ .and.\ table(1,\ i)\ .gt.\ 0.d0\ .and.\ \&}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ (index\ .ge.\ istart\ .and.\ index\ .le.\ indtm(ipart)))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ table(1,\ i)*(1.d0\ -\/\ npow*(1.d0\ +\ gamma))}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (table(1,\ i)\ .gt.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ table(1,\ i)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ -\/gamma*table(1,\ i)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ try\ =\ try\ +\ cost}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00080}00080\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00083}00083\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ It\ is\ possible\ by\ chance\ and\ roundoff\ that\ the\ final\ i=Lz\ and\ table(Lz)=0}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00084}00084\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if\ for\ roundoff\ i=Lz\ set\ i\ the\ maximum\ with\ table(i)=/0}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00085}00085\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ .eq.\ lz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ ((table(1,\ i)\ .eq.\ 0.d0\ .or.\ (table(1,\ i)\ .lt.\ 0\ .and.\ gamma\ .eq.\ 0)\&}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&.or.\ (npow*(1.d0\ +\ gamma)\ .eq.\ 1.d0\ .and.\ index\ .ge.\ istart))\ .and.\ i\ .gt.\ 1)}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ i\ =\ i\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ (i\ -\/\ 1)/l\ +\ 1}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00090}00090\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00091}00091\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00093}00093\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(i.eq.0)\ i=1}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00094}00094\ \ \ \ \ \textcolor{keywordflow}{if}\ (table(1,\ i)\ .lt.\ 0.)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ sign\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00096}00096\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ sign\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00100}00100\ \ \ \ \ indvic\ =\ index}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00101}00101\ \ \ \ \ iout\ =\ ipart}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00102}00102\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ indvic=(i-\/1)/L+1}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00103}00103\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ iout=i-\/(indvic-\/1)*L}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00104}00104\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00105}00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (table(1,\ i)\ .eq.\ 0.d0)\ indvic\ =\ -\/indvic\ \textcolor{comment}{!\ \ Unrecoverable\ error}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00107}00107\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00108}00108\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{random_8f90_source_l00109}00109\ }
+
+\end{DoxyCode}

@@ -13,6 +13,42 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!=======================================================================
+!> @file invsymeps.f90
+!> @brief Symmetric (Hermitian) matrix inversion and trace utilities
+!> @details This module provides routines for inverting symmetric or Hermitian matrices
+!>          using eigenvalue decomposition, as well as utility functions for computing
+!>          traces and trace-like quantities for real and complex matrices.
+!> @author TurboRVB group
+!> @date 2022
+!> @section Features
+!> - Robust inversion of symmetric/Hermitian matrices with eigenvalue thresholding
+!> - Handles both real and complex matrices (ipc=1 or 2)
+!> - Computes traces and trace-like quantities for matrix products
+!> - Parallelization support (MPI)
+!=======================================================================
+
+!-----------------------------------------------------------------------
+!> @brief Invert a symmetric (Hermitian) matrix using eigenvalue decomposition
+!> @details Computes the inverse of a symmetric (real or complex Hermitian) matrix
+!>          by diagonalizing and thresholding small eigenvalues. Handles both real
+!>          and complex cases, and supports parallel execution with MPI.
+!> @param[in] ipc 1 for real, 2 for complex
+!> @param[in] n Matrix dimension
+!> @param[in,out] a Matrix to invert (overwritten with inverse)
+!> @param[in] lda Leading dimension of a
+!> @param[out] info Error flag (0=success)
+!> @param[in] eps Eigenvalue threshold for inversion
+!> @param[out] mine Number of excluded eigenvalues
+!> @param[out] umat Eigenvector matrix
+!> @param[out] eigmat Eigenvalues (and their inverses)
+!> @param[in] nproc Number of MPI processes
+!> @param[in] rank MPI rank
+!> @param[in] comm_mpi MPI communicator
+!> @note Uses DSYEV_MY or ZSYEV_MY for diagonalization
+!> @note Eigenvalues below eps are excluded from inversion
+!> @note Writes warnings for small or negative eigenvalues
+!> @note Returns inverse in-place in a
 subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank, comm_mpi)
     use constants, only: zone, zzero
     implicit none
@@ -107,6 +143,13 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
     return
 end subroutine invsymeps
 
+!-----------------------------------------------------------------------
+!> @brief Compute the sum of squared elements (trace-like) for a real matrix
+!> @details Returns sum_{i,j} a(i,j)*a(j,i) for a real matrix a.
+!> @param[in] n Matrix dimension
+!> @param[in] a Input matrix (lda, *)
+!> @param[in] lda Leading dimension of a
+!> @return Sum of squared elements (trace-like quantity)
 function tracemat(n, a, lda)
     implicit none
     integer i, j, n, lda
@@ -120,6 +163,13 @@ function tracemat(n, a, lda)
     return
 end
 
+!-----------------------------------------------------------------------
+!> @brief Compute the sum of squared elements (trace-like) for a real or complex matrix
+!> @details Returns sum_{i,j} a(i,j)*a(j,i) for a real or complex matrix a.
+!> @param[in] n Matrix dimension
+!> @param[in] a Input matrix (ipc*lda, *)
+!> @param[in] lda Leading dimension of a
+!> @return Sum of squared elements (trace-like quantity)
 function tracematc(n, a, lda)
     use constants, only: ipc
     implicit none
@@ -142,6 +192,16 @@ function tracematc(n, a, lda)
     return
 end
 
+!-----------------------------------------------------------------------
+!> @brief Compute the sum of products of two matrices (trace-like) for real or complex matrices
+!> @details Returns sum_{i,j} a(i,j)*b(j,i) for real or complex matrices a, b.
+!> @param[in] n Number of rows
+!> @param[in] m Number of columns
+!> @param[in] a Input matrix (ipc*lda, *)
+!> @param[in] lda Leading dimension of a
+!> @param[in] b Input matrix (ipc*ldb, *)
+!> @param[in] ldb Leading dimension of b
+!> @return Sum of products (trace-like quantity)
 function tracemat2(n, m, a, lda, b, ldb)
     use constants, only: ipc
     implicit none
@@ -157,9 +217,19 @@ function tracemat2(n, m, a, lda, b, ldb)
     else
         tracemat2 = tracemat2c(n, m, a, lda, b, ldb)
     end if
-
     return
 end
+
+!-----------------------------------------------------------------------
+!> @brief Compute the sum of products of two complex matrices (trace-like)
+!> @details Returns sum_{i,j} a(i,j)*b(j,i) for complex matrices a, b.
+!> @param[in] n Number of rows
+!> @param[in] m Number of columns
+!> @param[in] a Input complex matrix (lda, *)
+!> @param[in] lda Leading dimension of a
+!> @param[in] b Input complex matrix (ldb, *)
+!> @param[in] ldb Leading dimension of b
+!> @return Sum of products (trace-like quantity)
 function tracemat2c(n, m, a, lda, b, ldb)
     implicit none
     integer i, j, n, m, lda, ldb
@@ -174,6 +244,13 @@ function tracemat2c(n, m, a, lda, b, ldb)
     return
 end
 
+!-----------------------------------------------------------------------
+!> @brief Compute the trace of a real matrix
+!> @details Returns sum_{i} a(i,i) for a real matrix a.
+!> @param[in] n Matrix dimension
+!> @param[in] a Input matrix (lda, *)
+!> @param[in] lda Leading dimension of a
+!> @return Trace of the matrix
 function tracetrue(n, a, lda)
     implicit none
     integer i, j, n, lda

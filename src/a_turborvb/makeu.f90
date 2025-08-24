@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Generate 3x3 rotation matrix from axis-angle representation
+!> @details    This subroutine constructs a 3x3 rotation matrix from the
+!>             axis-angle representation. The rotation is around the axis
+!>             defined by the unit vector (x,y,z) by an angle alpha.
+!> @param[in]  alpha   Rotation angle in radians
+!> @param[in]  x       X-component of rotation axis unit vector
+!> @param[in]  y       Y-component of rotation axis unit vector
+!> @param[in]  z       Z-component of rotation axis unit vector
+!> @param[out] u       3x3 rotation matrix
 subroutine make_u(alpha, x, y, z, u)
     implicit none
     real*8 alpha, x, y, z, uc

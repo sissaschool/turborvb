@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Lambda parameter plotting program for TurboRVB
+!> @details This program reads a TurboRVB wave function (fort.10) and
+!> generates files containing lambda parameters sorted by distance.
+!> It outputs lambda.dat for orbital parameters, lambdaj.dat for
+!> Jastrow parameters, and lambdajsz.dat for spin-dependent Jastrow
+!> parameters if applicable.
+!>
+!> @author TurboRVB group
+!> @date 2022
 program fort10toxyz
     use allio
     use atom_names
@@ -22,8 +31,8 @@ program fort10toxyz
     double precision, allocatable :: new_rion(:, :)
     double precision, allocatable :: distanza(:), tmp(:)
     !   AAA    Lines to be added just after all definitions of variables.
-    character(100) name_tool
-    character(20) str
+    character(100) name_tool  !< Tool name for help system
+    character(20) str         !< Command line argument
 
     call getarg(1, str)
     if (str .eq. "--help" .or. str .eq. "-help" .or. str .eq. "help") then

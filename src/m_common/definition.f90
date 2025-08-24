@@ -13,6 +13,52 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Generate spherical quadrature points for different polyhedral symmetries
+!>
+!> This subroutine generates quadrature points and weights for numerical
+!> integration on the unit sphere based on different polyhedral symmetries.
+!> It supports octahedral, tetrahedral, and icosahedral point sets with
+!> various numbers of integration points.
+!>
+!> @param[in] maxint Number of quadrature points (4, 6, 12, 18, 26, 32, 50)
+!> @param[out] wintpseudo Array of quadrature weights
+!> @param[in] lmax Maximum angular momentum for Legendre polynomials
+!> @param[out] versor Array of unit vectors (3 × maxint)
+!> @param[out] legendre Array of Legendre polynomial values
+!> @param[in] rank MPI rank for error reporting
+!> @param[out] iflagerr Error flag (1 if error occurs)
+!>
+!> @details
+!> The subroutine supports the following quadrature schemes:
+!>
+!> **Supported Point Sets:**
+!> - maxint = 4: Tetrahedral symmetry (4 points)
+!> - maxint = 6: Octahedral symmetry (6 points)
+!> - maxint = 12: Icosahedral symmetry (12 points)
+!> - maxint = 18: Extended octahedral symmetry (18 points)
+!> - maxint = 26: High-order octahedral symmetry (26 points)
+!> - maxint = 32: Extended icosahedral symmetry (32 points)
+!> - maxint = 50: High-order octahedral symmetry (50 points)
+!>
+!> **Point Generation:**
+!> Each symmetry type generates points based on geometric properties:
+!> - Tetrahedral: Points at (±1/√3, ±1/√3, ±1/√3) with sign combinations
+!> - Octahedral: Points along coordinate axes (±1,0,0), (0,±1,0), (0,0,±1)
+!> - Icosahedral: Points based on icosahedron vertices and face centers
+!>
+!> **Weight Assignment:**
+!> Weights are assigned to ensure proper normalization:
+!> - Equal weights for symmetric point sets
+!> - Different weights for different point classes in extended sets
+!>
+!> **Legendre Polynomial Evaluation:**
+!> After generating points, Legendre polynomials are evaluated at each
+!> point for use in spherical harmonic expansions.
+!>
+!> @note The subroutine requires the legfun function for Legendre polynomial evaluation.
+!> @note Points are normalized to lie on the unit sphere.
+!> @note Weights sum to 4π for proper spherical integration.
+!> @note Error handling is provided for unsupported point counts.
 subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr)
     !
     implicit none
@@ -21,16 +67,20 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
     real(8) versor(3, *), legendre(lmax - 1, *), cost, legfun, wintpseudo(*)  &
             &, par, theta, phi, pi, q, r, s, theta1, theta2
     !
+    !> @brief Initialize versor array to zero
     do i = 1, 3
         do j = 1, maxint
             versor(i, j) = 0.d0
         end do
     end do
-    ! octahedron symmetry quadrature
+    !
+    !> @brief Octahedral symmetry quadrature (6 points)
     if (maxint .eq. 6) then
+        !> @brief Assign equal weights for 6-point octahedral quadrature
         do i = 1, maxint
             wintpseudo(i) = 1.d0/6.d0
         end do
+        !> @brief Generate points along coordinate axes
         versor(1, 1) = 1.d0
         versor(1, 2) = -1.d0
         versor(2, 3) = 1.d0
@@ -39,9 +89,11 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(3, 6) = -1.d0
         ! tetrahedron symmetry quadrature
     elseif (maxint .eq. 4) then
+        !> @brief Assign equal weights for 4-point tetrahedral quadrature
         do i = 1, maxint
             wintpseudo(i) = 1.d0/4.d0
         end do
+        !> @brief Generate tetrahedral points with proper sign combinations
         par = 1.d0/dsqrt(3.d0)
         do i = 1, 3
             do j = 1, maxint
@@ -56,9 +108,11 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(2, 4) = -versor(2, 4)
         ! icosahedron symmetry quadrature
     elseif (maxint .eq. 12) then
+        !> @brief Assign equal weights for 12-point icosahedral quadrature
         do i = 1, maxint
             wintpseudo(i) = 1.d0/12.d0
         end do
+        !> @brief Generate icosahedral points using spherical coordinates
         pi = acos(-1.d0)
         versor(3, 1) = 1.d0
         versor(3, 2) = -1.d0
@@ -76,12 +130,14 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         end do
         ! octahedron symmetry quadrature
     elseif (maxint .eq. 18) then
+        !> @brief Assign different weights for different point classes
         do i = 1, 6
             wintpseudo(i) = 1.d0/30.d0
         end do
         do i = 7, maxint
             wintpseudo(i) = 1.d0/15.d0
         end do
+        !> @brief Generate extended octahedral points
         pi = 1.d0/dsqrt(2.d0)
         versor(1, 1) = 1.d0
         versor(1, 2) = -1.d0
@@ -115,6 +171,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(3, 18) = -pi
 
     elseif (maxint .eq. 26) then ! octahedron
+        !> @brief Assign weights for different point classes in 26-point quadrature
         do i = 1, 6
             wintpseudo(i) = 1.d0/21.d0
         end do
@@ -124,6 +181,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         do i = 19, maxint
             wintpseudo(i) = 27.d0/840.d0
         end do
+        !> @brief Generate high-order octahedral points
         pi = 1.d0/dsqrt(2.d0)
         q = 1.d0/dsqrt(3.d0)
         versor(1, 1) = 1.d0
@@ -157,6 +215,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(2, 18) = -pi
         versor(3, 18) = -pi
 
+        !> @brief Add cube vertices for extended quadrature
         versor(1, 19) = q
         versor(2, 19) = q
         versor(3, 19) = q
@@ -191,6 +250,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
 
     elseif (maxint .eq. 32) then ! icosahedron
 
+        !> @brief Assign weights for different point classes in 32-point quadrature
         do i = 1, 12
             wintpseudo(i) = 5.d0/168.d0
         end do
@@ -198,6 +258,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
             wintpseudo(i) = 27.d0/840.d0
         end do
 
+        !> @brief Generate extended icosahedral points
         pi = acos(-1.d0)
         theta1 = dacos((2.d0 + dsqrt(5.d0))/dsqrt(15.d0 + 6.d0*dsqrt(5.d0)))
         theta2 = dacos(1.d0/dsqrt(15.d0 + 6.d0*dsqrt(5.d0)))
@@ -217,6 +278,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
             versor(3, j + 8) = cos(theta)
         end do
 
+        !> @brief Add additional icosahedral points with different theta angles
         do j = 0, 4
             theta = theta1
             phi = (2.d0*dble(j) + 1.d0)*pi/5.d0
@@ -241,6 +303,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         end do
 
     elseif (maxint .eq. 50) then ! octahedron
+        !> @brief Assign weights for different point classes in 50-point quadrature
         do i = 1, 6
             wintpseudo(i) = 4.d0/315.d0
         end do
@@ -254,11 +317,13 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
             wintpseudo(i) = 14641.d0/725760.d0
         end do
 
+        !> @brief Generate high-order octahedral points with additional parameters
         pi = 1.d0/dsqrt(2.d0)
         q = 1.d0/dsqrt(3.d0)
         r = 1.d0/dsqrt(11.d0)
         s = 3.d0/dsqrt(11.d0)
 
+        !> @brief Standard octahedral points
         versor(1, 1) = 1.d0
         versor(1, 2) = -1.d0
         versor(2, 3) = 1.d0
@@ -290,6 +355,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(2, 18) = -pi
         versor(3, 18) = -pi
 
+        !> @brief Cube vertices
         versor(1, 19) = q
         versor(2, 19) = q
         versor(3, 19) = q
@@ -322,6 +388,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(2, 26) = q
         versor(3, 26) = -q
 
+        !> @brief Additional high-order points with r and s parameters
         versor(1, 27) = r
         versor(2, 27) = r
         versor(3, 27) = s
@@ -426,6 +493,7 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         return
     end if
     !
+    !> @brief Evaluate Legendre polynomials at all quadrature points
     do i = 1, maxint
         cost = versor(3, i)
         do j = 1, lmax - 1

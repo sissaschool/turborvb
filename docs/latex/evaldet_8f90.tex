@@ -1,0 +1,77 @@
+\doxysection{src/c\+\_\+adjoint\+\_\+forward/evaldet.f90 File Reference}
+\hypertarget{evaldet_8f90}{}\label{evaldet_8f90}\index{src/c\_adjoint\_forward/evaldet.f90@{src/c\_adjoint\_forward/evaldet.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{evaldet_8f90_a6937634f19cdc060cfa44b1e928ee516}{evaldet}} (a, nl, nd, ipiv, detln, detsn)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{evaldet_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{evaldet_8f90_a6937634f19cdc060cfa44b1e928ee516}\index{evaldet.f90@{evaldet.f90}!evaldet@{evaldet}}
+\index{evaldet@{evaldet}!evaldet.f90@{evaldet.f90}}
+\doxysubsubsection{\texorpdfstring{evaldet()}{evaldet()}}
+{\footnotesize\ttfamily \label{evaldet_8f90_a6937634f19cdc060cfa44b1e928ee516} 
+subroutine evaldet (\begin{DoxyParamCaption}\item[{real\texorpdfstring{$\ast$}{*}8, dimension(nl, nd)}]{a}{, }\item[{integer}]{nl}{, }\item[{integer}]{nd}{, }\item[{integer, dimension(nd)}]{ipiv}{, }\item[{real\texorpdfstring{$\ast$}{*}8}]{detln}{, }\item[{integer}]{detsn}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{evaldet_8f90_source_l00016}{16}} of file \mbox{\hyperlink{evaldet_8f90_source}{evaldet.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceconstants}{constants}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keywordtype}{integer}\ nl,\ nd,\ isum,\ i,\ detsn}
+\DoxyCodeLine{00022\ \ \ \ \ real*8\ a(nl,\ nd),\ detln}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{integer}\ ipiv(nd)}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceconstants_a61627c400e51e24f03060d202408d56a}{ipf}}\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ detsn\ =\ 1}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ detln\ =\ 0.d0}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ isum\ =\ 0}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#ifdef\ \_CUSOLVER}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ reduction(+:isum,detln)\ reduction(*:detsn)}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nd}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ detln\ =\ log(abs(a(i,\ i)))\ +\ detln}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ detsn\ =\ int(sign(1.d0,\ a(i,\ i)))*detsn}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(i)\ .ne.\ i)\ isum\ =\ isum\ +\ 1}
+\DoxyCodeLine{00035\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#ifdef\ \_CUSOLVER}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{}\textcolor{comment}{!\ Workaround\ for\ nvfortran\ compiler.\ Does\ not\ update\ automatically\ scalars.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{!\$omp\ target\ update\ from(isum,detln,detsn)}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(isum,\ 2)\ .ne.\ 0)\ detsn\ =\ -\/detsn}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ detsn\ =\ int(sign(1.d0,\ a(1,\ 2)))}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ detln\ =\ log(abs(a(1,\ 2)))}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ isum\ =\ 0}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(1)\ .ne.\ 1)\ isum\ =\ 1}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ nd}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipiv(i)\ .ne.\ i)\ isum\ =\ isum\ +\ 1}
+\DoxyCodeLine{00049\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 3,\ nd\ -\/\ 1,\ 2}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ detln\ =\ log(abs(a(i,\ i\ +\ 1)))\ +\ detln}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ detsn\ =\ int(sign(1.d0,\ a(i,\ i\ +\ 1)))*detsn}
+\DoxyCodeLine{00053\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mod(isum,\ 2)\ .ne.\ 0)\ detsn\ =\ -\/detsn}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{00059\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{constants_8f90_source_l00229}{constants\+::ipf}}.
+
+
+
+Referenced by \mbox{\hyperlink{scratchdet_8f90_source_l00030}{scratchdet()}}, and \mbox{\hyperlink{compute__fast_8f90_source_l00705}{task9()}}.
+

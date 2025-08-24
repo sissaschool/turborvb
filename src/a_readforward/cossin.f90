@@ -13,6 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Computes cosine and sine values for plane wave evaluation
+!> @details This subroutine calculates nk pairs of cosine and sine values
+!>          for a particle located at position x. It evaluates plane wave
+!>          contributions exp(i*k*r) = cos(k*r) + i*sin(k*r) for correlation
+!>          function calculations. Supports 1D, 2D, and 3D systems.
+!> @param[in] x Particle position coordinates
+!> @param[out] sp Array containing cosine and sine values (n2, nk)
+!> @param[in] n2 Dimension of sp array (should be 2 for cos/sin pairs)
+!> @param[in] nk Number of wave vectors
+!> @param[in] ndim Dimension of coordinate space
+!> @param[in] rkcomp Wave vector components (ndim, nk)
+!> @param[in] ddim Physical dimension of the system (1, 2, or 3)
+!> @param[in] vdim Vector dimensions for coordinate mapping
 subroutine cossin(x, sp, n2, nk, ndim, rkcomp, ddim, vdim)
 
     implicit none

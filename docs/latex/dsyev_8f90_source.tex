@@ -1,0 +1,226 @@
+\doxysection{dsyev.\+f90}
+\hypertarget{dsyev_8f90_source}{}\label{dsyev_8f90_source}\index{src/c\_adjoint\_forward/dsyev.f90@{src/c\_adjoint\_forward/dsyev.f90}}
+\mbox{\hyperlink{dsyev_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ based\ on\ a\ LAPACK\ routine\ by}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00002}00002\ \textcolor{comment}{!\ Copyright\ (C)\ 1994\ Univ.\ of\ Tennessee,\ Univ.\ of\ California\ Berkeley,\ NAG\ Ltd.,}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00003}00003\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00004}00004\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00005}00005\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00006}00006\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00007}00007\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00008}00008\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00009}00009\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00010}00010\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00011}00011\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00012}00012\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00013}00013\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00014}00014\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00015}00015\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00017}\mbox{\hyperlink{dsyev_8f90_adf90d5315ae808f3dd170b1edbc190ed}{00017}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{dsyev_8f90_adf90d5315ae808f3dd170b1edbc190ed}{dsyev\_my}}(JOBZ,\ UPLO,\ N,\ A,\ LDA,\ W,\ INFO,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00018}00018\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}},\ \textcolor{keywordtype}{only}:\ \mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}},\ \mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00020}00020\ \ \ \ \ \textcolor{keywordtype}{logical}\ yesbcast}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00021}00021\ \ \ \ \ \textcolor{keywordtype}{integer}\ nproc,\ rank,\ comm\_mpi}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00022}00022\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ z}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00023}00023\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ workp}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00024}00024\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{dimension(:)},\ \textcolor{keywordtype}{allocatable}\ ::\ iwork,\ ifail}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00025}00025\ \ \ \ \ real*8\ vl,\ vu,\ abstol}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{integer}\ il,\ iu,\ lwork}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{external}\ ::\ ilaenv}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00028}00028\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00029}00029\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00030}00030\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Scalar\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{character}\ JOBZ,\ UPLO}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{integer}\ INFO,\ LDA,\ N,\ M,\ I,\ J}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00033}00033\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00034}00034\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ A(LDA,\ *),\ W(*)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00037}00037\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00038}00038\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00039}00039\ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'L'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'l'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(i,\ j)\ =\ a(j,\ i)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00043}00043\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00044}00044\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00046}00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ i\ +\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(j,\ i)\ =\ a(i,\ j)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00049}00049\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00050}00050\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00051}00051\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00053}00053\ \ \ \ \ \textcolor{keywordflow}{if}\ (nproc\ .ne.\ 1\ .and.\ \mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}\ .ne.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ad21913ee63da7f6bdafcbbb23fa7c259}{nproc\_diag}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!write(6,*)\ "{}enter\ caso\ with\ all\ processor"{}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ yesbcast\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsyev_8f90_afa3f3d7c052a469b926b55f641366804}{dsyev\_caso}}(jobz,\ uplo,\ n,\ a,\ lda,\ w,\ info,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%parent\ .ne.\ comm\_mpi)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ write(6,*)\ "{}Warning!\ dsyev\ communicator\ mismatch"{},sub\_comm\_diag\%parent,comm\_mpi}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ INFO=1000}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ return}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yesbcast\ =\ .true.}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yesbcast\ =\ .false.}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00067}00067\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ write(6,*)\ "{}using\ sub\_comm"{},\ sub\_comm\_diag\%nproc,\ sub\_comm\_diag\%rank}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%yesin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ "{}using\ A"{}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsyev_8f90_afa3f3d7c052a469b926b55f641366804}{dsyev\_caso}}(jobz,\ uplo,\ n,\ a,\ lda,\ w,\ info,\ \mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%nproc,\ \mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%rank,\ \mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%comm)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ "{}using\ A\ done"{}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ "{}using\ B"{}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(1:lda,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00078}00078\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a(1:n,\ n)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ "{}using\ B\ done"{}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00081}00081\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00083}00083\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00084}00084\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00085}00085\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(w,\ n,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yesbcast)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%yesin)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(lda*(n\ -\/\ 1)\ +\ n,\ a,\ \mbox{\hyperlink{namespaceallio_aedd9cbbf0bf3a8b9f3bfef1cc70e54bb}{sub\_comm\_diag}}\%comm,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00089}00089\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(a,\ lda*(n\ -\/\ 1)\ +\ n,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a7a9aef9ae02d7ace91c52dc512769de0}{reduce\_base\_real}}(lda*(n\ -\/\ 1)\ +\ n,\ a,\ comm\_mpi,\ -\/1)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00093}00093\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00094}00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00095}00095\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ if(rank.eq.0)\ write(6,*)\ A(1:LDA,1:N)}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00098}00098\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ DOUBLE\ PRECISION,\ dimension(:,:),\ allocatable::\ z}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ double\ PRECISION,\ dimension(:),\ allocatable::\ workp}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ integer,\ dimension(:),\ allocatable::\ iwork,ifail}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (uplo\ .eq.\ \textcolor{stringliteral}{'L'}\ .or.\ uplo\ .eq.\ \textcolor{stringliteral}{'l'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ lwork\ =\ ilaenv(1,\ \textcolor{stringliteral}{'DSYTRD'},\ \textcolor{stringliteral}{'AL'},\ n,\ n,\ n,\ n)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ lwork\ =\ ilaenv(1,\ \textcolor{stringliteral}{'DSYTRD'},\ \textcolor{stringliteral}{'AU'},\ n,\ n,\ n,\ n)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00107}00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ lwork\ =\ max((lwork\ +\ 2)*n,\ 3*n)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ allocate(z(LDA,N),iwork(5*N),ifail(N),workp(lwork))}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (workp(lwork))}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ vl=0.d0}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ vu=0.d0}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ il=1}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ iu=1}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ abstol=2*dlamch('s')\ !\ maximum\ accuracy}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ CALL\ DSYEVX(\ JOBZ,\ 'A',\ UPLO,\ N,\ A,\ LDA,\ VL,\ VU,\ il,\ iu,\&}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ abstol,\ M,\ W,\ Z,\ LDA,\ WORKP,\ lwork,\ IWORK,\&}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IFAIL,\ INFO\ )}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }dsyev(jobz,\ uplo,\ n,\ a,\ lda,\ w,\ workp,\ lwork,\ info)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00120}00120\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ do\ i=1,N}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ A(1:N,i)=Z(1:N,i)}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ enddo}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00124}00124\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ deallocate(z,iwork,ifail,workp)}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (workp)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00127}00127\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00128}00128\ \textcolor{preprocessor}{}\ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(w,\ n,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(a,\ lda*(n\ -\/\ 1)\ +\ n,\ 0,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00130}00130\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00131}00131\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00132}00132\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00134}00134\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00135}00135\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{dsyev_8f90_adf90d5315ae808f3dd170b1edbc190ed}{dsyev\_my}}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00136}00136\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00137}\mbox{\hyperlink{dsyev_8f90_afa3f3d7c052a469b926b55f641366804}{00137}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{dsyev_8f90_afa3f3d7c052a469b926b55f641366804}{dsyev\_caso}}(JOBZ,\ UPLO,\ N,\ A,\ LDA,\ W,\ INFO,\ nproc,\ rank,\ comm\_mpi)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keywordtype}{use\ }dspev\_module}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00140}00140\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00141}00141\ \ \ \ \ \textcolor{keywordtype}{integer}\ nproc,\ rank,\ comm\_mpi}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00142}00142\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00143}00143\ \ \ \ \ \textcolor{comment}{!\ \ -\/-\/\ LAPACK\ driver\ routine\ (version\ 2.0)\ -\/-\/}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00144}00144\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Univ.\ of\ Tennessee,\ Univ.\ of\ California\ Berkeley,\ NAG\ Ltd.,}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00145}00145\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ Courant\ Institute,\ Argonne\ National\ Lab,\ and\ Rice\ University}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00146}00146\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ September\ 30,\ 1994}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00147}00147\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00148}00148\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Scalar\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00149}00149\ \ \ \ \ \textcolor{keywordtype}{character}\ JOBZ,\ UPLO}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00150}00150\ \ \ \ \ \textcolor{keywordtype}{integer}\ INFO,\ LDA,\ N,\ M,\ I}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00151}00151\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00152}00152\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00153}00153\ \ \ \ \ \textcolor{keywordtype}{double\ precision}\ A(LDA,\ *),\ W(*)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00155}00155\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{dimension(:,\ :)},\ \textcolor{keywordtype}{allocatable}\ ::\ z,\ ap}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00156}00156\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00157}00157\ \ \ \ \ real*8,\ \textcolor{keywordtype}{external}\ ::\ dlamch}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00158}00158\ \ \ \ \ real*8\ machp}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00159}00159\ \ \ \ \ \textcolor{keywordtype}{integer}\ nrl,\ firsti,\ j,\ ind,\ ierr,\ dima}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00160}00160\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00161}00161\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00162}00162\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00163}00163\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00164}00164\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00165}00165\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ .le.\ 0)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00166}00166\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ NB\ the\ parallel\ input\ is\ passed\ to\ the\ wrapper\ through\ the}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00167}00167\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ WORK\ space\ ad\ follows:}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00168}00168\ \ \ \ \ machp\ =\ dlamch(\textcolor{stringliteral}{'E'})}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00169}00169\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ Now\ standard\ 1D\ distribution.}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00170}00170\ \ \ \ \ nrl\ =\ n/nproc}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00171}00171\ \ \ \ \ \textcolor{keywordflow}{if}\ (nrl*nproc\ .ne.\ n)\ nrl\ =\ nrl\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00172}00172\ \ \ \ \ \textcolor{keyword}{allocate}\ (ap(nrl,\ n),\ z(nrl,\ n))}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00173}00173\ \ \ \ \ firsti\ =\ rank\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00174}00174\ \ \ \ \ i\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00175}00175\ \ \ \ \ ap\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00176}00176\ \ \ \ \ z\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00177}00177\ \ \ \ \ ind\ =\ firsti}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00178}00178\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ind\ .le.\ n)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00179}00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ ap(i\ +\ 1,\ j)\ =\ a(ind,\ j)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00181}00181\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00182}00182\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00183}00183\ \ \ \ \ \ \ \ \ ind\ =\ nproc*i\ +\ firsti}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00184}00184\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00186}00186\ \ \ \ \ \textcolor{keyword}{call\ }pdspev\_drv\_ss(jobz,\ ap,\ nrl,\ w,\ z,\ nrl,\ \&}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ \ \ \ \ \ \ \ \ nrl,\ n,\ nproc,\ rank,\ comm\_mpi,\ machp,\ 0)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00188}00188\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00189}00189\ \ \ \ \ info\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00190}00190\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00191}00191\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ now\ gather\ a}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00192}00192\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ remove\ all\ the\ part\ not\ used\ in\ the\ processor}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00193}00193\ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00194}00194\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ a(1:lda,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00196}00196\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00197}00197\ \ \ \ \ \ \ \ \ a(1:n,\ n)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00198}00198\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00199}00199\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ a(1:n,\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00201}00201\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00202}00202\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00203}00203\ \ \ \ \ i\ =\ 0}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00204}00204\ \ \ \ \ ind\ =\ firsti}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00205}00205\ \ \ \ \ \textcolor{keywordflow}{do}\ \textcolor{keywordflow}{while}\ (ind\ .le.\ n)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00206}00206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ n}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ a(ind,\ j)\ =\ z(i\ +\ 1,\ j)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00208}00208\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00209}00209\ \ \ \ \ \ \ \ \ i\ =\ i\ +\ 1}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00210}00210\ \ \ \ \ \ \ \ \ ind\ =\ nproc*i\ +\ firsti}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00211}00211\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00213}00213\ \ \ \ \ \textcolor{comment}{!\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00214}00214\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ dima=LDA*(N-\/1)+N}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00215}00215\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ CALL\ reduce\_base\_real(dima,a,comm\_mpi,-\/1)}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00216}00216\ \ \ \ \ \textcolor{comment}{!\#endif}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00217}00217\ \ \ \ \ \textcolor{keyword}{deallocate}\ (ap,\ z)}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00218}00218\ }
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00219}00219\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dsyev_8f90_source_l00220}00220\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{dsyev_8f90_afa3f3d7c052a469b926b55f641366804}{dsyev\_caso}}}
+
+\end{DoxyCode}

@@ -1,0 +1,147 @@
+\doxysection{plotlambda.\+f90}
+\hypertarget{plotlambda_8f90_source}{}\label{plotlambda_8f90_source}\index{src/a\_tools/plotlambda.f90@{src/a\_tools/plotlambda.f90}}
+\mbox{\hyperlink{plotlambda_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Lambda\ parameter\ plotting\ program\ for\ TurboRVB}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ This\ program\ reads\ a\ TurboRVB\ wave\ function\ (fort.10)\ and}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00018}00018\ \textcolor{comment}{!>\ generates\ files\ containing\ lambda\ parameters\ sorted\ by\ distance.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00019}00019\ \textcolor{comment}{!>\ It\ outputs\ lambda.dat\ for\ orbital\ parameters,\ lambdaj.dat\ for}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00020}00020\ \textcolor{comment}{!>\ Jastrow\ parameters,\ and\ lambdajsz.dat\ for\ spin-\/dependent\ Jastrow}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00021}00021\ \textcolor{comment}{!>\ parameters\ if\ applicable.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00022}00022\ \textcolor{comment}{!>}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @author\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @date\ 2022}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00025}\mbox{\hyperlink{plotlambda_8f90_ae2c6ba35365adaf1610fb94fae2fd570}{00025}}\ \textcolor{keyword}{program}\ \mbox{\hyperlink{plotlambda_8f90_ae2c6ba35365adaf1610fb94fae2fd570}{fort10toxyz}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceatom__names}{atom\_names}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00028}00028\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00029}00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ c,\ n,\ i,\ j,\ countpar}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00030}00030\ \ \ \ \ \textcolor{keywordtype}{integer},\ \textcolor{keywordtype}{allocatable}\ ::\ intzeta(:)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{allocatable}\ ::\ new\_rion(:,\ :)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00032}00032\ \ \ \ \ \textcolor{keywordtype}{double\ precision},\ \textcolor{keywordtype}{allocatable}\ ::\ distanza(:),\ tmp(:)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00033}00033\ \ \ \ \ \textcolor{comment}{!\ \ \ AAA\ \ \ \ Lines\ to\ be\ added\ just\ after\ all\ definitions\ of\ variables.}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordtype}{character(100)}\ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\textcolor{comment}{\ \ !<\ Tool\ name\ for\ help\ system}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00035}00035\ \ \ \ \ \textcolor{keywordtype}{character(20)}\ str\textcolor{comment}{\ \ \ \ \ \ \ \ \ !<\ Command\ line\ argument}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keyword}{call\ }getarg(1,\ str)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00038}00038\ \ \ \ \ \textcolor{keywordflow}{if}\ (str\ .eq.\ \textcolor{stringliteral}{"{}-\/-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}-\/help"{}}\ .or.\ str\ .eq.\ \textcolor{stringliteral}{"{}help"{}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ Input\ the\ name\ of\ the\ file\ exactly\ as\ it\ is\ in\ /doc}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}}\ =\ \textcolor{stringliteral}{'plotlambda'}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }help\_online(\mbox{\hyperlink{__help__online_8f90_a5c213ad44c0c0948690bd66075d386aa}{name\_tool}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00043}00043\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00045}00045\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ AAA\ \ \ end\ lines\ to\ be\ added}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{"{}\ *\ *\ *\ READ\ fort.10\ and\ make\ xyz\ file\ *\ *\ *\ "{}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keyword}{open}\ (unit=10,\ file=\textcolor{stringliteral}{'fort.10'},\ form=\textcolor{stringliteral}{'formatted'},\ status=\textcolor{stringliteral}{'unknown'})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00049}00049\ \ \ \ \ \textcolor{keyword}{call\ }default\_allocate}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00050}00050\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{fort10__io_8f90_af3d1caa9f658602b608b84757fba860d}{read\_fort10}}(10)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{eval__iond_8f90_aa4db69a2b7c5d55abcebc1e806fd1853}{eval\_iond}}(\mbox{\hyperlink{namespaceallio_aeccf155f6d693b1bfe715cd3f241f647}{iond}},\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}},\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}},\ \mbox{\hyperlink{namespaceallio_a312eb1c2b77ec482ca17b6a39a90f547}{lbox}},\ \mbox{\hyperlink{namespaceallio_a9e9bb2957f46e7064b885c8fcfec9f53}{psip}},\ \mbox{\hyperlink{namespaceallio_ad378efe02421d9fcd52fd95df6a5700e}{iond\_cart}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keyword}{open}\ (unit=11,\ file=\textcolor{stringliteral}{"{}lambda.dat"{}},\ form=\textcolor{stringliteral}{"{}formatted"{}},\ status=\textcolor{stringliteral}{"{}unknown"{}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00055}00055\ \ \ \ \ \textcolor{keyword}{open}\ (unit=12,\ file=\textcolor{stringliteral}{"{}lambdaj.dat"{}},\ form=\textcolor{stringliteral}{"{}formatted"{}},\ status=\textcolor{stringliteral}{"{}unknown"{}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \&\textcolor{keyword}{open}\ (unit=13,\ file=\textcolor{stringliteral}{"{}lambdajsz.dat"{}},\ form=\textcolor{stringliteral}{"{}formatted"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ status=\textcolor{stringliteral}{"{}unknown"{}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keyword}{allocate}\ (distanza(\mbox{\hyperlink{namespaceallio_ac724bcc56afa537119c89c534f8b48d1}{nnozero\_c}}))}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00060}00060\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00061}00061\ \ \ \ \ distanza(:)\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00063}00063\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ac724bcc56afa537119c89c534f8b48d1}{nnozero\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a80494836d5f56c026d2a8797d237dbfa}{nozero\_c}}(i)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a80494836d5f56c026d2a8797d237dbfa}{nozero\_c}}(i)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00066}00066\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ .le.\ \mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ .ne.\ 0\ .and.\ \mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ distanza(i)\ =\ \mbox{\hyperlink{namespaceallio_aeccf155f6d693b1bfe715cd3f241f647}{iond}}(\mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ (\mbox{\hyperlink{namespaceallio_ae45e2654cb4468b3e55fc70f2c916b52}{kiontot}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00068}00068\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00069}00069\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00071}00071\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(distanza,\ 1,\ \mbox{\hyperlink{namespaceallio_ac724bcc56afa537119c89c534f8b48d1}{nnozero\_c}},\ \mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00073}00073\ \ \ \ \ countpar\ =\ 0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ac724bcc56afa537119c89c534f8b48d1}{nnozero\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00075}00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (distanza(i)\ .ge.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ countpar\ =\ countpar\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_a80494836d5f56c026d2a8797d237dbfa}{nozero\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_a80494836d5f56c026d2a8797d237dbfa}{nozero\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a53acb871d19746ac70582e76a3434903}{nelorb\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipc\ .eq.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11,\ \textcolor{stringliteral}{'(2f12.6,3i12)'})\ real(distanza(i)),\ real(\mbox{\hyperlink{namespaceallio_a01cfe7263f3b1525b3c0fc39299ab824}{scale\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))),\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ countpar}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (11,\ \textcolor{stringliteral}{'(3f12.6,3i12)'})\ real(distanza(i)),\ real(\mbox{\hyperlink{namespaceallio_a01cfe7263f3b1525b3c0fc39299ab824}{scale\_c}}(2*\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i)\ -\/\ 1)),\ \&}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ real(\mbox{\hyperlink{namespaceallio_a01cfe7263f3b1525b3c0fc39299ab824}{scale\_c}}(2*\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))),\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ countpar}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00085}00085\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00086}00086\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00088}00088\ \ \ \ \ \textcolor{keyword}{deallocate}\ (distanza)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00090}00090\ \ \ \ \ \textcolor{keyword}{allocate}\ (distanza(\mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}))}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00091}00091\ \ \ \ \ distanza\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00093}00093\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00094}00094\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(i)\ -\/\ 1)/(ipj*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}})\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(i)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}*ipj}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00096}00096\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_ac75752d6083fd5ad4cf2fa316b8e3b3d}{orbcostn}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ .and.\ .not.\ \mbox{\hyperlink{namespaceallio_ac75752d6083fd5ad4cf2fa316b8e3b3d}{orbcostn}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ distanza(i)\ =\ \mbox{\hyperlink{namespaceallio_aeccf155f6d693b1bfe715cd3f241f647}{iond}}(\mbox{\hyperlink{namespaceallio_a7718880996c241b888d439af2dfd5113}{kiontotj}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ (\mbox{\hyperlink{namespaceallio_a7718880996c241b888d439af2dfd5113}{kiontotj}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00098}00098\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00101}00101\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(distanza,\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}},\ \mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00103}00103\ \ \ \ \ countpar\ =\ 0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00104}00104\ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (distanza(i)\ .ge.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ countpar\ =\ countpar\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ 1)/(ipj*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}})\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*ipj*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (12,\ *)\ real(distanza(i)),\ real(\mbox{\hyperlink{namespaceallio_a47f90d7a42b84b1f5ac8f82e656347d4}{scalej\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))),\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}},\ countpar}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00111}00111\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00113}00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ distanza\ =\ -\/1.d0}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(i)\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(i)\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_ac75752d6083fd5ad4cf2fa316b8e3b3d}{orbcostn}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ .and.\ .not.\ \mbox{\hyperlink{namespaceallio_ac75752d6083fd5ad4cf2fa316b8e3b3d}{orbcostn}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}))\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ distanza(i)\ =\ \mbox{\hyperlink{namespaceallio_aeccf155f6d693b1bfe715cd3f241f647}{iond}}(\mbox{\hyperlink{namespaceallio_a7718880996c241b888d439af2dfd5113}{kiontotj}}(\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}})\ +\ (\mbox{\hyperlink{namespaceallio_a7718880996c241b888d439af2dfd5113}{kiontotj}}(\mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}})\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00120}00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_ab2605b41683742f0858a4abfe2b806c1}{dsortx}}(distanza,\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}},\ \mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}})}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00124}00124\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab540c6f313326df732a81ff689a375cd}{nnozeroj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (distanza(i)\ .ge.\ 0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ =\ (\mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ 1)/\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}\ +\ 1}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}}\ =\ \mbox{\hyperlink{namespaceallio_ae5cc3933157c8e14827c444d455e1160}{nozeroj\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))\ -\/\ (\mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a85e2f56f66fd6926c59383dea97b9683}{nelorbj\_c}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (13,\ *)\ real(distanza(i)),\ real(\mbox{\hyperlink{namespaceallio_aebe92443ef0761f34ad69caf4b0a9e34}{scalejsz\_c}}(\mbox{\hyperlink{namespaceallio_aa6cd4cac3a703232edea1a339e1647e6}{ipsip}}(i))),\ \mbox{\hyperlink{namespaceallio_afee12bfa2aef16c5ddf2fde2cedc54f7}{ix}},\ \mbox{\hyperlink{namespaceallio_aba1db7665fe86e478511f3a95131a28e}{iy}}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00130}00130\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00131}00131\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00133}00133\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00135}00135\ \ \ \ \ \textcolor{keyword}{deallocate}\ (distanza)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00136}00136\ }
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00137}00137\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_ab20760fe3ba8379682b1571207201b8c}{iessz}})\ \textcolor{keyword}{close}\ (13)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00138}00138\ \ \ \ \ \textcolor{keyword}{close}\ (12)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00139}00139\ \ \ \ \ \textcolor{keyword}{close}\ (11)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00140}00140\ \ \ \ \ \textcolor{keyword}{close}\ (10)}
+\DoxyCodeLine{\Hypertarget{plotlambda_8f90_source_l00141}00141\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

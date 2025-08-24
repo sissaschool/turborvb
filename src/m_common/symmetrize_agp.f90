@@ -13,6 +13,40 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Symmetrize the AGP (Antisymmetrized Geminal Power) matrix according to symmetry constraints
+!> @details This subroutine enforces symmetry constraints on the AGP matrix (detmat_c),
+!> ensuring that only allowed matrix elements are retained and that symmetrization is
+!> performed according to the system's point group and physical requirements. It supports
+!> both real and complex AGP, molecular and periodic systems, and handles Hermitian and
+!> non-Hermitian cases. The symmetrization is performed by averaging over symmetry-equivalent
+!> elements and applying sign conventions as needed.
+!>
+!> The algorithm includes:
+!> - Zeroing forbidden elements
+!> - Averaging over symmetry-equivalent elements
+!> - Enforcing Hermitian or other symmetry constraints
+!> - Special handling for molecular/periodic, real/complex, and Pfaffian cases
+!>
+!> @param[in] nnozero_c Number of nonzero elements in compact AGP representation
+!> @param[in] nozero_c Index array for nonzero elements in compact AGP
+!> @param[in] jbradet Symmetry label array for compact AGP
+!> @param[in] jbradetn Symmetry groupings for symmetrization
+!> @param[out] dsw Symmetrized values for each symmetry class
+!> @param[in] iessw0 Number of symmetry groupings
+!> @param[in,out] scale_c Working array for compact AGP values
+!> @param[out] itouch Counter for number of times each symmetry class is touched
+!> @param[in,out] detmat_c AGP matrix to be symmetrized (input/output)
+!> @param[in] nelorb_c Number of orbitals (columns)
+!> @param[in] nelorb_at Number of atomic orbitals
+!> @param[in] nelcol_c Number of columns in AGP matrix
+!> @param[in] symmagp Logical flag: apply additional symmetrization for AGP
+!> @param[in] yes_hermite Logical flag: enforce Hermitian symmetry
+!>
+!> @note This subroutine is essential for ensuring the physical correctness of the AGP
+!>       wave function in quantum Monte Carlo calculations, especially when using symmetry
+!>       reduction and compact representations.
+!>
+!> @see max_ovlp, initialize_symm
 subroutine symmetrizeagp(nnozero_c, nozero_c, jbradet, jbradetn, dsw&
         &, iessw0, scale_c, itouch, detmat_c, nelorb_c, nelorb_at, nelcol_c&
         &, symmagp, yes_hermite)

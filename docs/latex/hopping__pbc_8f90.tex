@@ -1,0 +1,96 @@
+\doxysection{src/a\+\_\+turborvb/hopping\+\_\+pbc.f90 File Reference}
+\hypertarget{hopping__pbc_8f90}{}\label{hopping__pbc_8f90}\index{src/a\_turborvb/hopping\_pbc.f90@{src/a\_turborvb/hopping\_pbc.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{hopping__pbc_8f90_a11fefe838380375c827772cb7c50acc8}{hopping}} (nion, jn, dstep, rcart, rion, imin, itry, tjasder, lbox)
+\begin{DoxyCompactList}\small\item\em Perform hopping moves for quantum Monte Carlo with periodic boundary conditions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{hopping__pbc_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{hopping__pbc_8f90_a11fefe838380375c827772cb7c50acc8}\index{hopping\_pbc.f90@{hopping\_pbc.f90}!hopping@{hopping}}
+\index{hopping@{hopping}!hopping\_pbc.f90@{hopping\_pbc.f90}}
+\doxysubsubsection{\texorpdfstring{hopping()}{hopping()}}
+{\footnotesize\ttfamily \label{hopping__pbc_8f90_a11fefe838380375c827772cb7c50acc8} 
+subroutine hopping (\begin{DoxyParamCaption}\item[{integer}]{nion}{, }\item[{integer}]{jn}{, }\item[{real(8)}]{dstep}{, }\item[{real(8), dimension(3)}]{rcart}{, }\item[{real(8), dimension(3, \texorpdfstring{$\ast$}{*})}]{rion}{, }\item[{integer}]{imin}{, }\item[{integer}]{itry}{, }\item[{real(8)}]{tjasder}{, }\item[{real(8)}]{lbox}{}\end{DoxyParamCaption})}
+
+
+
+Perform hopping moves for quantum Monte Carlo with periodic boundary conditions. 
+
+This subroutine implements a hopping algorithm for quantum Monte Carlo simulations where particles can move between different ion positions. With probability \texorpdfstring{$\vert$}{|}tjasder\texorpdfstring{$\vert$}{|}, the particle performs a hopping move to a randomly selected ion position (different from the current minimum position). With probability 1-\/\texorpdfstring{$\vert$}{|}tjasder\texorpdfstring{$\vert$}{|}, the particle performs a regular displacement move. The hopping move satisfies detailed balance by considering both forward and backward hopping directions with equal probability. The subroutine also handles periodic boundary conditions for the simulation box. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em nion} & Number of ions in the system \\
+\hline
+\mbox{\texttt{in}}  & {\em jn} & Index of the coordinate being updated (1, 2, or 3 for x, y, z) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em dstep} & Displacement step size (set to 0 for hopping moves) \\
+\hline
+\mbox{\texttt{in,out}}  & {\em rcart} & Cartesian coordinates of the particle \\
+\hline
+\mbox{\texttt{in}}  & {\em rion} & Cartesian coordinates of all ions \\
+\hline
+\mbox{\texttt{in}}  & {\em imin} & Index of the current minimum ion position \\
+\hline
+\mbox{\texttt{out}}  & {\em itry} & Index of the target ion for hopping \\
+\hline
+\mbox{\texttt{in}}  & {\em tjasder} & Jastrow derivative parameter controlling hopping probability \\
+\hline
+\mbox{\texttt{in}}  & {\em LBox} & Simulation box length for periodic boundary conditions \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{hopping__pbc_8f90_source_l00033}{33}} of file \mbox{\hyperlink{hopping__pbc_8f90_source}{hopping\+\_\+pbc.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespacecell}{cell}}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{integer}\ nion,\ jn,\ i,\ itry,\ imin}
+\DoxyCodeLine{00038\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ rcart(3),\ LBox,\ scart(3)}
+\DoxyCodeLine{00039\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ rion(3,\ *),\ dstep,\ drand1,\ tjasder,\ zeta}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Make\ an\ hopping\ move\ with\ probability\ 50\%}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ In\ the\ remaining\ case\ make\ the\ usual\ move\ around\ the\ atom}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ zeta\ =\ drand1()}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{if}\ (zeta\ .lt.\ abs(tjasder)\ .and.\ nion\ .gt.\ 1)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ Generate\ \ a\ random\ itry\ ne\ imin}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ imin=nion*drand1()+1}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ itry\ =\ (nion\ -\/\ 1)*drand1()\ +\ 1}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (itry\ .ge.\ imin)\ itry\ =\ itry\ +\ 1}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ In\ order\ to\ satisfy\ detailed\ balance\ both\ the}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ hopping\ directions\ \ have\ to\ be\ taken\ into\ account.}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (drand1()\ .gt.\ 0.5d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcart(i)\ =\ rcart(i)\ +\ rion(i,\ itry)\ -\/\ rion(i,\ imin)}
+\DoxyCodeLine{00060\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ 3}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rcart(i)\ =\ rcart(i)\ -\/\ rion(i,\ itry)\ +\ rion(i,\ imin)}
+\DoxyCodeLine{00064\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00065\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ dstep\ =\ 0.d0}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ rcart(jn)\ =\ rcart(jn)\ +\ dstep}
+\DoxyCodeLine{00069\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{!**********\ Periodic\ Boundary\ Conditions\ **********}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ if(LBox.gt.0)\ call\ ApplyPBC(rcart,1)}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{!**********\ Periodic\ Boundary\ Conditions\ **********}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{return}}
+
+\end{DoxyCode}
+
+
+Referenced by \mbox{\hyperlink{main_8f90_source_l00897}{update\+\_\+projm()}}.
+

@@ -1,0 +1,157 @@
+\doxysection{cutminzmaxz.\+f90}
+\hypertarget{cutminzmaxz_8f90_source}{}\label{cutminzmaxz_8f90_source}\index{src/a\_turborvb/cutminzmaxz.f90@{src/a\_turborvb/cutminzmaxz.f90}}
+\mbox{\hyperlink{cutminzmaxz_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Cut\ and\ rescale\ parameters\ to\ maintain\ Z\ values\ within\ bounds}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ rescales\ alphab\ if\ the\ Z\ values\ are\ outside\ the\ interval}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ minz\ <\ Z\ <\ maxz.\ It\ does\ not\ modify\ any\ other\ input\ parameters.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ If\ the\ previous\ Z\ values\ (alphavar)\ are\ already\ outside\ the\ interval,}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ they\ are\ not\ changed.\ The\ subroutine\ handles\ both\ contracted\ and}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00021}00021\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ non-\/contracted\ cases\ for\ parameter\ optimization.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ \ ipc\ \ \ \ \ \ \ \ \ \ Number\ of\ components\ per\ parameter}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ \ contractionj\ Contraction\ flag}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[in]\ \ iesm\ \ \ \ \ \ \ \ \ Number\ of\ parameters\ to\ check}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[in]\ \ npar3bodyr\_c\ Number\ of\ 3-\/body\ real\ parameters}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[in]\ \ iesuptransbj\ Super\ transformation\ array}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[in]\ \ jbraiesm\ \ \ \ \ Branching\ array\ for\ iesm}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[in]\ \ minz\ \ \ \ \ \ \ \ \ Minimum\ Z\ value}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ \ maxz\ \ \ \ \ \ \ \ \ Maximum\ Z\ value}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ \ indc\ \ \ \ \ \ \ \ \ Index\ offset}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in,out]\ alphavar\ \ Current\ parameter\ values}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in,out]\ alphab\ \ \ \ Parameter\ updates}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00033}00033\ \textcolor{comment}{!>\ @param[in,out]\ scalpar\ \ \ Parameter\ scaling\ factors}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00034}00034\ \textcolor{comment}{!>\ @param[in]\ \ fixpar\ \ \ \ \ \ \ Flag\ to\ fix\ parameters\ permanently}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00035}00035\ \textcolor{comment}{!>\ @param[in]\ \ tpar\ \ \ \ \ \ \ \ \ Learning\ rate}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00036}00036\ \textcolor{comment}{!>\ @param[in]\ \ nmat\ \ \ \ \ \ \ \ \ Total\ number\ of\ parameters}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00037}00037\ \textcolor{comment}{!>\ @param[in]\ \ rank\ \ \ \ \ \ \ \ \ Process\ rank}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00038}\mbox{\hyperlink{cutminzmaxz_8f90_ac65c9dbc8d5038a3d410350b1d0fb973}{00038}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{cutminzmaxz_8f90_ac65c9dbc8d5038a3d410350b1d0fb973}{cutminzmaxz}}(ipc,\ contractionj,\ iesm,\ npar3bodyr\_c,\ iesuptransbj\&}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \&,\ jbraiesm,\ minz,\ maxz,\ indc,\ alphavar,\ alphab,\ scalpar,\ fixpar,\ tpar,\ nmat,\ rank)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00041}00041\ \ \ \ \ \textcolor{keywordtype}{integer}\ iesuptransbj(*),\ jbraiesm(*),\ i,\ j,\ iesm,\ npar3bodyr\_c\ \ \ \&}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ rank,\ contractionj,\ indc,\ nmat,\ ipc}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00043}00043\ \ \ \ \ \textcolor{keywordtype}{real*8}\ alphavar(*),\ minz,\ maxz,\ cost\&}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ \&,\ tpar,\ scalealphab,\ scaletry,\ alphab(*),\ scalpar(*)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00045}00045\ \ \ \ \ \textcolor{keywordtype}{logical}\ fixpar}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00046}00046\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00047}00047\ \textcolor{preprocessor}{}\ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00048}00048\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00049}00049\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!This\ subroutine\ rescale\ alphab\ if\ the\ Z\ are\ outside\ the\ interval\ minz<\ Z\ <\ maxz}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Does\ not\ modify\ any\ other\ input}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00052}00052\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ if\ the\ previous\ Z\ (alphavar)\ are\ outside\ the\ interval\ -\/-\/>\ not\ changed}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00054}00054\ \ \ \ \ \textcolor{keywordflow}{if}\ (maxz\ .le.\ minz\ .or.\ iesm\ .eq.\ 0)\ \textcolor{keywordflow}{return}\ \textcolor{comment}{!\ input\ does\ not\ make\ sense}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00055}00055\ \ \ \ \ scalealphab\ =\ 1.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{if}\ (contractionj\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ iesm,\ ipc}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ alphavar(indc\ +\ i)\ +\ tpar*alphab(indc\ +\ i)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ minz\ .and.\ alphavar(indc\ +\ i)\ .ge.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (minz\ -\/\ alphavar(indc\ +\ i))/tpar/alphab(indc\ +\ i)/2.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ scaletry*alphab(indc\ +\ i)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ small\ \ '},\ i,\ cost,\ minz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00066}00066\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ i)\ .lt.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ smaller\ than\ limit\ \ '}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ i)\ =\ minz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00074}00074\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00075}00075\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ maxz\ .and.\ alphavar(indc\ +\ i)\ .le.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'Warning\ Z\ too\ large\ '},\ i,\ cost,\ maxz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (maxz\ -\/\ alphavar(indc\ +\ i))/tpar/alphab(indc\ +\ i)/2.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00079}00079\ }
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ scaletry*alphab(indc\ +\ i)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ i)\ .gt.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ larger\ than\ limit\ \ '}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ i)\ =\ maxz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00091}00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ i)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ i,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00094}00094\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00095}00095\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00096}00096\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00097}00097\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ npar3bodyr\_c}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00099}00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iesuptransbj(i)\ .ne.\ 0\ .and.\ jbraiesm(i)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ j\ =\ ipc*(abs(jbraiesm(i))\ -\/\ 1)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cost\ =\ alphavar(indc\ +\ j)\ +\ tpar*alphab(indc\ +\ j)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .lt.\ minz\ .and.\ alphavar(indc\ +\ j)\ .ge.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (minz\ -\/\ alphavar(indc\ +\ j))/tpar/alphab(indc\ +\ j)/2.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ scaletry*alphab(indc\ +\ j)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ small\ '},\ j,\ cost,\ minz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00110}00110\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ j)\ .lt.\ minz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ smaller\ than\ limit\ \ '}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ j)\ =\ minz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00118}00118\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00119}00119\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cost\ .gt.\ maxz\ .and.\ alphavar(indc\ +\ j)\ .le.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scaletry\ =\ (maxz\ -\/\ alphavar(indc\ +\ j))/tpar/alphab(indc\ +\ j)/2.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ if(scaletry.lt.scalealphab)\ scalealphab=scaletry}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ scaletry*alphab(indc\ +\ j)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ too\ large\ \ '},\ j,\ cost,\ maxz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00128}00128\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elseif}\ (alphavar(indc\ +\ j)\ .gt.\ maxz)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Warning\ Z\ larger\ than\ limit\ \ '}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphavar(indc\ +\ j)\ =\ maxz}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alphab(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fixpar)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ scalpar(indc\ +\ j)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'\ Fixing\ forever\ this\ Z\ '},\ j,\ cost}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00136}00136\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00137}00137\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ write(6,*)\ '\ Inside\ cut\ i,j\ =',i,jbraiesm(i)}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00139}00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00140}00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00141}00141\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00142}00142\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ if(scalealphab.ne.1.d0)\ call\ dscal(nmat,0.5d0*scalealphab,alphab,1)}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00143}00143\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00144}00144\ \textcolor{preprocessor}{}\textcolor{comment}{!\ \ To\ avoid\ roundoff\ difference\ between\ processors\ we\ bcast\ scalpar,alphab,alphavar}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00145}00145\ \textcolor{comment}{!\ \ safely.}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00146}00146\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(alphavar,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00147}00147\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(alphab,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00148}00148\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dsortx_8f90_a70f6372b02bf6d9c5fb42386c325500e}{bcast\_real}}(scalpar,\ nmat,\ 0,\ mpi\_comm\_world)}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00149}00149\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00150}00150\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{cutminzmaxz_8f90_source_l00151}00151\ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

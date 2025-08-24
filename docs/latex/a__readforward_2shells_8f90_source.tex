@@ -1,0 +1,134 @@
+\doxysection{shells.\+f90}
+\hypertarget{a__readforward_2shells_8f90_source}{}\label{a__readforward_2shells_8f90_source}\index{src/a\_readforward/shells.f90@{src/a\_readforward/shells.f90}}
+\mbox{\hyperlink{a__readforward_2shells_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ Computes\ vectors\ within\ a\ cutoff\ radius\ in\ reciprocal\ space}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ Computes\ vectors\ x(ndim)=(a(1)*n(1),...,a(ndim)*n(ndim))\ where\ n(i)\ are\ integers}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ and\ x(1)\string^2\ +\ ...\ +\ x(ndim)\string^2\ <=\ cut\string^2.\ The\ vectors\ are\ stored\ in\ rkcomp\ ordered}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ by\ their\ norms.\ Also\ computes\ the\ number\ of\ different\ norm\ values\ (nshlls)\ and}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ stores\ the\ norms\ in\ rknorm\ with\ their\ multiplicities\ in\ kmult.}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ ndim\ Dimension\ of\ space}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in]\ a\ Array\ of\ lattice\ parameters\ (mdim)}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[in]\ cut\ Cutoff\ radius}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[out]\ nshlls\ Number\ of\ different\ norm\ values\ found}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00025}00025\ \textcolor{comment}{!>\ @param[out]\ rkcomp\ Array\ storing\ the\ computed\ vectors\ (mdim,mnkv)}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00026}00026\ \textcolor{comment}{!>\ @param[out]\ rknorm\ Array\ storing\ the\ different\ norm\ values\ (0:mnsh)}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00027}00027\ \textcolor{comment}{!>\ @param[out]\ kmult\ Array\ storing\ multiplicities\ of\ each\ norm\ (0:mnsh)}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00028}00028\ \textcolor{comment}{!>\ @param[out]\ nvects\ Total\ number\ of\ vectors\ found}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00029}00029\ \textcolor{comment}{!>\ @param[in]\ mnkv\ Maximum\ number\ of\ vectors\ allowed}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00030}00030\ \textcolor{comment}{!>\ @param[in]\ mnsh\ Maximum\ number\ of\ shells\ allowed}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00031}00031\ \textcolor{comment}{!>\ @param[in]\ mdim\ Dimension\ of\ arrays}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00032}00032\ \textcolor{comment}{!>\ @param[in]\ rank\ MPI\ rank}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00033}\mbox{\hyperlink{a__readforward_2shells_8f90_ae0e76266f5e6ed4d0c23ba749f3bbf8f}{00033}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{a__readforward_2shells_8f90_ae0e76266f5e6ed4d0c23ba749f3bbf8f}{shells}}(ndim,\ a,\ cut,\ nshlls,\ rkcomp,\ rknorm,\ kmult\ \&}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00034}00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ nvects,\ mnkv,\ mnsh,\ mdim,\ rank)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00035}00035\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ implicit\ real*8\ (a-\/h,o-\/z)}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00036}00036\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordtype}{integer}\ ndim,\ nshlls,\ mnsh,\ kmult(0:mnsh),\ nvects,\ mnkv,\ npts,\ l\ \&}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00038}00038\ \ \ \ \ \ \ \ \ ,\ nkspan(3),\ i,\ icount(3),\ nzero,\ j,\ kj,\ jp,\ mdim,\ rank}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00039}00039\ \ \ \ \ real*8\ a(mdim),\ rkcomp(mdim,\ mnkv),\ rknorm(0:mnsh)\ \&}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ ,\ x(3),\ cut,\ c2,\ rsq,\ rks,\ rnow}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00041}00041\ }
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00042}00042\ \ \ \ \ \textcolor{comment}{!\ computes\ the\ vectors\ x(ndim)=(a(1)*n(1),..,a(ndim)*n(ndim))}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00043}00043\ \ \ \ \ \textcolor{comment}{!\ where\ n(i)\ are\ integers\ and\ x(1)**2+..+x(ndim)**2.le.cut**2}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00044}00044\ \ \ \ \ \textcolor{comment}{!\ the\ vectors\ x(i)\ are\ stored\ in\ rkcomp\ in}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00045}00045\ \ \ \ \ \textcolor{comment}{!\ the\ order\ given\ by\ the\ values\ of\ their\ norms.}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ also\ nshlls\ gives\ the\ number\ of}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00047}00047\ \ \ \ \ \textcolor{comment}{!\ different\ values\ of\ the\ norms\ (\ the\ relative\ square\ norms}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00048}00048\ \ \ \ \ \textcolor{comment}{!\ differ\ by\ less\ than\ 1.e-\/5)\ and\ rknorm(i)\ gives}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00049}00049\ \ \ \ \ \textcolor{comment}{!\ these\ nshlls\ norms\ and\ kmult(i)\ is\ the\ last\ vector}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00050}00050\ \ \ \ \ \textcolor{comment}{!\ whose\ norm\ is\ given\ by\ rknorm(i).\ hence\ the\ total}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00051}00051\ \ \ \ \ \textcolor{comment}{!\ number\ of\ vectors\ of\ magnitude\ less\ then\ or\ equal\ to\ cut\ is\ kmult(nshlls).}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00052}00052\ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00054}00054\ \ \ \ \ kmult(0)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00055}00055\ \ \ \ \ rknorm(0)\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00056}00056\ \ \ \ \ c2\ =\ cut**2}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00057}00057\ \ \ \ \ npts\ =\ 1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00059}00059\ \ \ \ \ \ \ \ \ nkspan(l)\ =\ (0.00001\ +\ abs(cut/a(l)))}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ range\ of\ search\ is\ (-\/nkspan(l),+nkspan(l))}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00061}00061\ \ \ \ \ \ \ \ \ icount(l)\ =\ -\/nkspan(l)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00062}00062\ \ \ \ \ \ \ \ \ npts\ =\ (2*nkspan(l)\ +\ 1)*npts}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00063}00063\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00065}00065\ \ \ \ \ nvects\ =\ 0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00066}00066\ \ \ \ \ \textcolor{keywordflow}{do}\ 3\ i\ =\ 1,\ npts}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00067}00067\ \ \ \ \ \ \ \ \ rsq\ =\ 0.0d0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00068}00068\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ nzero\ will\ be\ the\ first\ nonzero\ entry\ in\ icount}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00069}00069\ \ \ \ \ \ \ \ \ nzero\ =\ 0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00070}00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 4\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nzero\ .eq.\ 0)\ nzero\ =\ icount(l)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ x(l)\ =\ icount(l)*a(l)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ rsq\ =\ rsq\ +\ x(l)**2}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsq\ .gt.\ c2)\ \textcolor{keywordflow}{go\ to}\ 30}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00075}00075\ 4\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ we\ only\ take\ half\ of\ the\ vectors\ and\ exclude\ the\ one\ at\ the\ origin}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nzero\ .le.\ 0)\ \textcolor{keywordflow}{go\ to}\ 30}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nvects\ .gt.\ mnkv)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ mnkv\ too\ small\ '},\ mnkv,\ nvects}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ +call\ mcheck(nvects,mnkv,'nvects','mnkv','shells')}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00082}00082\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00083}00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ we\ have\ found\ a\ vector}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00084}00084\ \ \ \ \ \ \ \ \ \ \ \ \ nvects\ =\ nvects\ +\ 1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ go\ thru\ previous\ vectors.\ if\ they\ have\ a\ greater\ norm\ move}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ them\ up\ one\ slot}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 6\ j\ =\ 1,\ nvects\ -\/\ 1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kj\ =\ j}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rks\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 66\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00091}00091\ 66\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rks\ =\ rks\ +\ rkcomp(l,\ j)**2}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00092}00092\ 6\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rks\ .ge.\ rsq)\ \textcolor{keywordflow}{go\ to}\ 7}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00093}00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kj\ =\ nvects}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00094}00094\ 7\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 8\ jp\ =\ nvects,\ kj\ +\ 1,\ -\/1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 8\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00096}00096\ 8\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rkcomp(l,\ jp)\ =\ rkcomp(l,\ jp\ -\/\ 1)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rkcomp(l,\ kj)\ =\ x(l)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00099}00099\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00100}00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ increase\ counters\ with\ carries\ for\ the\ next\ vector}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00103}00103\ 30\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ 31\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icount(l)\ =\ icount(l)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00105}00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (icount(l)\ .le.\ nkspan(l))\ \textcolor{keywordflow}{go\ to}\ 3}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00106}00106\ 31\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icount(l)\ =\ -\/nkspan(l)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00107}00107\ 3\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nshlls\ =\ 0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ count\ number\ of\ different\ norms\ and\ find\ pointers}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rnow\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ nvects}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rsq\ =\ 0.d0}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ l\ =\ 1,\ ndim}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rsq\ =\ rsq\ +\ rkcomp(l,\ i)**2}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00116}00116\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsq\ -\/\ rnow\ .gt.\ .001*rnow)\ nshlls\ =\ nshlls\ +\ 1}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nshlls\ .gt.\ mnsh)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'\ mnsh\ too\ small\ '},\ mnsh,\ nshlls}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stop}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00121}00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rnow\ =\ rsq}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rknorm(nshlls)\ =\ sqrt(rnow)}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ kmult(nshlls)\ =\ i}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00125}00125\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rank\ .eq.\ 0)\ \textcolor{keyword}{write}\ (*,\ *)\ \textcolor{stringliteral}{'nshlls='},\ nshlls}
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{a__readforward_2shells_8f90_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{end}}
+
+\end{DoxyCode}

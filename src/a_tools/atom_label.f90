@@ -13,12 +13,21 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for handling full names of atomic elements
+!>
+!> This module provides functionality for working with full names of atomic elements.
+!> It includes a lookup table of element names and functions to access them.
 module atom_label
     implicit none
+    !> Array containing full names of atomic elements indexed by atomic number
     character(20), dimension(:), allocatable :: AtomsLabels
 
 contains
 
+    !> @brief Initialize the array of atomic element full names
+    !>
+    !> Allocates and populates the AtomsLabels array with full names
+    !> for elements from atomic number 1 (hydrogen) to 103 (Lr)
     subroutine load_label
         implicit none
         allocate (AtomsLabels(103))

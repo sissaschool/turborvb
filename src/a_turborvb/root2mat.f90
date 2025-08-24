@@ -13,14 +13,19 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Compute square root of a positive definite symmetric 2x2 matrix
+!> @details    This subroutine computes the square root of a positive definite
+!>             symmetric 2x2 matrix A. The output is the unique 2x2 symmetric
+!>             positive definite matrix B such that B^2 = A. If the input is
+!>             positive definite the output replaces the input, otherwise the
+!>             input matrix is unchanged.
+!> @param[in,out] mat      Input/output 2x2 matrix (input: A, output: B where B^2=A)
+!> @param[out] errnoise    Error flag:
+!>                         - 0: Success
+!>                         - 2: Matrix is not positive definite
 subroutine root2mat(mat, errnoise)
     real*8 mat(2, 2), z, a, b, c, aa, bb, cc
     integer errnoise
-    !   This subroutine computes the square root of a positive definite
-    !   symmetric 2x2 matrix A
-    !   matrix. The output is the unique 2x2 symmetric positive definite matrix B such
-    !   that B^2 =A. If the input is positive definite the output replaces
-    !   the input, otherwise the input matrix is unchanged.
     aa = mat(1, 1)
     bb = mat(2, 1)
     cc = mat(2, 2)

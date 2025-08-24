@@ -14,6 +14,9 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !
+! @file max_ovlp.f90
+! @brief Module for calculating geminal matrix lambda with maximum overlap
+!
 ! This module allows to calculate the geminal matrix lambda that has the larger overlap with a previous     !
 ! one in a different basis. The calculation is performed numerically to allow the imposition of constraints !
 ! on the imaginary part of the matrix and selecting the elements of the matrix to be taken in to account.   !
@@ -22,12 +25,49 @@
 ! - parbcs.pdf                                                                                              !
 ! - Numerical Recipes, Press et al.                                                                         !
 !
+! @author TurboRVB group
+! @date 2022
+! @version 1.0
+!
 
 subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
         &, img, max_iter, optimize, L1, L1mod, SL2, SR2, SL12, SR12, L2&
         &, prec, Z, rank, nprocu, mpi_comm_world)
     use constants, only: ipf
     implicit none
+
+    !> @brief Dimension of matrices in the previous basis (size1) and new basis (size2)
+    integer, intent(in) :: size1, size2
+    !> @brief Type of lambda matrix symmetry: 1=hermitian, 2=symmetric (also imaginary part), 3=non-symmetric
+    integer, intent(in) :: type_lambda
+    !> @brief Size of the vector nozero_c and jbradet
+    integer, intent(in) :: nnozero_c
+    !> @brief Vector containing information to obtain the whole matrix lambda from compact notation
+    integer, dimension(nnozero_c), intent(in) :: nozero_c
+    !> @brief Vector pointing to independent variable number associated with symmetry
+    integer, dimension(nnozero_c), intent(in) :: jbradet
+    !> @brief Input to understand if wave function is real (1) or complex (2)
+    integer, intent(in) :: img
+    !> @brief Maximum number of iterations for optimization
+    integer, intent(in) :: max_iter
+    !> @brief Information on which matrix elements to optimize (1=yes, 0=no)
+    logical, dimension(size2*img, size2), intent(in) :: optimize
+    !> @brief Lambda matrix in the previous basis (input)
+    real(8), dimension(size1*img, size1), intent(in) :: L1
+    !> @brief Module of the previous wave function (input)
+    real(8), intent(in) :: L1mod
+    !> @brief Overlap matrices of the new basis (spin-up=left, spin-down=right)
+    real(8), dimension(size2*img, size2), intent(in) :: SL2, SR2
+    !> @brief Overlap matrices calculated between the two different bases
+    real(8), dimension(size1*img, size2), intent(in) :: SL12, SR12
+    !> @brief Lambda matrix in the new basis (input/output)
+    real(8), dimension(size2*img, size2), intent(inout) :: L2
+    !> @brief Precision required for the overlap calculation
+    real(8), intent(in) :: prec
+    !> @brief Overlap between L1 and L2 (output)
+    real(8), intent(out) :: Z
+    !> @brief MPI rank, number of processes, and communicator
+    integer, intent(in) :: rank, nprocu, mpi_comm_world
 
     !All the quantities referred to the previous basis have the label 1, the quantities of the new one with 2
     !(NB: in the notation of the parbcs S*1=S*, S*2=S*', L1=Lambda, L2=Lambda', S*12=\bar{S}*, Op=O' ,
@@ -38,21 +78,19 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     !nsym is the total number of variables once applied the symmetries, ix and iy are auxiliary variables to indicate
     !a position of the matrix lambda, type_lambda contains the information on the symmetry of the lambda: 1=hermitian,
     !2=symmetric (also the imaginary part) and 3=non symmetric (nnozero_c=size2**2)
-    integer :: i, j, size1, size2, img, max_iter, rank, nprocu, mpi_comm_world, nnozero_c, nsym, ix, iy, type_lambda
+    integer :: i, j, nsym, ix, iy
     !optimize contains the information on which element of the matrix have to be optimize (1==yes) (0==no)
-    logical, dimension(size2*img, size2) :: optimize
     !nozero_c is the vector containing the information to obtain the whole matrix lambda starting from the compact
     !notation and containing only the upper diagonal of lambda, in a way that nozero_c(i)=ix+(iy-1)*nelorbc,
     !jbradet is the vector pointing at  the indipendent variable number associated to the symmetry (e.g. if the
     !elements i and j are simmetric jbradet(i)=jbradet(j). This is only to my further memory, so that I can understand
     !again in the future
-    integer, dimension(nnozero_c) :: jbradet, nozero_c
     !Z is the overlap between L1 and L2, delta is the number multiplying the derivatives when applied to L2,
     !prec is the precision required for the overlap, A is a variable for the fast calculation, L*mod is the
     !module of the * wf, modder is the module of the derivative, delta0 is the initial delta for the optimization,
     !lambda is the factor that multiplies the direction, lambda is  lambda= (g h)/(h A h) and is the factor of
     ! the movement along the h direction, prevZ is the Z calculated size2**2 iteration ago
-    real(8) :: Z, delta, prec, A, L1mod, L2mod, modder, delta0, ddL2, lambda, prevZ
+    real(8) :: delta, A, L2mod, modder, delta0, ddL2, lambda, prevZ
     !SL and SR are the overlap matrices of the bases the parbs spinup==left and spindown==right, SR12 and SL12
     !are the overlap matrices calculated between the two different bases, L1 and L2 are the derivatives, Os and
     !Op are matrices necessary for the fast calculation, A is a variable for the fast calculation, dL2 is the
@@ -61,10 +99,7 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     !prevH and prevG are the previous conjugate direction and gradient (NOW
     ! THE GRADIENT HAS THE DIMENSION OF THE INDIPENDENT VARIABLES)(Numerical
     !Recipes, Press, et al.)
-    real(8), dimension(size2*img, size2) :: SL2, SR2, L2
     real(8), allocatable :: dL2(:, :), Op(:, :), Ob(:, :), L2eff(:, :), prevG(:), prevH(:)
-    real(8), dimension(size1*img, size1) :: L1
-    real(8), dimension(size1*img, size2) :: SL12, SR12
     !count_sym is the vector that tells the number of recurrency of every symmetry
     integer, allocatable :: count_sym(:)
 
@@ -186,6 +221,42 @@ end subroutine max_ovlp
 !with the improoved interpolation methond
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Conjugate gradient optimization with line minimization using improved interpolation method
+!> @details This subroutine implements a conjugate gradient algorithm with line minimization
+!> performed using an improved interpolation method. It calculates the gradient, updates
+!> the conjugate direction using the Polak-Ribière formula, and performs line minimization
+!> along the conjugate direction to find the optimal step size.
+!>
+!> @param[in] size1 Dimension of matrices in the previous basis
+!> @param[in] size2 Dimension of matrices in the new basis  
+!> @param[in] type_lambda Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in] L2mod Module of the new wave function
+!> @param[in,out] L2 Lambda matrix in the new basis
+!> @param[in] Ob Matrix Ob defined in parbcs
+!> @param[in] SL2,SR2 Overlap matrices of the new basis
+!> @param[in] A Variable for fast calculation
+!> @param[in] dL2 Matrix of the components of the derivatives
+!> @param[in] optimize Information on which matrix elements to optimize
+!> @param[in,out] prevH Previous conjugate direction
+!> @param[in,out] prevG Previous gradient
+!> @param[in] prec Precision required for the overlap calculation
+!> @param[out] lambda Factor that multiplies the direction
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note This subroutine uses the Polak-Ribière formula for updating the conjugate direction:
+!>       gamma = (g_new - g_old) · g_new / (g_old · g_old)
+!>       h_new = g_new + gamma * h_old
+!>
+!> @see lineminDB, symm_deriv
 subroutine minDB(size1, size2, type_lambda, nnozero_c                    &
            &, nozero_c, jbradet, nsym, count_sym, img                    &
            &, L1mod, L2mod, L2, Ob, SL2, SR2, A, dL2                     &
@@ -248,6 +319,46 @@ end subroutine minDB
 !Maximization with the hybrid method along the direction h
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Line minimization using hybrid method along the conjugate direction
+!> @details This subroutine performs line minimization along the conjugate direction h
+!> using a hybrid algorithm that combines linear interpolation and bisection methods.
+!> It finds the optimal step size lambda that maximizes the overlap between the two
+!> wave functions by finding the zero of the derivative along the search direction.
+!>
+!> The algorithm works as follows:
+!> 1. Find two points where the derivative changes sign (bracketing)
+!> 2. Use a hybrid method combining linear interpolation and bisection to find the zero
+!> 3. Update the lambda matrix with the optimal step size
+!>
+!> @param[in] size1 Dimension of matrices in the previous basis
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] type_lambda Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in,out] L2mod Module of the new wave function
+!> @param[in,out] L2 Lambda matrix in the new basis
+!> @param[in] Ob Matrix Ob defined in parbcs
+!> @param[in] SL2,SR2 Overlap matrices of the new basis
+!> @param[in] g Current gradient vector
+!> @param[in] h Conjugate direction vector
+!> @param[out] lambda Optimal step size along the direction h
+!> @param[in] prec Precision required for the overlap calculation
+!> @param[in] optimize Information on which matrix elements to optimize
+!> @param[in] macprec Machine precision for derivative calculations
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note The hybrid algorithm uses linear interpolation when the new point is far from
+!>       the boundaries, and switches to bisection when it gets too close to avoid
+!>       slow convergence near the boundaries.
+!>
+!> @see translate_L, calcOp, calcA, calcZ, calcDeriv, symm_deriv
 subroutine lineminDB(size1, size2, type_lambda, nnozero_c, nozero_c, jbradet, nsym, count_sym, img, L1mod, &
                      L2mod, L2, Ob, SL2, SR2, g, h, lambda, prec, optimize, macprec, rank, nprocu, mpi_comm_world)
     implicit none
@@ -414,6 +525,41 @@ end subroutine lineminDB
 !Numerical derivatives with symmetries (without translate_L)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate numerical derivatives with symmetries (without translate_L)
+!> @details This subroutine calculates numerical derivatives of the overlap with respect
+!> to the lambda matrix elements using finite differences. It handles both real and complex
+!> cases and respects the symmetry constraints of the lambda matrix.
+!>
+!> The numerical derivative is calculated as:
+!> ∂Z/∂λᵢⱼ ≈ (Z(λᵢⱼ + ε) - Z(λᵢⱼ)) / ε
+!>
+!> where ε is a small step size (default: 0.00001).
+!>
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] size1 Dimension of matrices in the previous basis
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] type_lambda Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] L2 Lambda matrix in the new basis
+!> @param[out] g Gradient vector (symmetry-reduced)
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] rank MPI rank
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in] L2mod Module of the new wave function
+!> @param[in] Ob Matrix Ob defined in parbcs
+!> @param[in] SL2,SR2 Overlap matrices of the new basis
+!> @param[in] optimize Information on which matrix elements to optimize
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note This subroutine uses finite differences to calculate derivatives, which is
+!>       more robust but computationally expensive compared to analytical derivatives.
+!>       It is mainly used for testing and verification purposes.
+!>
+!> @see calcOp, calcA, calcZ, symm_deriv
 subroutine numerical_g(img, size1, size2, type_lambda, nnozero_c, nsym, L2, g, nozero_c, jbradet, count_sym, rank, &
                        L1mod, L2mod, Ob, SL2, SR2, optimize, nprocu, mpi_comm_world)
     implicit none
@@ -505,6 +651,41 @@ end subroutine numerical_g
 !Numerical derivatives with symmetries (with translate_L)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate numerical derivatives with symmetries using translate_L
+!> @details This subroutine calculates numerical derivatives of the overlap with respect
+!> to the lambda matrix elements using finite differences and the translate_L function.
+!> It handles both real and complex cases and respects the symmetry constraints of the lambda matrix.
+!>
+!> The numerical derivative is calculated as:
+!> ∂Z/∂λᵢⱼ ≈ (Z(λᵢⱼ + ε·h) - Z(λᵢⱼ)) / ε
+!>
+!> where ε is a small step size (default: 0.00001) and h is the direction vector.
+!>
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] size1 Dimension of matrices in the previous basis
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] type_lambda Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] L2 Lambda matrix in the new basis
+!> @param[out] g Gradient vector (symmetry-reduced)
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] rank MPI rank
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in] L2mod Module of the new wave function
+!> @param[in] Ob Matrix Ob defined in parbcs
+!> @param[in] SL2,SR2 Overlap matrices of the new basis
+!> @param[in] optimize Information on which matrix elements to optimize
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note This subroutine uses the translate_L function to generate perturbed matrices,
+!>       which ensures that all symmetry constraints are properly maintained during
+!>       the finite difference calculation.
+!>
+!> @see translate_L, calcOp, calcA, calcZ
 subroutine numerical_g2(img, size1, size2, type_lambda, nnozero_c, nsym, L2, g, nozero_c, jbradet, count_sym, rank, &
                         L1mod, L2mod, Ob, SL2, SR2, optimize, nprocu, mpi_comm_world)
     implicit none
@@ -572,6 +753,36 @@ end subroutine numerical_g2
 !using only the upperdiagonal matrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate symmetry-reduced gradient vector from full derivative matrix
+!> @details This subroutine calculates the gradient vector g made only by the irreducible
+!> elements, averaging the derivatives and using only the upper diagonal matrix.
+!> It handles both real and complex cases, as well as different symmetry types
+!> (hermitian, symmetric, non-symmetric) and particle-hole symmetry (ipf).
+!>
+!> The subroutine performs the following operations:
+!> 1. Extracts derivatives for symmetry-equivalent elements
+!> 2. Applies appropriate signs based on jbradet
+!> 3. Handles particle-hole symmetry constraints
+!> 4. Averages contributions from equivalent elements
+!>
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] type_lambda Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] dL2 Full derivative matrix (size2*img × size2)
+!> @param[out] g Symmetry-reduced gradient vector (img*nsym)
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] rank MPI rank
+!>
+!> @note The subroutine handles different cases:
+!>       - Real vs complex wave functions (img = 1 or 2)
+!>       - Particle-hole symmetry (ipf = 1 or 2)
+!>       - Different matrix symmetries (type_lambda = 1, 2, or 3)
+!>
+!> @see translate_L, numerical_g, numerical_g2
 subroutine symm_deriv(img, size2, type_lambda, nnozero_c, nsym, dL2, g, nozero_c, jbradet, count_sym, rank)
     use constants, only: ipf
     implicit none
@@ -662,6 +873,38 @@ end subroutine symm_deriv
 !and the movement in the direction, it uses also the given proprieties of lambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Transform lambda matrix along a given direction vector
+!> @details This subroutine calculates the lambda matrix L2 in a new position given
+!> the direction vector h in the symmetry-reduced representation and the movement
+!> parameter lt. It uses the given properties of lambda (symmetry type) to ensure
+!> the transformed matrix maintains the correct symmetry constraints.
+!>
+!> The transformation is performed as:
+!> L2_new = L2_old + lt * h_transformed
+!>
+!> where h_transformed is the direction vector expanded to the full matrix space
+!> according to the symmetry constraints.
+!>
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] type_symm Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in] L2 Original lambda matrix (size2*img × size2)
+!> @param[out] L2aux Transformed lambda matrix (size2*img × size2)
+!> @param[in] h Direction vector in symmetry-reduced representation (img*nnozero_c)
+!> @param[in] lt Step size along the direction
+!>
+!> @note The subroutine handles different cases:
+!>       - Real vs complex wave functions (img = 1 or 2)
+!>       - Particle-hole symmetry (ipf = 1 or 2)
+!>       - Different matrix symmetries (type_symm = 1, 2, or 3)
+!>       - Hermitian (type_symm = 1): L(i,j) = L*(j,i)
+!>       - Symmetric (type_symm = 2): L(i,j) = L(j,i)
+!>       - Non-symmetric (type_symm = 3): no constraints
+!>
+!> @see symm_deriv, numerical_g2
 subroutine translate_L(img, size2, type_symm, nnozero_c, nozero_c, jbradet, L2, L2aux, h, lt)
     use constants, only: ipf
     implicit none
@@ -745,6 +988,34 @@ end subroutine translate_L
 !Initializing alla the symmetries and the element of the lambda (It is equivalent to the cleanfort.10
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Initialize symmetries and elements of the lambda matrix
+!> @details This subroutine initializes all the symmetries and elements of the lambda matrix.
+!> It is equivalent to the cleanfort.10 operation and ensures that the lambda matrix
+!> satisfies all symmetry constraints. The subroutine performs the following operations:
+!>
+!> 1. Sets up the optimize array to include all symmetry-equivalent elements
+!> 2. Counts the recurrence of every symmetry
+!> 3. Initializes the lambda matrix with averaged values for symmetry-equivalent elements
+!> 4. Applies symmetry constraints to ensure consistency
+!>
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] nnozero_c Size of the vector nozero_c and jbradet
+!> @param[in] nsym Total number of independent variables after applying symmetries
+!> @param[in] count_sym Vector counting the recurrence of every symmetry
+!> @param[in] jbradet Vector pointing to independent variable number associated with symmetry
+!> @param[in,out] optimize Information on which matrix elements to optimize
+!> @param[in,out] L2 Lambda matrix in the new basis
+!> @param[in] nozero_c Vector containing information to obtain the whole matrix lambda
+!> @param[in] type_symm Type of lambda matrix symmetry (1=hermitian, 2=symmetric, 3=non-symmetric)
+!>
+!> @note The subroutine handles different cases:
+!>       - Real vs complex wave functions (img = 1 or 2)
+!>       - Particle-hole symmetry (ipf = 1 or 2)
+!>       - Different matrix symmetries (type_symm = 1, 2, or 3)
+!>       - Elements with jbradet = 0 are set to zero and not optimized
+!>
+!> @see translate_L, symm_deriv
 subroutine initialize_symm(size2, img, nnozero_c, nsym, count_sym, jbradet, optimize, L2, nozero_c, type_symm)
     use constants, only: ipf
     implicit none
@@ -929,6 +1200,35 @@ end subroutine
 !It calculates the derivatives of the overlap with respect of L2 elements
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate analytical derivatives of the overlap with respect to L2 elements
+!> @details This subroutine calculates the analytical derivatives of the overlap Z
+!> with respect to the lambda matrix elements L2. The derivatives are calculated
+!> using the analytical expression derived from the overlap formula.
+!>
+!> For complex wave functions (img = 2), the derivatives are:
+!> ∂Z/∂L2ᵢⱼ = 2[(R_L12mod * Obⱼᵢ - I_L12mod * Obⱼᵢ) * L2mod - Opⱼᵢ * L12mod²] / (L1mod * L2mod²)
+!>
+!> For real wave functions (img = 1), the derivatives are:
+!> ∂Z/∂L2ᵢⱼ = 2[R_L12mod * Obⱼᵢ * L2mod - Opⱼᵢ * L12mod²] / (L1mod * L2mod²)
+!>
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] Ob Matrix Ob defined in parbcs
+!> @param[in] Op Matrix Op defined in parbcs
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in] L2mod Module of the new wave function
+!> @param[in] L2 Lambda matrix in the new basis
+!> @param[out] dL2 Matrix of the components of the derivatives (size2*img × size2)
+!> @param[in] opL2 Information on which matrix elements to optimize
+!> @param[out] modder Module of the derivative vector
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note The subroutine calculates derivatives only for elements where opL2(i,j) = .true.
+!>       The module of the derivative vector is calculated as ||dL2|| = √(Σᵢⱼ |dL2ᵢⱼ|²)
+!>
+!> @see calcOp, calcA, calcZ, tracemm
 subroutine calcDeriv(size2, img, Ob, Op, L1mod, L2mod, L2, dL2, opL2, modder, rank, nprocu, mpi_comm_world)
     implicit none
     integer :: size2, img, i, j, rank, nprocu, mpi_comm_world
@@ -991,6 +1291,29 @@ end subroutine calcDeriv
 !Calculation of Op defined in parbcs
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate matrix Op as defined in parbcs
+!> @details This subroutine calculates the matrix Op defined in the parbcs formalism.
+!> The matrix Op is calculated as:
+!> Op = SR * L^T * SL^T
+!>
+!> where SR and SL are the overlap matrices of the new basis (spin-up=left, spin-down=right),
+!> and L is the lambda matrix with phase attached.
+!>
+!> @param[in] size Dimension of the matrices
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] SR Right overlap matrix (size*img × size)
+!> @param[in] L Lambda matrix with phase attached (size*img × size)
+!> @param[in] SL Left overlap matrix (size*img × size)
+!> @param[out] Op Calculated matrix Op (size*img × size)
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note The subroutine uses BLAS matrix multiplication routines:
+!>       - For complex case: zgemm_my for complex matrix multiplication
+!>       - For real case: dgemm_my for real matrix multiplication
+!>
+!> @see calcOb, calcA, calcZ
 subroutine calcOp(size, img, SR, L, SL, Op, rank, nprocu, mpi_comm_world)
     implicit none
     integer :: size, img, rank, nprocu, mpi_comm_world
@@ -1055,6 +1378,28 @@ end subroutine calcOb
 !Calculation of A defined in parbcs
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate the module of the wave function (A) as defined in parbcs
+!> @details This subroutine calculates the module of the wave function (A), which is
+!> the trace of the product of the Op matrix and the lambda matrix (or its conjugate).
+!> For complex wave functions, the conjugate of L is used. The result is used to
+!> normalize the overlap and derivatives in the optimization process.
+!>
+!> The calculation is:
+!>   A = Tr[Op * L] (real)
+!>   A = Tr[Op * L^*] (complex)
+!>
+!> @param[in] size Dimension of the matrices
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] L Lambda matrix (size*img × size)
+!> @param[out] A Calculated module of the wave function
+!> @param[in] Op Matrix Op (size*img × size)
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note The subroutine uses the tracemm utility to compute the trace of the matrix product.
+!>
+!> @see calcOp, calcOb, calcZ, tracemm
 subroutine calcA(size, img, L, A, Op, rank, nprocu, mpi_comm_world)
     implicit none
     integer :: size, img, i, rank, nprocu, mpi_comm_world
@@ -1088,6 +1433,28 @@ end subroutine calcA
 !It calculates the overlap between the two wf
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate the overlap between two wave functions
+!> @details This subroutine calculates the overlap Z between two wave functions
+!> represented by lambda matrices L1 and L2. The overlap is computed as:
+!>   Z = |Tr[Ob * L2]|^2 / (L1mod * L2mod)
+!> where Ob is the matrix constructed from the previous basis, and L1mod, L2mod
+!> are the modules of the previous and new wave functions, respectively.
+!>
+!> @param[in] size1 Dimension of matrices in the previous basis
+!> @param[in] size2 Dimension of matrices in the new basis
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] L2 Lambda matrix in the new basis (size2*img × size2)
+!> @param[in] Ob Matrix Ob (size2*img × size2)
+!> @param[in] L1mod Module of the previous wave function
+!> @param[in] L2mod Module of the new wave function
+!> @param[out] Z Calculated overlap value
+!> @param[in] rank MPI rank
+!> @param[in] nprocu Number of MPI processes
+!> @param[in] mpi_comm_world MPI communicator
+!>
+!> @note The subroutine uses the tracemm utility to compute the trace of the matrix product.
+!>
+!> @see calcOp, calcOb, calcA, tracemm
 subroutine calcZ(size1, size2, img, L2, Ob, L1mod, L2mod, Z, rank, nprocu, mpi_comm_world)
     implicit none
 
@@ -1106,6 +1473,29 @@ end subroutine calcZ
 !It calculates the trace of a matrix matrix multiplication
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate the trace of a matrix-matrix multiplication
+!> @details This subroutine calculates the trace of the product of two matrices A and B,
+!> supporting both real and complex cases, and different transpose/conjugate options.
+!> The result is split into real and imaginary parts as needed.
+!>
+!> The calculation is:
+!>   R = Re[Tr(op(A) * op(B))]
+!>   Im = Im[Tr(op(A) * op(B))]
+!> where op(A) and op(B) are optionally transposed or conjugated versions of A and B.
+!>
+!> @param[in] TRANSA Character flag for operation on A ('n'=none, 't'=transpose, 'c'=conjugate)
+!> @param[in] TRANSB Character flag for operation on B ('n'=none, 't'=transpose, 'c'=conjugate)
+!> @param[in] m, n, k Matrix dimensions
+!> @param[in] LDA, LDB Leading dimensions of A and B
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] A First matrix (LDA*img × *)
+!> @param[in] B Second matrix (LDB*img × *)
+!> @param[out] R Real part of the trace
+!> @param[out] Im Imaginary part of the trace
+!>
+!> @note The subroutine handles all combinations of transpose/conjugate for real and complex matrices.
+!>
+!> @see traceR, traceC
 subroutine tracemm(TRANSA, TRANSB, m, n, k, LDA, LDB, img, A, B, R, Im)
     implicit none
     !This are the dimensions of the matrices (like blas)
@@ -1212,6 +1602,14 @@ end subroutine tracemm
 !It calculates the trace of a real matrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate the trace of a real square matrix
+!> @details This subroutine calculates the trace of a real square matrix M of size (size, size).
+!>
+!> @param[in] size Dimension of the matrix
+!> @param[in] M Real matrix (size × size)
+!> @param[out] Tr Calculated trace value
+!>
+!> @see traceC, tracemm
 subroutine traceR(size, M, Tr)
     implicit none
     integer :: size, i
@@ -1228,6 +1626,16 @@ end subroutine traceR
 !It calculates the trace of a complex matrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Calculate the trace of a complex square matrix
+!> @details This subroutine calculates the trace of a complex square matrix M of size (2*size, size).
+!> The real and imaginary parts of the trace are returned separately.
+!>
+!> @param[in] size Dimension of the matrix
+!> @param[in] M Complex matrix (2*size × size), real and imaginary parts interleaved
+!> @param[out] Tr Real part of the trace
+!> @param[out] Im_Tr Imaginary part of the trace
+!>
+!> @see traceR, tracemm
 subroutine traceC(size, M, Tr, Im_Tr)
     implicit none
     integer :: size, i
@@ -1245,6 +1653,19 @@ end subroutine traceC
 !It writes the final wf in finalwf.dat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!> @brief Write the final lambda matrix to file
+!> @details This subroutine writes the final lambda matrix L2 to the file 'finalwf.dat'.
+!> For complex wave functions, both real and imaginary parts are written.
+!>
+!> @param[in] size2 Dimension of the matrix
+!> @param[in] img Input to understand if wave function is real (1) or complex (2)
+!> @param[in] L2 Lambda matrix (size2*img × size2)
+!>
+!> @note The output format is:
+!>   - For real: i, j, L2(i, j)
+!>   - For complex: i, j, Re(L2), Im(L2)
+!>
+!> @see max_ovlp
 subroutine finalwf(size2, img, L2)
     implicit none
     integer :: size2, img, i, j

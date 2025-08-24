@@ -17,6 +17,31 @@
 ! complex version of eval_hamilt.f90
 ! It uses the same algorithm for diagonalization on a non-orthogonal basis.
 !
+
+!> @brief Evaluates complex Hamiltonian eigenvalues and eigenvectors in non-orthogonal basis
+!> @details This subroutine computes the first bands eigenvectors of a complex Hamiltonian
+!>          defined in a non-orthogonal basis. It uses the same stable diagonalization
+!>          algorithm as the real version but handles complex matrices. Supports both
+!>          serial and parallel (SCALAPACK) execution with k-point sampling.
+!> @param[in] nelorb_c Number of basis functions
+!> @param[in] oversav Complex overlap matrix (not destroyed on output)
+!> @param[in] matsav Complex Hamiltonian matrix (not destroyed on output)
+!> @param[out] molecorb Complex eigenvectors in original basis
+!> @param[in,out] umatl Transformation matrix between original and orthogonal basis
+!> @param[out] eig Eigenvalues
+!> @param[in] lda Leading dimension of arrays
+!> @param[in] epsr Tolerance for eigenvalue filtering
+!> @param[in] eps_mach Machine precision
+!> @param[in] rank Rank of current process
+!> @param[in] optprint Print option flag
+!> @param[in] lworkr Work array size
+!> @param[in] iopt Option flag (1: initialization, 0: iteration)
+!> @param[in] premat Preconditioning matrix
+!> @param[out] eigmat Eigenvalue matrix
+!> @param[out] info Status flag
+!> @param[in] bands Number of bands to compute
+!> @param[in] nlax Leading dimension for SCALAPACK arrays
+!> @param[in] mincond Minimum condition number
 subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, lda, epsr, &
                                eps_mach, rank, optprint, lworkr, iopt, premat, eigmat, &
                                info, bands, nlax, mincond)
@@ -688,6 +713,17 @@ end subroutine eval_hamilt_complex
 !
 ! print eigenvalues depending on optprint option
 !
+
+!> @brief Prints eigenvalues of overlap and Hamiltonian matrices
+!> @details This subroutine prints eigenvalues of the overlap and Hamiltonian
+!>          matrices for debugging and analysis purposes. It handles both
+!>          single k-point and k-point sampling calculations.
+!> @param[in] eigov Overlap matrix eigenvalues
+!> @param[in] eigham Hamiltonian matrix eigenvalues for all k-points
+!> @param[in] dim Dimension of the eigenvalue arrays
+!> @param[in] bands Number of bands to print
+!> @param[in] condnumber Condition number of the basis set
+!> @param[in] iopt Option flag (1: initialization, 0: iteration)
 subroutine print_eigenvalues(eigov, eigham, dim, bands, condnumber, iopt)
 
     use allio, only: commcolrep_mpi, rank, xkp

@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for Assaraf density calculations
+!> @details This module implements the Assaraf method for computing
+!>          electron density from quantum Monte Carlo wave functions.
+!>          It provides functionality for initializing the method and
+!>          computing density contributions from both up and down electrons.
 module Assar_module
 
     logical :: ifrho_assar !(Matteo) flag for Assaraf density
@@ -27,6 +32,14 @@ module Assar_module
 
 contains
 
+    !> @brief Initializes Assaraf density calculation parameters
+    !> @details This subroutine initializes the parameters needed for
+    !>          Assaraf density calculations. It computes distances
+    !>          between grid points and ions, sets up switching functions,
+    !>          and prepares grid parameters for both external and
+    !>          regular grid calculations.
+    !> @param[in] vell Grid velocity vectors (3)
+    !> @param[in] ngrid_l Local grid dimensions (3)
     subroutine initialize_assaraf(vell, ngrid_l)
         use grid_module, only: out_grid, grid_points, ext_grid
         use allio, only: nion, rion
@@ -92,6 +105,24 @@ contains
 
     end subroutine initialize_assaraf
 
+    !> @brief Computes electron density using the Assaraf method
+    !> @details This subroutine computes the electron density using
+    !>          the Assaraf method, which provides a way to extract
+    !>          density from quantum Monte Carlo wave functions.
+    !>          It handles both up and down electrons separately and
+    !>          supports both external and regular grid calculations.
+    !> @param[in] dist Electron-ion distances (nelup+neldo, nion)
+    !> @param[in] rion Ion positions (3, nion)
+    !> @param[in] nion Number of ions
+    !> @param[in] kel Electron positions (3, *)
+    !> @param[in] nelup Number of up-spin electrons
+    !> @param[in] neldo Number of down-spin electrons
+    !> @param[in] indt Index for derivatives
+    !> @param[in] tabpip Tabulated pip values
+    !> @param[in] winvup Up-spin inverse matrix
+    !> @param[in] winvdo Down-spin inverse matrix
+    !> @param[out] density Electron density values
+    !> @param[in] zetaq Atomic numbers
     subroutine compute_rho_assar(dist, rion, nion, kel, nelup, neldo, indt, tabpip, winvup, winvdo, density, zetaq)
         use grid_module
         use constants, only: pi

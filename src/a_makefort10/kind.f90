@@ -15,11 +15,25 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 !------------------------------------------------------------------------------!
+!> @brief Data type definitions and information module for TurboRVB
+!> @details This module defines precision parameters for real and integer data types
+!>          used throughout the TurboRVB code. It provides consistent precision
+!>          across different platforms and compilers.
+!>          
+!>          The module defines:
+!>          - DP: Double precision real (14 digits, 200 exponent range)
+!>          - sgl: Single precision real (6 digits, 30 exponent range)
+!>          - i4b: 32-bit integer (9 digits)
+!>          
+!>          It also provides a subroutine to print detailed information about
+!>          the data types for debugging and verification purposes.
 module kinds
     !------------------------------------------------------------------------------!
 
     implicit none
     save
+    !> @brief Data type precision parameters
+    !> @details Precision parameters for real and integer data types
     ! ... kind definitions
     integer, parameter :: DP = selected_real_kind(14, 200)
     integer, parameter :: sgl = selected_real_kind(6, 30)
@@ -33,8 +47,12 @@ contains
     !
     !------------------------------------------------------------------------------!
     !
-    !!   Print information about the used data types.
-    !
+    !> @brief Print detailed information about the data types used in the code
+    !> @details This subroutine prints comprehensive information about the precision,
+    !>          range, and characteristics of the data types defined in this module.
+    !>          It is useful for debugging and verifying data type behavior across
+    !>          different platforms and compilers.
+    !> @param[in] stdout Output unit number for printing the information
     subroutine print_kind_info(stdout)
         !
         !------------------------------------------------------------------------------!

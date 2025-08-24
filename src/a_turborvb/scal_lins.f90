@@ -13,6 +13,10 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief      Module for SCALAPACK linear algebra operations
+!> @details    Provides subroutines for SCALAPACK environment setup and matrix
+!>             distribution calculations. Handles parallel matrix operations
+!>             and processor grid management for distributed linear algebra.
 module scal_lins
     implicit none
     integer nproc_ortho
@@ -21,8 +25,14 @@ module scal_lins
 
 contains
 
-    !Calculate the dimensions of the submatrices according to the convention used in
-    !distribute_column
+    !> @brief      Calculate dimensions of submatrices for column distribution
+    !> @details    Calculates the dimensions of submatrices according to the convention
+    !>             used in distribute_column. Determines size and last block size
+    !>             for matrix distribution across processors.
+    !> @param[in]  m           Total matrix size
+    !> @param[out] siz         Size of regular blocks
+    !> @param[out] last        Size of last block
+    !> @param[in]  num_procs   Number of processors
     subroutine calc_dime(m, siz, last, num_procs)
         implicit none
         integer :: m, siz, last, num_procs
@@ -37,8 +47,12 @@ contains
 
 !  subroutine
 
-    !This subroutine is the modified version of Cavazzoni's setup_para of the DFT that
-    !is inside parallel_mod.f90
+    !> @brief      Set up SCALAPACK parallel environment
+    !> @details    Modified version of Cavazzoni's setup_para from DFT parallel_mod.f90.
+    !>             Initializes SCALAPACK environment, creates processor grid, and sets up
+    !>             communicators for parallel matrix operations. Handles both real and
+    !>             complex matrix distributions.
+    !> @param[in]  commu       MPI communicator
     subroutine set_env(commu)
         use allio, only: me_blacs, np_blacs, world_cntx, np_ortho1, np_ortho, ortho_cntx, &
                          leg_ortho, ortho_comm, me_ortho, me_ortho1, ortho_comm_id, iflagerr, max_ortho
@@ -204,6 +218,22 @@ contains
     !output the master process has the solution stored in solu.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    !> @brief      Solve linear system in parallel using SCALAPACK
+    !> @details    Takes a block distributed matrix s (m,m) of block size in_blocks
+    !>             and distributes it on the mesh of out_procs processors, then solves
+    !>             the linear system associated with the matrix s and the known term
+    !>             solu (input) that is known to all processors. The master process
+    !>             has the solution stored in solu (output).
+    !> @param[in]  m           Matrix size
+    !> @param[in]  lds         Leading dimension of s
+    !> @param[in]  in_blocks   Input block size
+    !> @param[in]  rank        Process rank
+    !> @param[in]  out_procs   Number of output processors
+    !> @param[in]  comm        Local communicator
+    !> @param[in]  commtot     Total communicator
+    !> @param[in]  ictxt       BLACS context
+    !> @param[in,out] solu     Solution vector (input: known term, output: solution)
+    !> @param[in]  s           Input matrix block distributed by column
     subroutine para_syst(m, lds, in_blocks, rank, out_procs, comm, commtot, ictxt, solu, s)
         use descriptors
         use kpoints_mod, only: kaverage
@@ -328,11 +358,22 @@ contains
 #endif
     end subroutine para_syst
 
-    !This subroutine reshuffle a matrix divided between the processors by column.
-    !The initial configuration is over the first processes in block of in_blocks elements
-    !and is stored in the elements S of dimension (m,sizei), the final configuration
-    !is CYCLIC over num_procs processors and is stored in b(m,sizef). Last is the
-    !dimension of the last block of columns of the input matrix.
+    !> @brief      Reshuffle matrix distributed by column to cyclic distribution
+    !> @details    This subroutine reshuffles a matrix divided between the processors
+    !>             by column. The initial configuration is over the first processes
+    !>             in blocks of in_blocks elements and is stored in the elements S
+    !>             of dimension (m,sizei). The final configuration is CYCLIC over
+    !>             num_procs processors and is stored in b(m,sizef).
+    !> @param[in]  m           Matrix size
+    !> @param[in]  lds         Leading dimension of s
+    !> @param[in]  dimm        Dimension of output matrix b
+    !> @param[in]  dims        Dimension of input matrix s
+    !> @param[in]  rank        Process rank
+    !> @param[in]  in_blocks   Input block size
+    !> @param[in]  out_procs   Number of output processors
+    !> @param[in]  s           Input matrix block distributed by column
+    !> @param[out] b           Output matrix with cyclic distribution
+    !> @param[in]  comm        MPI communicator
     subroutine distribute_column(m, lds, dimm, dims, rank, in_blocks, out_procs, s, b, comm)
         implicit none
         include 'mpif.h'
@@ -392,7 +433,16 @@ contains
 #endif
     end subroutine distribute_column
 
-    !Trasforming the coloumn in rows
+    !> @brief      Transform matrix from column distribution to row distribution
+    !> @details    Transforms the column distribution of a matrix to row distribution.
+    !>             Converts the matrix layout from (m, siz) to (siz, m) format.
+    !> @param[in]  m           Matrix size
+    !> @param[in]  rank        Process rank
+    !> @param[in]  procs       Number of processors
+    !> @param[in]  siz         Size of blocks
+    !> @param[in]  last        Size of last block
+    !> @param[out] b           Output matrix in row format (siz, m)
+    !> @param[in]  buff        Input matrix in column format (m, siz)
     subroutine col2row(m, rank, procs, siz, last, b, buff)
         implicit none
         !nc is the number of column of the buffer

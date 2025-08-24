@@ -29,6 +29,19 @@ module buffers
     real(8), dimension(:), allocatable :: weight_buff
 contains
 
+    !> @brief Allocates memory buffers for real space grid calculations
+    !> @details This subroutine allocates various buffer arrays needed for real space grid calculations.
+    !>          It handles different buffer types including main buffers, contracted orbital buffers,
+    !>          conjugate buffers, and threading scratch arrays. The allocation size depends on
+    !>          complex wavefunction settings and LSDA calculations.
+    !> @param[in] bufbuf Number of grid points to be buffered
+    !> @param[in] nbas_tot Total atomic basis set dimension
+    !> @param[in] buf_dim Buffer leading dimension
+    !> @param[in] buf_dim_contr Buffer_on leading dimension
+    !> @param[in] buf_dim_conj Buf_conj leading dimension
+    !> @param[in] wf_dim Dimension of the wf_threading_scratch buffer
+    !> @param[in] thread_active The number of active threads
+    !> @param[in] print_size Optional flag to output the final allocated size
     subroutine allocate_buffers(bufbuf, & ! number of grid points to be buffered
                                 nbas_tot, & ! total atomic basis set dimension
                                 buf_dim, & ! buffer leading dimension
@@ -102,6 +115,17 @@ contains
     ! If the thread_id (tid) argument is present, fill only one grid
     ! point, otherwise fill the full buffer.
     !
+    !> @brief Updates wavefunction arrays with values from grid calculations
+    !> @details This subroutine fills the support array wf(:,indmesh) with wavefunction values
+    !>          evaluated at grid points. It can handle both single point updates (when tid is present)
+    !>          and full buffer updates. Supports both real and complex wavefunctions with
+    !>          optional double overlap calculations.
+    !> @param[in] nbas True basis set dimension
+    !> @param[in,out] wf Array containing the wave function for memlarge option
+    !> @param[in] wf_dim Leading dimension of wf
+    !> @param[in] bufbuf Number of buffered points in the grid
+    !> @param[in] indmesh Last index on the grid
+    !> @param[in] tid Optional thread identification for single point updates
     subroutine update_wf_memlarge(nbas, & ! true basis set dimension
                                   wf, & ! array containing the wave function for memlarge option
                                   wf_dim, & ! leading dimension of wf
@@ -148,6 +172,11 @@ contains
         return
     end subroutine update_wf_memlarge
 
+    !> @brief Deallocates all buffer arrays used in grid calculations
+    !> @details This subroutine safely deallocates all buffer arrays that were allocated
+    !>          by allocate_buffers. It checks for allocation status before deallocating
+    !>          to avoid errors. Handles main buffers, threading scratch arrays,
+    !>          contracted orbital buffers, conjugate buffers, and weight buffers.
     subroutine deallocate_buffers()
 
         implicit none

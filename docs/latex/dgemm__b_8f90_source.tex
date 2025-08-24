@@ -1,0 +1,98 @@
+\doxysection{dgemm\+\_\+b.\+f90}
+\hypertarget{dgemm__b_8f90_source}{}\label{dgemm__b_8f90_source}\index{src/c\_adjoint\_backward/dgemm\_b.f90@{src/c\_adjoint\_backward/dgemm\_b.f90}}
+\mbox{\hyperlink{dgemm__b_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00001}00001\ \textcolor{comment}{!TL\ off}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00002}\mbox{\hyperlink{dgemm__b_8f90_a7e000536b02c8eeb9c9736df6f1aa80a}{00002}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{dgemm__b_8f90_a7e000536b02c8eeb9c9736df6f1aa80a}{dgemm\_b}}(TRANSA,\ TRANSB,\ M,\ N,\ K,\ ALPHA,\ A,\ LDA,\ AB,\ LDAB,\ B,\ LDB,\ BB\&}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00003}00003\ \ \ \ \ \ \ \ \ \&,\ LDBB,\ BETA,\ CB,\ LDCB)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00004}00004\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00005}00005\ \ \ \ \ \textcolor{keywordtype}{CHARACTER*1}\ \ \ \ \ \ \ \ TRANSA,\ TRANSB}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00006}00006\ \ \ \ \ \textcolor{keywordtype}{CHARACTER*1}\ \ \ \ \ \ \ \ TRANSAB,\ TRANSBB}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00007}00007\ \ \ \ \ \textcolor{keywordtype}{INTEGER}\ \ \ \ \ \ \ \ \ \ \ \ I,J,M,\ N,\ K,\ LDA,\ LDAB,\ LDB,\ LDBB,\ LDCB}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00008}00008\ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ ALPHA,\ BETA}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00009}00009\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ ..\ Array\ Arguments\ ..}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00010}00010\ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ A(LDA,\ *),\ B(LDB,\ *)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00011}00011\ \ \ \ \ \textcolor{keywordtype}{DOUBLE\ PRECISION}\ \ \ AB(LDAB,\ *),\ BB(LDBB,\ *),\ CB(LDCB,\ *)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00012}00012\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00013}00013\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ true\ dimensions:}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00014}00014\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ C(M,N)}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00016}00016\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ CASE\ \ \ \ \ \ 'N'\ \ \ \ \ \ \ \ \ \ \ \ \ 'T'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00017}00017\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A(M,K)\ \ \ \ \ \ \ \ \ \ \ A(K,M)}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00018}00018\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 'N'\ \ \ \ \ \ \ \ \ \ \ \ 'T'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00019}00019\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ B(K,N)\ \ \ \ \ \ \ \ \ \ \ B(N,K)}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00020}00020\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ C\ is\ not\ used\ and\ is\ not\ passed.}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00021}00021\ \ \ \ \ \textcolor{comment}{!\ \ \ \ CB\ is\ instead\ used\ as\ an\ input\ and\ is\ modified\ in\ output.}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00022}00022\ \ \ \ \ \textcolor{comment}{!\ \ \ \ A\ and\ B\ are\ input\ not\ modified\ in\ output.}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00023}00023\ \ \ \ \ \textcolor{comment}{!\ \ \ \ Output\ \ AB\ and\ BB\ and\ CB}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00025}00025\ \ \ \ \ \textcolor{keywordflow}{if}(transa.eq.\textcolor{stringliteral}{'n'}.or.transa.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00026}00026\ \ \ \ \ \ \ \ \ transab\ =\ \textcolor{stringliteral}{'N'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00028}00028\ \ \ \ \ \ \ \ \ transab\ =\ \textcolor{stringliteral}{'T'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00029}00029\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordflow}{if}(transb.eq.\textcolor{stringliteral}{'n'}.or.transb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ transbb\ =\ \textcolor{stringliteral}{'N'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00033}00033\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00034}00034\ \ \ \ \ \ \ \ \ transbb\ =\ \textcolor{stringliteral}{'T'}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00035}00035\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00037}00037\ \ \ \ \ \textcolor{keywordflow}{if}(transab.eq.\textcolor{stringliteral}{'N'}.and.transbb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00038}00038\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00039}00039\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ m,\ k,\ n,\ alpha,\ cb,\ ldcb,\ b,\ ldb,\ 1.d0,\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00040}00040\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ k,\ n,\ m,\ alpha,\ a,\ lda,\ cb,\ ldcb,\ 1.d0,\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00041}00041\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00042}00042\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.ne.\textcolor{stringliteral}{'N'}.and.transbb.eq.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00043}00043\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00044}00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'T'},\ k,\ m,\ n,\ alpha,\ b,\ ldb,\ cb,\ ldcb,\ 1.d0,\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00045}00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ k,\ n,\ m,\ alpha,\ a,\ lda,\ cb,\ ldcb,\ 1.d0,\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00047}00047\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.eq.\textcolor{stringliteral}{'N'}.and.transbb.ne.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00048}00048\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'N'},\ \textcolor{stringliteral}{'N'},\ m,\ k,\ n,\ alpha,\ cb,\ ldcb,\ b,\ ldb,\ 1.d0,\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'N'},\ n,\ k,\ m,\ alpha,\ cb,\ ldcb,\ a,\ lda,\ 1.d0,\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00052}00052\ \ \ \ \ \textcolor{keywordflow}{elseif}(transab.ne.\textcolor{stringliteral}{'N'}.and.transbb.ne.\textcolor{stringliteral}{'N'})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ k,\ m,\ n,\ alpha,\ b,\ ldb,\ cb,\ ldcb,\ 1.d0,\ ab,\ ldab)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__tn_8f_a8074354896fddf19ea541cd4275cc4ae}{dgemm\_}}(\textcolor{stringliteral}{'T'},\ \textcolor{stringliteral}{'T'},\ n,\ k,\ m,\ alpha,\ cb,\ ldcb,\ a,\ lda,\ 1.d0,\ bb,\ ldbb)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00057}00057\ \textcolor{keywordflow}{\ \ \ \ endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{dgemm__b_8f90_aa4ad79b65a0678f59cf5c5bf7f298844}{dscalmatrix}}(m,n,beta,cb,ldcb)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00059}00059\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00060}00060\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00061}\mbox{\hyperlink{dgemm__b_8f90_aa4ad79b65a0678f59cf5c5bf7f298844}{00061}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{dgemm__b_8f90_aa4ad79b65a0678f59cf5c5bf7f298844}{dscalmatrix}}(m,n,alpha,a,lda)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00062}00062\ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00063}00063\ \textcolor{keywordtype}{integer}\ i,j,n,m,lda}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00064}00064\ real*8\ alpha,a(lda*(n-\/1)+m)}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00065}00065\ \textcolor{keywordflow}{if}(alpha.ne.0.d0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00066}00066\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00067}00067\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00068}00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00069}00069\ \textcolor{preprocessor}{}\textcolor{keywordflow}{do}\ j=1,n}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00070}00070\ \ \textcolor{keywordflow}{do}\ i=1,m}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00071}00071\ \ a(lda*(j-\/1)+i)=a(lda*(j-\/1)+i)*alpha}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00072}00072\ \textcolor{keywordflow}{\ enddo}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00073}00073\ \textcolor{keywordflow}{enddo}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00074}00074\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00075}00075\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do\ }}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00076}00076\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00077}00077\ \textcolor{preprocessor}{}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00078}00078\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00079}00079\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ target\ teams\ distribute\ parallel\ do\ collapse(2)}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00080}00080\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00081}00081\ \textcolor{preprocessor}{}\textcolor{keywordflow}{do}\ j=1,n}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00082}00082\ \ \textcolor{keywordflow}{do}\ i=1,m}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00083}00083\ \ a(lda*(j-\/1)+i)=0.d0}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00084}00084\ \textcolor{keywordflow}{\ enddo}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00085}00085\ \textcolor{keywordflow}{enddo}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00086}00086\ \textcolor{preprocessor}{\#ifdef\ \_OFFLOAD}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00087}00087\ \textcolor{preprocessor}{}\textcolor{comment}{!\$omp\ end\ target\ teams\ distribute\ parallel\ do\ }}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00088}00088\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00089}00089\ \textcolor{preprocessor}{}\textcolor{keywordflow}{endif}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00090}00090\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00091}00091\ \textcolor{keyword}{end}}
+\DoxyCodeLine{\Hypertarget{dgemm__b_8f90_source_l00092}00092\ }
+
+\end{DoxyCode}

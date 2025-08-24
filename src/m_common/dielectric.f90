@@ -13,10 +13,45 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Dielectric screening module for quantum Monte Carlo calculations
+!>
+!> This module provides functionality for handling dielectric screening effects
+!> in quantum Monte Carlo calculations. It implements various dielectric models
+!> for modifying Coulomb interactions in condensed matter systems, particularly
+!> useful for simulating systems with different dielectric environments.
+!>
+!> The module supports three different dielectric models:
+!> - case_diel = 0: Pure Coulomb interaction (no screening)
+!> - case_diel = 1: Gaussian screening model
+!> - case_diel = 2: Error function screening model
+!>
+!> @details
+!> The module contains global variables for dielectric parameters and provides
+!> functions for calculating screened potentials and their derivatives.
+!> It is used in quantum Monte Carlo calculations to account for dielectric
+!> screening effects in bulk materials, surfaces, and interfaces.
+!>
+!> @note Used in VMC and DMC calculations for systems with dielectric screening
+!> @note Supports different screening models for various physical systems
 module dielectric
     real*8 epsilon0, Cgauss, dielectric_ratio, dielectric_length, vq0_diel, vgauss_diel
     integer case_diel
 contains
+
+    !> @brief Initialize dielectric parameters based on screening model
+    !>
+    !> This subroutine initializes the dielectric parameters based on the
+    !> specified dielectric ratio and screening model. It sets up the
+    !> appropriate constants for the chosen dielectric screening approach.
+    !>
+    !> @details
+    !> The subroutine handles three cases:
+    !> - case_diel = 0: Pure Coulomb (ε₀ = 1, C_gauss = 1)
+    !> - case_diel = 1: Gaussian screening (ε₀ = 1/ratio, C_gauss = 0.5/length²)
+    !> - case_diel = 2: Error function screening (ε₀ = 1/ratio, C_gauss = 1/length)
+    !>
+    !> @note If dielectric_ratio = -1, ε₀ is set to 0 (no long-range interaction)
+    !> @note Automatically determines case_diel if not explicitly set
     subroutine init_dielectric
         implicit none
         if (dielectric_ratio .eq. 1.d0) case_diel = 0
@@ -36,6 +71,26 @@ contains
         end select
         if (dielectric_ratio .eq. -1.d0) epsilon0 = 0.d0 ! Default input no long range
     end subroutine init_dielectric
+
+    !> @brief Initialize dielectric parameters for DFT calculations
+    !>
+    !> This subroutine initializes dielectric parameters specifically for
+    !> density functional theory (DFT) calculations, computing the q=0
+    !> components and Gaussian integrals needed for DFT implementations.
+    !>
+    !> @param[in] kappa Screening parameter for Ewald summation
+    !>
+    !> @details
+    !> The subroutine calculates:
+    !> - vq0_diel: q=0 component of the screened potential
+    !> - vgauss_diel: Gaussian integral of the total potential
+    !>
+    !> Different formulas are used for each dielectric case:
+    !> - case 0: Pure Coulomb interaction
+    !> - case 1: Gaussian screening model
+    !> - case 2: Error function screening model
+    !>
+    !> @note Used in DFT calculations with dielectric screening
     subroutine init_dielectric_dft(kappa)
         use constants, only: Pi
         implicit none
@@ -59,6 +114,22 @@ contains
            &+ (1.d0 - epsilon0)*4*pi*(1.d0 - Cgauss/sqrt(0.5d0 + Cgauss**2))
         end select
     end subroutine init_dielectric_dft
+
+    !> @brief Calculate screened Coulomb potential
+    !>
+    !> This function calculates the screened Coulomb potential at a given
+    !> distance r, using the appropriate dielectric screening model.
+    !>
+    !> @param[in] r Distance between particles (atomic units)
+    !> @return Screened Coulomb potential V(r)
+    !>
+    !> @details
+    !> The function implements different screening models:
+    !> - case 0: V(r) = 1/r (pure Coulomb)
+    !> - case 1: V(r) = (ε₀ + (1-ε₀)exp(-C_gauss*r²))/r (Gaussian screening)
+    !> - case 2: V(r) = (ε₀ + (1-ε₀)erfc(C_gauss*r))/r (Error function screening)
+    !>
+    !> @note Used in quantum Monte Carlo calculations for screened interactions
     function veps(r)
         implicit none
         real*8 r, veps, derfc
@@ -71,6 +142,30 @@ contains
             veps = (epsilon0 + (1.d0 - epsilon0)*derfc(Cgauss*r))/r
         end select
     end function veps
+
+    !> @brief Calculate screened Coulomb potential with backward propagation
+    !>
+    !> This subroutine calculates the screened Coulomb potential and its
+    !> derivative for backward propagation in automatic differentiation.
+    !> It modifies the input variables rb and vepsb according to the
+    !> chain rule for derivatives.
+    !>
+    !> @param[in] r Distance between particles (atomic units)
+    !> @param[in,out] rb Backward propagated variable for r
+    !> @param[in,out] vepsb Backward propagated variable for potential
+    !>
+    !> @details
+    !> The subroutine implements the backward propagation rule:
+    !> rb = rb + vepsb * dV(r)/dr
+    !> where dV(r)/dr is the derivative of the screened potential.
+    !>
+    !> Different formulas are used for each dielectric case:
+    !> - case 0: Pure Coulomb derivative
+    !> - case 1: Gaussian screening derivative
+    !> - case 2: Error function screening derivative
+    !>
+    !> @note Used in automatic differentiation for quantum Monte Carlo
+    !> @note vepsb is set to zero after use (chain rule completion)
     subroutine veps_b(r, rb, vepsb)
 !   Here rb=rb + vepsb * d/dr  veps(r)
         use constants, only: M_2_SQRTPI
@@ -87,6 +182,24 @@ contains
         end select
         vepsb = 0.d0
     end subroutine veps_b
+
+    !> @brief Calculate screened complementary error function potential
+    !>
+    !> This function calculates the screened complementary error function
+    !> potential, which is used in Ewald summation for long-range interactions
+    !> with dielectric screening.
+    !>
+    !> @param[in] r Distance between particles (atomic units)
+    !> @param[in] kappa Screening parameter for Ewald summation
+    !> @return Screened complementary error function potential
+    !>
+    !> @details
+    !> The function implements different screening models:
+    !> - case 0: erfc(κr)/r (pure Coulomb with Ewald screening)
+    !> - case 1: ε₀*erfc(κr)/r + (1-ε₀)*exp(-r²*C_gauss)/r (Gaussian screening)
+    !> - case 2: ε₀*erfc(κr)/r + (1-ε₀)*erfc(C_gauss*r)/r (Error function screening)
+    !>
+    !> @note Used in Ewald summation for periodic systems with dielectric screening
     function rep_erfc(r, kappa)
         implicit none
         real*8 rep_erfc, r, kappa
@@ -100,6 +213,27 @@ contains
             rep_erfc = epsilon0*derfc(r*kappa)/r + (1.d0 - epsilon0)*derfc(r*Cgauss)/r
         end select
     end function rep_erfc
+
+    !> @brief Calculate screened complementary error function potential with backward propagation
+    !>
+    !> This subroutine calculates the screened complementary error function
+    !> potential and its derivative for backward propagation in automatic
+    !> differentiation, specifically for Ewald summation with dielectric screening.
+    !>
+    !> @param[in] r Distance between particles (atomic units)
+    !> @param[in,out] rb Backward propagated variable for r
+    !> @param[in] kappa Screening parameter for Ewald summation
+    !> @param[in,out] rep_erfcb Backward propagated variable for potential
+    !>
+    !> @details
+    !> The subroutine implements the backward propagation rule:
+    !> rb = rb + rep_erfcb * dV(r)/dr
+    !> where dV(r)/dr is the derivative of the screened complementary error function potential.
+    !>
+    !> Different formulas are used for each dielectric case, incorporating
+    !> both the Ewald screening (κ) and dielectric screening (C_gauss) parameters.
+    !>
+    !> @note Used in automatic differentiation for Ewald summation with dielectric screening
     subroutine rep_erfc_b(r, rb, kappa, rep_erfcb)
 !   Here rb=rb + rep_erfcb * d/dr  rep_erfc(r)
         use constants, only: M_2_SQRTPI

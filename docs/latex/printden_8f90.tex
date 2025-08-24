@@ -1,0 +1,183 @@
+\doxysection{src/a\+\_\+prep/printden.f90 File Reference}
+\hypertarget{printden_8f90}{}\label{printden_8f90}\index{src/a\_prep/printden.f90@{src/a\_prep/printden.f90}}
+\doxysubsubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{printden_8f90_aaed9819fbb237182bf563341c735abd4}{printden}} (rion\+\_\+ref, rion\+\_\+shift, nxl, dent)
+\begin{DoxyCompactList}\small\item\em Prints electron density data to XCry\+SDen format. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{printden_8f90_doc-func-members}
+\doxysubsection{Function/\+Subroutine Documentation}
+\Hypertarget{printden_8f90_aaed9819fbb237182bf563341c735abd4}\index{printden.f90@{printden.f90}!printden@{printden}}
+\index{printden@{printden}!printden.f90@{printden.f90}}
+\doxysubsubsection{\texorpdfstring{printden()}{printden()}}
+{\footnotesize\ttfamily \label{printden_8f90_aaed9819fbb237182bf563341c735abd4} 
+subroutine printden (\begin{DoxyParamCaption}\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{rion\+\_\+ref}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{rion\+\_\+shift}{, }\item[{}]{nxl}{, }\item[{real(8), dimension(\texorpdfstring{$\ast$}{*})}]{dent}{}\end{DoxyParamCaption})}
+
+
+
+Prints electron density data to XCry\+SDen format. 
+
+This subroutine processes electron density data and writes it to a file compatible with XCry\+SDen visualization software. It handles both periodic and non-\/periodic systems, applies appropriate coordinate transformations, and manages parallel data collection from multiple MPI processes. 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{in}}  & {\em rion\+\_\+ref} & Reference ion positions for coordinate system \\
+\hline
+\mbox{\texttt{in}}  & {\em rion\+\_\+shift} & Shift vector for ion positions \\
+\hline
+\mbox{\texttt{in}}  & {\em nxl} & Local grid dimension for parallel calculations \\
+\hline
+\mbox{\texttt{in}}  & {\em dent} & Local density array from each MPI process \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{printden_8f90_source_l00025}{25}} of file \mbox{\hyperlink{printden_8f90_source}{printden.\+f90}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{use\ }\mbox{\hyperlink{namespaceallio}{allio}}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{integer}\ ::\ mesh(3),\ ind,\ i,\ j,\ k,\ proc}
+\DoxyCodeLine{00030\ \textcolor{keywordtype}{\ \ \ \ real}(8)\ ::\ cell\_dens(3),\ mesh\_origin(3),\ rion\_ref(*),\ rion\_shift(*),\ dent(*)}
+\DoxyCodeLine{00031\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{dimension(:,\ :,\ :)}\ ::\ datagrid}
+\DoxyCodeLine{00032\ \textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{dimension(:,\ :)}\ ::\ rion\_plot}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{}\textcolor{keywordtype}{\ \ \ \ real}(8),\ \textcolor{keywordtype}{allocatable},\ \textcolor{keywordtype}{dimension(:,\ :)}\ ::\ buffer\_grid}
+\DoxyCodeLine{00036\ \ \ \ \ include\ \textcolor{stringliteral}{'mpif.h'}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{allocate}\ (rion\_plot(3,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}}))}
+\DoxyCodeLine{00040\ \ \ \ \ rion\_plot\ =\ 0.d0}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (.not.\ \mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ for\ non\ period\ systems\ translate\ both\ mesh\_origin\ and\ nuclear\ geometry\ (rion)\ by\ L(i)/2}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ in\ order\ to\ place\ the\ fragment\ at\ the\ center\ of\ the\ cell\ drawn\ by\ Xcrysden}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ note:\ rion\_ref(i)\ =\ (n(i)-\/1)/n(i)\ *\ L(i)/2\ +\ mesh\_offset(i)\ (the\ mesh\_offset\ is\ rion\_shift)}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ rion\_plot(1,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(1,\ :)\ +\ rion\_ref(1)\ -\/\ rion\_shift(1)}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ rion\_plot(2,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(2,\ :)\ +\ rion\_ref(2)\ -\/\ rion\_shift(2)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ rion\_plot(3,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(3,\ :)\ +\ rion\_ref(3)\ -\/\ rion\_shift(3)}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ cell\_dens(1)\ =\ (\mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a05e832c285adebdb65ac812b833affe9}{ax}}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ cell\_dens(2)\ =\ (\mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_a4b169df74a458a5115f77ec9bbfba040}{ay}}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ cell\_dens(3)\ =\ (\mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}\ -\/\ 1)*\mbox{\hyperlink{namespaceallio_aa99830b4087986ee0eacb604a9fcd542}{az}}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ mesh(1)\ =\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ mesh(2)\ =\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ mesh(3)\ =\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ mesh\_origin(1)\ =\ rion\_ref(1)}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ mesh\_origin(2)\ =\ rion\_ref(2)}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ mesh\_origin(3)\ =\ rion\_ref(3)}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ rion\_plot(1,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(1,\ :)}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ rion\_plot(2,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(2,\ :)}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ rion\_plot(3,\ :)\ =\ \mbox{\hyperlink{namespaceallio_afca9808644f58a8111cdb741892fb4a5}{rion}}(3,\ :)}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ cell\_dens(1)\ =\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}*\mbox{\hyperlink{namespaceallio_a05e832c285adebdb65ac812b833affe9}{ax}}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ cell\_dens(2)\ =\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}*\mbox{\hyperlink{namespaceallio_a4b169df74a458a5115f77ec9bbfba040}{ay}}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ cell\_dens(3)\ =\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}*\mbox{\hyperlink{namespaceallio_aa99830b4087986ee0eacb604a9fcd542}{az}}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ mesh(1)\ =\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}\ +\ 1}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ mesh(2)\ =\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}\ +\ 1}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ mesh(3)\ =\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}\ +\ 1}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ mesh\_origin(1)\ =\ rion\_shift(1)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ mesh\_origin(2)\ =\ rion\_shift(2)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ mesh\_origin(3)\ =\ rion\_shift(3)}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (datagrid(mesh(1),\ mesh(2),\ mesh(3)))}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ datagrid\ =\ 0.d0}
+\DoxyCodeLine{00086\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#ifdef\ PARALLEL}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{}\ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keyword}{allocate}\ (buffer\_grid(nxl*\mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}*\mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}},\ \mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}}))}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ buffer\_grid\ =\ 0.d0}
+\DoxyCodeLine{00092\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keyword}{call\ }mpi\_gather(dent,\ nxl*\mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}*\mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}},\ mpi\_double\_precision,\ buffer\_grid\&}
+\DoxyCodeLine{00095\ \ \ \ \ \ \&,\ nxl*\mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}*\mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}},\ mpi\_double\_precision,\ 0,\ mpi\_comm\_world,\ \mbox{\hyperlink{namespaceallio_ad5495214e0b17d8fba951a059b54f99e}{ierr}})}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ proc\ =\ 0,\ \mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}}\ -\/\ 1}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ proc\ +\ 1,\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}},\ \mbox{\hyperlink{namespaceallio_ae1a71aaf748581a2796b7dbaec78d4b6}{nproc}}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ datagrid(i,\ j,\ k)\ =\ buffer\_grid(ind,\ proc\ +\ 1)}
+\DoxyCodeLine{00105\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00106\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00107\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00108\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (buffer\_grid)}
+\DoxyCodeLine{00110\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00114\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 1,\ \mbox{\hyperlink{namespaceallio_a21d81a60f53f80fd3af2a6faaedea9c4}{nx}}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ datagrid(i,\ j,\ k)\ =\ dent(ind)}
+\DoxyCodeLine{00120\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00121\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00122\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a92bd2fc636db0ffb5ae152e898a9ac62}{rank}}\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}})\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ periodic\ condition\ on\ the\ grid}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ \mbox{\hyperlink{namespaceallio_acdeb629888f50048d7c1712909b9df9a}{ny}}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ datagrid(mesh(1),\ j,\ k)\ =\ datagrid(1,\ j,\ k)}
+\DoxyCodeLine{00133\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00134\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ \mbox{\hyperlink{namespaceallio_ab61adff8264af0c1ed05a90348877892}{nz}}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mesh(1)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ datagrid(j,\ mesh(2),\ k)\ =\ datagrid(j,\ 1,\ k)}
+\DoxyCodeLine{00139\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00140\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ k\ =\ 1,\ mesh(2)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ mesh(1)}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ datagrid(j,\ k,\ mesh(3))\ =\ datagrid(j,\ k,\ 1)}
+\DoxyCodeLine{00145\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00146\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ nion,\ rion,\ atom\_number,\ iespbc\ read\ from\ read\_fort10\ called\ in\ the\ main\ driver}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{write}\ (6,\ *)\ \textcolor{stringliteral}{'writing\ dft\ density\ on\ xcrysden\ file'}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keyword}{call\ }\mbox{\hyperlink{plot__3d__data_8f90_a5b420b3947d720dc31b1c5f86e0b79dd}{plot\_3d\_data}}(1,\ cell\_dens,\ cell\_dens,\ \mbox{\hyperlink{namespaceallio_a6886b2fe0b4ed06fa2d9f72e4ed73f56}{nion}},\ rion\_plot\ \&}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \mbox{\hyperlink{namespaceallio_aa48c91a2b60c7ba8e2ac2a6738671447}{atom\_number}},\ \mbox{\hyperlink{namespaceallio_a544b28227fbdd9369a2fda51093b92c3}{iespbc}},\ mesh,\ mesh\_origin,\ datagrid,\ 1,\ \textcolor{stringliteral}{'dft\_density'})}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{deallocate}\ (datagrid)}
+\DoxyCodeLine{00156\ \textcolor{keywordflow}{\ \ \ \ end\ if}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keyword}{deallocate}\ (rion\_plot)}
+\DoxyCodeLine{00159\ }
+
+\end{DoxyCode}
+
+
+References \mbox{\hyperlink{allio_8f90_source_l00955}{allio\+::atom\+\_\+number}}, \mbox{\hyperlink{allio_8f90_source_l00623}{allio\+::ax}}, \mbox{\hyperlink{allio_8f90_source_l00624}{allio\+::ay}}, \mbox{\hyperlink{allio_8f90_source_l00625}{allio\+::az}}, \mbox{\hyperlink{allio_8f90_source_l01127}{allio\+::ierr}}, \mbox{\hyperlink{allio_8f90_source_l01259}{allio\+::iespbc}}, \mbox{\hyperlink{allio_8f90_source_l00259}{allio\+::nion}}, \mbox{\hyperlink{allio_8f90_source_l01120}{allio\+::nproc}}, \mbox{\hyperlink{allio_8f90_source_l00475}{allio\+::nx}}, \mbox{\hyperlink{allio_8f90_source_l00476}{allio\+::ny}}, \mbox{\hyperlink{allio_8f90_source_l00477}{allio\+::nz}}, \mbox{\hyperlink{plot__3d__data_8f90_source_l00062}{plot\+\_\+3d\+\_\+data()}}, \mbox{\hyperlink{allio_8f90_source_l01119}{allio\+::rank}}, and \mbox{\hyperlink{allio_8f90_source_l00803}{allio\+::rion}}.
+
+
+
+Referenced by \mbox{\hyperlink{writeout__finalize_8f90_source_l00022}{write\+\_\+output\+\_\+and\+\_\+finalize()}}.
+

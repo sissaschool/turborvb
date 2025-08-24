@@ -1,0 +1,65 @@
+\doxysection{upjbra.\+f90}
+\hypertarget{upjbra_8f90_source}{}\label{upjbra_8f90_source}\index{src/a\_turborvb/upjbra.f90@{src/a\_turborvb/upjbra.f90}}
+\mbox{\hyperlink{upjbra_8f90}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00001}00001\ \textcolor{comment}{!\ Copyright\ (C)\ 2022\ TurboRVB\ group}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00002}00002\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00003}00003\ \textcolor{comment}{!\ This\ program\ is\ free\ software:\ you\ can\ redistribute\ it\ and/or\ modify}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00004}00004\ \textcolor{comment}{!\ it\ under\ the\ terms\ of\ the\ GNU\ General\ Public\ License\ as\ published\ by}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00005}00005\ \textcolor{comment}{!\ the\ Free\ Software\ Foundation,\ either\ version\ 3\ of\ the\ License,\ or}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00006}00006\ \textcolor{comment}{!\ (at\ your\ option)\ any\ later\ version.}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00007}00007\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00008}00008\ \textcolor{comment}{!\ This\ program\ is\ distributed\ in\ the\ hope\ that\ it\ will\ be\ useful,}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00009}00009\ \textcolor{comment}{!\ but\ WITHOUT\ ANY\ WARRANTY;\ without\ even\ the\ implied\ warranty\ of}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00010}00010\ \textcolor{comment}{!\ MERCHANTABILITY\ or\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.\ \ See\ the}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00011}00011\ \textcolor{comment}{!\ GNU\ General\ Public\ License\ for\ more\ details.}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00012}00012\ \textcolor{comment}{!}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00013}00013\ \textcolor{comment}{!\ You\ should\ have\ received\ a\ copy\ of\ the\ GNU\ General\ Public\ License}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00014}00014\ \textcolor{comment}{!\ along\ with\ this\ program.\ If\ not,\ see\ <http://www.gnu.org/licenses/>.}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00015}00015\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00016}00016\ \textcolor{comment}{!>\ @brief\ \ \ \ \ \ Update\ Jastrow\ branching\ array\ for\ walker\ redistribution}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00017}00017\ \textcolor{comment}{!>\ @details\ \ \ \ This\ subroutine\ updates\ the\ Jastrow\ branching\ array\ (jbra)\ to}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00018}00018\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ redistribute\ walkers\ after\ branching.\ It\ identifies\ killed\ walkers}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00019}00019\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ and\ replaces\ them\ with\ replicated\ walkers\ to\ maintain\ the\ total}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00020}00020\ \textcolor{comment}{!>\ \ \ \ \ \ \ \ \ \ \ \ \ number\ of\ walkers.}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00021}00021\ \textcolor{comment}{!>\ @param[in]\ \ nw\ \ \ \ \ \ Number\ of\ walkers}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00022}00022\ \textcolor{comment}{!>\ @param[in,out]\ jbra\ Jastrow\ branching\ array}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00023}00023\ \textcolor{comment}{!>\ @param[out]\ \ \ ipip\ \ Temporary\ array\ for\ counting\ walkers}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00024}00024\ \textcolor{comment}{!>\ @param[out]\ \ \ indz\ \ Array\ storing\ positions\ of\ killed\ walkers}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00025}\mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{00025}}\ \textcolor{keyword}{subroutine\ }\mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{upjbra}}(nw,\ jbra,\ ipip,\ indz)}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00026}00026\ \ \ \ \ \textcolor{keywordtype}{implicit\ none}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00027}00027\ \ \ \ \ \textcolor{keywordtype}{integer}\ jbra(*),\ ipip(*),\ indz(*),\ j,\ i,\ nw,\ ind}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00028}00028\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ before\ I\ make\ another\ permutation\ to\ optimize\ the\ reshuff}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00029}00029\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ in1=\#\ walkers\ in\ each\ processor\ nw/in1=integer>=1}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00031}00031\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00032}00032\ \ \ \ \ \ \ \ \ ipip(j)\ =\ 0}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00033}00033\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00034}00034\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00035}00035\ \ \ \ \ \ \ \ \ ind\ =\ jbra(j)}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00036}00036\ \ \ \ \ \ \ \ \ ipip(ind)\ =\ ipip(ind)\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00037}00037\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00038}00038\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00039}00039\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ store\ the\ position\ of\ the\ killed\ walkers}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00040}00040\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00041}00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipip(j)\ .eq.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00042}00042\ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00043}00043\ \ \ \ \ \ \ \ \ \ \ \ \ indz(ind)\ =\ j}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00044}00044\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00045}00045\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00046}00046\ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ now\ update\ jbra}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00047}00047\ \ \ \ \ ind\ =\ 0}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00048}00048\ \ \ \ \ \textcolor{keywordflow}{do}\ j\ =\ 1,\ nw}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00049}00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ipip(j)\ .ne.\ 0)\ \textcolor{keywordflow}{then}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \ \ jbra(j)\ =\ j}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00051}00051\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{!\ \ \ \ \ \ \ \ \ \ \ \ \ \ the\ replicated\ walkers\ take\ the\ position\ of\ the\ killed\ ones}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ i\ =\ 2,\ ipip(j)}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ind\ =\ ind\ +\ 1}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ jbra(indz(ind))\ =\ j}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00055}00055\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ \ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00056}00056\ \textcolor{keywordflow}{\ \ \ \ \ \ \ \ end\ if}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00057}00057\ \textcolor{keywordflow}{\ \ \ \ end\ do}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{upjbra_8f90_source_l00059}00059\ \textcolor{keyword}{end\ subroutine\ }\mbox{\hyperlink{upjbra_8f90_a2a623564c8536ecb9f1602635ecafded}{upjbra}}}
+
+\end{DoxyCode}

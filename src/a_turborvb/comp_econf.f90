@@ -23,6 +23,20 @@
 !         iese=1 compute the total energy only (default option)
 ! isfix = store the variance <H^2> if different from 0
 
+!> @brief      Compute energy and correlation functions for walkers
+!> @details    This subroutine computes the energy and other correlation functions
+!>             after one loop over the walkers. It stores different components
+!>             of the total energy based on the iese parameter, including kinetic
+!>             energy, diffusion, and pseudo-potential contributions.
+!> @param[in]  j            Walker index
+!> @param[in]  js           Secondary walker index
+!> @param[out] econf        Array containing energy and correlation function values
+!> @param[in]  enert        Energy arrays
+!> @param[in]  diffkin      Kinetic energy differences
+!> @param[in]  vpot         Potential energy
+!> @param[in]  vcut         Cutoff potential
+!> @param[in]  voffpseudo   Pseudo-potential offset
+!> @param[in]  table        Table arrays
 subroutine comp_econf(j, js, econf, enert, diffkin, vpot, vcut, voffpseudo, table)
 
     use constants, only: ipc

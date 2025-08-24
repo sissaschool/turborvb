@@ -18,6 +18,17 @@
 ! the flag nbody_on is set to .true., if a one-body Jastrow is
 ! attached in front of the DFT wave function.
 
+!> @brief Updates one-body Jastrow factor for complex wavefunctions
+!> @details This subroutine updates the one-body part of the wave function
+!>          by applying Jastrow factors and gradient corrections for complex
+!>          wavefunctions. It modifies the wave function scratch array with
+!>          Jastrow contributions and kinetic energy terms.
+!> @param[in] wf_scr Wave function scratch array
+!> @param[in] nbas_tot Total number of basis functions
+!> @param[in] indt Maximum angular momentum index
+!> @param[in] tlap Laplacian of the Jastrow factor
+!> @param[in] tgrad Gradient of the Jastrow factor
+!> @param[in] jas_1body One-body Jastrow factor value
 subroutine up_1body_complex(wf_scr, nbas_tot, indt, tlap, tgrad, jas_1body)
     use constants, only: zone
     implicit none
@@ -42,6 +53,17 @@ subroutine up_1body_complex(wf_scr, nbas_tot, indt, tlap, tgrad, jas_1body)
     return
 end subroutine up_1body_complex
 
+!> @brief Updates one-body Jastrow factor for real wavefunctions
+!> @details This subroutine updates the one-body part of the wave function
+!>          by applying Jastrow factors and gradient corrections for real
+!>          wavefunctions. It modifies the wave function scratch array with
+!>          Jastrow contributions and kinetic energy terms.
+!> @param[in] wf_scr Wave function scratch array
+!> @param[in] nbas_tot Total number of basis functions
+!> @param[in] indt Maximum angular momentum index
+!> @param[in] tlap Laplacian of the Jastrow factor
+!> @param[in] tgrad Gradient of the Jastrow factor
+!> @param[in] jas_1body One-body Jastrow factor value
 subroutine up_1body(wf_scr, nbas_tot, indt, tlap, tgrad, jas_1body)
     implicit none
     integer, intent(in) :: indt, nbas_tot
@@ -70,6 +92,14 @@ end subroutine up_1body
 ! and Hamiltonian matrix. Useful to reduce roundoff especially in the
 ! __SCALAPACK version.
 
+!> @brief Symmetrizes complex matrix to reduce roundoff errors
+!> @details This subroutine symmetrizes a complex matrix by averaging
+!>          the matrix with its Hermitian conjugate. Supports both serial
+!>          and parallel (SCALAPACK) execution. Used to reduce roundoff
+!>          errors in overlap and Hamiltonian matrices.
+!> @param[in] n Matrix dimension
+!> @param[in] ld Leading dimension of the matrix
+!> @param[in,out] mat_in Input matrix to be symmetrized (overwritten)
 subroutine symmetrize_mat_complex(n, ld, mat_in)
 #ifdef __SCALAPACK
     use descriptors
@@ -110,6 +140,14 @@ subroutine symmetrize_mat_complex(n, ld, mat_in)
     return
 end subroutine symmetrize_mat_complex
 
+!> @brief Symmetrizes real matrix to reduce roundoff errors
+!> @details This subroutine symmetrizes a real matrix by averaging
+!>          the matrix with its transpose. Supports both serial and
+!>          parallel (SCALAPACK) execution. Used to reduce roundoff
+!>          errors in overlap and Hamiltonian matrices.
+!> @param[in] n Matrix dimension
+!> @param[in] ld Leading dimension of the matrix
+!> @param[in,out] mat_in Input matrix to be symmetrized (overwritten)
 subroutine symmetrize_mat(n, ld, mat_in)
 #ifdef __SCALAPACK
     use descriptors

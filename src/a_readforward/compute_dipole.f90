@@ -13,6 +13,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Module for dipole and quadrupole moment calculations
+!> @details This module provides functionality for computing dipole and
+!>          quadrupole moments of molecular systems. It includes subroutines
+!>          for calculating electronic and nuclear contributions to these
+!>          multipole moments and diagonalizing the quadrupole tensor.
 module Dipole_module
 
     implicit none
@@ -25,6 +30,14 @@ module Dipole_module
 
 contains
 
+    !> @brief Calculates dipole moment of the system
+    !> @details This subroutine calculates the total dipole moment by
+    !>          combining nuclear and electronic contributions. The nuclear
+    !>          dipole is pre-calculated and stored, while the electronic
+    !>          dipole is computed from the electron positions.
+    !> @param[in] r_el Electron positions (3, nel)
+    !> @param[in] vdim Vector dimensions
+    !> @param[in] ell System dimensions
     subroutine calc_dipole(r_el, vdim, ell)
 
         use allio, only: rion, zetar, nion, nel
@@ -47,6 +60,14 @@ contains
 
     end subroutine calc_dipole
 
+    !> @brief Calculates quadrupole moment tensor of the system
+    !> @details This subroutine calculates the quadrupole moment tensor
+    !>          using the formula Q_ij = sum_n 0.5*(q_k*3*x_in*x_jn - r_n^2*delta_ij).
+    !>          It computes both nuclear and electronic contributions relative
+    !>          to the center of charge.
+    !> @param[in] r_el Electron positions (3, nel)
+    !> @param[in] vdim Vector dimensions
+    !> @param[in] ell System dimensions
     subroutine calc_quadrupole(r_el, vdim, ell)
 
         ! to be modified!!!
@@ -114,6 +135,10 @@ contains
         return
     end subroutine
 
+    !> @brief Diagonalizes the quadrupole moment tensor
+    !> @details This subroutine diagonalizes the quadrupole moment tensor
+    !>          using LAPACK routines DSYTRD and DSTERF. The eigenvalues
+    !>          are stored in quad_diag array.
     subroutine diag_quad
 
         integer :: i, j, n, INFO

@@ -13,6 +13,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Convert a real number to a formatted character string
+!> @details This function converts a real number to a character string
+!>          with appropriate formatting based on the value. It handles
+!>          integers, decimals with one or two decimal places, and
+!>          provides proper formatting for different magnitude ranges.
+!>          
+!>          The function formats:
+!>          - Integers: as integer strings
+!>          - Decimals with one decimal place: as f3.1, f4.1, etc.
+!>          - Decimals with two decimal places: as f4.2, f5.2, etc.
+!>          - Large numbers: as "******" if too large
+!>          
+!> @param[in] a Real number to convert
+!> @return Character string representation of the number
 character(6) function intc(a)
     !
     character(6) temp

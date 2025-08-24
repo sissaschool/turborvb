@@ -420,6 +420,11 @@ program erread
 
 contains
 
+    !> @brief Performs jackknife error analysis for finite-size scaling
+    !> @details This subroutine computes jackknife error estimates for
+    !>          energy measurements in finite-size scaling calculations.
+    !>          It calculates averages by leaving out one bin at a time
+    !>          and estimates statistical errors from the variance.
     subroutine jack
         implicit none
         integer i, k

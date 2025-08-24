@@ -13,6 +13,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+!> @brief Prints electron density data to XCrySDen format
+!> @details This subroutine processes electron density data and writes it to a file
+!>          compatible with XCrySDen visualization software. It handles both periodic
+!>          and non-periodic systems, applies appropriate coordinate transformations,
+!>          and manages parallel data collection from multiple MPI processes.
+!> @param[in] rion_ref Reference ion positions for coordinate system
+!> @param[in] rion_shift Shift vector for ion positions
+!> @param[in] nxl Local grid dimension for parallel calculations
+!> @param[in] dent Local density array from each MPI process
 subroutine printden(rion_ref, rion_shift, nxl, dent)
 
     use allio
