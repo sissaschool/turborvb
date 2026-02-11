@@ -962,6 +962,372 @@ contains
         return
     end
 
+    subroutine dump_parameters_simulation
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist simulation ===='
+      write (6,*) 'case_diel            = ', case_diel
+      write (6,*) 'compute_bands        = ', compute_bands
+      write (6,*) 'developer            = ', developer
+      write (6,*) 'dielectric_length    = ', dielectric_length
+      write (6,*) 'dielectric_ratio     = ', dielectric_ratio
+      write (6,*) 'disk_io              = ', disk_io
+      write (6,*) 'double_mesh          = ', double_mesh
+      write (6,*) 'freqcheck            = ', freqcheck
+      write (6,*) 'iopt                 = ', iopt
+      write (6,*) 'ip_reshuff           = ', ip_reshuff
+      write (6,*) 'iseedr               = ', iseedr
+      write (6,*) 'itestr4              = ', itestr4
+      write (6,*) 'kSq                  = ', kSq
+      write (6,*) 'kappar               = ', kappar
+      write (6,*) 'max_sparse_choice    = ', max_sparse_choice
+      write (6,*) 'max_target           = ', max_target
+      write (6,*) 'max_targetsr         = ', max_targetsr
+      write (6,*) 'maxtime              = ', maxtime
+      write (6,*) 'membig               = ', membig
+      write (6,*) 'membigcpu            = ', membigcpu
+      write (6,*) 'min_block            = ', min_block
+      write (6,*) 'nbra                 = ', nbra
+      write (6,*) 'neigh                = ', neigh
+      write (6,*) 'ngen                 = ', ngen
+      write (6,*) 'novec_loop1          = ', novec_loop1
+      write (6,*) 'nproc_diag           = ', nproc_diag
+      write (6,*) 'nscra                = ', nscra
+      write (6,*) 'nw                   = ', nw
+      write (6,*) 'yes_sparse           = ', yes_sparse
+      write (6,*) 'yes_sparse_choose    = ', yes_sparse_choose
+      write (6,*) 'yesfast              = ', yesfast
+      end if
+    end subroutine dump_parameters_simulation
+
+    subroutine dump_parameters_pseudo
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist pseudo ===='
+      write (6,*) 'nintpsa              = ', nintpsa
+      write (6,*) 'npsamax              = ', npsamax
+      write (6,*) 'pseudorandom         = ', pseudorandom
+      end if
+    end subroutine dump_parameters_pseudo
+    
+    subroutine dump_parameters_readio
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist readio ===='
+      write (6,*) 'flush_write          = ', flush_write
+      write (6,*) 'ifreqdump            = ', ifreqdump
+      write (6,*) 'iread                = ', iread
+      write (6,*) 'ncore                = ', ncore
+      write (6,*) 'nowrite12            = ', nowrite12
+      write (6,*) 'np                   = ', np
+      write (6,*) 'np3                  = ', np3
+      write (6,*) 'unreliable           = ', unreliable
+      write (6,*) 'wherescratch         = ', wherescratch
+      write (6,*) 'writescratch         = ', writescratch
+      end if
+    end subroutine dump_parameters_readio
+    
+    subroutine dump_parameters_vmc
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist vmc ===='
+      write (6,*) 'alat2v               = ', alat2v
+      write (6,*) 'change_epscut        = ', change_epscut
+      write (6,*) 'change_tstep         = ', change_tstep
+      write (6,*) 'cutweight            = ', cutweight
+      write (6,*) 'epscut               = ', epscut
+      write (6,*) 'epscuttype           = ', epscuttype
+      write (6,*) 'epstlrat             = ', epstlrat
+      write (6,*) 'epsvar               = ', epsvar
+      write (6,*) 'hopfraction          = ', hopfraction
+      write (6,*) 'nbra_cyrus           = ', nbra_cyrus
+      write (6,*) 'npow                 = ', npow
+      write (6,*) 'shift                = ', shift
+      write (6,*) 'theta_reg            = ', theta_reg
+      write (6,*) 'true_wagner          = ', true_wagner
+      write (6,*) 'tstep                = ', tstep
+      write (6,*) 'typereg              = ', typereg
+      end if
+    end subroutine dump_parameters_vmc
+    
+    subroutine dump_parameters_dmclrdmc
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist dmclrdmc ===='
+      write (6,*) 'add_diff             = ', add_diff
+      write (6,*) 'alat                 = ', alat
+      write (6,*) 'alat2                = ', alat2
+      write (6,*) 'better_dmc           = ', better_dmc
+      write (6,*) 'changelambda         = ', changelambda
+      write (6,*) 'cutreg               = ', cutreg
+      write (6,*) 'cutweight            = ', cutweight
+      write (6,*) 'enforce_detailb      = ', enforce_detailb
+      write (6,*) 'epscutdmc            = ', epscutdmc
+      write (6,*) 'epstldmc             = ', epstldmc
+      write (6,*) 'etry                 = ', etry
+      write (6,*) 'gamma                = ', gamma
+      write (6,*) 'iesrandoma           = ', iesrandoma
+      write (6,*) 'Klrdmc               = ', Klrdmc
+      write (6,*) 'l0_kousuke           = ', l0_kousuke
+      write (6,*) 'lrdmc_der            = ', lrdmc_der
+      write (6,*) 'lrdmc_nonodes        = ', lrdmc_nonodes
+      write (6,*) 'nbra_cyrus           = ', nbra_cyrus
+      write (6,*) 'noblocking           = ', noblocking
+      write (6,*) 'novar                = ', novar
+      write (6,*) 'npow                 = ', npow
+      write (6,*) 'nw_max               = ', nw_max
+      write (6,*) 'optbra               = ', optbra
+      write (6,*) 'parcutg              = ', parcutg
+      write (6,*) 'plat                 = ', plat
+      write (6,*) 'rejweight            = ', rejweight
+      write (6,*) 'safelrdmc            = ', safelrdmc
+      write (6,*) 'tbra                 = ', tbra
+      write (6,*) 'true_wagner          = ', true_wagner
+      write (6,*) 'tstepfn              = ', tstepfn
+      write (6,*) 'typereg              = ', typereg
+      write (6,*) 'weight_moroni        = ', weight_moroni
+      write (6,*) 'yes_fastbranch       = ', yes_fastbranch
+      write (6,*) 'yesalfe              = ', yesalfe
+      write (6,*) 'zmin                 = ', zmin
+      end if
+    end subroutine dump_parameters_dmclrdmc
+    
+    subroutine dump_parameters_optimization
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist optimization ===='
+      write (6,*) 'beta_learning        = ', beta_learning
+      write (6,*) 'change_parr          = ', change_parr
+      write (6,*) 'change_tpar          = ', change_tpar
+      write (6,*) 'cut_sigma            = ', cut_sigma
+      write (6,*) 'delay_changeparr     = ', delay_changeparr
+      write (6,*) 'divide_tpar          = ', divide_tpar
+      write (6,*) 'eps_dyn5             = ', eps_dyn5
+      write (6,*) 'eps_umrigar          = ', eps_umrigar
+      write (6,*) 'epsdgel              = ', epsdgel
+      write (6,*) 'epsi                 = ', epsi
+      write (6,*) 'epstion              = ', epstion
+      write (6,*) 'fixpar               = ', fixpar
+      write (6,*) 'gauge_fixing         = ', gauge_fixing
+      write (6,*) 'iboot                = ', iboot
+      write (6,*) 'idyn                 = ', idyn
+      write (6,*) 'iesdonebodyoff       = ', iesdonebodyoff
+      write (6,*) 'iesdtwobodyoff       = ', iesdtwobodyoff
+      write (6,*) 'inc_tpar_frequency   = ', inc_tpar_frequency
+      write (6,*) 'k6gen                = ', k6gen
+      write (6,*) 'kl                   = ', kl
+      write (6,*) 'len_tpar_stable_list = ', len_tpar_stable_list
+      write (6,*) 'max_ortho            = ', max_ortho
+      write (6,*) 'maxiter_changeparr   = ', maxiter_changeparr
+      write (6,*) 'maxz                 = ', maxz
+      write (6,*) 'maxzj                = ', maxzj
+      write (6,*) 'minjonetwobody       = ', minjonetwobody
+      write (6,*) 'minz                 = ', minz
+      write (6,*) 'minzj                = ', minzj
+      write (6,*) 'molopt               = ', molopt
+      write (6,*) 'multiply_tpar        = ', multiply_tpar
+      write (6,*) 'n_sigmas_tpar        = ', n_sigmas_tpar
+      write (6,*) 'nbead                = ', nbead
+      write (6,*) 'nbinr                = ', nbinr
+      write (6,*) 'ncg                  = ', ncg
+      write (6,*) 'nfat                 = ', nfat
+      write (6,*) 'nmore_force          = ', nmore_force
+      write (6,*) 'noopt_onebody        = ', noopt_onebody
+      write (6,*) 'npbra                = ', npbra
+      write (6,*) 'nweight              = ', nweight
+      write (6,*) 'oldscaling           = ', oldscaling
+      write (6,*) 'onebodysz            = ', onebodysz
+      write (6,*) 'parcut               = ', parcut
+      write (6,*) 'parcute              = ', parcute
+      write (6,*) 'parcutmin            = ', parcutmin
+      write (6,*) 'parcutpar            = ', parcutpar
+      write (6,*) 'parr                 = ', parr
+      write (6,*) 'parr_max             = ', parr_max
+      write (6,*) 'parr_min             = ', parr_min
+      write (6,*) 'power                = ', power
+      write (6,*) 'prep                 = ', prep
+      write (6,*) 'scalermax            = ', scalermax
+      write (6,*) 'signalnoise          = ', signalnoise
+      write (6,*) 'srcomplex            = ', srcomplex
+      write (6,*) 'symiesup             = ', symiesup
+      write (6,*) 'symmetrize_agp       = ', symmetrize_agp
+      write (6,*) 'tcell                = ', tcell
+      write (6,*) 'tion                 = ', tion
+      write (6,*) 'tolcg                = ', tolcg
+      write (6,*) 'tpar                 = ', tpar
+      write (6,*) 'tpar_buffer_len      = ', tpar_buffer_len
+      write (6,*) 'tpar_max             = ', tpar_max
+      write (6,*) 'twobodyoff           = ', twobodyoff
+      write (6,*) 'use_stable_tpar      = ', use_stable_tpar
+      write (6,*) 'yes_adams            = ', yes_adams
+      write (6,*) 'yes_dgelscut         = ', yes_dgelscut
+      write (6,*) 'yescutdet            = ', yescutdet
+      write (6,*) 'yescutjas            = ', yescutjas
+      write (6,*) 'yesquantum           = ', yesquantum
+      write (6,*) 'yesread10            = ', yesread10
+      write (6,*) 'yeswrite10           = ', yeswrite10
+      write (6,*) 'yeswritebead         = ', yeswritebead
+      end if
+    end subroutine dump_parameters_optimization
+    
+    subroutine dump_parameters_parameters
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist parameters ===='
+      write (6,*) 'add_pulay            = ', add_pulay
+      write (6,*) 'cutoff_p             = ', cutoff_p
+      write (6,*) 'decoupled_run        = ', decoupled_run
+      write (6,*) 'epsbas               = ', epsbas
+      write (6,*) 'epsder               = ', epsder
+      write (6,*) 'ext_pot              = ', ext_pot
+      write (6,*) 'fixa                 = ', fixa
+      write (6,*) 'fixb                 = ', fixb
+      write (6,*) 'fixc                 = ', fixc
+      write (6,*) 'iesd                 = ', iesd
+      write (6,*) 'ieser                = ', ieser
+      write (6,*) 'iesfree              = ', iesfree
+      write (6,*) 'iesinv               = ', iesinv
+      write (6,*) 'ieskin               = ', ieskin
+      write (6,*) 'iesm                 = ', iesm
+      write (6,*) 'iessw                = ', iessw
+      write (6,*) 'iesup                = ', iesup
+      write (6,*) 'isfix                = ', isfix
+      write (6,*) 'link_atom            = ', link_atom
+      write (6,*) 'mm_restr             = ', mm_restr
+      write (6,*) 'no_sjbra             = ', no_sjbra
+      write (6,*) 'nrep_bead            = ', nrep_bead
+      write (6,*) 'powerwarp            = ', powerwarp
+      write (6,*) 'pressfixed           = ', pressfixed
+      write (6,*) 'read_molecul         = ', read_molecul
+      write (6,*) 'real_agp             = ', real_agp
+      write (6,*) 'real_contracted      = ', real_contracted
+      write (6,*) 'scaleeloc            = ', scaleeloc
+      write (6,*) 'scalepulay           = ', scalepulay
+      write (6,*) 'typedyncell          = ', typedyncell
+      write (6,*) 'vdw                  = ', vdw
+      write (6,*) 'warp                 = ', warp
+      write (6,*) 'write_rwalk          = ', write_rwalk
+      write (6,*) 'yes_correct          = ', yes_correct
+      write (6,*) 'yes_kpoints          = ', yes_kpoints
+      write (6,*) 'yes_scemama          = ', yes_scemama
+      write (6,*) 'yes_scemama_open     = ', yes_scemama_open
+      write (6,*) 'yesavcov             = ', yesavcov
+      write (6,*) 'yesavopt             = ', yesavopt
+      write (6,*) 'yesavsr              = ', yesavsr
+      write (6,*) 'yesperiodize         = ', yesperiodize
+      write (6,*) 'yespress             = ', yespress
+      write (6,*) 'yespulay             = ', yespulay
+      write (6,*) 'yeszagp              = ', yeszagp
+      write (6,*) 'yeszj                = ', yeszj
+      end if
+    end subroutine dump_parameters_parameters
+    
+    subroutine dump_parameters_fitpar
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist fitpar ===='
+      write (6,*) 'allfit               = ', allfit
+      write (6,*) 'initpar              = ', initpar
+      write (6,*) 'initparinv           = ', initparinv
+      write (6,*) 'initparsw            = ', initparsw
+      write (6,*) 'npar                 = ', npar
+      write (6,*) 'nparinv              = ', nparinv
+      write (6,*) 'nparsw               = ', nparsw
+      write (6,*) 'npower               = ', npower
+      write (6,*) 'npowersz             = ', npowersz
+      write (6,*) 'powermin             = ', powermin
+      write (6,*) 'powerminsz           = ', powerminsz
+      write (6,*) 'rmax                 = ', rmax
+      write (6,*) 'rmaxinv              = ', rmaxinv
+      write (6,*) 'rmaxj                = ', rmaxj
+      end if
+    end subroutine dump_parameters_fitpar
+    
+    subroutine dump_parameters_dynamic
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist dynamic ===='
+      write (6,*) 'addrognoso           = ', addrognoso
+      write (6,*) 'cleanrognoso         = ', cleanrognoso
+      write (6,*) 'delta0               = ', delta0
+      write (6,*) 'delta0k              = ', delta0k
+      write (6,*) 'delta0q              = ', delta0q
+      write (6,*) 'eqcellab             = ', eqcellab
+      write (6,*) 'eqcellac             = ', eqcellac
+      write (6,*) 'eqcellbc             = ', eqcellbc
+      write (6,*) 'friction             = ', friction
+      write (6,*) 'iskipdyn             = ', iskipdyn
+      write (6,*) 'killcut              = ', killcut
+      write (6,*) 'maxdev_dyn           = ', maxdev_dyn
+      write (6,*) 'normcorr             = ', normcorr
+      write (6,*) 'scale_mass           = ', scale_mass
+      write (6,*) 'scalecov             = ', scalecov
+      write (6,*) 'smoothcut            = ', smoothcut
+      write (6,*) 'stepcg_recount       = ', stepcg_recount
+      write (6,*) 'temp                 = ', temp
+      write (6,*) 'write_cov            = ', write_cov
+      write (6,*) 'yesrootc             = ', yesrootc
+      write (6,*) 'yessecond            = ', yessecond
+      write (6,*) 'yesturboq            = ', yesturboq
+      end if
+    end subroutine dump_parameters_dynamic
+    
+    subroutine dump_parameters_unused
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist unused ===='
+      write (6,*) 'beta                 = ', beta
+      write (6,*) 'rsignr               = ', rsignr
+      write (6,*) 'testderiv            = ', testderiv
+      end if
+    end subroutine dump_parameters_unused
+    
+    subroutine dump_parameters_molecul
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist molecul ===='
+      write (6,*) 'add_onebody2det      = ', add_onebody2det
+      write (6,*) 'ax                   = ', ax
+      write (6,*) 'ay                   = ', ay
+      write (6,*) 'az                   = ', az
+      write (6,*) 'epsdgm               = ', epsdgm
+      write (6,*) 'epsrem_contr         = ', epsrem_contr
+      write (6,*) 'gramyes              = ', gramyes
+      write (6,*) 'nbufd                = ', nbufd
+      write (6,*) 'nmolmax              = ', nmolmax
+      write (6,*) 'nmolmaxw             = ', nmolmaxw
+      write (6,*) 'nmolmin              = ', nmolmin
+      write (6,*) 'nx                   = ', nx
+      write (6,*) 'ny                   = ', ny
+      write (6,*) 'nz                   = ', nz
+      write (6,*) 'orthoyes             = ', orthoyes
+      write (6,*) 'shift_origin         = ', shift_origin
+      write (6,*) 'shiftx               = ', shiftx
+      write (6,*) 'shifty               = ', shifty
+      write (6,*) 'shiftz               = ', shiftz
+      write (6,*) 'smearing             = ', smearing
+      write (6,*) 'weight_loc           = ', weight_loc
+      end if
+    end subroutine dump_parameters_molecul
+    
+    subroutine dump_parameters_link
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist link ===='
+      write (6,*) 'calpha               = ', calpha
+      end if
+    end subroutine dump_parameters_link
+
+    ! subroutine dump_parameters_pot_ext
+    !   implicit none
+    !   if (rank.eq.0) then
+    !   write (6,*) '==== namelist pot_ext ===='
+    !   write (6,*) 'ext_pot              = ', ext_pot
+    !   write (6,*) 'link_atom            = ', link_atom
+    !   write (6,*) 'vdw                  = ', vdw
+    !   end if
+    ! end subroutine dump_parameters_pot_ext
+    
 end module allio
 
 subroutine prep_map(map_tmp, cellscale)

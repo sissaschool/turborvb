@@ -273,6 +273,9 @@ program convertfort10mol
     call mpi_bcast(printoverlap, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
+    ! print parameter values
+    call dump_parameters
+    
     if (nmol .lt. neldo) then
         if (rank .eq. 0) write (6, *) ' Warning nmol>=neldo , changed to ', neldo
         nmol = neldo
@@ -311,4 +314,43 @@ program convertfort10mol
     call mpi_finalize(ierr)
 #endif
 
+  contains
+
+    subroutine dump_parameters
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist control ===='
+      write (6,*) 'add_offmol           = ', add_offmol
+      write (6,*) 'add_onebody2det      = ', add_onebody2det
+      write (6,*) 'allowed_averagek     = ', allowed_averagek
+      write (6,*) 'epsbas               = ', epsbas
+      write (6,*) 'epsdgm               = ', epsdgm
+      write (6,*) 'gramyes              = ', gramyes
+      write (6,*) 'membig               = ', membig
+      write (6,*) 'molopt               = ', molopt
+      write (6,*) 'only_molecular       = ', only_molecular
+      write (6,*) 'orthoyes             = ', orthoyes
+      write (6,*) 'power                = ', power
+      write (6,*) 'weight_loc           = ', weight_loc
+      write (6,*) 'yesbig               = ', yesbig
+      write (6,*) '==== namelist mesh_info ===='
+      write (6,*) 'ax                   = ', ax
+      write (6,*) 'ay                   = ', ay
+      write (6,*) 'az                   = ', az
+      write (6,*) 'nbufd                = ', nbufd
+      write (6,*) 'nx                   = ', nx
+      write (6,*) 'ny                   = ', ny
+      write (6,*) 'nz                   = ', nz
+      write (6,*) 'shift_origin         = ', shift_origin
+      write (6,*) 'shiftx               = ', shiftx
+      write (6,*) 'shifty               = ', shifty
+      write (6,*) 'shiftz               = ', shiftz
+      write (6,*) '==== namelist molec_info ===='
+      write (6,*) 'nmol                 = ', nmol
+      write (6,*) 'nmolmax              = ', nmolmax
+      write (6,*) 'nmolmin              = ', nmolmin
+      write (6,*) 'printoverlap         = ', printoverlap
+      endif
+    end subroutine dump_parameters
+    
 end program convertfort10mol

@@ -20,7 +20,8 @@ program makefort10
             &, apply_symm_to_orbitals, apply_symm_to_forces&
             &, orbmap, generate_orbidx, par_symm, read_orbitals &
             &, orbital, lsym_type, read_atoms, atomstypes, yesmolat &
-            &, yesmolatj, yesalloc_jas, atomic_jasmat, real_contracted
+            &, yesmolatj, yesalloc_jas, atomic_jasmat, real_contracted &
+            &, dump_parameters_orbital => dump_parameters
 
     implicit none
 
@@ -171,6 +172,9 @@ program makefort10
     ! reading input file and generating orthorombic
     ! cell from non-orthorombic one
     call read_input(5)
+    !
+    call dump_parameters
+    call dump_parameters_orbital
 
     orbtype = trim(orbtype)
     jorbtype = trim(jorbtype)
@@ -3340,6 +3344,85 @@ contains
         nrecj = nrecj_ok
         deallocate (recordsymj_1, recordsymj_2, lenrecj_1, lenrecj_2, jasyes_1, jasyes_2)
     end subroutine update_genjas
+
+    subroutine dump_parameters
+      implicit none
+      write (6,*) '==== namelist system ===='
+      write (6,*) 'L_read               = ', L_read
+      write (6,*) 'at                   = ', at
+      write (6,*) 'axyz                 = ', axyz
+      write (6,*) 'celldm               = ', celldm
+      write (6,*) 'complexfort10        = ', complexfort10
+      write (6,*) 'natoms               = ', natoms
+      write (6,*) 'nel_read             = ', nel_read
+      write (6,*) 'nodownpfaff          = ', nodownpfaff
+      write (6,*) 'nouppfaff            = ', nouppfaff
+      write (6,*) 'ntyp                 = ', ntyp
+      write (6,*) 'nxyz                 = ', nxyz
+      write (6,*) 'pbcfort10            = ', pbcfort10
+      write (6,*) 'phase                = ', phase
+      write (6,*) 'phasedo              = ', phasedo
+      write (6,*) 'posunits             = ', posunits
+      write (6,*) 'real_contracted      = ', real_contracted
+      write (6,*) 'rs_read              = ', rs_read
+      write (6,*) 'unit_crystal         = ', unit_crystal
+      write (6,*) 'write_log            = ', write_log
+      write (6,*) 'yes_pfaff            = ', yes_pfaff
+      write (6,*) 'yes_tilted           = ', yes_tilted
+         
+      write (6,*) '==== namelist electrons ===='
+      write (6,*) 'filling              = ', filling
+      write (6,*) 'jorbtype             = ', jorbtype
+      write (6,*) 'nel                  = ', nel
+      write (6,*) 'neldiff              = ', neldiff
+      write (6,*) 'niesd                = ', niesd
+      write (6,*) 'no_4body_jas         = ', no_4body_jas
+      write (6,*) 'noonebody            = ', noonebody
+      write (6,*) 'nopseudo             = ', nopseudo
+      write (6,*) 'numpaired            = ', numpaired
+#if defined(__PORT) || defined(__AMD)
+      ! skip onebodypar
+#else
+      write (6,*) 'onebodypar           = ', onebodypar
+#endif
+      write (6,*) 'onlycontrdet         = ', onlycontrdet
+      write (6,*) 'onlycontrjas         = ', onlycontrjas
+      write (6,*) 'orbtype              = ', orbtype
+      write (6,*) 'readatoms            = ', readatoms
+      write (6,*) 'readunpaired         = ', readunpaired
+      write (6,*) 'scale_jasfat         = ', scale_jasfat
+      write (6,*) 'shiftbeta            = ', shiftbeta
+      write (6,*) 'twobody              = ', twobody
+#if defined(__AMD)
+      ! skip twobodypar
+#else
+      write (6,*) 'twobodypar           = ', twobodypar
+#endif
+      write (6,*) 'vecpbc               = ', vecpbc
+      write (6,*) 'yes_crystal          = ', yes_crystal
+      write (6,*) 'yes_crystalj         = ', yes_crystalj
+      write (6,*) 'yesbump              = ', yesbump
+
+      write (6,*) '==== namelist symmetries ===='
+      write (6,*) 'eq_intatoms          = ', eq_intatoms
+      write (6,*) 'eqatoms              = ', eqatoms
+      write (6,*) 'forces_sym           = ', forces_sym
+      write (6,*) 'forcesymm            = ', forcesymm
+      write (6,*) 'nosym                = ', nosym
+      write (6,*) 'nosym_contr          = ', nosym_contr
+      write (6,*) 'nosym_contrj         = ', nosym_contrj
+      write (6,*) 'nosym_forces         = ', nosym_forces
+      write (6,*) 'notra                = ', notra
+      write (6,*) 'notra_forces         = ', notra_forces
+      write (6,*) 'rot_det              = ', rot_det
+      write (6,*) 'rot_jas              = ', rot_jas
+      write (6,*) 'rot_pfaff            = ', rot_pfaff
+      write (6,*) 'symmagp              = ', symmagp
+
+      ! ATOMIC_POSITIONS section
+      ! ATOMIC_SPECIES section
+      ! UNPAIRED section
+    end subroutine dump_parameters
 
 end program makefort10
 

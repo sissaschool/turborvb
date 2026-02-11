@@ -1483,6 +1483,17 @@ contains
         do i = 1, n
             z(i) = alpha*beta**(i - 1)
         end do
-    end subroutine defz
+      end subroutine defz
+
+    subroutine dump_parameters
+      implicit none
+      write (6,*) '==== namelist shells ===='
+      write (6,*) 'nshelljas            = ', nshelljas
+      write (6,*) 'nshelldet            = ', nshelldet
+      write (6,*) 'njas_hyb             = ', njas_hyb
+      write (6,*) 'ndet_hyb             = ', ndet_hyb
+      write (6,*) 'no_3body_jas         = ', no_3body_jas
+      write (6,*) 'ncut_hyb             = ', ncut_hyb
+    end subroutine dump_parameters
 
 end module mod_orbital

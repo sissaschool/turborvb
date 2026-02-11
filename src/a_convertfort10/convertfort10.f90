@@ -2558,6 +2558,10 @@ contains
                 write (6, *) ' Default value for buffer dimension=', nbufd
             end if
         end if
+
+        ! print parameter values
+        call dump_parameters
+
         call checkiflagerr(iflagerr, rankn, 'ERROR reading mesh_info')
 #ifdef PARALLEL
         call mpi_bcast(nx, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -3784,6 +3788,47 @@ contains
 
     end subroutine load_jasz
 
+    subroutine dump_parameters
+      implicit none
+      if (rankn.eq.0) then
+      write (6,*) '==== namelist option ===='
+      write (6,*) 'bigram               = ', bigram
+      write (6,*) 'eqion                = ', eqion
+      write (6,*) 'symiesup             = ', symiesup
+      write (6,*) 'wherescratch         = ', wherescratch
+      write (6,*) '==== namelist control ===='
+      write (6,*) 'change_contr         = ', change_contr
+      write (6,*) 'change_jas           = ', change_jas
+      write (6,*) 'double_kpgrid        = ', double_kpgrid
+      write (6,*) 'epsbas               = ', epsbas
+      write (6,*) 'epsdgel              = ', epsdgel
+      write (6,*) 'epsvpot              = ', epsvpot
+      write (6,*) 'force_real           = ', force_real
+      write (6,*) 'max_iter             = ', max_iter
+      write (6,*) 'overlap              = ', overlap
+      write (6,*) 'prec                 = ', prec
+      write (6,*) 'real_agp             = ', real_agp
+      write (6,*) 'rmax                 = ', rmax
+      write (6,*) 'rmaxinv              = ', rmaxinv
+      write (6,*) 'rmaxj                = ', rmaxj
+      write (6,*) 'scale_unp            = ', scale_unp
+      write (6,*) 'yespardiag           = ', yespardiag
+      write (6,*) '==== namelist mesh_info ===='
+      write (6,*) 'add_onebody2det      = ', add_onebody2det
+      write (6,*) 'ax                   = ', ax
+      write (6,*) 'ay                   = ', ay
+      write (6,*) 'az                   = ', az
+      write (6,*) 'nbufd                = ', nbufd
+      write (6,*) 'nx                   = ', nx
+      write (6,*) 'ny                   = ', ny
+      write (6,*) 'nz                   = ', nz
+      write (6,*) 'shift_origin         = ', shift_origin
+      write (6,*) 'shiftx               = ', shiftx
+      write (6,*) 'shifty               = ', shifty
+      write (6,*) 'shiftz               = ', shiftz
+      end if
+    end subroutine dump_parameters
+    
 end program convertfort10
 
 function tracematloc(n, over, ldo, jasmat, ldj, orbcost)

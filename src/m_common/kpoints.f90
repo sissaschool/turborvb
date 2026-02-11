@@ -664,4 +664,23 @@ contains
         return
     end subroutine init_random_seed
 
+    subroutine dump_parameters_kpoints(rank)
+      implicit none
+      integer,intent(in) :: rank
+      if (rank.eq.0) then
+      write (6,*) '==== namelist kpoints ===='
+      write (6,*) 'compute_bands        = ', compute_bands
+      write (6,*) 'double_kpgrid        = ', double_kpgrid
+      write (6,*) 'k1                   = ', k1
+      write (6,*) 'k2                   = ', k2
+      write (6,*) 'k3                   = ', k3
+      write (6,*) 'kp_type              = ', kp_type
+      write (6,*) 'nk1                  = ', nk1
+      write (6,*) 'nk2                  = ', nk2
+      write (6,*) 'nk3                  = ', nk3
+      write (6,*) 'skip_equivalence     = ', skip_equivalence
+      write (6,*) 'time_reversal,       = ', time_reversal
+      end if
+    end subroutine dump_parameters_kpoints
+
 end module kpoints_mod
