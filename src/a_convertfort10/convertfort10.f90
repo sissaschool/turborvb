@@ -122,9 +122,8 @@ program convertfort10
     nprocn = 1
     commopt_mpi = 0
 #endif
-    ! setup logger
+    ! configure logger so that only rank 0 outputs (rankn is the MPI rank)
     call logger_config(rank=rankn)
-    !
     ! output version information
     if (rankn .eq. 0) call print_version
 
@@ -3519,6 +3518,7 @@ contains
 
         if (overo .ne. 0) call log_info(' Overlap square Geminal uncontracted found =', overlapsquare)
         !OK
+
         !       to be closest in L2 norm
         if (ipc .eq. 1) then
             cost = 1.d0
