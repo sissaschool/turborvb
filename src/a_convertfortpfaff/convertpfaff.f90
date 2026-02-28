@@ -23,6 +23,7 @@ program convertpfaff
     use constants
     use IO_m
     use sub_comm
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
     implicit none
     integer i, j, k, nelorbin, nelcolin, nelorbout, nelcolout, nunp, nshell_in, indparo, indpar, nelorbh_in, ipf_in, nelorbin2
     real(8), allocatable :: detmatin(:, :), detmatout(:, :), unpaired(:, :), mat_unp(:, :), dup_in(:)
@@ -34,6 +35,8 @@ program convertpfaff
     real*8 scale_unp, angle_rot, phi_rot
     real*8, dimension(:, :), allocatable :: surot, suscra, sutry
 
+    ! configure logger (serial program: rank=0 so that output is enabled)
+    call logger_config(rank=0)
     ! output version information
     call print_version
 
@@ -50,7 +53,7 @@ program convertpfaff
         dup_in = dup_c
     end if
     if (molyes) then
-        write (6, *) ' ERROR the code does not work with molecular orbitals '
+        call log_error(' ERROR the code does not work with molecular orbitals ')
         stop
     end if
     !Understand if we have to rotate the spin on the plan or not
@@ -73,10 +76,10 @@ program convertpfaff
 
     if (trim(str) .eq. "rotate") then
         rotmagn = .true.
-        write (6, *) ' Warning forcing rotation magnetization '
+        call log_warning(' Warning forcing rotation magnetization ')
     elseif (trim(str) .eq. "norotate") then
         rotmagn = .false.
-        write (6, *) ' Warning forcing no rotation in magnetization '
+        call log_warning(' Warning forcing no rotation in magnetization ')
     end if
 
     !Activate the creation of the upup or/and downdown part of the pfaffian
@@ -113,11 +116,11 @@ program convertpfaff
     mat_unp = 0.d0
     scale_unp = 100.d0
     if (nunp .gt. 0) then
-        write (6, *) "The agp has ", nunp, "unpaired"
+        call log_info("The agp has ", nunp, "unpaired")
         !     if (rotmagn) then
         !        write (6,*) "ERROR: AGP with unpaired cannot work with the rotated magnetization"
         !        stop
-        write (6, *) ' Scale mean field ( infty=exact)? '
+        call log_info(' Scale mean field ( infty=exact)? ')
         read (5, *) scale_unp
         !     end if
         allocate (unpaired(ipc*nelorbin, 1:nunp))
@@ -135,7 +138,7 @@ program convertpfaff
 
     close (10)
     if (molyes) then
-        write (6, *) ' ERROR the code does not work with molecular orbitals '
+        call log_error(' ERROR the code does not work with molecular orbitals ')
         stop
     end if
     if (contraction .ne. 0) then
@@ -190,17 +193,17 @@ program convertpfaff
     end if
 
     if (nelorbout .ne. 2*nelorbin/ipf_in .or. nshell_c .ne. nshell_in) then
-        write (6, *) "ERROR AGP not compatible with the pfaffian"
-        write (6, *) "Contraction=", contraction
-        write (6, *) "# shell input/output=", nshell_in, nshell_c
-        write (6, *) "nelorbout=", nelorbout, "nelorbin=", nelorbin
+        call log_error("ERROR AGP not compatible with the pfaffian")
+        call log_error("Contraction=", contraction)
+        call log_error("# shell input/output=", nshell_in, nshell_c)
+        call log_error("nelorbout=", nelorbout, "nelorbin=", nelorbin)
         stop
     end if
 
     allocate (detmatout(ipc*nelorbout, nelcolout))
     detmatout = 0.d0
 
-    write (6, *) 'nelorbin nelorbout =', nelorbin, nelorbout
+    call log_info('nelorbin nelorbout =', nelorbin, nelorbout)
 
     if (ipf_in .eq. 1) then
 
@@ -226,30 +229,30 @@ program convertpfaff
         allocate (surot(ipc*2, 2), sutry(ipc*2, 2), suscra(ipc*2, 2))
 
         if (ipc .eq. 1) then
-            write (6, *) ' Input angle (unit  Pi) '
+            call log_info(' Input angle (unit  Pi) ')
             read (5, *) angle_rot
             angle_rot = angle_rot*pi/2.d0 ! For the spin
             surot(1, 1) = cos(angle_rot)
             surot(2, 2) = surot(1, 1)
             surot(2, 1) = -sin(angle_rot)
             surot(1, 2) = -surot(2, 1)
-            write (6, *) ' Matrix rotation'
+            call log_info(' Matrix rotation')
             do i = 1, 2
                 do j = 1, 2
-                    write (6, *) i, j, surot(i, j)
+                    call log_debug(i, j, surot(i, j))
                 end do
             end do
         else
-            write (6, *) ' Input theta, phi (unit  Pi) '
+            call log_info(' Input theta, phi (unit  Pi) ')
             read (5, *) angle_rot, phi_rot
             angle_rot = angle_rot*pi/2.d0
             phi_rot = phi_rot*pi/2.d0
 
             call fill_surot(surot, angle_rot, phi_rot)
-            write (6, *) ' Matrix rotation'
+            call log_info(' Matrix rotation')
             do i = 1, 2
                 do j = 1, 2
-                    write (6, *) i, j, surot(2*i - 1, j), surot(2*i, j)
+                    call log_debug(i, j, surot(2*i - 1, j), surot(2*i, j))
                 end do
             end do
 
@@ -291,11 +294,11 @@ program convertpfaff
                 end do
             end do
         else
-            write (6, *) ' Read unpaired ', nunp, ndiff
+            call log_info(' Read unpaired ', nunp, ndiff)
             do k = 1, nunp
-                write (6, *) ' Unpaired # =', k
+                call log_info(' Unpaired # =', k)
                 do i = 1, nelorbin
-                    write (6, *) i, unpaired(i, k)
+                    call log_debug(i, unpaired(i, k))
                 end do
             end do
             do k = 1, nunp - ndiff, 2
@@ -330,7 +333,7 @@ program convertpfaff
         mat_unp = mat_unp*scale_unp
         !I'm not sure I really got how this uppfaff works
         if (.not. pfaffup .and. symmagp) then
-            write (6, *) ' Warning defining also down-down by symmetry '
+            call log_warning(' Warning defining also down-down by symmetry ')
             if (ipc .eq. 1 .or. .not. yes_hermite) then
                 do i = 1, ipc*nelorbin
                     do j = 1, nelorbin
@@ -350,7 +353,7 @@ program convertpfaff
     end if
 
     if (rotmagn) then
-        write (6, *) ' Warning rotating magnetic moment // x '
+        call log_warning(' Warning rotating magnetic moment // x ')
         if (ipf_in .eq. 2) then
             nelorbin2 = nelorbin/2
             if (ipc .eq. 1) then
