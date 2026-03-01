@@ -28,6 +28,7 @@
 
 subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
                     lenrec, nrec, ipsip, rion, ntotatoms, orb2atom, cellscale, deps, zeta, yes_hermite)
+    use logger_io, only: log_error, log_info
     implicit none
 
     integer norb, nrot, ntra, symrot(norb, nrot), symtra(norb, ntra)
@@ -99,7 +100,7 @@ subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
                     end if
 
                     if (imap .eq. 0 .or. jmap .eq. 0) then
-                        write (6, *) ' Error in symtra !!! ', imap, jmap
+                        call log_error(' Error in symtra !!! ', imap, jmap)
 
                     end if
                     do l = 1, nrot
@@ -205,11 +206,11 @@ subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
     end do
     deallocate (atbasis, refat)
 
-    write (6, *) "SKEW"
+    call log_info("SKEW")
     do i = 1, nrec
-        write (6, *) "step", i, "lenrec(step)", lenrec(i)
+        call log_info("step", i, "lenrec(step)", lenrec(i))
         do j = 1, lenrec(i)
-            write (6, *) recordsym(1, j, i), recordsym(2, j, i)
+            call log_info(recordsym(1, j, i), recordsym(2, j, i))
         end do
     end do
 
@@ -223,6 +224,7 @@ end subroutine makeskew
 
 subroutine makepfaff(norb, nrot, ntra, occupied, recordsymagp, lenrecagp, recordsymskw, lenrecskw, recordsym, &
                      lenrec, nrec, nrecagp, nrecskw, nouppfaff, nodownpfaff, opposite_phase)
+    use logger_io, only: log_warning, log_info
     implicit none
     integer :: norb, nrot, ntra, nrec, nrecagp, nrecskw, recordymmagp, count, i, j, k, kk
     logical :: occupied(2*norb, 2*norb), nodownpfaff, nouppfaff, opposite_phase
@@ -303,9 +305,9 @@ subroutine makepfaff(norb, nrot, ntra, occupied, recordsymagp, lenrecagp, record
                 if (abs(recordsym(1, j, i)) .eq. abs(recordsym(1, k, i)) .and. abs(recordsym(2, j, i)) .eq.&
                         &abs(recordsym(2, k, i)) .and. k .ne. j) then
 
-                    write (6, *) ' Repetition !!! j,k, record  ', j, k, i
-                    write (6, *) ' first pair --> ', recordsym(1, j, i), recordsym(2, j, i)
-                    write (6, *) ' second pair --> ', recordsym(1, k, i), recordsym(2, k, i)
+                    call log_warning(' Repetition !!! j,k, record  ', j, k, i)
+                    call log_info(' first pair --> ', recordsym(1, j, i), recordsym(2, j, i))
+                    call log_info(' second pair --> ', recordsym(1, k, i), recordsym(2, k, i))
                     write (6, *) lenrec(i), (recordsym(1, kk, i), recordsym(2, kk, i), kk=1, lenrec(i))
                     stop
                 end if
@@ -321,9 +323,9 @@ subroutine makepfaff(norb, nrot, ntra, occupied, recordsymagp, lenrecagp, record
         end do
     end do
 
-    write (6, *) ' Count check inside makepfaff ', count
-    write (6, *) 'record found  for the agp part of the pfaffian=', nrecagp
-    write (6, *) 'record found  for the skew part of the pfaffian=', nrecskw
-    write (6, *) ' record found =', nrec
+    call log_info(' Count check inside makepfaff ', count)
+    call log_info('record found  for the agp part of the pfaffian=', nrecagp)
+    call log_info('record found  for the skew part of the pfaffian=', nrecskw)
+    call log_info(' record found =', nrec)
     return
 end subroutine makepfaff

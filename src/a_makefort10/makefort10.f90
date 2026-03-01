@@ -16,6 +16,7 @@
 program makefort10
     use symm_data
     use constants
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
     use mod_orbital, only: parsymm, print_orbitals &
             &, apply_symm_to_orbitals, apply_symm_to_forces&
             &, orbmap, generate_orbidx, par_symm, read_orbitals &
@@ -121,10 +122,10 @@ program makefort10
             &, onlycontrjas, shiftbeta, readunpaired, vecpbc, yesbump&
             &, niesd, yes_crystal, yes_crystalj, no_4body_jas&
             &, nopseudo, scale_jasfat
-    write (*, *)
-    write (*, *) ' ! ! ! WARNING DUE TO POSSIBLE BUG IN NVIDIA COMPILER IS NOT POSSIBLE TO SET ONEBODY PAR ! ! ! '
-    write (*, *)
-    write (*, *)
+    call log_warning()
+    call log_warning(' ! ! ! WARNING DUE TO POSSIBLE BUG IN NVIDIA COMPILER IS NOT POSSIBLE TO SET ONEBODY PAR ! ! ! ')
+    call log_warning()
+    call log_warning()
 #else
 #ifdef __AMD
     namelist /electrons/ twobody, filling, noonebody, readatoms&
@@ -132,10 +133,10 @@ program makefort10
             &, onlycontrjas, shiftbeta, readunpaired, vecpbc, yesbump&
             &, niesd, yes_crystal, yes_crystalj, no_4body_jas&
             &, nopseudo, scale_jasfat
-    write (*, *)
-    write (*, *) ' ! ! ! WARNING DUE TO POSSIBLE BUG IN AMD COMPILER IS NOT POSSIBLE TO SET ONEBODY AND TWOBODY PAR ! ! ! '
-    write (*, *)
-    write (*, *)
+    call log_warning()
+    call log_warning(' ! ! ! WARNING DUE TO POSSIBLE BUG IN AMD COMPILER IS NOT POSSIBLE TO SET ONEBODY AND TWOBODY PAR ! ! ! ')
+    call log_warning()
+    call log_warning()
 #else
     namelist /electrons/ twobody, twobodypar, filling, noonebody, readatoms&
             &, orbtype, nel, neldiff, numpaired, jorbtype, onlycontrdet&
@@ -160,13 +161,15 @@ program makefort10
         stop
     end if
 
+    ! configure logger (serial program: rank=0 so that output is enabled)
+    call logger_config(rank=0)
     ! output version information
     call print_version
 
-    write (*, *)
-    write (*, *) ' * * * Creates fort.10 for solids and open systems * * * '
-    write (*, *)
-    write (*, *)
+    call log_info()
+    call log_info(' * * * Creates fort.10 for solids and open systems * * * ')
+    call log_info()
+    call log_info()
 
     ! reading input file and generating orthorombic
     ! cell from non-orthorombic one
@@ -200,16 +203,16 @@ program makefort10
     else
         n_twobody = 1
         if (twobodypar(2) .ne. 1.0d0) then
-            write (6, *) ' Warning twobodypar(2) is ignored.'
+            call log_warning(' Warning twobodypar(2) is ignored.')
         end if
     end if
-    write (6, *) ' n_twobody is set', n_twobody
+    call log_info(' n_twobody is set', n_twobody)
 
     if (complexfort10_sav .neqv. complexfort10) then
-        if (complexfort10) write (6, *) ' Warning the wavefunction is considered complex'
-        if (.not. complexfort10) write (6, *) ' Warning the wavefunction is considered real'
+        if (complexfort10) call log_warning(' Warning the wavefunction is considered complex')
+        if (.not. complexfort10) call log_warning(' Warning the wavefunction is considered real')
     elseif (complexfort10) then
-        write (6, *) ' Creating complex wave function...'
+        call log_info(' Creating complex wave function...')
     end if
 
     if (nel == -1 .and. rs_read == -1 .and. L_read == -1.d0) then
@@ -290,14 +293,14 @@ program makefort10
 
     ndettot = ndetorb*ncell
 
-    write (6, *) 'ndetorb', ndetorb, ndettot, ncell
+    call log_info('ndetorb', ndetorb, ndettot, ncell)
 
     allocate (orb2atom(ndettot))
 
     if (.not. yesmolat) then
         allocate (symrot(ndettot, nsym), symtra(ndettot, ntraind))
         call update_symrot(nsym, symrot, ndettot, atoms_maprot, detorb, ndetorb, det_map)
-        write (6, *) ' Orb to atom mapping '
+        call log_info(' Orb to atom mapping ')
         do i1 = 1, ndetorb
             do i2 = 1, ncell
                 ionpos = detorb(i1)%kion + (i2 - 1)*natoms
@@ -306,7 +309,7 @@ program makefort10
             end do
         end do
         do i1 = 1, ndettot
-            write (6, *) i1, orb2atom(i1)
+            call log_debug(i1, orb2atom(i1))
         end do
     end if
 
@@ -320,17 +323,17 @@ program makefort10
 
     if (nosym) then
         nsym = 1 ! Use only the identity
-        write (6, *) ' Warning forced not to use all point symmetries nsym=', nsym
+        call log_warning(' Warning forced not to use all point symmetries nsym=', nsym)
     end if
 
     allocate (orbf_map(3, nsym))
 
     call apply_symm_to_forces(orbf_map)
 
-    write (6, *) ' Mapping force components '
+    call log_info(' Mapping force components ')
 
     do i = 1, nsym
-        write (6, *) i, orbf_map(1:3, i)
+        call log_debug(i, orbf_map(1, i), orbf_map(2, i), orbf_map(3, i))
     end do
 
     if (.not. yesmolat) then
@@ -352,9 +355,9 @@ program makefort10
         call update_symtra(ntra, symtra, ndettot, atoms_maptra, detorb, ndetorb)
     end if
     call generate_indion
-    write (6, *) ' Independent atoms in the orthorombic cell '
+    call log_info(' Independent atoms in the orthorombic cell ')
     do i1 = 1, natoms
-        write (6, *) i1, indion(i1), indionz(i1)
+        call log_debug(i1, indion(i1), indionz(i1))
     end do
 
     call generate_orbidx(zeta, natoms, detorbidx, detorb, ndetorb, indion)
@@ -376,11 +379,11 @@ program makefort10
 
         !  first run count the number of records
 
-        write (6, *) ' before makelambda det  nsym ntra=', nsym, ntra
+        call log_info(' before makelambda det  nsym ntra=', nsym, ntra)
         call makelambda(ndettot, symrot, nsym, symtra, ntra, detyes, recordsym, lenrec, nrec, &
                         symmagp, ipsip, rion, ntotatoms, orb2atom, cellscale, deps, yes_hermite, &
                         opposite_phase, zeta, J3_off, .false., .false., cut_hybrid)
-        write (6, *) ' Output records det =', nrec
+        call log_info(' Output records det =', nrec)
         deallocate (recordsym, lenrec)
         allocate (recordsym(2, nsym*ntra, nrec), lenrec(nrec))
         call makelambda(ndettot, symrot, nsym, symtra, ntra, detyes, recordsym, lenrec, nrec, &
@@ -459,10 +462,10 @@ program makefort10
         end do
 
         nbas = nbas*ncell
-        write (6, *) ' n basis found =', nbas
+        call log_info(' n basis found =', nbas)
 
         do i2 = 1, ndetorbat
-            write (6, *) i2, detorbat(i2)%ioptorb, detorbat(i2)%kion
+            call log_debug(i2, detorbat(i2)%ioptorb, detorbat(i2)%kion)
         end do
         !    No rotation symmetry imposed.
         nsym = 1
@@ -478,11 +481,11 @@ program makefort10
         end do
 
         call update_symtra(ntra, symtra, nbas, atoms_maptra, detorbat, ndetorbat)
-        write (6, *) ' Symmetry tra ', ntra
+        call log_info(' Symmetry tra ', ntra)
         do is = 1, ntra
-            write (6, *) ' Sym =', is
+            call log_info(' Sym =', is)
             do i1 = 1, nbas
-                write (6, *) i1, symtra(i1, is)
+                call log_debug(i1, symtra(i1, is))
             end do
         end do
         allocate (detyes(nbas, nbas))
@@ -493,7 +496,7 @@ program makefort10
         end if
         ndettot = nbas
 
-        write (6, *) ' Orb to atom mapping '
+        call log_info(' Orb to atom mapping ')
         do i1 = 1, ndetorbat
             do i2 = 1, ncell
                 ionpos = detorbat(i1)%kion + (i2 - 1)*natoms
@@ -502,7 +505,7 @@ program makefort10
             end do
         end do
         do i1 = 1, ndettot
-            write (6, *) i1, orb2atom(i1)
+            call log_debug(i1, orb2atom(i1))
         end do
 
         nrec = 1
@@ -517,7 +520,7 @@ program makefort10
                         symmagp, ipsip, rion, ntotatoms, orb2atom, cellscale, deps, yes_hermite, &
                         opposite_phase, zeta, J3_off, .false., .false., cut_hybrid)
 
-        write (6, *) ' Output records det =', nrec
+        call log_info(' Output records det =', nrec)
 
         deallocate (recordsym, lenrec)
 
@@ -604,7 +607,7 @@ program makefort10
                 if (detyes(i, j)) counter = counter + 1
             end do
         end do
-        write (6, *) ' Total number of non zero det =', counter
+        call log_info(' Total number of non zero det =', counter)
 
     end if
 
@@ -763,7 +766,7 @@ program makefort10
         allocate (orb2atom(njastot))
 
         if (.not. yesmolatj) then
-            write (6, *) ' Jastrow Orb to atom mapping '
+            call log_info(' Jastrow Orb to atom mapping ')
             do i1 = 1, njasorb
                 do i2 = 1, ncell
                     ionpos = jasorb(i1)%kion + (i2 - 1)*natoms
@@ -772,7 +775,7 @@ program makefort10
                 end do
             end do
             do i1 = 1, njasorb
-                write (6, *) i1, orb2atom(i1)
+                call log_debug(i1, orb2atom(i1))
             end do
             if (.not. noonebody) orb2atom(njastot) = 0
         end if
@@ -816,13 +819,13 @@ program makefort10
 
             nrecj = 0
             !  first run count the number of records
-            write (6, *) ' before makelambda Jas  nsym ntra=', nsym, ntra
+            call log_info(' before makelambda Jas  nsym ntra=', nsym, ntra)
             call makelambda(njastot, symrot, nsym, symtra, ntra, jasyes &
                             , recordsymj, lenrecj, nrecj, .true., ipsip, rion, ntotatoms &
                             , orb2atom, cellscale, deps, .false., .false., zeta, J3_off &
                             , .true., no_4body_jas, cut_hybridj)
 
-            write (6, *) ' Output records Jastrow =', nrecj
+            call log_info(' Output records Jastrow =', nrecj)
 
             deallocate (recordsymj, lenrecj)
 
@@ -857,7 +860,7 @@ program makefort10
                                 , orb2atom, cellscale, deps, .false., .false., zeta, J3_off &
                                 , .true., no_4body_jas, cut_hybridj)
 
-                write (6, *) ' Output records Jastrow =', nrecj
+                call log_info(' Output records Jastrow =', nrecj)
 
                 deallocate (recordsymj, lenrecj)
 
@@ -905,10 +908,10 @@ program makefort10
                 end if
             end do
 
-            write (6, *) ' n basis Jastrow found =', nbas
+            call log_info(' n basis Jastrow found =', nbas)
 
             do i2 = 1, njasorbat
-                write (6, *) i2, jasorbat(i2)%ioptorb, jasorbat(i2)%kion
+                call log_debug(i2, jasorbat(i2)%ioptorb, jasorbat(i2)%kion)
             end do
             !  No rotation symmetry imposed.
             nsym = 1
@@ -942,7 +945,7 @@ program makefort10
                             , recordsymj, lenrecj, nrecj, .true., ipsip, rion, ntotatoms &
                             , orb2atom, cellscale, deps, .false., .false., zeta, J3_off &
                             , .false., no_4body_jas, cut_hybridj)
-            write (6, *) ' Output records jas =', nrecj
+            call log_info(' Output records jas =', nrecj)
             deallocate (recordsymj, lenrecj)
             allocate (recordsymj(2, nsym*ntra, nrecj), lenrecj(nrecj))
             call makelambda(nbas, symrot, nsym, symtra, ntra, jasyes &
@@ -974,7 +977,7 @@ program makefort10
                                 , orb2atom, cellscale, deps, .false., .false., zeta, J3_off &
                                 , .false., no_4body_jas, cut_hybridj)
 
-                write (6, *) ' Output records Jastrow =', nrecj
+                call log_info(' Output records Jastrow =', nrecj)
 
                 deallocate (recordsymj, lenrecj)
 
@@ -1074,18 +1077,18 @@ contains
 
         call cubicsym(at, isymm, isname, nrot)
 
-        write (*, *) 'Number of Cell Symmetries : ', nrot
+        call log_info('Number of Cell Symmetries : ', nrot)
 
         do i1 = 1, nrot
-            write (6, *) ' Sym op 3x3 matrix ', i1
+            call log_info(' Sym op 3x3 matrix ', i1)
             do is = 1, 3
-                write (6, *) isymm(1:3, is, i1)
+                call log_debug(isymm(1, is, i1), isymm(2, is, i1), isymm(3, is, i1))
             end do
         end do
 
         nsym = nrot
 
-        write (*, *) 'Number of allowed symmetries: ', nsym
+        call log_info('Number of allowed symmetries: ', nsym)
         if (write_log) write (lunit, *) 'Number of allowed symmetries: ', nsym
 
         open (file="symmetries.dat", unit=15, status="unknown", form="formatted")
@@ -1120,9 +1123,9 @@ contains
         atoms_maprot = 0
         atoms_maptra = 0
 
-        write (6, *) 'Atom coordinates'
+        call log_info('Atom coordinates')
         do j = 1, ntotatoms
-            write (6, *) j, rion(:, j)
+            call log_debug(j, rion(1, j), rion(2, j), rion(3, j))
             dist(:) = rion(:, j) - rion(:, 1)
             call CartesianToCrystal(dist, 1)
         end do
@@ -1295,7 +1298,7 @@ contains
         ! +newcell(1,3)*(newcell(2,1)*newcell(3,2)-newcell(2,2)*newcell(3,1)))
 
         rs = (3.d0*volume_new*product(nxyz(:))/(4.d0*sum(zeta(2, :)*PI)))**(1.d0/3.d0)
-        write (*, *) ' Effective rs = ', rs
+        call log_info(' Effective rs = ', rs)
 
         iessw = nrec
         gooddet = 0
@@ -1355,7 +1358,7 @@ contains
                 if (mod(neldiff, 2) .eq. 0) then
                     nelup = nelup + neldiff/2
                 else
-                    write (6, *) ' Warning Total charge not neutral '
+                    call log_warning(' Warning Total charge not neutral ')
                     nel = nel + 1
                     !         now nel is odd
                     nelup = nelup + (neldiff + 1)/2
@@ -1366,7 +1369,7 @@ contains
                 if (mod(neldiff, 2) .ne. 0) then
                     nelup = nelup + (neldiff + 1)/2
                 else
-                    write (6, *) ' Total charge not neutral '
+                    call log_error(' Total charge not neutral ')
                     nel = nel + 1
                     !         now nel is even
                     nelup = nel/2 + neldiff/2
@@ -1493,12 +1496,12 @@ contains
         ! check if niesd is consistent with what the code expects if it is explicitly defined.
         if (niesd .ne. -1) then
             if ((n_onebody + n_twobody) .eq. niesd) then
-                write (6, *) " niesd is consistent with what the code expects"
-                write (6, *) " niesd=", niesd, "expected=", n_onebody + n_twobody
+                call log_info(" niesd is consistent with what the code expects")
+                call log_info(" niesd=", niesd, "expected=", n_onebody + n_twobody)
                 niesd = n_onebody + n_twobody
             else
-                write (6, *) " Error!! niesd is inconsistent with what the code expects"
-                write (6, *) " niesd=", niesd, "expected=", n_onebody + n_twobody
+                call log_error(" Error!! niesd is inconsistent with what the code expects")
+                call log_info(" niesd=", niesd, "expected=", n_onebody + n_twobody)
                 stop
             end if
         else
@@ -1642,7 +1645,7 @@ contains
             if (.not. yeskion(i1)) i2 = i2 + 1
         end do
         if (i2 .ne. 0 .and. i2 .ne. natoms) then
-            write (6, *) ' Warning  all atoms should have hybrid orbitals!!!'
+            call log_warning(' Warning  all atoms should have hybrid orbitals!!!')
         end if
 
         write (ufort10, *) '#  Parameters atomic Jastrow wf'
@@ -1756,8 +1759,8 @@ contains
             end do
         end if
 
-        write (*, *) ' Number orb det ', ndetorb*ncell
-        write (*, *) ' Number orb jas ', njasorb*ncell
+        call log_info(' Number orb det ', ndetorb*ncell)
+        call log_info(' Number orb jas ', njasorb*ncell)
 
         ! One-Body Term
         if (.not. noonebody) write (ufort10, *) 1
@@ -1809,7 +1812,7 @@ contains
                     end do
                 end if
             end do
-            write (6, *) neldiff, ' Unpaired orbital parameters are added with no symmetry !'
+            call log_info(neldiff, ' Unpaired orbital parameters are added with no symmetry !')
         end if
 
         if (npar_eagp .ne. 0) then
@@ -1855,8 +1858,8 @@ contains
                     write (ufort10, *) 1, i1, ndettot + i2
                 end do
             end do
-            write (6, *) neldiff, ' Unpaired  orbital symmetry tables are added with no symmetry!'
-            write (6, *) ' Use readunpaired in case  you need a more efficient fort.10 !'
+            call log_info(neldiff, ' Unpaired  orbital symmetry tables are added with no symmetry!')
+            call log_info(' Use readunpaired in case  you need a more efficient fort.10 !')
         end if
         if (npar_eagp .ne. 0) then
             do iy = 1, neldiff
@@ -1880,7 +1883,7 @@ contains
 
         if (tf .eq. -9 .or. tf .eq. -8 .or. tf .eq. -19 .or. tf .eq. -18 .or. tf .eq. -16 &
             .or. tf .eq. -28 .or. tf .eq. -29) then
-            write (*, *) " Spin Jastrow Added. "
+            call log_info(" Spin Jastrow Added. ")
             write (ufort10, *) "  #       Nonzero values of  jasmat Sz"
             do i1 = 1, njastot
                 do i2 = 1, njastot
@@ -2112,7 +2115,7 @@ contains
             end do
             if (found .and. ok_pbc) then
                 nsym = nsym + 1
-                write (6, *) ' Rotation symmetry accepted =', is
+                call log_info(' Rotation symmetry accepted =', is)
                 if (nsym .ne. is) then
                     atoms_maprot(1:ntotatoms, nsym) = atoms_maprot(1:ntotatoms, is)
                     isymm(1:3, 1:3, nsym) = isymm(1:3, 1:3, is)
@@ -2120,7 +2123,7 @@ contains
             end if
         end do
 
-        write (6, *) ' Rotation symmetries found =', nsym
+        call log_info(' Rotation symmetries found =', nsym)
 
         ntra = 0
         do is = 1, ntraind
@@ -2134,9 +2137,9 @@ contains
             end if
         end do
 
-        write (6, *) ' Translation symmetries found =', ntra, ntraind
+        call log_info(' Translation symmetries found =', ntra, ntraind)
         if (ntra .ne. ntraind) then
-            write (6, *) ' ERROR you should check your primitive cell '
+            call log_error(' ERROR you should check your primitive cell ')
             stop
         end if
 
@@ -2225,7 +2228,7 @@ contains
         read (funit, nml=system, err=100, end=100)
 
         if (.not. pbcfort10 .and. celldm(1) .eq. -1) then
-            write (6, *) ' Warning celldm(1) set to 50 ! '
+            call log_warning(' Warning celldm(1) set to 50 ! ')
             celldm(1) = 50.d0
         end if
         if (yes_pfaff) then
@@ -2248,7 +2251,7 @@ contains
 !               write(6, *) ' Unit L_read = primitive (at) '
 !           else
             unit_crystal = 'conventional'
-            write (6, *) ' Unit L_read = conventional (axyz X at) '
+            call log_info(' Unit L_read = conventional (axyz X at) ')
 !           endif
         end if
 
@@ -2309,10 +2312,10 @@ contains
             !
             is_ok = .true.
             !
-            write (6, *) ' newcell ='
+            call log_info(' newcell =')
 
             do i1 = 1, 3
-                write (6, *) i1, newcell(:, i1)
+                call log_debug(i1, newcell(1, i1), newcell(2, i1), newcell(3, i1))
                 do i2 = i1 + 1, 3
                     if (abs(newcell(i1, i2)) .gt. 1.e-7 .or. abs(newcell(i2, i1)) .gt. 1e-7) is_ok = .false.
                 end do
@@ -2324,7 +2327,8 @@ contains
             celldm(1) = dsqrt(sum(newcell(:, 1)**2))
             celldm(2) = dsqrt(sum(newcell(:, 2)**2))/celldm(1)
             celldm(3) = dsqrt(sum(newcell(:, 3)**2))/celldm(1)
-            write (*, '(a,3f12.6)') ' New orthorombic cell : ', celldm(1), celldm(2:3)*celldm(1)
+            ! original format: (a,3f12.6)
+            call log_info(' New orthorombic cell : ', celldm(1), celldm(2)*celldm(1), celldm(3)*celldm(1))
             smallcell(1) = celldm(1)
             smallcell(2) = celldm(2)*celldm(1)
             smallcell(3) = celldm(3)*celldm(1)
@@ -2350,7 +2354,8 @@ contains
             smallcell(1) = celldm(1)
             smallcell(2) = celldm(2)*celldm(1)
             smallcell(3) = celldm(3)*celldm(1)
-            write (*, '(a,3f12.6)') ' New cell : ', celldm(1), celldm(2:3)*celldm(1)
+            ! original format: (a,3f12.6)
+            call log_info(' New cell : ', celldm(1), celldm(2)*celldm(1), celldm(3)*celldm(1))
             if (yes_tilted) then
                 !   alphap angle between b and c
                 celldm(4) = dacos(sum(newcell(:, 2)*newcell(:, 3))/smallcell(2)/smallcell(3))
@@ -2367,7 +2372,8 @@ contains
             smallcell(1) = celldm(1)
             smallcell(2) = celldm(2)*celldm(1)
             smallcell(3) = celldm(3)*celldm(1)
-            write (*, '(a,3f12.6)') ' New cell : ', celldm(1), celldm(2:3)*celldm(1)
+            ! original format: (a,3f12.6)
+            call log_info(' New cell : ', celldm(1), celldm(2)*celldm(1), celldm(3)*celldm(1))
             if (yes_tilted) then
                 !   alphap angle between b and c
                 alphap = celldm(4)
@@ -2444,7 +2450,7 @@ contains
             end if
         end if
 
-        write (6, *) ' n_onebody is set', n_onebody
+        call log_info(' n_onebody is set', n_onebody)
 
         ! commented out by K.Nakano on 18 Feb.
         !if(niesd.eq.-1) then
@@ -2458,12 +2464,11 @@ contains
         !endif
 
         if (complexfort10 .and. pbcfort10 .and. .not. yes_crystal) then
-            write (6, *) ' Warning complex and pbc only with yes_crystal=.true. basis, &
-                    & Changing to yes_crystal=.true. !!! '
+            call log_warning(' Warning complex and pbc only with yes_crystal=.true. basis, Changing to yes_crystal=.true. !!! ')
             yes_crystal = .true.
         end if
         if (.not. yes_crystal .and. yes_crystalj) then
-            write (6, *) ' Warning yes_crystalj=.true. possible only when yes_crystal=.true. yes_crystalj changed to false '
+            call log_warning(' Warning yes_crystalj=.true. possible only when yes_crystal=.true. yes_crystalj changed to false ')
             yes_crystalj = .false.
         end if
 
@@ -2502,11 +2507,11 @@ contains
 
                 if (yes_tilted) then
 
-                    write (6, *) ' Ratio unit supercell volume / unit cell volume =', vol_ratio
+                    call log_info(' Ratio unit supercell volume / unit cell volume =', vol_ratio)
 
                 else
 
-                    write (6, *) ' Ratio ortho cell volume / unit cell volume =', vol_ratio
+                    call log_info(' Ratio ortho cell volume / unit cell volume =', vol_ratio)
 
                 end if
 
@@ -2553,7 +2558,7 @@ contains
 
         if (symmagp .and. yes_pfaff) then
             if (.not. nouppfaff .and. .not. nodownpfaff) then
-                write (6, *) ' Warning set nodownpfaff true '
+                call log_warning(' Warning set nodownpfaff true ')
                 nodownpfaff = .true.
                 !      elseif(nouppfaff.and.nodownpfaff) then
                 !      write(6,*) ' Warning set nouppfaff false '
@@ -2578,13 +2583,13 @@ contains
                 if (phasedo(i1) - nint(phasedo(i1)) .ne. phase(i1) - nint(phase(i1))) then
                     if (symmagp) then
                         symmagp = .false.
-                        write (6, *) ' Warning different phase up =/down, symmagp forced to false '
+                        call log_warning(' Warning different phase up =/down, symmagp forced to false ')
                     end if
                 end if
             end do
         end if
 
-        write (6, *) ' opposite_phase =', opposite_phase
+        call log_info(' opposite_phase =', opposite_phase)
 
         if (.not. yes_crystal .and. yes_hermite) yes_hermite = .false.
         !
@@ -2594,7 +2599,7 @@ contains
             yes_hermite = .false.
         end if
         !
-        if (yes_hermite) write (6, *) ' Warning boundary conditions with flux attaching: different algorithm '
+        if (yes_hermite) call log_warning(' Warning boundary conditions with flux attaching: different algorithm ')
 
         if (.not. forces_sym) then
             nosym_forces = nosym
@@ -2619,7 +2624,7 @@ contains
         do i1 = 1, natoms
             ! same notations as in fort.10 numbers are more general than letters
             read (funit, *, err=103, end=103) zeta(2, i1), zeta(1, i1), rion(:, i1)
-            write (6, *) ' read zeta =', zeta(1, i1)
+            call log_info(' read zeta =', zeta(1, i1))
         end do
 
         nel_read = sum(zeta(2, 1:natoms))
@@ -2646,7 +2651,7 @@ contains
             end if
         end if
 
-        write (6, *) ' nel_read found =', nel_read
+        call log_info(' nel_read found =', nel_read)
 
         if (posunits == "crystal" .and. .not. pbcfort10) &
                 & call errore("read_input", 'You cannot use "crystal" units with pbcfort10=.false.', 1)
@@ -2727,7 +2732,7 @@ contains
             !
             ntraind = max_ions/natoms
             if (ntraind*natoms .ne. max_ions) then
-                write (6, *) ' There should be some error !!! ', max_ions, ntraind, natoms
+                call log_error(' There should be some error !!! ', max_ions, ntraind, natoms)
                 stop
             end if
 
@@ -2768,8 +2773,8 @@ contains
             ncell = product(nxyz)
             ntotatoms = ncell*natoms
             !
-            write (*, *) 'Number of atoms in the orthorombic cell : ', max_ions
-            write (*, *) 'Total number of atoms : ', ntotatoms
+            call log_info('Number of atoms in the orthorombic cell : ', max_ions)
+            call log_info('Total number of atoms : ', ntotatoms)
             !
             allocate (zeta(2, ntotatoms), rion(3, ntotatoms)&
                     &, J3_off(ntotatoms))
@@ -2784,7 +2789,7 @@ contains
             !
 
         else ! cell is already orthorombic
-            write (6, *) ' HERE L_read, at =', rs_read, L_read, at(:, 1)
+            call log_info(' HERE L_read, at =', rs_read, L_read, at(1, 1), at(2, 1), at(3, 1))
 
             ! reading Wigner-Seize radius
             if (rs_read .ne. -1.d0) then
@@ -2827,20 +2832,21 @@ contains
 
         cellscale(1:3) = smallcell(1:3)*dble(nxyz(1:3))
 
-        write (*, *) 'Atoms positions '
+        call log_info('Atoms positions ')
         do i1 = 1, natoms
-            write (*, '(1f6.0,1f7.1,3f12.6)') zeta(:, i1), rion(:, i1)
+            ! original format: (1f6.0,1f7.1,3f12.6)
+            call log_info(zeta(1, i1), zeta(2, i1), rion(1, i1), rion(2, i1), rion(3, i1))
         end do
 
-        write (*, *) 'Unit cell volume (a_0^3) =', smallcell(1)**3*unit_volume
-        write (*, *) 'Unit cell volume (A^3)   =', smallcell(1)**3*unit_volume*length_unit**3
-        write (*, *) 'Supercell volume (a_0^3) =', smallcell(1)**3*product(nxyz(:))*unit_volume
-        write (*, *) 'Supercell volume (A^3)   =', smallcell(1)**3*product(nxyz(:))*unit_volume*length_unit**3
+        call log_info('Unit cell volume (a_0^3) =', smallcell(1)**3*unit_volume)
+        call log_info('Unit cell volume (A^3)   =', smallcell(1)**3*unit_volume*length_unit**3)
+        call log_info('Supercell volume (a_0^3) =', smallcell(1)**3*product(nxyz(:))*unit_volume)
+        call log_info('Supercell volume (A^3)   =', smallcell(1)**3*product(nxyz(:))*unit_volume*length_unit**3)
 
         !    redefine newcell
         do j = 1, 3
             newcell(:, j) = newcell(:, j)*smallcell(j)/sqrt(sum(newcell(:, j)**2))
-            write (6, *) j, newcell(:, j)
+            call log_debug(j, newcell(1, j), newcell(2, j), newcell(3, j))
         end do
         ! ********** Find the type of each atom *********
 
@@ -2932,23 +2938,22 @@ contains
             !if(nel_read.ne.nel) then
             if ((.not. yes_trivial .and. nel_read .ne. nel)&
                     &.or. (yes_trivial .and. nel_read .ne. nel)) then
-                write (6, *) ' Error in input  nel_read does not match nel '&
-                        &, volume, nel_read, nel
+                call log_error(' Error in input  nel_read does not match nel ', volume, nel_read, nel)
                 stop
             end if
         end if
 
-        write (*, *) ' # Orbitals in the Determinant : ', ndetorb
-        write (*, *) ' # Parameters in the Determinant : ', ndetpar
-        write (*, *) ' # Orbitals in Jastrow : ', njasorb
-        write (*, *) ' # Parameters in Jastrow : ', njaspar
+        call log_info(' # Orbitals in the Determinant : ', ndetorb)
+        call log_info(' # Parameters in the Determinant : ', ndetpar)
+        call log_info(' # Orbitals in Jastrow : ', njasorb)
+        call log_info(' # Parameters in Jastrow : ', njaspar)
 
         unpaired = .false.
         norb_unpaired = 0
 
         if (readunpaired) then
             !
-            write (*, *) ' Odd Number of Electrons... reading UNPAIRED section '
+            call log_info(' Odd Number of Electrons... reading UNPAIRED section ')
             call findsection(funit, "UNPAIRED")
             unpaired = .true.
             read (funit, *, err=106, end=106) norb_unpaired
@@ -3009,7 +3014,7 @@ contains
         end do
 
         counter = 0
-        write (*, *) ' Total number of cells/further ind. transl.  = ', ncell, ntraind
+        call log_info(' Total number of cells/further ind. transl.  = ', ncell, ntraind)
 
         if (.not. notra) then
             nskip = ntraind
@@ -3019,10 +3024,10 @@ contains
             nskip = 1
         end if
 
-        write (6, *) ' Number of independent translation =', ntraind
+        call log_info(' Number of independent translation =', ntraind)
         allocate (trasl(3, ntraind))
         ind = 0
-        write (6, *) ' Independent translation ='
+        call log_info(' Independent translation =')
 !       do i1 = 1, 3
 !           write(6, *) i1, newcell(:, i1)
 !       enddo
@@ -3040,13 +3045,13 @@ contains
                         if (i4 .le. nskip) then
                             ind = ind + 1
                             trasl(:, ind) = rion(:, counter) - rion(:, ref_atom)
-                            write (6, *) ind, trasl(1:3, ind)
+                            call log_debug(ind, trasl(1, ind), trasl(2, ind), trasl(3, ind))
                         end if
                     end do
                 end do
             end do
         end do
-        if (yes_pfaff) write (6, *) 'Pfaffian wave function'
+        if (yes_pfaff) call log_info('Pfaffian wave function')
         !write(6,*) ' final counter =',counter
 
         !ntraind=1
@@ -3278,7 +3283,7 @@ contains
         allocate (jasyes(2*njastot, 2*njastot))
         jasyes(:, :) = .false.
         nrecj_ok = 0
-        write (6, *) ' nelup nel inside update =', nelup, nel, const_term
+        call log_info(' nelup nel inside update =', nelup, nel, const_term)
         !  No constant term and nothing if nelup<2
         do j = 1, nrecj_save
             if (nelup .ge. 2 .and. abs(recordsymj_1(1, 1, j)) .ne. const_term&

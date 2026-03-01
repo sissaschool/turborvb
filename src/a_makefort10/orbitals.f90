@@ -16,6 +16,7 @@
 module mod_orbital
     use symm_data, only: nosym, nosym_contr, isymm, nsym, lunit, eps, nsym, write_log
     use constants, only: ipf
+    use logger_io, only: log_error, log_warning, log_info, log_debug
     implicit none
     logical yesmolat, yesmolatj, yesjas_atom, yesalloc_jas, real_contracted
     integer nnozero
@@ -102,7 +103,7 @@ contains
         yesalloc_jas = .false.
 
         do i1 = 1, natoms
-            write (6, *) ' atom number =', nint(zeta(1, i1)), i1, orbtype
+            call log_info(' atom number =', nint(zeta(1, i1)), i1, orbtype)
             !
             nshelldet = 0
             nshelljas = 0
@@ -130,7 +131,7 @@ contains
 
             if (nshelljas .gt. 0) then
                 read (funit, *) ! read a comment line between detorb and jasorb
-                write (6, *) ' nshelljas, njas_hyb: read =', nshelljas, njas_hyb
+                call log_info(' nshelljas, njas_hyb: read =', nshelljas, njas_hyb)
                 call counting_orb(funit, nshelljas, njas_hyb, jorbtype, njasorb, njaspar, .false., 1)
             else
                 if (njas_hyb .gt. 0) call errore('read_orbitals', 'No jastrow shell, no jastrow hybrid!', 1)
@@ -138,12 +139,12 @@ contains
             !
         end do
 
-        write (*, *) ' # Det Shells : ', totshelldet
-        write (*, *) ' # Jas Shells : ', totshelljas
-        write (*, *) ' # Det Orbitals : ', ndetorb
-        write (*, *) ' # Jas Orbitals : ', njasorb
-        write (*, *) ' # Det Parameters : ', ndetpar
-        write (*, *) ' # Jas Parameters : ', njaspar
+        call log_info(' # Det Shells : ', totshelldet)
+        call log_info(' # Jas Shells : ', totshelljas)
+        call log_info(' # Det Orbitals : ', ndetorb)
+        call log_info(' # Jas Orbitals : ', njasorb)
+        call log_info(' # Det Parameters : ', ndetpar)
+        call log_info(' # Jas Parameters : ', njaspar)
 
         allocate (detorb(ndetorb))
         if (totshelljas .gt. 0) allocate (jasorb(njasorb))
@@ -163,7 +164,7 @@ contains
         nunc = 0
         nuncj = 0
         do i1 = 1, natoms
-            write (6, *) ' atom number =', i1
+            call log_info(' atom number =', i1)
             !
             nshelldet = 0
             nshelljas = 0
@@ -280,13 +281,11 @@ contains
             !
             if (orbtype == "mixed" .and. ioptorb .ne. 900000) then
                 read (linedata, *, err=100) multi, nparm, ioptorb, nparm2
-                if (check_multioptorb(multi, ioptorb, 'W') .eq. 1)&
-                        &write (6, *) ' Pay attention to the multiplicity!'
-                write (6, *) ' shell number =', i2, multi, nparm, nparm2
+                if (check_multioptorb(multi, ioptorb, 'W') .eq. 1) call log_warning(' Pay attention to the multiplicity!')
+                call log_info(' shell number =', i2, multi, nparm, nparm2)
             else
-                if (check_multioptorb(multi, ioptorb, 'W') .eq. 1)&
-                        &write (6, *) ' Pay attention to the multiplicity!'
-                write (6, *) ' shell number =', i2, multi, nparm
+                if (check_multioptorb(multi, ioptorb, 'W') .eq. 1) call log_warning(' Pay attention to the multiplicity!')
+                call log_info(' shell number =', i2, multi, nparm)
             end if
 
             if (orbtype == "tempered" .and. ioptorb .ne. 900000) then
@@ -363,8 +362,7 @@ contains
                     read (linedata, *, err=101) orbitals(c1)%itype, nparm, orbitals(c1)%ioptorb, nparm2
                 end if
 
-                if (check_multioptorb(orbitals(c1)%itype, orbitals(c1)%ioptorb, 'W') .eq. 1)&
-                        &write (6, *) ' Pay attention to the multiplicity!'
+                if (check_multioptorb(orbitals(c1)%itype, orbitals(c1)%ioptorb, 'W') .eq. 1) call log_warning(' Pay attention to the multiplicity!')
 
                 if (.not. (mod(nparm, 2) == 0 .or. nparm == 1)) &
                         & call errore("read_shells", " Error nparm must be even!", 1)
@@ -567,10 +565,9 @@ contains
             end if
         end do
 
-        if (nhyb .gt. 0 .and. yeshyb) &
-            write (6, *) "Warning: hybrid orbitals added both by hand and by automatic generation!"
+        if (nhyb .gt. 0 .and. yeshyb) call log_warning("Warning: hybrid orbitals added both by hand and by automatic generation!")
         if (yesmolat .and. (nhyb .eq. 0 .and. .not. yeshyb)) then
-            write (6, *) 'Warning hybrid orbitals have to be defined for all atoms or none!!!'
+            call log_warning('Warning hybrid orbitals have to be defined for all atoms or none!!!')
             !stop
         end if
 
@@ -792,7 +789,7 @@ contains
                         ! do not read two time the constant orbital 200
                         if (ioptorbj_c(i2) == 200) cycle
                         !
-                        write (*, *) njasorb, ijorb, nshellj_c
+                        call log_info(njasorb, ijorb, nshellj_c)
                         !
                         jasorb(ijorb)%itype = multj_c(i2)
                         jasorb(ijorb)%nparm = nparamj_c(i2)
@@ -861,15 +858,15 @@ contains
             end do
         end if
 
-        write (*, *)
-        write (*, *)
-        write (*, *) ' Number of determinant shells : ', nshelldet
-        write (*, *) ' Number of determinant orbitals : ', ndetorb
-        write (*, *) ' Number of parameters in determinant : ', ndetpar
+        call log_info()
+        call log_info()
+        call log_info(' Number of determinant shells : ', nshelldet)
+        call log_info(' Number of determinant orbitals : ', ndetorb)
+        call log_info(' Number of parameters in determinant : ', ndetpar)
 
-        write (*, *) ' Number of Jastrow shells : ', nshelljas
-        write (*, *) ' Number of Jastrow orbitals : ', njasorb
-        write (*, *) ' Number of parameters in Jastrow : ', njaspar
+        call log_info(' Number of Jastrow shells : ', nshelljas)
+        call log_info(' Number of Jastrow orbitals : ', njasorb)
+        call log_info(' Number of parameters in Jastrow : ', njaspar)
 
         if (write_log) then
             write (lunit, *) ' Atomic Lambda Matrix '
