@@ -28,6 +28,7 @@ contains
     subroutine compute_grid(ngrid_l, ell, vell)
 
         use allio, only: rank, nion, rion
+        use logger_io, only: log_info, log_error
         implicit none
 
 #ifdef PARALLEL
@@ -51,7 +52,7 @@ contains
 
             if (rank .eq. 0) then
 
-                write (6, *) ".....reading grid from turbo_grid.dat file"
+                call log_info(".....reading grid from turbo_grid.dat file")
 
                 inquire (file='turbo_grid.dat', exist=correct)
 
@@ -65,7 +66,7 @@ contains
                     read (28, *) (out_grid(j, i), j=1, 3)
                 end do
 
-                write (6, *) "turbo_grid.dat read correctly"
+                call log_info("turbo_grid.dat read correctly")
 
                 close (28)
             end if
@@ -77,10 +78,8 @@ contains
 
             vell(:) = ell(:)/(ngrid_l(:))
 
-            if (rank .eq. 0) then
-                write (6, *) "Grid vectors = ", vell
-                write (6, *) "Grid points per dimension =", ngrid_l
-            end if
+            call log_info("Grid vectors = ", vell(1), vell(2), vell(3))
+            call log_info("Grid points per dimension =", ngrid_l(1), ngrid_l(2), ngrid_l(3))
 
             if (da(1) .eq. 0 .or. da(2) .eq. 0 .or. da(3) .eq. 0) da(:) = vell(:)
 
@@ -115,7 +114,7 @@ contains
                 e_k = (ell(1) + grid_start(1))**2/2.0
             end if
 
-            if (rank .eq. 0) write (6, *) e_k
+            call log_info(e_k)
 
             !      allocate(active_points(1:grid_points))
             if (e_k .gt. 0) then
@@ -156,7 +155,7 @@ contains
 #endif
 
 100     if (.not. correct) then
-            if (rank .eq. 0) write (6, *) "ERROR! Missing turbo_grid.dat file"
+            call log_error("ERROR! Missing turbo_grid.dat file")
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif

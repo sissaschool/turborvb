@@ -15,6 +15,7 @@
 
 subroutine shells(ndim, a, cut, nshlls, rkcomp, rknorm, kmult &
                   , nvects, mnkv, mnsh, mdim, rank)
+    use logger_io, only: log_error, log_info
     !      implicit real*8 (a-h,o-z)
     implicit none
     integer ndim, nshlls, mnsh, kmult(0:mnsh), nvects, mnkv, npts, l &
@@ -59,7 +60,7 @@ subroutine shells(ndim, a, cut, nshlls, rkcomp, rknorm, kmult &
             ! we only take half of the vectors and exclude the one at the origin
             if (nzero .le. 0) go to 30
             if (nvects .gt. mnkv) then
-                write (*, *) ' mnkv too small ', mnkv, nvects
+                call log_error(' mnkv too small ', mnkv, nvects)
                 !    +call mcheck(nvects,mnkv,'nvects','mnkv','shells')
                 stop
             end if
@@ -99,13 +100,13 @@ subroutine shells(ndim, a, cut, nshlls, rkcomp, rknorm, kmult &
                                     end do
                                     if (rsq - rnow .gt. .001*rnow) nshlls = nshlls + 1
                                     if (nshlls .gt. mnsh) then
-                                        write (*, *) ' mnsh too small ', mnsh, nshlls
+                                        call log_error(' mnsh too small ', mnsh, nshlls)
                                         stop
                                     end if
                                     rnow = rsq
                                     rknorm(nshlls) = sqrt(rnow)
                                     kmult(nshlls) = i
                                 end do
-                                if (rank .eq. 0) write (*, *) 'nshlls=', nshlls
+                                call log_info('nshlls=', nshlls)
 
                             end

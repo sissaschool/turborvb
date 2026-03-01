@@ -31,6 +31,7 @@ module Spin2
     use allio, only: LBox
     use allio, only: rank
     use constants, only: ipj, ipf, ipc
+    use logger_io, only: log_info, log_debug
     use cell, only: CartesianToCrystal, cellscale, car2cry, map
     implicit none
     logical ifspin2 !(global) label for spin^2 correlation
@@ -299,7 +300,7 @@ contains
                                           auxgen2(1:ipc*nelorbh, 1 + nelorbh:nelorbh*2) - auxgen2(1:ipc*nelorbh, 1:nelorbh) &
                                           - auxgen2(1 + ipc*nelorbh:2*ipc*nelorbh, 1 + nelorbh:nelorbh*2)
         deallocate (auxgen1, auxgen2)
-        if (rank .eq. 0) write (6, *) "Initializing Spin2 pfaffian uncontracted case"
+        call log_info("Initializing Spin2 pfaffian uncontracted case")
         !------------------------------------------------------------------------------
     end subroutine inits2pfaff_c
     !------------------------------------------------------------------------------
@@ -423,19 +424,19 @@ contains
         end if
 
 #ifdef DEBUG
-        write (6, *) "winvbar"
+        call log_debug("winvbar")
         write (6, *) winvbar(:, 1:nelup)
-        write (6, *) "winvbar_ext"
+        call log_debug("winvbar_ext")
         write (6, *) winvbar_ext(:, 1:nelup)
-        write (6, *) "Amatrix"
+        call log_debug("Amatrix")
         write (6, *) Amatrix
-        write (6, *) "Ainv"
+        call log_debug("Ainv")
         write (6, *) Ainv
-        write (6, *) "UpUp"
+        call log_debug("UpUp")
         write (6, *) UpUp
-        write (6, *) "DownDown"
+        call log_debug("DownDown")
         write (6, *) DownDown
-        write (6, *) "DownUp"
+        call log_debug("DownUp")
         write (6, *) DownUp
 #endif
 
@@ -521,9 +522,9 @@ contains
                         det_update_matrix(1, 1) = 1.d0
                         det_update_matrix(2, 2) = 1.d0
 #ifdef DEBUG
-                        write (6, *) "det_update_vec1"
+                        call log_debug("det_update_vec1")
                         write (6, *) det_update_vec1
-                        write (6, *) "det_update_vec2"
+                        call log_debug("det_update_vec2")
                         write (6, *) det_update_vec2
 #endif
                         call dgemm('T', 'N', 2, 2, nelup, 1.d0, det_update_vec1, nelup &
@@ -531,7 +532,7 @@ contains
                         spin2_det = det_update_matrix(1, 1)*det_update_matrix(2, 2) &
                                     - det_update_matrix(2, 1)*det_update_matrix(1, 2)
 #ifdef DEBUG
-                        write (6, *) "det", spin2_det
+                        call log_debug("det", spin2_det)
 #endif
                         !           determinant part ends
                         !           jastrow part starts
@@ -562,7 +563,7 @@ contains
                 end if
                 !           jastrow parts ends
                 spin2_local = spin2_local + spin2_det*dexp(spin2_jastrow)
-                if (.not. allocated(ratiospin)) write (6, *) "DEBUG HERE IT IS THE BUG"
+                if (.not. allocated(ratiospin)) call log_debug("DEBUG HERE IT IS THE BUG")
                 ratiospin(k, l) = -spin2_det*dexp(spin2_jastrow)
             end do !k
         end do !l
@@ -570,7 +571,7 @@ contains
         spin2_local = Sz*Sz + nel/2.d0 - spin2_local
 
 #ifdef DEBUG
-        write (6, *) "spin2", spin2_local
+        call log_debug("spin2", spin2_local)
 #endif
         if (ipf .eq. 2) then
             deallocate (ratiopfaff)
@@ -628,6 +629,7 @@ end module Spin2
 subroutine det_update(l, k, nelup, neldo, det_update_vec1, det_update_vec2, DownDown, Amatrix, Ainv, Buu&
         &, Bud, Downup, UpUp, det_update_matrix, spin2_det)
     use constants, only: zzero, zone, zmone
+    use logger_io, only: log_debug
     implicit none
     integer nelup, neldo, l, k, i
     complex*16 det_update_vec1(nelup, 2), det_update_vec2(nelup, 2), Amatrix(nelup, nelup), Ainv(nelup, nelup)&
@@ -647,15 +649,15 @@ subroutine det_update(l, k, nelup, neldo, det_update_vec1, det_update_vec2, Down
     det_update_matrix(1, 1) = zone
     det_update_matrix(2, 2) = zone
 #ifdef DEBUG
-    write (6, *) "det_update_vec1"
+    call log_debug("det_update_vec1")
     write (6, *) det_update_vec1
-    write (6, *) "det_update_vec2"
+    call log_debug("det_update_vec2")
     write (6, *) det_update_vec2
 #endif
     call zgemm('T', 'N', 2, 2, nelup, zone, det_update_vec1, nelup, det_update_vec2, nelup, zone, det_update_matrix, 2)
     spin2_det = det_update_matrix(1, 1)*det_update_matrix(2, 2) - det_update_matrix(2, 1)*det_update_matrix(1, 2)
 #ifdef DEBUG
-    write (6, *) "det", spin2_det
+    call log_debug("det", spin2_det)
 #endif
     !           determinant part ends
     !           jastrow part starts
