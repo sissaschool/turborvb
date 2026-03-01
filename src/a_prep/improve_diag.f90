@@ -30,6 +30,7 @@ subroutine improvediag
     use descriptors
     use setup, only: desch, oversl, oversldo, molecorbl, molecorbldo, hamiltl, hamiltldo
 #endif
+    use logger_io, only: log_info, log_warning, log_debug
 
     implicit none
 
@@ -74,7 +75,7 @@ subroutine improvediag
 !$omp barrier
 
 #ifdef DEBUG
-    if (rank .eq. 0) write (6, *) ' Check orthogonality eigenvectors: '
+    call log_info(' Check orthogonality eigenvectors: ')
     allocate (molecorb_part(ipc*nelorbu, nelocc + neloccdo))
     molecorb_part = 0.d0
 
@@ -95,17 +96,15 @@ subroutine improvediag
     do i = 1, nelocc
         do j = i, nelocc
             if (ipc .eq. 1) then
-                if (rank .eq. 0) then
-                    if (yeslsda) then
-                        write (6, *) i, j, dabs(ddot(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1)), &
-                            dabs(ddot(nelorbu, molecorbdo(1, i), 1, molecorb_part(1, j + nelocc), 1))
-                    else
-                        write (6, *) i, j, dabs(ddot(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1))
-                    end if
+                if (yeslsda) then
+                    call log_debug(i, j, dabs(ddot(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1)), &
+                        dabs(ddot(nelorbu, molecorbdo(1, i), 1, molecorb_part(1, j + nelocc), 1)))
+                else
+                    call log_debug(i, j, dabs(ddot(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1)))
                 end if
             else
-                if (rank .eq. 0) write (6, *) i, j, abs(zdotc_(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1)), &
-                    abs(zdotc_(nelorbu, molecorbdo(1, i), 1, molecorb_part(1, j + nelocc), 1))
+                call log_debug(i, j, abs(zdotc_(nelorbu, molecorb(1, i), 1, molecorb_part(1, j), 1)), &
+                    abs(zdotc_(nelorbu, molecorbdo(1, i), 1, molecorb_part(1, j + nelocc), 1)))
             end if
         end do
     end do

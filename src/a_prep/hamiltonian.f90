@@ -33,6 +33,7 @@ subroutine uphamilt_new
 
     use parallel_module, only: old_threads
     use fourier_module, only: update_vhartree, vhartree
+    use logger_io, only: log_info, log_debug
 
 #if defined __SCALAPACK
     use descriptors
@@ -338,18 +339,16 @@ subroutine uphamilt_new
 #endif
 
 #ifdef DEBUG
-    if (rank .eq. 0) then
-        write (6, *)
-        write (6, *) ' Checking energy contributions:'
-        write (6, *) ' total pot/exchange/correlation/hartree'
-        write (6, *) totvpot, exchange, ecorr, ehartree
-        write (6, *)
-    end if
+    call log_debug()
+    call log_debug(' Checking energy contributions:')
+    call log_debug(' total pot/exchange/correlation/hartree')
+    call log_debug(totvpot, exchange, ecorr, ehartree)
+    call log_debug()
 #endif
 
     if (corr_hartree .and. scale_hartree .gt. 0 .and. vh_test .gt. 0.d0) then
         scale_hartreen = scale_hartreen + 0.5d0*mixing*(ehartree/vh_test - 1.d0)
-        if (rank .eq. 0) write (6, *) ' New trial value of scale_hartree =', scale_hartreen
+        call log_info(' New trial value of scale_hartree =', scale_hartreen)
     end if
 
     ! deallocate buffers and scratch vectors

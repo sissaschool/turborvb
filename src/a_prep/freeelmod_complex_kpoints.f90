@@ -20,7 +20,7 @@ module freeelmod_complex
     use compute_efermi, only: efermi, number_particles, number_particles_do
     use fourier_module
     use kpoints_mod, only: sum_kpoints_scalar_real8
-
+    use logger_io, only: log_error, log_warning, log_info, log_debug
     implicit none
 
     public
@@ -120,7 +120,7 @@ contains
                         end if
                         read (11, *) ! blank after one k-point
                     end do
-                    write (6, *) ' Occupations and eigenvalues correctly read from file '
+                    call log_info(' Occupations and eigenvalues correctly read from file ')
                 end if ! endif rank.eq.0
 #ifdef PARALLEL
                 call mpi_bcast(nko, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -153,7 +153,7 @@ contains
                             check_kp = .true.
                         else
 
-                            if (rank .eq. 0) write (6, *) ' read, computed K =', (xkp_sav(jj, ii), xkp(jj, ii), jj=1, 3)
+                            call log_info(' read, computed K =', xkp_sav(1, ii), xkp(1, ii), xkp_sav(2, ii), xkp(2, ii), xkp_sav(3, ii), xkp(3, ii))
 
                             call error(' freeelmod_complex ', ' one or more k-points read from &
                                     &file do not coincide with input fort.10 ones.Check your input !! ', 1, rank)
@@ -215,19 +215,22 @@ contains
         ! once for all in a SC run. In a nonSC run they need
         ! to be initialized for each k-points.
         call initialize_mats_new()
-        if (rank .eq. 0) then
-            if (iespbc) then
-                write (6, '(a,2E21.8)') ' Initial Hartree potential: ', sum(vhartree(1:meshproc)), sum(vhartreeq(1:meshproc))
-                write (6, '(a,F15.8)') ' Kappa found:         ', kappa
-                write (6, '(a,F15.8)') ' Ewald constant found:', ewaldion1b + (1.d0 - weightvh)*ewaldel1b
-                write (6, '(a,F15.8)') ' eselfion =           ', ewaldion1b
-                write (6, '(a,F15.8)') ' eself1bel =          ', ewaldel1b
-            end if
+        if (iespbc) then
+            ! original format: (a,2E21.8)
+            call log_info(' Initial Hartree potential: ', sum(vhartree(1:meshproc)), sum(vhartreeq(1:meshproc)))
+            ! original format: (a,F15.8)
+            call log_info(' Kappa found:         ', kappa)
+            ! original format: (a,F15.8)
+            call log_info(' Ewald constant found:', ewaldion1b + (1.d0 - weightvh)*ewaldel1b)
+            ! original format: (a,F15.8)
+            call log_info(' eselfion =           ', ewaldion1b)
+            ! original format: (a,F15.8)
+            call log_info(' eself1bel =          ', ewaldel1b)
         end if
 
         ! Recompute the charge/spin density with the MOs read from fort.10
         if (writescratch .eq. 0 .and. iopt .eq. 0) then
-            if (rank .eq. 0) write (6, *) 'Warning reading initial density from file'
+            call log_info('Warning reading initial density from file')
             rewind (unit_scratch_distributed)
             read (unit_scratch_distributed)
             read (unit_scratch_distributed)
@@ -327,7 +330,7 @@ contains
         if (iopt .eq. 1) then ! this is just the case of SC-run, since for NonSC run
             ! iopt is automatically set to 0.
 
-            if (rank .eq. 0) write (6, *) ' Eigenvalue one body Ham  '
+            call log_info(' Eigenvalue one body Ham  ')
             !
             lworkr = 0
             !
@@ -349,7 +352,8 @@ contains
             call updenorb_new
 
             if (yeslsda .and. randspin .lt. 0.d0) then
-                if (rank .eq. 0) write (6, '(A)') ' Initialization spin magnetization '
+                ! original format: (A)
+                call log_info(' Initialization spin magnetization ')
                 indmesh = 0
                 indproc = 0
                 do k = 1, nz
@@ -384,18 +388,18 @@ contains
                 call cutdens
 
                 !if(rank.eq.0) write(6,*) ' Initial density ',denstot
-                if (rank .eq. 0) write (6, *) ' Spin variance before =', spin2tot
-                if (rank .eq. 0) write (6, *) ' |spin|  =', spingrid/2
-                if (rank .eq. 0 .and. yeslsda) write (6, *) ' Initial polarization ', spintot
+                call log_info(' Spin variance before =', spin2tot)
+                call log_info(' |spin|  =', spingrid/2)
+                if (yeslsda) call log_info(' Initial polarization ', spintot)
                 if (abs(denstot - nel) .gt. 1d-4) then
-                    if (rank .eq. 0) write (6, *) ' Warning  initial density wrong, rescaling'
+                    call log_warning(' Warning  initial density wrong, rescaling')
                     dent(:) = dent(:)*dble(nel)/denstot
                 end if
                 if (yeslsda) then
-                    if (rank .eq. 0) write (6, *) ' Initial spin polarization ', spintot
-                    if (rank .eq. 0) write (6, *) ' Initial variance spin  ', spin2tot
+                    call log_info(' Initial spin polarization ', spintot)
+                    call log_info(' Initial variance spin  ', spin2tot)
                     if (abs(spintot - nelup + neldo) .gt. 1d-4) then
-                        if (rank .eq. 0) write (6, *) ' Warning  initial polarization  wrong, shifting'
+                        call log_warning(' Warning  initial polarization  wrong, shifting')
                         cost = sum(spint(:) - spin0)/meshproc
                         spint(:) = spint(:) - cost
                     end if
@@ -425,7 +429,7 @@ contains
             end if
             ! sum energies over the k-points
             call sum_kpoints_scalar_real8(edft, commcolrep_mpi, -1)
-            if (rank .eq. 0) write (6, *) ' Efree ', edft
+            call log_info(' Efree ', edft)
 
             ! print non-interacting energies in the "fort.21" formatted file
             if (print_energies) then
@@ -465,8 +469,8 @@ contains
             !
         elseif (iopt .ne. 1) then ! read from input iopt.ne.1
 
-            if (rank .eq. 0) write (6, *) ' Reading orbitals from input '
-            if (rank .eq. 0) write (6, *) ' Eigenvalue DFT  Ham  '
+            call log_info(' Reading orbitals from input ')
+            call log_info(' Eigenvalue DFT  Ham  ')
 
             if (optocc .eq. 1) then
                 nelocc = bands
@@ -475,7 +479,7 @@ contains
             end if
 
             if (meshproc .ne. meshproco) then
-                if (rank .eq. 0) write (6, *) ' Warning orthogonalizing orbitals'
+                call log_warning(' Warning orthogonalizing orbitals')
 #ifdef __SCALAPACK
                 if (ipc .eq. 1) then
                     call graham_scalapack(molecorb, oversl, psip, nelorbu, nelorbu, &
@@ -524,9 +528,9 @@ contains
             call uphamilt_new
             call checksum
 
-            if (rank .eq. 0) write (6, *) 'Input matrix H before = ', sumhup, sumhdo, sumh, sumo
-            if (rank .eq. 0) write (6, *) 'Input dens^2 spin^2   = ', sumden, sumspin
-            if (rank .eq. 0) write (6, *) ' Initial tovpot        = ', totvpot
+            call log_info('Input matrix H before = ', sumhup, sumhdo, sumh, sumo)
+            call log_info('Input dens^2 spin^2   = ', sumden, sumspin)
+            call log_info(' Initial tovpot        = ', totvpot)
 
             lworkr = 0
             !
@@ -606,12 +610,12 @@ contains
                 call cutdens
 
                 if (abs(denstot - nel) .gt. 1d-4) then
-                    if (rank .eq. 0) write (6, *) ' Warning  initial density wrong, rescaling'
+                    call log_warning(' Warning  initial density wrong, rescaling')
                     dent(:) = dent(:)*dble(nel)/denstot
                 end if
 
                 if (yeslsda .and. randspin .lt. 0) then
-                    if (rank .eq. 0) write (6, *) ' Initialization spin magnetization  '
+                    call log_info(' Initialization spin magnetization  ')
                     !       indr=-1
                     indmesh = 0
                     indproc = 0
@@ -645,11 +649,11 @@ contains
                 if (yeslsda) deallocate (spin_input)
 
                 if (yeslsda) then
-                    if (rank .eq. 0) write (6, *) ' Initial spin polarization ', spintot
-                    if (rank .eq. 0) write (6, *) ' Initial  |spin |  = ', spingrid/2
-                    if (rank .eq. 0) write (6, *) ' Initial variance spin  ', spin2tot
+                    call log_info(' Initial spin polarization ', spintot)
+                    call log_info(' Initial  |spin |  = ', spingrid/2)
+                    call log_info(' Initial variance spin  ', spin2tot)
                     if (abs(spintot - nelup + neldo) .gt. 1d-4) then
-                        if (rank .eq. 0) write (6, *) ' Warning  initial polarization  wrong, shifting'
+                        call log_warning(' Warning  initial polarization  wrong, shifting')
                         cost = sum(spint(:) - spin0)/meshproc
                         spint(:) = spint(:) - cost
                     end if
@@ -689,7 +693,7 @@ contains
             call sum_kpoints_scalar_real8(edft, commcolrep_mpi, -1)
             edft = edft + totvpot
 
-            if (rank .eq. 0) write (6, *) ' Initial dft energy =', edft
+            call log_info(' Initial dft energy =', edft)
 
             if (occopen) then
                 occupations = oldocc
@@ -700,12 +704,13 @@ contains
 
         end if ! endif iopt.ne.0
 
-        if (rank .eq. 0) write (6, '(a)') ' DFT initialization OK '
+        ! original format: (a)
+        call log_info(' DFT initialization OK ')
 
         ! add a random component to the spin
         if (yeslsda .and. randspin .gt. 0.d0) then
 
-            if (rank .eq. 0) write (6, *) ' Warning adding a random component to the spin '
+            call log_warning(' Warning adding a random component to the spin ')
             if (mod(typeopt, 2) .eq. 0) then
                 cost = 0.d0
                 do ii = 1, meshproc
@@ -797,9 +802,10 @@ contains
             end if
         end if
 #endif
-        if (rank .eq. 0) write (6, '(a,F20.6)') ' # Molecorb start:      ', sum_eigv
-        if (rank .eq. 0 .and. (yeslsda .or. ipc .eq. 2)) &
-            write (6, '(a,F20.6)') ' # Molecorb start down: ', sum_eigvdo
+        ! original format: (a,F20.6)
+        call log_info(' # Molecorb start:      ', sum_eigv)
+        ! original format: (a,F20.6)
+        if (yeslsda .or. ipc .eq. 2) call log_info(' # Molecorb start down: ', sum_eigvdo)
 
         if (iopt .eq. 1) then
             dentold = dens0
@@ -832,7 +838,7 @@ contains
         ! ----------for test------------
         if (typeopt .lt. 0) then
 
-            if (rank .eq. 0) write (6, *) ' Check DFT  functional '
+            call log_info(' Check DFT  functional ')
             typeopt = -typeopt
             ! choose a random direction
             epsder_dft = mixing
@@ -943,35 +949,33 @@ contains
 
             ! The more accurate symmetric expression for derivative is taken.
 
-            if (rank .eq. 0) then
-                if (yeslsda .or. ipc .eq. 2) then
-                    if (ipc .eq. 1) then
-                        deriv = costder - 1d0/epsder_dft*sum(molecorbs(1:nelorbu, 1:nelocc)*molecorb_old(1:nelorbu, 1:nelocc))&
-                                & - 1d0/epsder_dft*sum(molecorbdos(1:nelorbu, 1:neloccdo)*molecorbdo_old(1:nelorbu, 1:neloccdo))
-                        write (6, '(a,2F20.8)') ' Analitycal derivative DFT functional = ', deriv, costder
-                    else
-                        derivR = 0.d0
-                        derivI = 0.d0
-                        do ii = 1, nelorbu
-                            ! real part
-                            derivR = derivR + costder &
-                                     - 1d0/epsder_dft*sum(molecorbs(2*ii - 1, 1:nelocc)*molecorb_old(2*ii - 1, 1:nelocc)) &
-                                     - 1d0/epsder_dft*sum(molecorbdos(2*ii - 1, 1:neloccdo)*molecorbdo_old(2*ii - 1, 1:neloccdo))
-                            ! imaginary part
-                            derivI = derivI + costder - 1d0/epsder_dft* &
-                                     sum(molecorbs(2*ii, 1:nelocc)*molecorb_old(2*ii, 1:nelocc)) &
-                                     - 1d0/epsder_dft*sum(molecorbdos(2*ii, 1:neloccdo)*molecorbdo_old(2*ii, 1:neloccdo))
-                        end do
-                        deriv = derivR + zimg*derivI
-                        write (6, '(a,3F20.8)') ' Analitycal derivative DFT functional = ', deriv, costder
-                    end if
+            if (yeslsda .or. ipc .eq. 2) then
+                if (ipc .eq. 1) then
+                    deriv = costder - 1d0/epsder_dft*sum(molecorbs(1:nelorbu, 1:nelocc)*molecorb_old(1:nelorbu, 1:nelocc))&
+                            & - 1d0/epsder_dft*sum(molecorbdos(1:nelorbu, 1:neloccdo)*molecorbdo_old(1:nelorbu, 1:neloccdo))
+                    ! original format: (a,2F20.8)
+                    call log_info(' Analitycal derivative DFT functional = ', deriv, costder)
                 else
-                    write (6, '(a,2F20.8)') ' Analitycal derivative DFT functional = ', &
-                            &costder - 1d0/epsder_dft*sum(molecorbs(1:nelorbu, 1:nelocc)* &
-                            molecorb_old(1:nelorbu, 1:nelocc)), costder
+                    derivR = 0.d0
+                    derivI = 0.d0
+                    do ii = 1, nelorbu
+                        derivR = derivR + costder &
+                                 - 1d0/epsder_dft*sum(molecorbs(2*ii - 1, 1:nelocc)*molecorb_old(2*ii - 1, 1:nelocc)) &
+                                 - 1d0/epsder_dft*sum(molecorbdos(2*ii - 1, 1:neloccdo)*molecorbdo_old(2*ii - 1, 1:neloccdo))
+                        derivI = derivI + costder - 1d0/epsder_dft* &
+                                 sum(molecorbs(2*ii, 1:nelocc)*molecorb_old(2*ii, 1:nelocc)) &
+                                 - 1d0/epsder_dft*sum(molecorbdos(2*ii, 1:neloccdo)*molecorbdo_old(2*ii, 1:neloccdo))
+                    end do
+                    deriv = derivR + zimg*derivI
+                    ! original format: (a,3F20.8)
+                    call log_info(' Analitycal derivative DFT functional = ', deriv, costder)
                 end if
-                write (6, '(a,F20.8)') ' Numerical  derivative DFT functional = ', (edft - edftp)/epsder_dft, edft - edftp
+            else
+                ! original format: (a,2F20.8)
+                call log_info(' Analitycal derivative DFT functional = ', costder - 1d0/epsder_dft*sum(molecorbs(1:nelorbu, 1:nelocc)*molecorb_old(1:nelorbu, 1:nelocc)), costder)
             end if
+            ! original format: (a,F20.8)
+            call log_info(' Numerical  derivative DFT functional = ', (edft - edftp)/epsder_dft, edft - edftp)
 
 #ifdef PARALLEL
             call mpi_finalize(ierr)
@@ -993,11 +997,11 @@ contains
         ! --------------------------------------------------
 
         if (rank .eq. 0) then
-            write (6, *) ' '
-            write (6, *) ' ------------------------------ '
-            write (6, *) '        Starting SC cycle       '
-            write (6, *) ' ------------------------------ '
-            write (6, *) ' '
+            call log_info(' ')
+            call log_info(' ------------------------------ ')
+            call log_info('        Starting SC cycle       ')
+            call log_info(' ------------------------------ ')
+            call log_info(' ')
         end if
 
         cycle_timep = 0.d0
@@ -1023,26 +1027,22 @@ contains
         cycle_time = cycle_time + (cclock() - cycle_timep)
 
         if (rank .eq. 0) then
-            write (6, *) ' '
-            write (6, *) ' ------------------------ '
-            write (6, *) '     SC cycle completed   '
-            write (6, *) ' ------------------------ '
-            write (6, *) ' '
+            call log_info(' ')
+            call log_info(' ------------------------ ')
+            call log_info('     SC cycle completed   ')
+            call log_info(' ------------------------ ')
+            call log_info(' ')
         end if
 
-        if (mod(typeopt, 2) .eq. 1 .and. rank .eq. 0 .and. .not. manyfort10) then
-            write (6, *) ' Estimated eigenvalues '
+        if (mod(typeopt, 2) .eq. 1 .and. .not. manyfort10) then
+            call log_info(' Estimated eigenvalues ')
             do i = 1, bands
-                if (occupations(i) .ne. 0.d0) then
-                    write (6, *) i, eigmol(i)/occupations(i)
-                end if
+                if (occupations(i) .ne. 0.d0) call log_info(i, eigmol(i)/occupations(i))
             end do
             if (yeslsda .or. ipc .eq. 2) then
-                write (6, *) ' Estimated eigenvalues spin down  '
+                call log_info(' Estimated eigenvalues spin down  ')
                 do i = 1, bands
-                    if (occupationdo(i) .ne. 0.d0) then
-                        write (6, *) i, eigmoldo(i)/occupationdo(i)
-                    end if
+                    if (occupationdo(i) .ne. 0.d0) call log_info(i, eigmoldo(i)/occupationdo(i))
                 end do
             end if
         end if
@@ -1169,16 +1169,16 @@ contains
             do i = 1, bands
                 eigmol(i) = psip(ipsip(bands - i + 1))
             end do
-            if (rank .eq. 0 .and. .not. manyfort10) write (6, *) ' Sorted eigenvalues/occupations up '
+            if (.not. manyfort10) call log_info(' Sorted eigenvalues/occupations up ')
             psip(1:bands) = occupations(1:bands)
             do i = 1, bands
                 occupations(i) = psip(ipsip(bands - i + 1))
-                if (rank .eq. 0 .and. .not. manyfort10) write (6, *) i, eigmol(i), occupations(i)
+                if (.not. manyfort10) call log_info(i, eigmol(i), occupations(i))
             end do
             if (yeslsda .or. ipc .eq. 2) then
                 if (rank .eq. 0 .and. .not. manyfort10) then
-                    write (6, *)
-                    write (6, *) ' Sorted eigenvalues/occupations down '
+                    call log_info()
+                    call log_info(' Sorted eigenvalues/occupations down ')
                 end if
                 psip(bands + 1:2*bands) = eigmoldo(1:bands)
                 do i = 1, bands
@@ -1187,9 +1187,9 @@ contains
                 psip(bands + 1:2*bands) = occupationdo(1:bands)
                 do i = 1, bands
                     occupationdo(i) = psip(bands + ipsip(2*bands - i + 1))
-                    if (rank .eq. 0 .and. .not. manyfort10) write (6, *) i, eigmoldo(i), occupationdo(i)
+                    if (.not. manyfort10) call log_info(i, eigmoldo(i), occupationdo(i))
                 end do
-                if (rank .eq. 0 .and. .not. manyfort10) write (6, *)
+                if (.not. manyfort10) call log_info()
             end if
 
             if (mod(typeopt, 2) .ne. 1) then
@@ -1260,15 +1260,15 @@ contains
             end if
 
             if (rank .eq. 0) then
-                write (6, *) ' Check orthogonality h psi with psi i =/ j ', mincost
+                call log_info(' Check orthogonality h psi with psi i =/ j ', mincost)
                 if (yeslsda .or. ipc .eq. 2) &
-                    write (6, *) ' Check orthogonality h psi with psi i down =/ j ', mincosts
+                    call log_info(' Check orthogonality h psi with psi i down =/ j ', mincosts)
             end if
             !
             ! end orthogonality check
             !
-            if (rank .eq. 0) write (6, *) ' Variational energy without orth. ', edftvar
-            if (rank .eq. 0) write (6, *) ' Variational const with no orth. ', totvpot
+            call log_info(' Variational energy without orth. ', edftvar)
+            call log_info(' Variational const with no orth. ', totvpot)
 
             if (memlarge .and. orthodiag) then
 #ifdef __SCALAPACK
@@ -1319,9 +1319,9 @@ contains
         end if
 
         if (rank .eq. 0 .and. .not. manyfort10) then
-            write (6, *) ' Final molecorb written ', sum(molecorb(:, 1:nelocc))
+            call log_info(' Final molecorb written ', sum(molecorb(:, 1:nelocc)))
             if (yeslsda .or. ipc .eq. 2) &
-                write (6, *) ' Final molecorb down written ', sum(molecorbdo(:, 1:neloccdo))
+                call log_info(' Final molecorb down written ', sum(molecorbdo(:, 1:neloccdo)))
         end if
 
         if (print_energies) then
@@ -1439,18 +1439,16 @@ contains
         call diagonalize_hamiltonian(0, lworkr)
         !
 #ifdef DEBUG
-        if (rank .eq. 0) then
-            write (6, *)
-            write (6, *) 'Eigenvalues Hamiltonian (spin up). Iteration/k-point:', iter, xkp(:, indk)
+        call log_debug()
+        call log_debug('Eigenvalues Hamiltonian (spin up). Iteration/k-point:', iter, xkp(1, indk), xkp(2, indk), xkp(3, indk))
+        do i = 1, bands
+            call log_debug(i, eigmol(i))
+        end do
+        if (ipc .eq. 2 .or. yeslsda) then
+            call log_debug('Eigenvalues Hamiltonian (spin down), Iteration/k-point:', iter, xkp(1, indk), xkp(2, indk), xkp(3, indk))
             do i = 1, bands
-                write (6, *) i, eigmol(i)
+                call log_debug(i, eigmoldo(i))
             end do
-            if (ipc .eq. 2 .or. yeslsda) then
-                write (6, *) 'Eigenvalues Hamiltonian (spin down), Iteration/k-point:', iter, xkp(:, indk)
-                do i = 1, bands
-                    write (6, *) i, eigmoldo(i)
-                end do
-            end if
         end if
 #endif
 
@@ -1517,7 +1515,7 @@ contains
             call mpi_allreduce(tmp_norm, normcorrb, 1, MPI_DOUBLE_PRECISION, MPI_MAX, &
                                commcolrep_mpi, ierr)
 #endif
-            if (rank .eq. 0 .and. optocc .ge. 0) write (6, *) ' Full norm correction =', normcorrb
+            if (optocc .ge. 0) call log_info(' Full norm correction =', normcorrb)
 
         end if ! end if typeopt.eq.2
 
@@ -1578,21 +1576,15 @@ contains
             if (yeslsda) spingrid_av = spingrid
         end if
 
-        if (rank .eq. 0) write (6, *)
+        call log_info()
         if (yeslsda) then
-            if (rank .eq. 0) then
-                write (6, '(A27,I6,5f18.7)') &
-                    ' Iter,E,xc,corr, |spin|, errdft = ' &
-                    , iter, edft_av, exchange_av, ecorr_av, spingrid_av/2, errdft
-            end if
+            ! original format: (A27,I6,5f18.7)
+            call log_info(' Iter,E,xc,corr, |spin|, errdft = ', iter, edft_av, exchange_av, ecorr_av, spingrid_av/2, errdft)
         else
-            if (rank .eq. 0) then
-                write (6, '(A15,I6,4f18.7)') &
-                    ' Iter,E,xc,corr,errdft= ' &
-                    , iter, edft_av, exchange_av, ecorr_av, errdft
-            end if
+            ! original format: (A15,I6,4f18.7)
+            call log_info(' Iter,E,xc,corr,errdft= ', iter, edft_av, exchange_av, ecorr_av, errdft)
         end if
-        if (rank .eq. 0) write (6, *)
+        call log_info()
 
         loading_time = loading_time + cclock() - timep
 
@@ -1609,7 +1601,7 @@ contains
 #ifdef PARALLEL
             call reduce_base_real(1, normcorrb, commrep_mpi, -1)
 #endif
-            if (rank .eq. 0 .and. optocc .ge. 0) write (6, *) ' Full norm correction before =', normcorrb
+            if (optocc .ge. 0) call log_info(' Full norm correction before =', normcorrb)
             !        if(rankrep.eq.0.and.optocc.ge.0) write(6,*) ' Full norm correction before =',normcorrb,rankcolrep
             dent_after(:, itersto) = (1.d0 - mixingder)*dent_before(:, itersto) + mixingder*dent(:)
 
@@ -1643,7 +1635,7 @@ contains
 #ifdef PARALLEL
             call reduce_base_real(1, normcorra, commrep_mpi, -1)
 #endif
-            if (rank .eq. 0 .and. optocc .ge. 0) write (6, *) ' Full norm correction after  =', normcorra
+            if (optocc .ge. 0) call log_info(' Full norm correction after  =', normcorra)
             !        if(rankrep.eq.0.and.optocc.ge.0) write(6,*) ' Full norm correction after  =',normcorra,rankcolrep
             eigmol = eigmolo
             occupations = oldocc
@@ -1797,7 +1789,7 @@ contains
                 ! first diagonalize the overlap matrix
                 call dsyev('V', 'U', maxdim, overjac, dimjac, sojac, psip, lworkjac, info)
 
-                if (rank .eq. 0) write (6, *) ' Overlap cond num. =', sojac(1)/sojac(maxdim)
+                call log_info(' Overlap cond num. =', sojac(1)/sojac(maxdim))
                 do ii = 1, maxdim - 1
                     if (sojac(ii)/sojac(maxdim) .lt. jaccond) sojac(ii) = 0.d0
                 end do
@@ -1833,9 +1825,9 @@ contains
                 !        now applying the inverse to alpha
                 call dgemv('T', maxdim, maxdim, 1.d0, ujac, dimjac, alpha, 1, 0.d0, psip, 1)
                 !        Removing singular directions
+                ! implied-do output: left as write (variable-length list)
                 if (rank .eq. 0) write (6, *) ' svd  jac =', (sjac(ii), ii=1, maxdim)
-                if (rank .eq. 0) write (6, *) 'svd   overlap left/right=', &
-                        &(sum(ujac(1:maxdim, ii)*vjac(1:maxdim, ii)), ii=1, maxdim)
+                if (rank .eq. 0) write (6, *) 'svd   overlap left/right=', (sum(ujac(1:maxdim, ii)*vjac(1:maxdim, ii)), ii=1, maxdim)
 
                 nsvd = 0
                 do ii = 2, maxdim
@@ -1847,8 +1839,7 @@ contains
                     end if
                 end do
                 sjac(1) = 1.d0/sjac(1)
-                if (rank .eq. 0 .and. nsvd .ne. 0) write (6, *) ' Warning removing', nsvd&
-                        &, 'singular direction jac '
+                if (nsvd .ne. 0) call log_warning(' Warning removing', nsvd, 'singular direction jac ')
 
                 alpha(1:maxdim) = psip(1:maxdim)*sjac(1:maxdim)
 
@@ -1868,6 +1859,7 @@ contains
 
                 alpha(1:itersto) = -overjac(1:itersto, itersto)
                 call dgetrf(maxdim, maxdim, jac, dimjac, ipsip, info)
+                ! implied-do output: left as write (variable-length list)
                 if (rank .eq. 0) write (6, *) ' jac diag=', (jac(ii, ii), ii=1, maxdim)
                 call dgetrs('N', maxdim, 1, jac, dimjac, ipsip, alpha, maxdim, info)
 
@@ -1927,26 +1919,23 @@ contains
                 if (maxold .eq. 1) then
                     if (alpha(itersto) .gt. 0) then
                         mixingder = (alpha(itersto)*mixing*mixingder + mixingder)/2.d0
-                        if (rank .eq. 0) write (6, *) ' Warning new mixingder =', mixingder
+                        call log_warning(' Warning new mixingder =', mixingder)
                     end if
                 else
                     if (scallast .gt. 0.d0) then
                         mixingder = (scallast/normlast*mixingder + mixingder)/2.d0
-                        if (rank .eq. 0) write (6, *) ' Warning new mixingder =', mixingder
+                        call log_warning(' Warning new mixingder =', mixingder)
                     end if
                 end if
             end if
 
-            if (rank .eq. 0) then
-                write (6, '(A12,I6,1f20.10)') ' Norm corr.=', iter, normcorr
-            end if
+            ! original format: (A12,I6,1f20.10)
+            call log_info(' Norm corr.=', iter, normcorr)
 
-            if (rank .eq. 0) then
-                if (itersto .eq. 1) then
-                    write (6, *) ' Warning simple mixing =', alpha(itersto)*mixingder
-                else
-                    write (6, *) ' Warning last mixing =', alpha(itersto)
-                end if
+            if (itersto .eq. 1) then
+                call log_warning(' Warning simple mixing =', alpha(itersto)*mixingder)
+            else
+                call log_warning(' Warning last mixing =', alpha(itersto))
             end if
 
             dent(:) = dent_before(:, itersto) + dent(:)
@@ -1979,7 +1968,7 @@ contains
 #ifdef PARALLEL
             call reduce_base_real(1, normcorrb, commrep_mpi, -1)
 #endif
-            if (rank .eq. 0 .and. optocc .ge. 0) write (6, *) ' Full norm correction =', normcorrb
+            if (optocc .ge. 0) call log_info(' Full norm correction =', normcorrb)
             ! low mixing at first 2 iterations
             if (typeopt .eq. 2) then
                 dent = 0.25d0*mixing*dent + (1.d0 - 0.25d0*mixing)*dentold
@@ -2321,17 +2310,11 @@ contains
         if (mixingstep .ne. 0.d0) then
 
             if (yeslsda) then
-                if (rank .eq. 0) then
-                    write (6, '(A27,I6,5f18.7)') &
-                        ' Iter,E,xc,corr, |spin| = ' &
-                        , iter, edft_av, exchange_av, ecorr_av, spingrid_av/2, errdft
-                end if
+                ! original format: (A27,I6,5f18.7)
+                call log_info(' Iter,E,xc,corr, |spin| = ', iter, edft_av, exchange_av, ecorr_av, spingrid_av/2, errdft)
             else
-                if (rank .eq. 0) then
-                    write (6, '(A15,I6,4f18.7)') &
-                        ' Iter,E,xc,corr= ' &
-                        , iter, edft_av, exchange_av, ecorr_av, errdft
-                end if
+                ! original format: (A15,I6,4f18.7)
+                call log_info(' Iter,E,xc,corr= ', iter, edft_av, exchange_av, ecorr_av, errdft)
             end if
 
             do i = 1, nelocc
@@ -2385,7 +2368,7 @@ contains
         end if
         !       compute the new sum of eigenvalue
         !       check orthogonality
-        if (info .ne. 0 .and. rank .eq. 0) write (6, *) ' Warning info>0 after graham ', info
+        if (info .ne. 0) call log_warning(' Warning info>0 after graham ', info)
 
 #ifdef DEBUG
         !       check orthogonality
@@ -2396,13 +2379,13 @@ contains
             call zgemm('N', 'N', nelorbh, nelup, nelorbh, zone, overs, nelorb&
                  &, molecorb, nelorb, zzero, hamilt, nelorb)
         end if
-        if (rank .eq. 0) write (6, *) ' scalar products after graham '
+        call log_info(' scalar products after graham ')
         do i = 1, nelup
             do j = i, nelup
                 if (ipc .eq. 1) then
-                    if (rank .eq. 0) write (6, *) i, j, ddot(nelorbh, molecorb(1, i), 1, hamilt(1, j), 1)
+                    call log_debug(i, j, ddot(nelorbh, molecorb(1, i), 1, hamilt(1, j), 1))
                 else
-                    if (rank .eq. 0) write (6, *) i, j, zdotc_(nelorbh, molecorb(1, i), 1, hamilt(1, j), 1)
+                    call log_debug(i, j, zdotc_(nelorbh, molecorb(1, i), 1, hamilt(1, j), 1))
                 end if
             end do
         end do
@@ -2543,26 +2526,26 @@ contains
         end if
 #endif
 
-        if (rank .eq. 0) then
-            write (6, *)
-            if (yeslsda .or. ipc .eq. 2) then
-                write (6, '(a)') ' Check matrix elements sum:'
-                write (6, *) ' overs    ', sumo
-                write (6, *) ' overham  ', sumh
-                write (6, *) ' oversdo  ', sumodo
-                write (6, *) ' overhamdo', sumhodo
-                write (6, *) ' hamilt   ', sumhup
-                write (6, *) ' hamiltdo ', sumhdo
-            else
-                write (6, '(a)') ' Check matrix elements sum: '
-                write (6, *) ' overs    ', sumo
-                write (6, *) ' overham  ', sumh
-                write (6, *) ' oversdo  ', sumodo
-                write (6, *) ' overhamdo', sumhodo
-                write (6, *) ' hamilt   ', sumhup
-            end if
-            write (6, *)
+        call log_info()
+        if (yeslsda .or. ipc .eq. 2) then
+            ! original format: (a)
+            call log_info(' Check matrix elements sum:')
+            call log_info(' overs    ', sumo)
+            call log_info(' overham  ', sumh)
+            call log_info(' oversdo  ', sumodo)
+            call log_info(' overhamdo', sumhodo)
+            call log_info(' hamilt   ', sumhup)
+            call log_info(' hamiltdo ', sumhdo)
+        else
+            ! original format: (a)
+            call log_info(' Check matrix elements sum: ')
+            call log_info(' overs    ', sumo)
+            call log_info(' overham  ', sumh)
+            call log_info(' oversdo  ', sumodo)
+            call log_info(' overhamdo', sumhodo)
+            call log_info(' hamilt   ', sumhup)
         end if
+        call log_info()
 
         return
 

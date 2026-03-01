@@ -35,7 +35,7 @@ subroutine upocc_kpoints(optocc, dt, iopt)
     use freeelmod_complex, only: count2, costalln, countall, costall
     use parallel_module, only: collect_from_pools
     use compute_efermi
-
+    use logger_io, only: log_info, log_warning
     implicit none
 
 #ifdef PARALLEL
@@ -184,37 +184,41 @@ subroutine upocc_kpoints(optocc, dt, iopt)
     if (rank .eq. 0) then
         call check_occupation
         if (iopt .eq. 1) then
-            write (6, *)
-            write (6, '(a)') ' Eigenvalues/occupations before starting SC cycle '
+            call log_info()
+            call log_info(' Eigenvalues/occupations before starting SC cycle ')
             if (double_occ) then
                 do ikp = 1, nk
-                    write (6, *)
-                    write (6, '(a,3F12.8)') ' # k-point spin up:  ', xkp(:, ikp)
+                    call log_info()
+                    ! original format: (a,3F12.8)
+                    call log_info(' # k-point spin up:  ', xkp(1, ikp), xkp(2, ikp), xkp(3, ikp))
                     do ibnd = 1, bands
-                        write (6, 100) ibnd, eigmol_sav(ibnd, ikp), occupations_sav(ibnd, ikp)
+                        call log_info(ibnd, eigmol_sav(ibnd, ikp), occupations_sav(ibnd, ikp))
                     end do
-                    write (6, '(a,3F12.8)') ' # k-point spin down:  ', xkp_down(:, ikp)
+                    ! original format: (a,3F12.8)
+                    call log_info(' # k-point spin down:  ', xkp_down(1, ikp), xkp_down(2, ikp), xkp_down(3, ikp))
                     do ibnd = 1, bands
-                        write (6, 100) ibnd, eigmoldo_sav(ibnd, ikp), occupationsdo_sav(ibnd, ikp)
+                        call log_info(ibnd, eigmoldo_sav(ibnd, ikp), occupationsdo_sav(ibnd, ikp))
                     end do
                 end do
             else
                 do ikp = 1, nk
-                    write (6, *)
-                    write (6, '(a,3F12.8)') ' # k-point:  ', xkp(:, ikp)
+                    call log_info()
+                    ! original format: (a,3F12.8)
+                    call log_info(' # k-point:  ', xkp(1, ikp), xkp(2, ikp), xkp(3, ikp))
                     do ibnd = 1, bands
-                        write (6, 100) ibnd, eigmol_sav(ibnd, ikp), occupations_sav(ibnd, ikp)
+                        call log_info(ibnd, eigmol_sav(ibnd, ikp), occupations_sav(ibnd, ikp))
                     end do
                 end do
             end if
         end if
-        write (6, *)
+        call log_info()
         if (double_occ) then
-            write (6, 101) ' Fermi energy up/down:         ', ef_up, ef_do
-            write (6, 101) ' Entropic contribution up/down:', metS, metSdo
+            ! original format: 101
+            call log_info(' Fermi energy up/down:         ', ef_up, ef_do)
+            call log_info(' Entropic contribution up/down:', metS, metSdo)
         else
-            write (6, 101) ' Fermi energy:         ', ef_up
-            write (6, 101) ' Entropic contribution:', metS
+            call log_info(' Fermi energy:         ', ef_up)
+            call log_info(' Entropic contribution:', metS)
         end if
     end if
 100 format(3x, I10, X, 2f20.10)
@@ -257,7 +261,8 @@ contains
                 checkoccdo = checkoccdo + wkp_down(ikp)*sum1
             end if
         end do
-        write (6, '(a,2F20.10)') ' Total occupations found up/down:', checkocc, checkoccdo
+        ! original format: (a,2F20.10)
+        call log_info(' Total occupations found up/down:', checkocc, checkoccdo)
         return
     end subroutine check_occupation
 
@@ -273,7 +278,7 @@ subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread
     use allio, only: rank, symmagp, neldo, rankcolrep, compute_bands
     use setup, only: optocc, bands, yeslsda, occupations_sav, occupationsdo_sav
     use freeelmod_complex, only: count2, costall, lastpaired, nmoltot, countall
-
+    use logger_io, only: log_info, log_warning
     implicit none
     logical, intent(in) :: occread
     integer, intent(inout) :: nelocc, neloccdo
@@ -327,7 +332,7 @@ subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread
                 end if
             end if
         end if
-        if (rank .eq. 0) write (6, *)
+        call log_info()
         call checkiflagerr(iflagall, rank, " ERROR reading occupations! ")
         !
         ! in the case of a symmetric complex wavefunction, also occupations
@@ -343,17 +348,13 @@ subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread
         end if
 
         if (nelocc .gt. nmoltot) then
-            if (rank .eq. 0) then
-                write (6, *)
-                write (6, '(a,I6)') ' INCREASE mol. orb. in fort.10 by ', nelocc - nmoltot
-            end if
+            call log_info()
+            call log_warning(' INCREASE mol. orb. in fort.10 by ', nelocc - nmoltot)
             call error(' read_occupations ', ' Too few molecular orbitals < nelocc ', 1, rank)
         end if
         if (nelocc .gt. bands) then
-            if (rank .eq. 0) then
-                write (6, *)
-                write (6, '(a,I6)') ' INCREASE bands in input by ', nelocc - bands
-            end if
+            call log_info()
+            call log_warning(' INCREASE bands in input by ', nelocc - bands)
             call error(' read_occupations ', ' Too few molecular orbitals < nelocc ', 1, rank)
         end if
 #ifdef PARALLEL
@@ -362,17 +363,15 @@ subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread
             call mpi_bcast(occupationdo, bands, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-        if (rank .eq. 0 .and. .not. compute_bands) then
-            write (6, *) ' Total occupation UP read from std input'
-            !do i=max(neldo-10,1),bands
+        if (.not. compute_bands) then
+            call log_info(' Total occupation UP read from std input')
             do i = 1, bands
-                write (6, *) i, occupations(i)
+                call log_info(i, occupations(i))
             end do
             if (yeslsda .or. ipc .eq. 2) then
-                write (6, *) ' Total occupation DOWN read from std input'
-                !   do i=max(neldo-10,1),bands
+                call log_info(' Total occupation DOWN read from std input')
                 do i = 1, bands
-                    write (6, *) i, occupationdo(i)
+                    call log_info(i, occupationdo(i))
                 end do
             end if
         end if
@@ -399,11 +398,11 @@ subroutine read_occupations(occupations, occupationdo, nelocc, neloccdo, occread
             end if
             occupations(i) = abs(occupations(i))
         end do
-        if (rank .eq. 0) write (6, *) ' Read last occupied paired orbital =', lastpaired
+        call log_info(' Read last occupied paired orbital =', lastpaired)
         ! calculation costall
         if (countall .gt. count2) then
             costall = nint(costall)/dble(countall - count2)
-            if (rank .eq. 0) write (6, *) ' Warning costall found =', costall
+            call log_warning(' Warning costall found =', costall)
         else
             costall = 0.d0
         end if

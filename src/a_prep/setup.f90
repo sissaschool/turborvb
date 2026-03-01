@@ -21,7 +21,7 @@ module setup
 #ifdef __SCALAPACK
     use descriptors
 #endif
-
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
 
     public
@@ -340,22 +340,20 @@ contains
 
         !
         ! printout parameters related to Jastrow 1body
-        if (rank .eq. 0) then
-            write (6, *) ' symmagp =', symmagp
-            write (6, *) 'Number 1body Jastrow parameters: ', niesd
-            if (niesd .ge. 1) then
-                do i = 1, niesd
-                    write (6, *) i, vj(i)
-                end do
-            else
-                write (6, *) '1body Jastrow not present'
-            end if
-            if (iesdr .le. -5) then
-                write (6, *) ' initial costz, costz3, zeta_Q_Caffarel '
-                do i = 1, nion
-                    write (6, *) i, costz(i), costz3(i), zetaq(i)
-                end do
-            end if
+        call log_info(' symmagp =', symmagp)
+        call log_info('Number 1body Jastrow parameters: ', niesd)
+        if (niesd .ge. 1) then
+            do i = 1, niesd
+                call log_info(i, vj(i))
+            end do
+        else
+            call log_info('1body Jastrow not present')
+        end if
+        if (iesdr .le. -5) then
+            call log_info(' initial costz, costz3, zeta_Q_Caffarel ')
+            do i = 1, nion
+                call log_info(i, costz(i), costz3(i), zetaq(i))
+            end do
         end if
         do j = 1, nw
             jbra(j) = j
@@ -446,8 +444,8 @@ contains
             scale_z = 1
         end if
 
-        if (.not. skip_equivalence .and. yes_tilted .and. rank .eq. 0) then
-            write (6, *) ' Warning Point group symmetries not implementes with yes_tilted'
+        if (.not. skip_equivalence .and. yes_tilted) then
+            call log_warning(' Warning Point group symmetries not implementes with yes_tilted')
         end if
 
         if (skip_equivalence .or. yes_tilted) then
@@ -455,7 +453,7 @@ contains
         else
             shift_origin = .false.
         end if
-        if (rank .eq. 0) write (6, *) ' Default value of shift_origin', shift_origin
+        call log_info(' Default value of shift_origin', shift_origin)
         shiftx = .false.
         shifty = .false.
         shiftz = .false.
@@ -491,29 +489,25 @@ contains
             end if
             if (nx_at .gt. 0 .and. ny_at .lt. 0) then
                 ny_at = nx_at
-                write (6, *) ' Default value of ny_at =', ny_at
+                call log_info(' Default value of ny_at =', ny_at)
             end if
             if (ny_at .gt. 0 .and. nz_at .lt. 0) then
                 nz_at = ny_at
-                write (6, *) ' Default value of nz_at =', nz_at
+                call log_info(' Default value of nz_at =', nz_at)
             end if
             if (double_mesh) then
-                write (6, *) ' Input scale for finer mesh  =', scale_z
+                call log_info(' Input scale for finer mesh  =', scale_z)
                 if (from_ions) then
                     if (l0_at .gt. 0 .and. nx_at .lt. 0) then
-                        write (6, *) ' Finer mesh on a cube of side ', 2*l0_at, &
-                            'around EACH atom'
+                        call log_info(' Finer mesh on a cube of side ', 2*l0_at, 'around EACH atom')
                     else
-                        write (6, *) ' Finer mesh on a ortho cell of side ', nx_at, ny_at, nz_at &
-                            , ' unit ax,ay,az original mesh around EACH atom '
+                        call log_info(' Finer mesh on a ortho cell of side ', nx_at, ny_at, nz_at, ' unit ax,ay,az original mesh around EACH atom ')
                     end if
                 else
                     if (l0_at .gt. 0 .and. nx_at .lt. 0) then
-                        write (6, *) ' Finer mesh on a cube of side ', 2*l0_at&
-                                &, ' referenced from the center'
+                        call log_info(' Finer mesh on a cube of side ', 2*l0_at, ' referenced from the center')
                     else
-                        write (6, *) ' Finer mesh on a ortho cell of side ', nx_at, ny_at, nz_at &
-                            , ' unit ax,ay,az original mesh, referenced from the center  '
+                        call log_info(' Finer mesh on a ortho cell of side ', nx_at, ny_at, nz_at, ' unit ax,ay,az original mesh, referenced from the center  ')
                     end if
                 end if
             end if
@@ -522,7 +516,7 @@ contains
             if (ny_at .gt. 0) ny_at = ny_at + 1
             if (nz_at .gt. 0) nz_at = nz_at + 1
             if (bands .le. nelup) then
-                write (6, *) ' Warning # bands > neldo, restoring the default '
+                call log_warning(' Warning # bands > neldo, restoring the default ')
                 bands = 2*neldo + nelup - neldo
             end if
 
@@ -649,19 +643,17 @@ contains
             else
                 scale_one_body = 0.d0
             end if
-            if (rank .eq. 0) write (6, *) ' Reccomputed scale one body =', scale_one_body
+            call log_info(' Reccomputed scale one body =', scale_one_body)
         end if
 
         if (do_hartree .and. corr_hartree .or. .not. double_mesh) then
-            if (rank .eq. 0 .and. do_hartree) write (6, *) ' Warning do_hartree incompatible with corr_hartree, set last to false'
-            if (rank .eq. 0 .and. .not. double_mesh) write (6, *) ' Warning corr_hartree set to false'
+            if (do_hartree) call log_warning(' Warning do_hartree incompatible with corr_hartree, set last to false')
+            if (.not. double_mesh) call log_warning(' Warning corr_hartree set to false')
             corr_hartree = .false.
         end if
         if (do_hartree .and. .not. double_mesh) then
             do_hartree = .false.
-            if (rank .eq. 0) then
-                write (6, *) ' Warning do_hartre=.true. possible only with double_mesh=.true., changed do_hartree=.false. '
-            end if
+            call log_warning(' Warning do_hartre=.true. possible only with double_mesh=.true., changed do_hartree=.false. ')
             do_hartree = .false.
         end if
 
@@ -709,7 +701,7 @@ contains
         if (nproc_fft .lt. nprocrep .or. do_hartree) commensurate_lattice = .false.
 
 #ifdef PARALLEL
-        if (rank .eq. 0) write (6, *) "sub_comm_fft uses", nproc_fft, "processors"
+        call log_info("sub_comm_fft uses", nproc_fft, "processors")
         call mpi_sub_comm_create(commrep_mpi, nproc_fft, sub_comm_fft, ierr)
 #endif
 
@@ -717,10 +709,7 @@ contains
             do kk = 1, iesup_c - 2*nelorbh*molecular
                 if (dup_c(2*kk) .ne. 0.d0) then
                     double_overs = .true.
-                    if (rank .eq. 0) then
-                        write (6, *) ' Warning you should have real contracted if &
-                                & you want to use the fast algorithm! '
-                    end if
+                    call log_warning(' Warning you should have real contracted if you want to use the fast algorithm! ')
                 end if
             end do
 #ifdef PARALLEL
@@ -730,7 +719,7 @@ contains
         end if
 
         if (do_hartree) then
-            if (rank .eq. 0) write (6, *) ' ERROR option do_hartree not implemented yet '
+            call log_error(' ERROR option do_hartree not implemented yet ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -743,22 +732,23 @@ contains
             allocate (spin_input(nxs, nys, nzs))
             spin_input = 0
             if (rank .eq. 0) then
-                write (6, *) ' Read spin grid ', nzs, nys, nxs
+                call log_info(' Read spin grid ', nzs, nys, nxs)
                 if (dimspin_input .gt. 2) then
                     do k = 1, nzs
                         do j = 1, nys
                             read (5, *) (spin_input(i, j, k), i=1, nxs)
+                            ! implied-do output: left as write (variable-length list)
                             write (6, *) (spin_input(i, j, k), i=1, nxs)
                         end do
                         if (k .ne. nzs) then
                             read (5, *)
-                            write (6, *)
+                            call log_info()
                         end if
                     end do
                 else
                     spin_input = 1
                     if (randspin .lt. 0.d0 .and. dimspin_input .eq. 2) then
-                        write (6, *) ' Warning initializing antiferromagnetic spin '
+                        call log_warning(' Warning initializing antiferromagnetic spin ')
                         if (nzs .eq. 2) spin_input(1, 1, 2) = -1
                         if (nxs .eq. 2) spin_input(2, 1, 1) = -1
                         if (nys .eq. 2) spin_input(1, 2, 1) = -1
@@ -770,12 +760,12 @@ contains
 #endif
         end if
         if (h_charge .ne. 0.d0) then
-            write (6, *) ' Charge grid input'
+            call log_info(' Charge grid input')
             dimspin_input = nxs*nys*nzs
             allocate (charge_input(nxs, nys, nzs))
             charge_input = 0
             if (rank .eq. 0) then
-                write (6, *) ' Read charge grid ', nzs, nys, nxs
+                call log_info(' Read charge grid ', nzs, nys, nxs)
                 if (dimspin_input .gt. 2) then
                     if (yeslsda) read (5, *)
                     do k = 1, nzs
@@ -785,13 +775,13 @@ contains
                         end do
                         if (k .ne. nzs) then
                             read (5, *)
-                            write (6, *)
+                            call log_info()
                         end if
                     end do
                 else
                     charge_input = 1
                     if (randspin .lt. 0.d0 .and. dimspin_input .eq. 2) then
-                        write (6, *) ' Warning initializing CDW commensurate '
+                        call log_warning(' Warning initializing CDW commensurate ')
                         if (nzs .eq. 2) charge_input(1, 1, 2) = -1
                         if (nxs .eq. 2) charge_input(2, 1, 1) = -1
                         if (nys .eq. 2) charge_input(1, 2, 1) = -1
@@ -807,10 +797,8 @@ contains
             !      nel_neutral=sum(zetar(:)) !  for tests
             nel_neutral = nel
             call InitEwald(nion, zetar, nel_neutral, nws, thread_active)
-            if (rank .eq. 0) then
-                write (*, *) ' Number of G vectors ', n_gvec
-                write (*, *) ' Ewald Self Energy ', eself
-            end if
+            call log_info(' Number of G vectors ', n_gvec)
+            call log_info(' Ewald Self Energy ', eself)
             kmax = n_gvec
             kmax2 = 2*kmax
             call EwaldSum1b(rion) ! Initialize one body ewald
@@ -919,20 +907,20 @@ contains
             ! number of bands
             if (nelocc .ne. 0 .and. bands .lt. nelocc) then
                 bands = nelocc
-                write (6, *) ' Default value of bands =', bands
+                call log_info(' Default value of bands =', bands)
             end if
             if (bands .gt. nelorbh .and. .not. contracted_on) then
                 bands = nelorbh
-                write (6, *) ' Warning # bands < =', bands
+                call log_warning(' Warning # bands < =', bands)
             end if
             if (bands .gt. nelorb_at .and. contracted_on) then
                 bands = nelorb_at
-                write (6, *) ' Warning # bands < =', bands
+                call log_warning(' Warning # bands < =', bands)
             end if
             ! machine precision
             if (eps_mach .eq. -1.d0) then
                 eps_mach = DLAMCH('E')
-                write (6, *) ' Default value for relative machine precision =', eps_mach
+                call log_info(' Default value for relative machine precision =', eps_mach)
             end if
             ! mixing parameter
             if (mixing .eq. -1.d0) then
@@ -945,15 +933,15 @@ contains
                 else
                     mixing = 0.01d0
                 end if
-                write (6, *) ' Default value of mixing =', mixing
+                call log_info(' Default value of mixing =', mixing)
             else
-                write (6, *) ' mixing used =', mixing
+                call log_info(' mixing used =', mixing)
             end if
             ! exchange-correlation functional type
             if (typedft .eq. 1) then
-                write (6, *) ' Default value of typedft  =', typedft
+                call log_info(' Default value of typedft  =', typedft)
             else
-                write (6, *) ' typedft used  =', typedft
+                call log_info(' typedft used  =', typedft)
             end if
             !
             if (mixingder .eq. -1.d0) then
@@ -962,16 +950,16 @@ contains
                 else
                     mixingder = 100.d0
                 end if
-                write (6, *) ' Default value of mixingder =', mixingder
+                call log_info(' Default value of mixingder =', mixingder)
             else
-                write (6, *) ' mixingder used =', mixingder
+                call log_info(' mixingder used =', mixingder)
             end if
-            write (6, *) ' Warning epsover used =', epsover
+            call log_warning(' Warning epsover used =', epsover)
 
             if (mixingder .lt. 0) then
                 changemix = .true.
                 mixingder = -mixingder
-                write (6, *) ' Warning adaptive changing mixingder !!! '
+                call log_warning(' Warning adaptive changing mixingder !!! ')
             else
                 changemix = .false.
             end if
@@ -995,37 +983,36 @@ contains
                 if (typedft .eq. -5) typedft = -3
             end if
 
-            write (6, *) ' maxold used =', maxold ! # of previous iteration densities saved
+            call log_info(' maxold used =', maxold)
             if (mod(typeopt, 2) .eq. 0 .and. epssr .ne. 0.d0) then
                 epssr = 0.d0
-                write (6, *) ' Warning epssr set to zero in this case '
+                call log_warning(' Warning epssr set to zero in this case ')
             elseif (epssr .eq. -1.d0) then
                 epssr = -1.d0
-                write (6, *) ' Default value of epssr =', epssr
+                call log_info(' Default value of epssr =', epssr)
             end if
             if (weightvh .ne. 1.d0) then
-                write (6, *) ' Warning assuming one body Ewald sums'
+                call log_warning(' Warning assuming one body Ewald sums')
             end if
             !
             if (optocc .ne. 0) then
-                write (6, *) ' Smearing used epsshell=', epsshell
+                call log_info(' Smearing used epsshell=', epsshell)
             else
                 epsshell = 0.0d0 ! no smearing with fixed occupations
             end if
             !
-            if (write_den) write (6, *) 'Warning write density in Xcrysden format'
-            if (contracted_on) write (6, *) 'Warning using contracted basis'
+            if (write_den) call log_info('Warning write density in Xcrysden format')
+            if (contracted_on) call log_info('Warning using contracted basis')
             ! some check for k-points
             !       if(.not.kaverage.and.yeswrite10) then
             !          write(6,*) ' Warning: cannot write many fort.10 if no k-points sampling!! '
             !          yeswrite10=.false.
             !       endif
-            if (manyfort10 .and. .not. yeswrite10) &
-                write (6, *) ' Warning: writing only fort.10 related to first k-point '
+            if (manyfort10 .and. .not. yeswrite10) call log_warning(' Warning: writing only fort.10 related to first k-point ')
             if (.not. manyfort10 .and. (yeswrite10 .or. yesread10)) then
                 yeswrite10 = .false.
                 yesread10 = .false.
-                write (6, *) ' Warning yeswrite10/yesread10=.false. in this case, forced '
+                call log_warning(' Warning yeswrite10/yesread10=.false. in this case, forced ')
             end if
 
             ! some initialization for reading scratch files
@@ -1056,13 +1043,12 @@ contains
             if (decoupled_run) print_energies = .true.
             if (fix_density .and. .not. decoupled_run) then
                 fix_density = .false.
-                write (6, *) ' Warning fix_density=.true. option can be used only with decoupled_run =.true., &
-                        & forced fix_density= .false.'
+                call log_warning(' Warning fix_density=.true. option can be used only with decoupled_run =.true., forced fix_density= .false.')
             end if
             if (.not. kaverage .and. yeswrite10) fix_density = .false.
 
         end if ! endif rank.eq.0
-        if (rank .eq. 0) write (6, *) ' decoupled run =', decoupled_run
+        call log_info(' decoupled run =', decoupled_run)
 
         return
 
@@ -1099,40 +1085,34 @@ contains
             calc_type = 'band structure'
         end if
 
-        if (rank .eq. 0) then
+        call log_info()
+        call log_info('   CALCULATION INFORMATION ')
+        call log_info(' # Hartree Atomic Units used')
+        call log_info(' # computation type  = ', calc_type)
+        call log_info(' # iopt              = ', iopt)
+        call log_info(' # memlarge          = ', memlarge)
+        call log_info(' # basis type        = ', bas_type)
+        call log_info(' # basis dim         = ', nelorb)
+        call log_info(' # Number MOs        = ', nmol)
+        call log_info(' # contracted_on     = ', contracted_on)
+        call log_info(' # One-body Jastrow  = ', n_body_on)
+        if (yes_sparse) call log_warning(' Warning using SPARSE jastrow matrix in writing')
+        if (yes_crystal) call log_info(' # basis cutoff      = ', epsbas)
 
-            write (6, *)
-            write (6, '(a)') '   CALCULATION INFORMATION '
-            write (6, '(a)') ' # Hartree Atomic Units used'
-            write (6, '(a,a)') ' # computation type  = ', calc_type
-            write (6, '(a,I5)') ' # iopt              = ', iopt
-            write (6, '(a,L2)') ' # memlarge          = ', memlarge
-            write (6, '(a,a)') ' # basis type        = ', bas_type
-            write (6, '(a,I10)') ' # basis dim         = ', nelorb
-            write (6, '(a,I10)') ' # Number MOs        = ', nmol
-            write (6, '(a,L2)') ' # contracted_on     = ', contracted_on
-            write (6, '(a,I5)') ' # One-body Jastrow  = ', n_body_on
-            if (yes_sparse) write (6, '(a)') ' Warning using SPARSE jastrow matrix in writing'
-            if (yes_crystal) &
-                write (6, '(a,F8.5)') ' # basis cutoff      = ', epsbas
+        call log_info(' # typedft           = ', typedft)
+        call log_info(' # typeopt           = ', typeopt)
+        call log_info(' # spin calculation  = ', yeslsda)
 
-            write (6, '(a,I5)') ' # typedft           = ', typedft
-            write (6, '(a,I5)') ' # typeopt           = ', typeopt
-            write (6, '(a,L2)') ' # spin calculation  = ', yeslsda
+        if (yeslsda) call log_info(' # external H field  = ', h_field)
+        call log_info(' # external H charge field  = ', h_charge)
 
-            if (yeslsda) &
-                write (6, '(a,F8.5)') ' # external H field  = ', h_field
-            write (6, '(a,F8.5)') ' # external H charge field  = ', h_charge
-
-            write (6, '(a,I5)') ' # bands             = ', bands
-            write (6, '(a,F9.5)') ' # mixing            = ', mixing
-            write (6, '(a,I5)') ' # optocc            = ', optocc
-            write (6, '(a,F12.8)') ' # smearing          = ', epsshell
-            write (6, '(a,I5)') ' # k-points          = ', nk
-            write (6, '(a,L2)') ' # Optimize overlaps   = ', optimize_overs
-            write (6, *)
-
-        end if
+        call log_info(' # bands             = ', bands)
+        call log_info(' # mixing            = ', mixing)
+        call log_info(' # optocc            = ', optocc)
+        call log_info(' # smearing          = ', epsshell)
+        call log_info(' # k-points          = ', nk)
+        call log_info(' # Optimize overlaps   = ', optimize_overs)
+        call log_info()
 
 #ifdef __SCALAPACK
         call error(' prep ', ' Using SCALAPACK algorithm ', -1, rank)
@@ -1217,8 +1197,7 @@ contains
         end if
 
         if (optimize_overs .and. double_overs) then
-            if (rank .eq. 0) write (6, *) ' Warning overlap optimization is not &
-                    &possible with two arbitrarily different phases '
+            call log_warning(' Warning overlap optimization is not possible with two arbitrarily different phases ')
             optimize_overs = .false.
         end if
 

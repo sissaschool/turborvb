@@ -22,6 +22,7 @@ subroutine non_self_consistent_run()
     use setup
     use freeelmod_complex, only: diagonalize_hamiltonian, checksum
     use fourier_module
+    use logger_io, only: log_info
     implicit none
 
     integer :: indkp, mpi_err, i
@@ -35,14 +36,17 @@ subroutine non_self_consistent_run()
     ! Ewald correction to Hartree potential.
     !
     call evalvhartreeq()
-    if (rank .eq. 0) then
-        write (6, '(a,2F15.8)') ' Initial Hartree potential: ', sum(vhartree(:)), sum(vhartreeq(:))
-        if (iespbc) then
-            write (6, '(a,F15.8)') ' Kappa found:         ', kappa
-            write (6, '(a,F15.8)') ' Ewald constant found:', ewaldion1b + (1.d0 - weightvh)*ewaldel1b
-            write (6, '(a,F15.8)') ' eselfion =           ', ewaldion1b
-            write (6, '(a,F15.8)') ' eself1bel =          ', ewaldel1b
-        end if
+    ! original format: (a,2F15.8)
+    call log_info(' Initial Hartree potential: ', sum(vhartree(:)), sum(vhartreeq(:)))
+    if (iespbc) then
+        ! original format: (a,F15.8)
+        call log_info(' Kappa found:         ', kappa)
+        ! original format: (a,F15.8)
+        call log_info(' Ewald constant found:', ewaldion1b + (1.d0 - weightvh)*ewaldel1b)
+        ! original format: (a,F15.8)
+        call log_info(' eselfion =           ', ewaldion1b)
+        ! original format: (a,F15.8)
+        call log_info(' eself1bel =          ', ewaldel1b)
     end if
     !
     ! read electronic density from self-consistent run
@@ -95,13 +99,13 @@ subroutine non_self_consistent_run()
         call checksum()
 #endif
 
-        if (rank .eq. 0) then
-            write (6, *)
-            write (6, '(A)') ' Eigenvalues up/down: '
-            do i = 1, bands
-                write (6, '(I2,2X,2F10.6)') i, eigmol(i), eigmoldo(i)
-            end do
-        end if
+        call log_info()
+        ! original format: (A)
+        call log_info(' Eigenvalues up/down: ')
+        do i = 1, bands
+            ! original format: (I2,2X,2F10.6)
+            call log_info(i, eigmol(i), eigmoldo(i))
+        end do
 
         ! save eigenvalues/eigenvectors
         ! for postprocessing tools
@@ -113,7 +117,8 @@ subroutine non_self_consistent_run()
             molecorbdo_sav(:, 1:bands, indkp) = molecorbdo(:, 1:bands)
             occupationsdo_sav(1:bands, indkp) = occupationdo(1:bands)
         end if
-        if (rank .eq. 0) write (6, '(A,2X,I4,A,3F10.6)') ' k-point # ', indkp, ' completed: ', xkp(:, indkp)
+        ! original format: (A,2X,I4,A,3F10.6)
+        call log_info(' k-point # ', indkp, ' completed: ', xkp(1, indkp), xkp(2, indkp), xkp(3, indkp))
         ! put to zero variables related to hamiltonian
         ! which will be updated next iteration
         eigmol = 0.d0
@@ -149,6 +154,7 @@ subroutine read_density_from_file()
     use constants, only: ipc
     use allio, only: rank, nproc, nk, nprocrep, nx, ny, nz
     use setup, only: nproco, nko, yeslsda, spint, dent, unit_scratch_distributed, meshproc, unit_scratch_densities
+    use logger_io, only: log_error
     implicit none
 
     integer :: i, j, k, proc, indmesh, mpi_err, ierr
@@ -177,7 +183,7 @@ subroutine read_density_from_file()
         end if
         close (unit_scratch_distributed)
     else
-        if (rank .eq. 0) write (6, *) ' ERROR run with the same number of proc.! '
+        call log_error(' ERROR run with the same number of proc.! ')
 #ifdef PARALLEL
         call mpi_finalize(ierr)
 #endif
@@ -242,7 +248,7 @@ subroutine plot_bands
     use kpoints_mod, only: nk, xkp, kp_type
     use setup, only: eigmol_sav, eigmoldo_sav, yeslsda, bands
     use constants, only: ipc, energy_unit ! Ha to eV conversion
-
+    use logger_io, only: log_info
     implicit none
     logical, dimension(:), allocatable :: high_symmetry, in_range, in_rangedo
     integer i, j, k
@@ -257,9 +263,9 @@ subroutine plot_bands
     end if
 
     ! initialization
-    write (6, *) '---------------------------'
-    write (6, *) ' Evaluating band structure '
-    write (6, *) '---------------------------'
+    call log_info('---------------------------')
+    call log_info(' Evaluating band structure ')
+    call log_info('---------------------------')
 
     filename = 'band_structure.dat'
     allocate (high_symmetry(nk), in_range(bands))
@@ -328,12 +334,13 @@ subroutine plot_bands
         in_rangedo(i) = any(eigmoldo_sav(i, 1:nk) >= emin .and. eigmoldo_sav(i, 1:nk) <= emax)
     end do
 
-    write (6, *) ' Band structures INFORMATION: '
-    write (6, *) 'Minimum/maximum bands values:', emin, emax
-    write (6, *) 'High symmetry points: '
+    call log_info(' Band structures INFORMATION: ')
+    call log_info('Minimum/maximum bands values:', emin, emax)
+    call log_info('High symmetry points: ')
     do k = 1, nk
         if (high_symmetry(k)) then
-            write (6, '(F10.6,3F10.6)') kp_path(k), xkp(:, k)
+            ! original format: (F10.6,3F10.6)
+            call log_info(kp_path(k), xkp(1, k), xkp(2, k), xkp(3, k))
         end if
     end do
     !
@@ -390,7 +397,7 @@ subroutine evaluate_dos
     use setup, only: eigmol_sav, eigmoldo_sav, epsshell, optocc, deltaE, &
                      emin, emax, yeslsda, bands
     use compute_efermi, only: smearD
-
+    use logger_io, only: log_info, log_warning
     implicit none
     integer :: i, j, k, ibnd, indk, smear_type
     integer :: ndos ! # of points in the DOS
@@ -399,12 +406,12 @@ subroutine evaluate_dos
     character(len=80) :: filename
 
     ! initialization
-    write (6, *) '------------------------------'
-    write (6, *) ' Evaluating density of states '
-    write (6, *) '------------------------------'
+    call log_info('------------------------------')
+    call log_info(' Evaluating density of states ')
+    call log_info('------------------------------')
     filename = 'density_of_states.dat'
     if (optocc .eq. 0 .or. epsshell .eq. 0.d0) then
-        write (6, *) 'Warning: DOS must be updated with a smearing function! Setting default values.'
+        call log_warning('Warning: DOS must be updated with a smearing function! Setting default values.')
         optocc = 1
         epsshell = 0.01d0
     end if
@@ -461,7 +468,7 @@ subroutine evaluate_dos
     end if
 
     deallocate (dos_up, dos_down, tdos)
-    write (6, *)
+    call log_info()
     close (80)
 
 100 format(2f10.4)

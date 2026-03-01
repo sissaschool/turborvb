@@ -21,6 +21,7 @@ subroutine initialize_environment()
     use fourier_module
     use freeelmod_complex
     use dielectric
+    use logger_io, only: log_info, log_warning
     implicit none
 
     integer :: i, j, k
@@ -59,7 +60,7 @@ subroutine initialize_environment()
         read (11, *, err=111, end=111) bandso, nproco, meshproco, nko
         if (corr_hartree .and. scale_hartree .gt. 0.d0) then
             read (11, *) scale_hartreen
-            write (6, *) ' Warning read value of scale_hartree = ', scale_hartreen
+            call log_warning(' Warning read value of scale_hartree = ', scale_hartreen)
         end if
         occopen = .true.
 111     continue
@@ -82,16 +83,16 @@ subroutine initialize_environment()
     ! initial checks
     !
     if (occopen) then
-        if (rank .eq. 0) write (6, *) ' File occupationlevels.dat OK '
+        call log_info(' File occupationlevels.dat OK ')
     elseif (iopt .ne. 1) then
-        if (rank .eq. 0) write (6, *) ' Warning occupationlevels.dat empty '
+        call log_warning(' Warning occupationlevels.dat empty ')
     end if
     !
     ! initialize mesh for MOs integration
     !
     call initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, mesh, i8cost, volmesh&
             &, meshproc, meshproc_tot)
-    if (rank .eq. 0) write (6, *) ' after initialize_mesh '
+    call log_info(' after initialize_mesh ')
     voltot = volmesh*nx
     voltot = voltot*ny
     voltot = voltot*nz
@@ -271,7 +272,7 @@ subroutine initialize_environment()
     eigmat = 0.d0
     eigmat_down = 0.d0
     !
-    if (rank .eq. 0) write (6, *) ' after initialize molecorb ', write_den
+    call log_info(' after initialize molecorb ', write_den)
     ! charge and spin densities
     !
     allocate (dent(meshproc), dentold(meshproc), premat(nelorbu))
@@ -353,25 +354,25 @@ subroutine initialize_environment()
         end if
     end if
     ! save wave function values to speed up Hamiltonian update
-    if (rank .eq. 0) write (6, *) ' after initialize dent ', memlarge
+    call log_info(' after initialize dent ', memlarge)
     if (memlarge) then
         if (ipc .eq. 1) then
-            if (rank .eq. 0) write (6, '(A, E12.5, A)') " memlarge=.true. option allocates ", &
-                8.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!"
+            ! original format: (A, E12.5, A)
+            call log_info(" memlarge=.true. option allocates ", 8.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!")
             allocate (wf(nelorbu, meshproc))
             wf = 0.d0
             wf_dim = nelorbu
         else ! in this case I save the complex wave function for up/down spin electrons
             ! Allocation is halved for optimize_overs=.true.
             if (.not. double_overs) then
-                if (rank .eq. 0) write (6, '(A, E12.5, A)') " memlarge=.true. option allocates ", &
-                    16.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!"
+                ! original format: (A, E12.5, A)
+                call log_info(" memlarge=.true. option allocates ", 16.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!")
                 allocate (wf(2*nelorbu, meshproc))
                 wf = 0.d0
                 wf_dim = 2*nelorbu
             else
-                if (rank .eq. 0) write (6, '(A, E12.5, A)') " memlarge=.true. option allocates ", &
-                    32.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!"
+                ! original format: (A, E12.5, A)
+                call log_info(" memlarge=.true. option allocates ", 32.d0*nelorbu*meshproc/1.d9, " Gbyte per MPI task for WF!")
                 allocate (wf(4*nelorbu, meshproc))
                 wf = 0.d0
                 wf_dim = 4*nelorbu
@@ -401,10 +402,10 @@ subroutine initialize_environment()
     end if
     !
     ! initialize indices for Fourier transform
-    if (rank .eq. 0) write (6, *) ' Warning if you do not see after initialize fourier, try to use larger OMP_NUM_THREADS  '
+    call log_warning(' Warning if you do not see after initialize fourier, try to use larger OMP_NUM_THREADS  ')
     !
     call initialize_fourier()
-    if (rank .eq. 0) write (6, *) ' after initialize fourier '
+    call log_info(' after initialize fourier ')
 
     ! initialize all variables
     spintot = 0.d0
@@ -544,7 +545,8 @@ subroutine initialize_environment()
     kappanew = kappa
     ! updating ion-ion potential (density indipendent)
     vpotaa = upvpotaa(zetar, iond, nion, kappanew, LBox)
-    if (rank .eq. 0) write (6, '(a,F20.10)') ' Asymptotic value of one-body dft pot =', vpotaa/2.d0
+    ! original format: (a,F20.10)
+    call log_info(' Asymptotic value of one-body dft pot =', vpotaa/2.d0)
     !
     ! add  the q=0 contribution of the short range added  Ewald part.
     ! Correction to el-ion potential due to Ewald.
@@ -553,7 +555,8 @@ subroutine initialize_environment()
         costkappa = vq0_diel
 
         vpotaa = vpotaa + weightvh*costkappa*nel**2/voltot
-        if (rank .eq. 0) write (6, '(a,2F20.10)') ' Shift vpotaa =', vpotaa, weightvh*costkappa*nel**2/voltot
+        ! original format: (a,2F20.10)
+        call log_info(' Shift vpotaa =', vpotaa, weightvh*costkappa*nel**2/voltot)
     end if
     !
     ! reading molecular orbitals from fort.10 put in molecorb_old
@@ -574,7 +577,7 @@ subroutine initialize_environment()
     end if
 
     if (.not. occread .and. .not. occopen .and. optocc .le. 0) then
-        if (rank .eq. 0) write (6, *) ' Warning default occupation '
+        call log_warning(' Warning default occupation ')
         occupations = 0.d0
         if (yeslsda .or. ipc .eq. 2) then
             occupationdo = 0.d0
@@ -625,10 +628,11 @@ subroutine initialize_environment()
         end if
     end if
 
-    if (rank .eq. 0) then
-        write (6, '(a,1e18.8)') ' Molecorb read:      ', sum(abs(molecorb(:, 1:bands)))
-        if (yeslsda .or. ipc .eq. 2) &
-            write (6, '(a,1e18.8)') ' Molecorb read down: ', sum(abs(molecorbdo(:, 1:bands)))
+    ! original format: (a,1e18.8)
+    call log_info(' Molecorb read:      ', sum(abs(molecorb(:, 1:bands))))
+    if (yeslsda .or. ipc .eq. 2) then
+        ! original format: (a,1e18.8)
+        call log_info(' Molecorb read down: ', sum(abs(molecorbdo(:, 1:bands))))
     end if
 
     return
@@ -638,44 +642,42 @@ end subroutine initialize_environment
 subroutine print_header(kaverage, decoupled_run, compute_bands)
 
     use allio, only: ipc, rank
-
+    use logger_io, only: log_info
     implicit none
     logical, intent(in) :: kaverage, decoupled_run, compute_bands
 
-    if (rank .eq. 0) then
-        if (kaverage) then
-            write (6, *)
-            write (6, *) ' --------------------------------------------------'
-            write (6, *) '     DFT calculation - k-points sampling calculation '
-            write (6, *) ' --------------------------------------------------'
-            write (6, *)
-        elseif (decoupled_run .and. kaverage) then
-            write (6, *)
-            write (6, *) ' -------------------------------------------------------'
-            write (6, *) '     DFT calculation - indipendent k-points calculation '
-            write (6, *) ' -------------------------------------------------------'
-            write (6, *)
-        elseif (.not. kaverage) then
-            if (ipc .eq. 1) then
-                write (6, *)
-                write (6, *) ' --------------------------------------------'
-                write (6, *) '     DFT calculation - Gamma point calculation '
-                write (6, *) ' --------------------------------------------'
-                write (6, *)
-            else
-                write (6, *)
-                write (6, *) ' -----------------------------------------------'
-                write (6, *) '     DFT calculation - single phase calculation '
-                write (6, *) ' -----------------------------------------------'
-                write (6, *)
-            end if
-        elseif (compute_bands) then
-            write (6, *) ' '
-            write (6, *) ' --------------------------------------------------------'
-            write (6, *) '     DFT calculation - non self-consistent run           '
-            write (6, *) ' --------------------------------------------------------'
-            write (6, *) ' '
+    if (kaverage) then
+        call log_info()
+        call log_info(' --------------------------------------------------')
+        call log_info('     DFT calculation - k-points sampling calculation ')
+        call log_info(' --------------------------------------------------')
+        call log_info()
+    elseif (decoupled_run .and. kaverage) then
+        call log_info()
+        call log_info(' -------------------------------------------------------')
+        call log_info('     DFT calculation - indipendent k-points calculation ')
+        call log_info(' -------------------------------------------------------')
+        call log_info()
+    elseif (.not. kaverage) then
+        if (ipc .eq. 1) then
+            call log_info()
+            call log_info(' --------------------------------------------')
+            call log_info('     DFT calculation - Gamma point calculation ')
+            call log_info(' --------------------------------------------')
+            call log_info()
+        else
+            call log_info()
+            call log_info(' -----------------------------------------------')
+            call log_info('     DFT calculation - single phase calculation ')
+            call log_info(' -----------------------------------------------')
+            call log_info()
         end if
+    elseif (compute_bands) then
+        call log_info(' ')
+        call log_info(' --------------------------------------------------------')
+        call log_info('     DFT calculation - non self-consistent run           ')
+        call log_info(' --------------------------------------------------------')
+        call log_info(' ')
     end if
 
     return
@@ -700,7 +702,7 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
                      double_mesh, scale_z, l0_at, nx0, ny0, nz0, minz_at, nx_at, ny_at, nz_at, &
                      rion_from, from_ions
     use cell, only: yes_tilted, unit_volume, at, CartesianToCrystal
-
+    use logger_io, only: log_info, log_warning
     implicit none
 
     integer, intent(inout) :: nx, ny, nz, meshproc, meshproc_tot
@@ -809,12 +811,12 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
 
     end if
 
-    if (rank .eq. 0) write (6, *) ' Minimum ion-mesh distance =', dsqrt(sum(mind(:)**2))
-    if (rank .eq. 0) write (6, *) ' Origin shift used =', rion_ref(:)
+    call log_info(' Minimum ion-mesh distance =', dsqrt(sum(mind(:)**2)))
+    call log_info(' Origin shift used =', rion_ref(1), rion_ref(2), rion_ref(3))
     rion_shift = rion_ref
 
     if (.not. from_ions .and. double_mesh .and. rion_from(1) .eq. 1.d23) then
-        if (rank .eq. 0) write (6, *) ' Warning default center position as reference'
+        call log_warning(' Warning default center position as reference')
         do j = 1, 3
             rion_from(j) = sum(rion(j, :))/nion
         end do
@@ -830,20 +832,20 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
     i8cost = mesh_try - i8cost
     if (i8cost .ne. 0) meshproc = meshproc + 1
 
-    if (rank .eq. 0) write (6, *) 'New center of mesh =', rion_ref(:)
+    call log_info('New center of mesh =', rion_ref(1), rion_ref(2), rion_ref(3))
     if (double_mesh) then
 
         if (2*l0_at .lt. ax) then
             l0_at = (ax + 1d-6)/2.d0
-            if (rank .eq. 0) write (6, *) ' Warning l0_at changed to ', l0_at
+            call log_warning(' Warning l0_at changed to ', l0_at)
         end if
         if (2*l0_at .lt. ay) then
             l0_at = (ay + 1d-6)/2.d0
-            if (rank .eq. 0) write (6, *) ' Warning l0_at changed to ', l0_at
+            call log_warning(' Warning l0_at changed to ', l0_at)
         end if
         if (2*l0_at .lt. az) then
             l0_at = (ay + 1d-6)/2.d0
-            if (rank .eq. 0) write (6, *) ' Warning l0_at changed to ', l0_at
+            call log_warning(' Warning l0_at changed to ', l0_at)
         end if
 
         if (nx_at .gt. 0) then
@@ -856,10 +858,8 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
             nz0 = (2.d0*l0_at)/az + 1
         end if
 
-        if (rank .eq. 0) then
-            write (6, *) ' Small box for finer mesh (a.u.) =', (nx0 - 1)*ax, (ny0 - 1)*ay, (nz0 - 1)*az
-            write (6, *) ' Small grid for finer mesh =', nx0, ny0, nz0
-        end if
+        call log_info(' Small box for finer mesh (a.u.) =', (nx0 - 1)*ax, (ny0 - 1)*ay, (nz0 - 1)*az)
+        call log_info(' Small grid for finer mesh =', nx0, ny0, nz0)
 
         scalea = scale_z
         if (.not. from_ions) then
@@ -904,17 +904,16 @@ subroutine initialize_mesh(nx, ny, nz, ax, ay, az, fx, fy, fz, &
         bufbuf = nbufd
     else
         bufbuf = meshproc
-        if (rank .eq. 0) write (6, *) ' Warning, your buffer is too large &
-                &, working with the maximum one =', meshproc
+        call log_warning(' Warning, your buffer is too large, working with the maximum one =', meshproc)
     end if
     ! total number of buffers required
     totnbuf = ceiling(dble(meshproc)/dble(bufbuf))
 
-    if (rank .eq. 0) write (6, *) ' Total number of buffers (lower bound) ', totnbuf
+    call log_info(' Total number of buffers (lower bound) ', totnbuf)
 
 #ifdef _DEBUG
     if (rank .eq. 0) then
-        write (6, *) ' Writing grid positions on a file '
+        call log_info(' Writing grid positions on a file ')
         open (unit=91, file='turbogrid.dat', form='formatted', position='rewind', status='unknown')
         ind = 0
         do k = 1, nz

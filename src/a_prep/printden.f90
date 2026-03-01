@@ -16,6 +16,7 @@
 subroutine printden(rion_ref, rion_shift, nxl, dent)
 
     use allio
+    use logger_io, only: log_info
 
     integer :: mesh(3), ind, i, j, k, proc
     real(8) :: cell_dens(3), mesh_origin(3), rion_ref(*), rion_shift(*), dent(*)
@@ -140,7 +141,7 @@ subroutine printden(rion_ref, rion_shift, nxl, dent)
 
         ! nion, rion, atom_number, iespbc read from read_fort10 called in the main driver
 
-        write (6, *) 'writing dft density on xcrysden file'
+        call log_info('writing dft density on xcrysden file')
         call plot_3d_data(1, cell_dens, cell_dens, nion, rion_plot &
                           , atom_number, iespbc, mesh, mesh_origin, datagrid, 1, 'dft_density')
         deallocate (datagrid)

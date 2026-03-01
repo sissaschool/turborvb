@@ -32,7 +32,7 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
     use allio, only: rank_print => rank ! for printing eigenvalues with k-points
     use constants
     use setup, only: indk
-
+    use logger_io, only: log_info, log_warning, log_debug
     implicit none
 
     integer, intent(in) :: nlax
@@ -192,7 +192,7 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
             end do
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
-            if (mine .ne. 1 .and. rank_print .eq. 0 .and. optprint .ne. 0) write (6, *) ' disregarded coll. =', mine - 1
+            if (mine .ne. 1 .and. optprint .ne. 0) call log_info(' disregarded coll. =', mine - 1)
 
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
@@ -286,17 +286,15 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
 !        deallocate(vv)
 
 #ifdef DEBUG
-            if (rank .eq. 0) then
-                write (6, *) ' Eigenvalues new overlap matrix ~ 1  '
-                do i = 1, n
-                    write (6, *) i, eig(i)
-                end do
-            end if
+            call log_debug(' Eigenvalues new overlap matrix ~ 1  ')
+            do i = 1, n
+                call log_debug(i, eig(i))
+            end do
 #endif
 
             do i = 1, n
                 if (eig(i) .le. eps) then
-                    if (rank .eq. 0 .and. eig(i) .gt. -1.d0) write (6, *) ' Further singular eigenvalue ', i
+                    if (eig(i) .gt. -1.d0) call log_info(' Further singular eigenvalue ', i)
                     eigmat(i) = 0.d0
                 end if
             end do
@@ -397,16 +395,13 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
                     , desch, overs(1, 1), 1, 1, desch, (0.0d0, 0.d0), molecorb(1, 1), 1, 1, desch)
 
 #ifdef DEBUG
-        if (rank .eq. 0) then
-            write (6, *) ' # Eigenvectors Hamiltonian matrix'
-            do i = 1, nlax
-                write (6, *) 'Eigenvector # i mod, real phase', i
-                do j = 1, nlax
-                    write (6, *) j, real(abs(molecorb(j, i))), &
-                        real(molecorb(j, i)/abs(molecorb(j, i)))
-                end do
+        call log_debug(' # Eigenvectors Hamiltonian matrix')
+        do i = 1, nlax
+            call log_debug('Eigenvector # i mod, real phase', i)
+            do j = 1, nlax
+                call log_debug(j, real(abs(molecorb(j, i))), real(molecorb(j, i)/abs(molecorb(j, i))))
             end do
-        end if
+        end do
 #endif
 
         deallocate (overs, mat_in)
@@ -486,12 +481,10 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
             call zheevx('V', 'A', 'L', n, overs, lda, 0.d0, 0.d0, 1, 1, abstol   &
                     &, neig, eig, umatl, nelorb_c, work, lwork, rwork, iwork, ifail, info)
 #ifdef DEBUG
-            if (rank .eq. 0) then
-                write (6, *) '# Eigenvalues Overlap matrix'
-                do i = 1, n
-                    write (6, *) i, eig(i)
-                end do
-            end if
+            call log_debug('# Eigenvalues Overlap matrix')
+            do i = 1, n
+                call log_debug(i, eig(i))
+            end do
 #endif
 
             eigov = eig ! save overlap eigenvalues for printing
@@ -514,7 +507,7 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
                 end if
             end do
 
-            if (info .gt. 0 .and. rank_print .eq. 0) write (6, *) ' info > 0 in zhpevx !!! ', info
+            if (info .gt. 0) call log_info(' info > 0 in zhpevx !!! ', info)
             ! we assume here that the garbage eigenvectors are the ones
             ! close to zero eigenvalue.
             do i = 1, info
@@ -524,8 +517,7 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
                 end if
             end do
 
-            if (mine .ne. 1 .and. optprint .ne. 0 .and. rank_print .eq. 0)                   &
-                    &write (6, *) ' disregarded coll. =', mine - 1
+            if (mine .ne. 1 .and. optprint .ne. 0) call log_info(' disregarded coll. =', mine - 1)
 
             ! first transformation  umatl
             do i = 1, n
@@ -537,14 +529,12 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
             call zgemm('C', 'N', n, n, n, (1.d0, 0.d0), umatl, n, mat_in, lda, (0.d0, 0.d0), overs, lda)
 
 #ifdef DEBUG
-            if (rank .eq. 0) then
-                write (6, *) ' Overlap matrix '
-                do i = 1, n
-                    do j = i, n
-                        write (6, *) i, j, overs(i, j)
-                    end do
+            call log_debug(' Overlap matrix ')
+            do i = 1, n
+                do j = i, n
+                    call log_debug(i, j, overs(i, j))
                 end do
-            end if
+            end do
 #endif
 
             do i = 1, n
@@ -558,7 +548,7 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
                 if (eig(i) .gt. eps) then
                     mat_in(:, i) = mat_in(:, i)/(zone*dsqrt(eig(i)))
                 else
-                    if (rank_print .eq. 0 .and. (eig(i) .gt. -1.d0)) write (6, *) ' Further singular eigenvalue ', i
+                    if (eig(i) .gt. -1.d0) call log_info(' Further singular eigenvalue ', i)
                     eigmat(i) = 0.d0
                     mat_in(:, i) = zzero
                 end if
@@ -626,13 +616,12 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
         if (lworkr .eq. 0) then
             if (info .eq. 0) then
                 lworkr = work(1)
-                if (rank_print .eq. 0) write (6, *) ' Optimal lwork found =', lworkr
+                call log_info(' Optimal lwork found =', lworkr)
             else
                 lworkr = 30*n
             end if
         end if
-        if (info .ne. 0 .and. rank_print .eq. 0) &
-            write (6, *) ' Warning info ne 0 in zhpevx ', info
+        if (info .ne. 0) call log_warning(' Warning info ne 0 in zhpevx ', info)
 
         overs = molecorb
 
@@ -650,8 +639,9 @@ subroutine eval_hamilt_complex(nelorb_c, oversav, matsav, molecorb, umatl, eig, 
         eigham(:, indk) = eig ! save hamiltonian eigenvalues for printing
 
 #ifdef DEBUG
-        write (6, *) ' # Eigenvectors Hamiltonian matrix'
+        call log_debug(' # Eigenvectors Hamiltonian matrix')
         do i = 1, nelorb_c
+            ! full column output: left as write (logger has limited optional args)
             write (6, *) i, molecorb(1:nelorb_c, i)
         end do
 #endif
@@ -692,7 +682,7 @@ subroutine print_eigenvalues(eigov, eigham, dim, bands, condnumber, iopt)
 
     use allio, only: commcolrep_mpi, rank, xkp
     use freeelmod_complex, only: nk, indk
-
+    use logger_io, only: log_info, log_debug
     implicit none
 
     integer, intent(in) :: iopt, bands, dim
@@ -703,21 +693,21 @@ subroutine print_eigenvalues(eigov, eigham, dim, bands, condnumber, iopt)
 
     ! overlap eigenvalues
     if (iopt .eq. 1) then
-        write (6, *) ' Lowest/Max  eigenvalue overlap mat =', eigov(1), eigov(dim)
-        write (6, *) ' Eigenvalues Overlap '
+        call log_info(' Lowest/Max  eigenvalue overlap mat =', eigov(1), eigov(dim))
+        call log_info(' Eigenvalues Overlap ')
         do i = 1, dim
             cost = abs(eigov(i)/eigov(dim))
             if (eigov(i) .lt. 0.d0) cost = cost/100.d0
-            write (6, *) i, eigov(i), cost
+            call log_info(i, eigov(i), cost)
         end do
-        write (6, *) ' Inverse Condition Number basis set =', condnumber
+        call log_info(' Inverse Condition Number basis set =', condnumber)
     end if
 #ifdef DEBUG
     ! hamiltoninan eigenvalues
-    write (6, *) ' Eigenvalues Hamiltonian '
+    call log_debug(' Eigenvalues Hamiltonian ')
     do i = 1, nk
         do j = 1, bands
-            write (6, *) j, eigham(j, i)
+            call log_debug(j, eigham(j, i))
         end do
     end do
 #endif

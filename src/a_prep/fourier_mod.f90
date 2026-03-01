@@ -28,6 +28,7 @@ module fourier_module
 
     use allio, only: nprocrep, commrep_mpi, rankrep, rank, iespbc, &
                      nx, ny, nz, ax, ay, az, rion, nion, ipc, zetar, norm_metric
+    use logger_io, only: log_info
     use Ewald, only: kappa
     use constants, only: pi, zzero
     use fft_scalar, only: cfft3d, cft_1z, cft_2xy
@@ -595,7 +596,7 @@ contains
 
 #endif
 
-        if (rank .eq. 0) write (6, *) ' Correction Coulomb =', vmax0
+        call log_info(' Correction Coulomb =', vmax0)
 
         time_fft = time_fft + cclock() - timep
 

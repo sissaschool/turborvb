@@ -19,7 +19,7 @@ subroutine write_output_and_finalize
     use freeelmod_complex
     use fourier_module
     use parallel_module, only: collect_from_pools
-
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
 #ifdef PARALLEL
     include "mpif.h"
@@ -69,7 +69,7 @@ subroutine write_output_and_finalize
     ! use molecorb_old/molecorbdo_old to save the converged eigenvectors
     !
     if (.not. symmagp .and. (opposite_phase .or. ipc .eq. 1) .and. try_translation) then
-        if (rank .eq. 0) write (6, *) ' Warning sorting down molecular orbitals '
+        call log_warning(' Warning sorting down molecular orbitals ')
         !  Here molecorb --> over x molecorb
         allocate (molecorbtimeso(ipc*nelorbu, bands))
         molecorbtimeso = 0.d0
@@ -130,12 +130,10 @@ subroutine write_output_and_finalize
         end if
 #endif
 
-        if (rank .eq. 0) then
-            write (6, *) ' Molecular x over '
-            do i = 1, bands
-                write (6, *) i, sum(abs(molecorbtimeso(:, i)))
-            end do
-        end if
+        call log_info(' Molecular x over ')
+        do i = 1, bands
+            call log_info(i, sum(abs(molecorbtimeso(:, i))))
+        end do
         if (ipc .eq. 2) then
             call sort_molecular(molecorbdo, molecorbtimeso&
                     &, eigmol, eigmoldo, nelorbu, bands, .false., rank)
@@ -188,7 +186,7 @@ subroutine write_output_and_finalize
         ! if this is not the case (as for molecorbdo != dconj(molecorb)) then
         ! the calculation of the phase is not working.
         !
-        if (rank .eq. 0) write (6, *)
+        call log_info()
         ! this case corresponds to:
         ! symmagp = .true.
         ! yes_hermite = .true.
@@ -203,14 +201,10 @@ subroutine write_output_and_finalize
                 if (ipc .eq. 2 .or. yeslsda) then
                     molecorbdo_old = molecorb_old
                     if (ipc .eq. 2) call conjmat(nelorb, bands, molecorbdo_old, nelorb)
-                    if (rank .eq. 0) then
-                        write (6, '(a)') &
-                            ' Warning: eigenvectors of down spin electrons are complex conjugate of the up spin ones! '
-                    end if
+                    call log_warning(' Warning: eigenvectors of down spin electrons are complex conjugate of the up spin ones! ')
                 end if
             elseif (try_translation) then
-                if (rank .eq. 0) write (6, '(a)') ' Warning: sorting down eigenvectors &
-                        & to attempt a translation invariant AGP (use random twists) '
+                call log_warning(' Warning: sorting down eigenvectors to attempt a translation invariant AGP (use random twists) ')
             end if
 
             ! this case corresponds to:
@@ -222,7 +216,7 @@ subroutine write_output_and_finalize
             ! in the case of a non-hermitian and symmetric AGP, the
             ! eigenvectors up are simply equal to the eigenvectors down
             !
-            if (rank .eq. 0) write (6, '(a)') ' Warning: eigenvectors of down spin electrons are equal to the up spin ones! '
+            call log_warning(' Warning: eigenvectors of down spin electrons are equal to the up spin ones! ')
             molecorbdo_old = molecorb_old
 
 #ifdef DEBUG
@@ -231,26 +225,24 @@ subroutine write_output_and_finalize
 
             if (opposite_phase) then
 
-                if (rank .eq. 0) then
-                    write (6, '(a)') ' Warning: eigenvectors of down spin electrons are complex conjugate of the up spin ones! '
-                end if
+                call log_warning(' Warning: eigenvectors of down spin electrons are complex conjugate of the up spin ones! ')
                 molecorbdo_old = molecorb_old
                 call conjmat(nelorb, bands, molecorbdo_old, nelorb)
 
             elseif (same_phase) then
 
                 molecorbdo_old = molecorb_old
-                if (rank .eq. 0) write (6, '(a)') ' Warning: eigenvectors of down spin electrons are equal to the up spin ones! '
+                call log_warning(' Warning: eigenvectors of down spin electrons are equal to the up spin ones! ')
 
             end if
 #endif
 
         elseif (.not. symmagp) then
 
-            if (rank .eq. 0) write (6, '(a)') ' Warning: non-symmetric AGP. No constraints are imposed on the molecular orbitals. '
+            call log_warning(' Warning: non-symmetric AGP. No constraints are imposed on the molecular orbitals. ')
 
         end if
-        if (rank .eq. 0) write (6, *)
+        call log_info()
         !
         ! fill fort.10 with new molecular orbitals and update all variables
         ! necessary to write_fort10()
@@ -280,7 +272,7 @@ subroutine write_output_and_finalize
         end if
 
         if (manyfort10 .and. yeswrite10 .and. rankrep .eq. 0) then
-            if (rank .eq. 0) write (6, '(a)') ' Writing final wave functions for all k-points!'
+            call log_info(' Writing final wave functions for all k-points!')
             rewind (unit_scratch_fort10)
             if (yeslsda .or. ipc .eq. 2) then
                 nelup = nint(sum(occupations(1:bands)))
@@ -298,7 +290,7 @@ subroutine write_output_and_finalize
         !
         if (rank .eq. 0) then
             if (.not. manyfort10) then
-                write (6, '(a)') ' Write the parameters of the final wavefunction!'
+                call log_info(' Write the parameters of the final wavefunction!')
                 close (10)
                 open (unit=10, file='fort.10_new', form='formatted', status='unknown', position='rewind')
                 call write_fort10(ufort10)
@@ -394,7 +386,7 @@ subroutine write_output_and_finalize
     ! write quantities to be saved to scratch file "TurboDFT.sav"
     !
     if (writescratch .eq. 0) then
-        if (rank .eq. 0) write (6, '(a)') ' Writing scratch files '
+        call log_info(' Writing scratch files ')
         if (write_den) call write_total_density()
         if (rank .eq. 0) then
             allocate (eigvU(ipc*nelorbu, bands))
@@ -464,62 +456,60 @@ contains
 
         implicit none
 
+        ! original format: 100 (A, X, F28.15), 101 (A, X, F28.15, X, A, F28.15, X, A), 102 (A, X, 2f28.15)
         if (iter .ge. maxit) then
-            write (6, 100) ' Warning Turbo-DFT  terminates without convergence, Error= ', real(errsav)
+            call log_warning(' Warning Turbo-DFT  terminates without convergence, Error= ', real(errsav))
         else
-            write (6, 101) ' OK Turbo-DFT converged  with energy tollerance  ', real(errsav), '<', real(epsdft)
-            write (6, '(A,X,I5)') ' # Iterations =', iter
+            call log_info(' OK Turbo-DFT converged  with energy tollerance  ', real(errsav), '<', real(epsdft))
+            call log_info(' # Iterations =', iter)
         end if
         if (mod(typeopt, 2) .eq. 1 .and. yespassed) then
-            write (6, 100) ' Final variational DFT  energy (Ha) = ', edftp
+            call log_info(' Final variational DFT  energy (Ha) = ', edftp)
             edftvar = edftp
         elseif (mod(typeopt, 2) .eq. 0) then
-            write (6, 100) ' Final variational DFT  energy (Ha) = ', edftvar
+            call log_info(' Final variational DFT  energy (Ha) = ', edftvar)
         end if
-        write (6, 100) ' Final self consistent energy (Ha) =', edft
+        call log_info(' Final self consistent energy (Ha) =', edft)
         if (double_mesh .and. corr_hartree .and. iespbc) then
-            write (6, 100) ' Final estimated energy (corrected Hartree) ', edftvar + ehartree - eh_ew
+            call log_info(' Final estimated energy (corrected Hartree) ', edftvar + ehartree - eh_ew)
         end if
 
-        write (6, 100) ' Final exchange  energy            =', exchange
-        write (6, 100) ' Final correlation  energy         =', ecorr
-        write (6, 101) ' Final Fermi energy  =', efermi, 'Ha =', efermi*energy_unit, 'eV'
-        if (yeslsda) then
-            write (6, 100) ' Final total magnetization (a.u.) ', spingrid/2.d0
-        end if
+        call log_info(' Final exchange  energy            =', exchange)
+        call log_info(' Final correlation  energy         =', ecorr)
+        call log_info(' Final Fermi energy  =', efermi, 'Ha =', efermi*energy_unit, 'eV')
+        if (yeslsda) call log_info(' Final total magnetization (a.u.) ', spingrid/2.d0)
 
         if (iespbc) then
-            write (6, 100) ' Final Hartree energy (QE conv. sum q=/0) (Ha) =', vh_test
-            write (6, 100) ' Final Hartree energy on a mesh  =', vh_att
-            if (.not. corr_hartree) write (6, 100) ' Final Hartree energy no Ewald corrected (Ha) =', eh_ew
-            write (6, *) ' Ewald contribution (QE conv) = ', vpotaa/2.d0
-            write (6, 100) ' Eself (Qbox conv) = ', kappanew/dsqrt(pi)*sum(zetar(1:nion)**2)
-            write (6, 100) ' E_sr (Qbox conv) = ', &
-                    &vpotaa/2.d0 + kappanew/dsqrt(pi)*sum(zetar(1:nion)**2)
+            call log_info(' Final Hartree energy (QE conv. sum q=/0) (Ha) =', vh_test)
+            call log_info(' Final Hartree energy on a mesh  =', vh_att)
+            if (.not. corr_hartree) call log_info(' Final Hartree energy no Ewald corrected (Ha) =', eh_ew)
+            call log_info(' Ewald contribution (QE conv) = ', vpotaa/2.d0)
+            call log_info(' Eself (Qbox conv) = ', kappanew/dsqrt(pi)*sum(zetar(1:nion)**2))
+            call log_info(' E_sr (Qbox conv) = ', vpotaa/2.d0 + kappanew/dsqrt(pi)*sum(zetar(1:nion)**2))
         else
-            write (6, 100) ' Final Hartree energy(H)  =', ehartree
-            if (double_mesh) write (6, 100) ' Final Hartree larger mesh energy (Ha) =', vh_test
+            call log_info(' Final Hartree energy(H)  =', ehartree)
+            if (double_mesh) call log_info(' Final Hartree larger mesh energy (Ha) =', vh_test)
         end if
-        if (corr_hartree .and. scale_hartree .gt. 0) write (6, 100) ' Final rescaled Hartree density factor =', scale_hartreen
-        write (6, *)
-        write (6, '(A)') ' Turbo-DFT TIMINGS '
-        write (6, 100) ' Total time (sec.)  =', time_total
-        write (6, 100) ' Total initialization time (sec.)  =', init_time
-        write (6, 100) ' Total loading time matrices (sec.)  =', loading_time
-        write (6, 100) ' Total diagonalization  time (sec.) =', diag_time
-        write (6, 102) ' Total/Upload FFT  time (sec.) =', time_fft, time_uploadfft
-        write (6, 100) ' Total self-consistent cycle time (sec.)  =', cycle_time
-        write (6, 100) ' Total density symmetrization time (sec.) =', symtime
+        if (corr_hartree .and. scale_hartree .gt. 0) call log_info(' Final rescaled Hartree density factor =', scale_hartreen)
+        call log_info()
+        call log_info(' Turbo-DFT TIMINGS ')
+        call log_info(' Total time (sec.)  =', time_total)
+        call log_info(' Total initialization time (sec.)  =', init_time)
+        call log_info(' Total loading time matrices (sec.)  =', loading_time)
+        call log_info(' Total diagonalization  time (sec.) =', diag_time)
+        call log_info(' Total/Upload FFT  time (sec.) =', time_fft, time_uploadfft)
+        call log_info(' Total self-consistent cycle time (sec.)  =', cycle_time)
+        call log_info(' Total density symmetrization time (sec.) =', symtime)
         if (ipc .eq. 1) then
-            write (6, 100) ' Total time dgemm =', dgemm_time
+            call log_info(' Total time dgemm =', dgemm_time)
         else
-            write (6, 100) ' Total time zgemm =', zgemm_time
+            call log_info(' Total time zgemm =', zgemm_time)
         end if
         if (diag_time .gt. loading_time) then
-            write (6, *) ' Warning you should run with a smaller number of processors !!! '
+            call log_warning(' Warning you should run with a smaller number of processors !!! ')
 #ifdef __DOOMP
 #else
-            write (6, *) ' Remind the diagonalization part is not OpenMP parallel so far '
+            call log_info(' Remind the diagonalization part is not OpenMP parallel so far ')
 #endif
         end if
 
@@ -633,6 +623,7 @@ end subroutine write_total_density
 !
 subroutine sortr_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands, rank)
 
+    use logger_io, only: log_warning, log_error
     implicit none
     !
     ! input
@@ -652,7 +643,7 @@ subroutine sortr_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, band
     done = .false.
     distmax = max(eigup(bands), eigdo(bands)) - min(eigup(1), eigdo(1)) + 1
     molecular_sav = moleculardo
-    if (rank .eq. 0) write (6, *) ' Warning sorting molecular according to momentum conservation in AGP', distmax
+    call log_warning(' Warning sorting molecular according to momentum conservation in AGP', distmax)
     do i = 1, bands
         dist = distmax
         j_min = 0
@@ -672,9 +663,9 @@ subroutine sortr_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, band
         if (j_min .ne. 0) then
             done(j_min) = .true.
             moleculardo(:, i) = phase_min*molecular_sav(:, j_min)
-            if (rank .eq. 0 .and. i .ne. j_min) write (6, *) ' Warning changed order ', i, j_min
+            if (i .ne. j_min) call log_warning(' Warning changed order ', i, j_min)
         else
-            if (rank .eq. 0) write (6, *) ' ERROR not found molecular orbital #', i
+            call log_error(' ERROR not found molecular orbital #', i)
         end if
     end do
     deallocate (done, molecular_sav)
@@ -687,6 +678,7 @@ end subroutine sortr_molecular
 !
 subroutine sort_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands, conjugate, rank)
 
+    use logger_io, only: log_warning, log_error
     implicit none
     !
     ! input
@@ -710,7 +702,7 @@ subroutine sort_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands
     distmax = max(eigup(bands), eigdo(bands)) - min(eigup(1), eigdo(1)) + 1
     molecular_sav = moleculardo
 
-    if (rank .eq. 0) write (6, *) ' Warning sorting molecular according to momentum conservation in AGP', distmax
+    call log_warning(' Warning sorting molecular according to momentum conservation in AGP', distmax)
     do i = 1, bands
         dist = distmax
         j_min = 0
@@ -740,9 +732,9 @@ subroutine sort_molecular(moleculardo, molecularup, eigup, eigdo, nelorbh, bands
             done(j_min) = .true.
 
             moleculardo(:, i) = phase_min*molecular_sav(:, j_min)
-            if (rank .eq. 0 .and. i .ne. j_min) write (6, *) ' Warning changed order ', i, j_min
+            if (i .ne. j_min) call log_warning(' Warning changed order ', i, j_min)
         else
-            if (rank .eq. 0) write (6, *) ' ERROR not found molecular orbital #', i
+            call log_error(' ERROR not found molecular orbital #', i)
         end if
     end do
     deallocate (done, molecular_sav)

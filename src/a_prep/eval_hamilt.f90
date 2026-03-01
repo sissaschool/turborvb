@@ -85,6 +85,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
 #else
     use allio, only: rankrep, commrep_mpi
 #endif
+    use logger_io, only: log_info, log_warning, log_debug
     implicit none
     integer, intent(in) :: nlax
     integer nelorb_c, i, j, rank, info, n, lda, mine, dimo, neig, lwork, optprint&
@@ -200,19 +201,17 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
             !
             deallocate (diag, vv)
 
-            if (rank == 0) then
-                write (6, *) ' Lowest/Max  eigenvalue overlap mat =', eig(n), eig(1)
-                condnumber = abs(eig(n)/eig(1))
-                if (eig(1) .lt. 0.d0) condnumber = condnumber/100.d0
-                write (6, *) 1, eig(1), 1.d0
-                do i = 2, n
-                    cost = abs(eig(i)/eig(1))
-                    if (eig(i) .lt. 0.d0) cost = cost/100.d0
-                    write (6, *) i, eig(i), cost
-                    if (cost .lt. condnumber) condnumber = cost
-                end do
-                write (6, *) ' Inverse Condition Number basis set =', condnumber
-            end if
+            call log_info(' Lowest/Max  eigenvalue overlap mat =', eig(n), eig(1))
+            condnumber = abs(eig(n)/eig(1))
+            if (eig(1) .lt. 0.d0) condnumber = condnumber/100.d0
+            call log_debug(1, eig(1), 1.d0)
+            do i = 2, n
+                cost = abs(eig(i)/eig(1))
+                if (eig(i) .lt. 0.d0) cost = cost/100.d0
+                call log_debug(i, eig(i), cost)
+                if (cost .lt. condnumber) condnumber = cost
+            end do
+            call log_info(' Inverse Condition Number basis set =', condnumber)
 
             do i = 1, n
                 if ((eig(i)/eig(1) .gt. abs(eps) .or. (eig(i) .lt. 0 .and. -eig(i)/eig(1)&
@@ -227,7 +226,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
 
-            if (mine .ne. 1 .and. rank .eq. 0 .and. optprint .ne. 0) write (6, *) ' disregarded coll. =', mine - 1
+            if (mine .ne. 1 .and. optprint .ne. 0) call log_info(' disregarded coll. =', mine - 1)
 
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
@@ -308,7 +307,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
 
             do i = 1, n
             if (eig(i) .le. eps) then
-                if (rank .eq. 0 .and. eig(i) .gt. -1.d0) write (6, *) ' Further singular eigenvalue ', i
+                if (eig(i) .gt. -1.d0) call log_info(' Further singular eigenvalue ', i)
                 eigmat(i) = 0.d0
             end if
             end do
@@ -487,17 +486,15 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
             call dsyevx('V', 'A', 'L', n, overs, lda, 0.d0, 0.d0, 1, 1, abstol       &
                     &, neig, eig, umatl, nelorb_c, work, lwork, iwork, ifail, info)
 
-            if (rank .eq. 0) then
-                write (6, *) ' Lowest/Max  eigenvalue overlap mat =', eig(1), eig(n)
-                condnumber = abs(eig(1)/eig(n))
-                if (eig(1) .lt. 0) condnumber = condnumber/100.d0
-                do i = 2, n
-                    cost = abs(eig(i)/eig(n))
-                    if (eig(i) .lt. 0.d0) cost = cost/100.d0
-                    if (cost .lt. condnumber) condnumber = cost
-                end do
-                write (6, *) ' Condition number basis set =', condnumber
-            end if
+            call log_info(' Lowest/Max  eigenvalue overlap mat =', eig(1), eig(n))
+            condnumber = abs(eig(1)/eig(n))
+            if (eig(1) .lt. 0) condnumber = condnumber/100.d0
+            do i = 2, n
+                cost = abs(eig(i)/eig(n))
+                if (eig(i) .lt. 0.d0) cost = cost/100.d0
+                if (cost .lt. condnumber) condnumber = cost
+            end do
+            call log_info(' Condition number basis set =', condnumber)
 
             do i = 1, n
                 if ((eig(i)/eig(n) .gt. abs(eps) .or. (eig(i) .lt. 0 .and. -eig(i)/eig(n)&
@@ -509,8 +506,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
                 end if
             end do
 
-            if (info .gt. 0 .and. rank .eq. 0) write (6, *)                         &
-                    &' info > 0 in dsyevx !!! ', info
+            if (info .gt. 0) call log_info(' info > 0 in dsyevx !!! ', info)
 
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
@@ -521,8 +517,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
                 end if
             end do
 
-            if (mine .ne. 1 .and. rank .eq. 0 .and. optprint .ne. 0)                   &
-                    &write (6, *) ' disregarded coll. =', mine - 1
+            if (mine .ne. 1 .and. optprint .ne. 0) call log_info(' disregarded coll. =', mine - 1)
 
             !       first transformation  umatl
 
@@ -545,7 +540,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
                 if (eig(i) .gt. eps) then
                     mat_in(:, i) = mat_in(:, i)/dsqrt(eig(i))
                 else
-                    if (rankrep .eq. 0 .and. eig(i) .gt. -1.d0) write (6, *) ' Further singular eigenvalue ', i
+                    if (eig(i) .gt. -1.d0) call log_info(' Further singular eigenvalue ', i)
                     eigmat(i) = 0.d0
                     mat_in(:, i) = 0.d0
                 end if
@@ -609,13 +604,12 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
         if (lworkr .eq. 0) then
             if (info .eq. 0) then
                 lworkr = work(1)
-                if (rank .eq. 0) write (6, *) ' Optimal lwork  found =', lworkr
+                call log_info(' Optimal lwork  found =', lworkr)
             else
                 lworkr = 30*n
             end if
         end if
-        if (rank .eq. 0 .and. info .ne. 0) &
-                &write (6, *) ' Warning info ne 0 in dsyevx ', info
+        if (info .ne. 0) call log_warning(' Warning info ne 0 in dsyevx ', info)
 
         overs = molecorb
 

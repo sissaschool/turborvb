@@ -47,7 +47,7 @@ subroutine initialize_mats_new
     use descriptors
     use setup, only: np_ortho, leg_ortho, desch, oversl, oversldo, overhaml, overhamldo
 #endif
-
+    use logger_io, only: log_info, log_debug
     implicit none
     ! local variables
     integer :: nbas_1, nbas_tot, buf_dim, nbuf, i, ii, jj, j, k, ind, indmesh, indmesh_local, &
@@ -185,8 +185,9 @@ subroutine initialize_mats_new
             & + nbas_tot*(indt + 5) + 20*(indt + 1)*nshell + nion &
             & + nion*(max(indt, 1) + 1)*10) &
             & + 1.0*bufbuf*(3*(indt + 1) + 10))*8
-    if (rank .eq. 0 .and. .not. compute_bands) then
-        write (6, '(E12.5, A)') scratch_mem/1d9, " Gbyte per MPI task for threading in initialize_mats_new!"
+    if (.not. compute_bands) then
+        ! original format: (E12.5, A)
+        call log_info(scratch_mem/1d9, " Gbyte per MPI task for threading in initialize_mats_new!")
     end if
 
     ! allocate buffers
@@ -198,9 +199,9 @@ subroutine initialize_mats_new
     ! double_overs = .true. -> compute up/down spin overlaps from scratch. Only when abs(phase_up) != abs(phase_down)
     ! same_phase = .true.   -> up/down spin phases are the same, otherwise they are opposite
     if (to_print) then
-        write (6, '(A)') ' Computing overlap matrices:'
-        write (6, '(A,L3,L3)') ' double_overs/same_phase: ', double_overs, same_phase
-        write (6, *) ' scale one body =', scale_one_body
+        call log_info(' Computing overlap matrices:')
+        call log_info(' double_overs/same_phase: ', double_overs, same_phase)
+        call log_info(' scale one body =', scale_one_body)
     end if
     costq0 = 0.d0
     rion_upload(1) = rion_ref(1) - (nx + 1)/2.d0*ax
@@ -452,9 +453,7 @@ subroutine initialize_mats_new
         end if
         meshproc_tot = indmesh
 
-        if (to_print) then
-            write (6, *) 'overlap/hamiltonian matrix elements computed'
-        end if
+        if (to_print) call log_info('overlap/hamiltonian matrix elements computed')
         call deallocate_buffers()
 
         deallocate (wpseudo_and_psip_scratch)
@@ -485,10 +484,7 @@ subroutine initialize_mats_new
         call reduce_base_real(1, costq0, commrep_mpi, -1)
 #endif
         vq0tots = 0.5d0*vq0tots ! Unit Hartree
-        if (to_print) then
-            write (6, *) ' q=0 contribution Ewald (H)  =', &
-                -costq0/2.d0, dble(nel)*pi/kappa**2
-        end if
+        if (to_print) call log_info(' q=0 contribution Ewald (H)  =', -costq0/2.d0, dble(nel)*pi/kappa**2)
 
 #ifdef __SCALAPACK
 
@@ -561,16 +557,16 @@ subroutine initialize_mats_new
 #ifdef __SCALAPACK
 
         if (rankrep .eq. 0) then
-            write (6, *) '# Overlap matrix SCALAPACK ', size(oversl), rankcolrep, cell_phase(:)
+            call log_debug('# Overlap matrix SCALAPACK ', size(oversl), rankcolrep, cell_phase(1), cell_phase(2), cell_phase(3))
             do j = 1, descla(nlax_)
                 do i = 1, descla(nlax_)
-                    write (6, *) j, i, oversl(i, j)
+                    call log_debug(j, i, oversl(i, j))
                 end do
             end do
-            write (6, *) '# Hamiltonian matrix SCALAPACK ', size(overhaml), rankcolrep, cell_phase(:)
+            call log_debug('# Hamiltonian matrix SCALAPACK ', size(overhaml), rankcolrep, cell_phase(1), cell_phase(2), cell_phase(3))
             do j = 1, descla(nlax_)
                 do i = 1, descla(nlax_)
-                    write (6, *) j, i, overhaml(i, j)
+                    call log_debug(j, i, overhaml(i, j))
                 end do
             end do
         end if
@@ -578,16 +574,24 @@ subroutine initialize_mats_new
 #else
 
         if (rankrep .eq. 0) then
-            write (6, *) '# Hamiltonian matrix ', rankcolrep, cell_phase(:)
+            call log_debug('# Hamiltonian matrix ', rankcolrep, cell_phase(1), cell_phase(2), cell_phase(3))
             do i = 1, nbas_1
                 do j = 1, nbas_1
-                    write (6, *) i, j, overham(ipc*(i - 1) + 1:ipc*i, j)
+                    if (ipc .eq. 1) then
+                        call log_debug(i, j, overham(i, j))
+                    else
+                        call log_debug(i, j, overham(2*i - 1, j), overham(2*i, j))
+                    end if
                 end do
             end do
-            write (6, *) '# Overlap matrix ', rankcolrep, cell_phase(:)
+            call log_debug('# Overlap matrix ', rankcolrep, cell_phase(1), cell_phase(2), cell_phase(3))
             do i = 1, nbas_1
                 do j = 1, nbas_1
-                    write (6, *) i, j, overs(ipc*(i - 1) + 1:ipc*i, j)
+                    if (ipc .eq. 1) then
+                        call log_debug(i, j, overs(i, j))
+                    else
+                        call log_debug(i, j, overs(2*i - 1, j), overs(2*i, j))
+                    end if
                 end do
             end do
         end if
@@ -599,16 +603,16 @@ subroutine initialize_mats_new
         ! ------------------ END DEBUG ------------------
 
 #ifndef __SCALAPACK
-        if (write_matrix .and. rank .eq. 0) then
-            write (6, *) '# Hamiltonian/Overlap matrix H_0 '
+        if (write_matrix) then
+            call log_info('# Hamiltonian/Overlap matrix H_0 ')
             do i = 1, nbas_1
                 do j = 1, nbas_1
                     if (ipc .eq. 2) then
-                        write (6, '(2I8,2e14.6,2X,2e14.6)') &
-                            i, j, overham(ipc*(i - 1) + 1:ipc*i, j), overs(ipc*(i - 1) + 1:ipc*i, j)
+                        ! original format: (2I8,2e14.6,2X,2e14.6)
+                        call log_info(i, j, overham(2*i - 1, j), overham(2*i, j), overs(2*i - 1, j), overs(2*i, j))
                     else
-                        write (6, '(2I8,1e14.6,2X,1e14.6)') &
-                            i, j, overham(ipc*(i - 1) + 1:ipc*i, j), overs(ipc*(i - 1) + 1:ipc*i, j)
+                        ! original format: (2I8,1e14.6,2X,1e14.6)
+                        call log_info(i, j, overham(i, j), overs(i, j))
                     end if
                 end do
             end do
@@ -619,7 +623,7 @@ subroutine initialize_mats_new
 #ifdef __SCALAPACK
 
         if (rankrep .eq. 0) then
-            if (to_print) write (6, *) ' Raws/Column processors =', descla(la_npr_), descla(la_npc_)
+            if (to_print) call log_info(' Raws/Column processors =', descla(la_npr_), descla(la_npc_))
             do indpc = 1, descla(la_npc_) !  loop on column procs
                 nc = nrc_ip(indpc)
                 nrr = nrc_ip(indpc)
@@ -729,7 +733,7 @@ subroutine initialize_mats_new
 #endif
 
     init_time = cclock() - timep_init
-    if (to_print) write (6, *) 'Total time initialization =', init_time
+    if (to_print) call log_info('Total time initialization =', init_time)
     if (allocated(buffer)) call deallocate_buffers()
 
     return
@@ -930,8 +934,7 @@ contains
                         nbuf = nbuf + 1
                         single_buffer_time = cclock() - timep_buf
 
-                        if (to_print) write (6, '(A, I5, A, F8.2, A)') ' Buf number = ', &
-                            nbuf, ' taking ', single_buffer_time, ' sec.'
+                        if (to_print) call log_info(' Buf number = ', nbuf, ' taking ', single_buffer_time, ' sec.')
 
                         timep_buf = timep_buf + single_buffer_time
                         ind = 0

@@ -20,6 +20,7 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
     use descriptors
     use dspev_module
 #endif
+    use logger_io, only: log_info, log_warning, log_debug
     implicit none
 
 #ifdef PARALLEL
@@ -128,11 +129,11 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
 
 !       IF( info /= 0 ) CALL errore( ' D 02 ', ' PDSYEVD ', info )
 
-        if (rank .eq. 0) write (6, *) ' Eigenvalues inside  inverse '
+        call log_info(' Eigenvalues inside  inverse ')
         mine = 1
         do i = 1, n
             if (eig(i)/eig(n) .gt. eps) then ! the condition number criterium
-                if (rank .eq. 0) write (6, *) i, eig(i)
+                call log_debug(i, eig(i))
                 eigmat(i) = dsqrt(1.d0/eig(i))
             else
                 mine = mine + 1
@@ -152,19 +153,15 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
 !        it should be authomatically symmetric
         call pdgemm('N', 'T', n, n, n, 1.d0, overs, 1, 1, desch, overs, 1, 1, desch, 0.d0, a, 1, 1, desch)
 
-        if (mine .ne. 1 .and. rank .eq. 0) then
-            write (6, *) ' Warning neglecting', mine - 1, 'directions in SDV'
-        end if
-        if (rank .eq. 0) then
-            condnumber = 1.d0
-            do i = 1, n
-                if (eigmat(i) .ne. 0.d0) then
-                    cost = abs(eig(i)/eig(n))
-                    if (cost .lt. condnumber) condnumber = cost
-                end if
-            end do
-            write (6, *) ' Condition number basis set ', condnumber
-        end if
+        if (mine .ne. 1) call log_warning(' Warning neglecting', mine - 1, 'directions in SDV')
+        condnumber = 1.d0
+        do i = 1, n
+            if (eigmat(i) .ne. 0.d0) then
+                cost = abs(eig(i)/eig(n))
+                if (cost .lt. condnumber) condnumber = cost
+            end if
+        end do
+        call log_info(' Condition number basis set ', condnumber)
 
         deallocate (overs)
         deallocate (umatl)
@@ -213,19 +210,18 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
     call dsyevx('V', 'A', 'L', n, a, lda, 0.d0, 0.d0, 1, 1, abstol&
             &, neig, eig, umat, n, work, lwork, iwork, ifail, info)
 
-    if (rank .eq. 0) write (6, *) ' Eigenvalues inside  inverse '
+    call log_info(' Eigenvalues inside  inverse ')
     mine = 1
     do i = 1, n
         if (eig(i)/eig(n) .gt. eps) then ! the condition number criterium
-            if (rank .eq. 0) write (6, *) i, eig(i)
+            call log_debug(i, eig(i))
             eigmat(i) = dsqrt(1.d0/eig(i))
         else
             mine = mine + 1
             eigmat(i) = 0.d0
         end if
     end do
-    if (info .ne. 0 .and. rank .eq. 0)                                    &
-            & write (6, *) ' info > 0 in dsyevx !!! ', info
+    if (info .ne. 0) call log_info(' info > 0 in dsyevx !!! ', info)
 
     do i = 1, info
         if (eigmat(ifail(i)) .ne. 0.d0) then
@@ -248,17 +244,15 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
     !        it should be authomatically symmetric
     call dgemm('N', 'T', n, n, n, 1.d0, b, n, b, n, 0.d0, a, lda)
 
-    if (mine .ne. 1 .and. rank .eq. 0) write (6, *) ' Warning neglecting', mine - 1, 'directions in SDV'
-    if (rank .eq. 0) then
-        condnumber = 1.d0
-        do i = 1, n
-            if (eigmat(i) .ne. 0.d0) then
-                cost = abs(eig(i)/eig(n))
-                if (cost .lt. condnumber) condnumber = cost
-            end if
-        end do
-        write (6, *) ' Condition number basis set ', condnumber
-    end if
+    if (mine .ne. 1) call log_warning(' Warning neglecting', mine - 1, 'directions in SDV')
+    condnumber = 1.d0
+    do i = 1, n
+        if (eigmat(i) .ne. 0.d0) then
+            cost = abs(eig(i)/eig(n))
+            if (cost .lt. condnumber) condnumber = cost
+        end if
+    end do
+    call log_info(' Condition number basis set ', condnumber)
 
     deallocate (b, work, eig, iwork, ifail, umat, premat, eigmat)
 #endif
