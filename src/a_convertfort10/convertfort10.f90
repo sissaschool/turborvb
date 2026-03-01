@@ -2577,7 +2577,6 @@ contains
         x = 0.d0
         call shift_originref
 
-        !XXX
         call log_info('New center of mesh =', rion_ref(1), rion_ref(2), rion_ref(3))
 
 #ifdef PARALLEL
