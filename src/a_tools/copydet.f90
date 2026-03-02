@@ -304,6 +304,7 @@ program copydet
 
 end program copydet
 subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nshell, mult, ioccup, kion, ioptorb, map)
+    use logger_io, only: log_info
     implicit none
     integer nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew, adr, adrnew
     integer mult_c(*), ioccup_c(*), kion_c(*), mult(*), ioccup(*), kion(*), map(*), ioptorb_c(*), ioptorb(*)

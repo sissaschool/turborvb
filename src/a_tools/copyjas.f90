@@ -209,8 +209,8 @@ program copyjas
                 read (11, *, end=104) str
                 if (trim(str) .ne. "fort.10_new") nkpoints = nkpoints + 1
             end do
-104         ! original format: (A,I5/)
-            call log_info(" Number of k-points found: ", nkpoints)
+            ! original format: (A,I5/)
+104         call log_info(" Number of k-points found: ", nkpoints)
             nproc_in = nkpoints
         end if
 
@@ -736,6 +736,7 @@ subroutine mappingu(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c &
     return
 end
 subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c, nshell, mult, ioccup, kion, ioptorb, nion, map)
+    use logger_io, only: log_info
     implicit none
     integer nshell, nshell_c, i, j, k, l, indorb, indorbnew, ind, indnew, adr, adrnew&
             &, nion_c, nion

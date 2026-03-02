@@ -2157,6 +2157,7 @@ end
 !================
 subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
     use constants, only: zone, zzero
+    use logger_io, only: log_error, log_debug
     implicit none
     integer n, i, j, ncoeff, info, lwork, ipc
     real*8 psi_in(ncoeff*ipc, n), psi_out(ncoeff*ipc, n), umat(ipc*n, n)
