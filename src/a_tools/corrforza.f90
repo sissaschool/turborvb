@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program bootback
+    use logger_io, only: log_info, log_warning
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel
     parameter(nh=500, nbinm=20000, nm=1)
@@ -64,7 +65,7 @@ program bootback
     if (nbin .ne. nbinm) then
         nbin = nbin - 1
     else
-        write (6, *) ' Warning maximum number of bins exceeded !!!'
+        call log_warning(' Warning maximum number of bins exceeded !!!')
     end if
 
     !      write(6,*) ' number of bins read =',nbin
@@ -198,11 +199,11 @@ program bootback
     errerr = errerr/nmis
     errerr = dsqrt(errerr - errav**2)
 
-    write (6, *) '  Force   =', eta0(1), err, errerr
-    write (6, *) '  Der Eloc =', eta0(2), errval(1)
-    write (6, *) '  <OH> =', eta0(3), errval(2)
-    write (6, *) '  <O><H> =', eta0(4), errval(3)
-    write (6, *) '2*(<OH> - <O><H>) =', eta0(5), errval(4)
+    call log_info('  Force   =', eta0(1), err, errerr)
+    call log_info('  Der Eloc =', eta0(2), errval(1))
+    call log_info('  <OH> =', eta0(3), errval(2))
+    call log_info('  <O><H> =', eta0(4), errval(3))
+    call log_info('2*(<OH> - <O><H>) =', eta0(5), errval(4))
     !       if(abs(eta0(5)/errval(4)).gt.2) write(6,*) ' Warning Pulay large !!! '
 
     close (11)

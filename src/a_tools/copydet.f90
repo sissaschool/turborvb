@@ -16,6 +16,7 @@
 program copydet
 
     use allio
+    use logger_io, only: log_error, log_info, log_debug
     implicit none
     real(8), dimension(:), allocatable :: vj_sav, vju_sav, jasmat_sav, jasmatsz_sav, atom_number_sav, dup_c_store
     real(8), dimension(:, :), allocatable :: rion_store
@@ -99,7 +100,7 @@ program copydet
     if (contraction .gt. 0) then
         nelorbj_sav = nelorb_c
         allocate (jasmat_sav(max(ipc*nelorb_c*nelcol_c, 1)))
-        write (6, *) ' size match ? =', size(detmat_c), size(jasmat_sav)
+        call log_info(' size match ? =', size(detmat_c), size(jasmat_sav))
         jasmat_sav = detmat_c
         allocate (nozeroj_sav(max(nnozeroj_sav, 1)))
         nozeroj_sav = nozero_c
@@ -122,7 +123,7 @@ program copydet
     nelorb_old = nelorb_c
     allocate (mapion(nion))
 
-    write (6, *) ' cellscale new/old =', (cellscale(i), cellscale_sav(i), i=1, 3)
+    call log_info(' cellscale new/old =', cellscale(1), cellscale_sav(1), cellscale(2), cellscale_sav(2), cellscale(3), cellscale_sav(3))
     do i = 1, nion
         ! Find the closest atom to the old
         do j = 1, nion_sav
@@ -140,16 +141,16 @@ program copydet
         end do
         mapion(i) = imin
         rion(:, i) = rion_store(:, imin) + imap(:)*cellscale_sav(:)
-        write (6, *) ' mapion distmin', i, mapion(i), distnew
+        call log_info(' mapion distmin', i, mapion(i), distnew)
     end do
     do i = 1, nion_sav
         k = 0
         do j = 1, nion
             if (mapion(j) .eq. i) k = k + 1
         end do
-        write (6, *) ' Atom i/mult =', i, k
+        call log_info(' Atom i/mult =', i, k)
     end do
-    write (6, *) ' Shell read ='
+    call log_info(' Shell read =')
     !    allocate(atbasis(nion_sav))
     !    atbasis=0
     !    do j=1,nion_sav
@@ -207,9 +208,9 @@ program copydet
         countat_old = countat_old + ipc*nparamj_sav(i)
     end do
 
-    write (6, *) ' Final new dup_c ', k, iesupr, iesup_c, size(dup_c)
+    call log_info(' Final new dup_c ', k, iesupr, iesup_c, size(dup_c))
     do i = 1, k
-        write (6, *) i, dup_c(i)
+        call log_debug(i, dup_c(i))
     end do
 
     allocate (atbasis(nion_sav))
@@ -218,7 +219,7 @@ program copydet
         do i = 1, nshellj_sav
             if (kionj_sav(i) .eq. j .and. ioptorbj_sav(i) .eq. 900000) atbasis(j) = atbasis(j) + multj_sav(i)
         end do
-        if (atbasis(j) .ne. 0) write (6, *) ' atbasis hybrid =', j, atbasis(j)
+        if (atbasis(j) .ne. 0) call log_info(' atbasis hybrid =', j, atbasis(j))
     end do
     if (sum(atbasis(:)) .eq. 0) then
         atbasis = 0
@@ -226,7 +227,7 @@ program copydet
             do i = 1, nshellj_sav
                 if (kionj_sav(i) .eq. j) atbasis(j) = atbasis(j) + multj_sav(i)
             end do
-            write (6, *) ' atbasis standard =', j, atbasis(j)
+            call log_info(' atbasis standard =', j, atbasis(j))
         end do
     end if
 
@@ -240,7 +241,7 @@ program copydet
     !       enddo
 
     do i = 1, nnozero_c
-        if (mod(i, 1000) .eq. 0) write (6, *) 'done =', i, 'over', nnozero_c
+        if (mod(i, 1000) .eq. 0) call log_info('done =', i, 'over', nnozero_c)
         ind = nozero_c(i)
         iy = (ind - 1)/nelorb_c + 1
         ix = ind - (iy - 1)*nelorb_c
@@ -290,15 +291,15 @@ program copydet
 
     stop
 
-101 write (6, *) ' ERROR: wavefunction fort.10_new with the new Jastrow not found or wrong! '
+101 call log_error(' ERROR: wavefunction fort.10_new with the new Jastrow not found or wrong! ')
     stop
-102 write (6, *) ' ERROR: the wavefunction must be complex in the case of k-points!'
+102 call log_error(' ERROR: the wavefunction must be complex in the case of k-points!')
     stop
-103 write (6, *) ' ERROR: wavefunction fort.10 not found or wrong! '
+103 call log_error(' ERROR: wavefunction fort.10 not found or wrong! ')
     stop
-105 write (6, *) ' ERROR: fort.10_new has a different number of ion, fort.10 unchanged!'
+105 call log_error(' ERROR: fort.10_new has a different number of ion, fort.10 unchanged!')
     stop
-106 write (6, *) ' ERROR: inconsistency found in the definition of ghost atoms!'
+106 call log_error(' ERROR: inconsistency found in the definition of ghost atoms!')
     stop
 
 end program copydet
@@ -317,7 +318,7 @@ subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nshell, mult, 
             end if
         end do
     end do
-    write (6, *) ' New basis inside =', indorbnew
+    call log_info(' New basis inside =', indorbnew)
     indorb = 0
     ind = 0
     do i = 1, nshell_c

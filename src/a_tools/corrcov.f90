@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program bootback
+    use logger_io, only: log_error, log_info, log_warning, log_debug
     implicit none
     integer nh, npar, nm, nmis, n, nbin, iseed, i, j, jj, kk, k, kmain, nel&
             &, lwork, info
@@ -73,11 +74,11 @@ program bootback
 
     end do
 
-    write (6, *) ' number of bins read =', nbin
+    call log_info(' number of bins read =', nbin)
 
     nmis = nbin
     if (nbin .lt. 10*npar) then
-        write (6, *) ' Warning too small number of bins !!!  '
+        call log_warning(' Warning too small number of bins !!!  ')
     end if
 
     !       initialization opara e opars
@@ -150,25 +151,25 @@ program bootback
             fk(i, j) = cost*(fk(i, j) - eta(j))
         end do
     end do
-    write (6, *) ' Force before covariance '
+    call log_info(' Force before covariance ')
     do i = 1, npar, 3
         write (6, *) (i - 1)/3 + 1, (fkav(i + k), k=0, 2)
     end do
 
     call dgemm('T', 'N', npar, npar, nbin, 1.d0, fk, nbin, fk, nbin, 0.d0, cov, npar)
 
-    write (6, *) ' Covariance matrix '
+    call log_info(' Covariance matrix ')
     do i = 1, npar
         do j = i, npar
-            write (6, *) i, j, cov(i, j)
+            call log_debug(i, j, cov(i, j))
         end do
     end do
 
     call dsyev('V', 'L', npar, cov, npar, eig, psip, lwork, info)
-    if (info .ne. 0) write (6, *) ' ERROR in diagonalization '
-    write (6, *) ' Eigenvalues covariance matrix ', eig(1)/eig(npar)
+    if (info .ne. 0) call log_error(' ERROR in diagonalization ')
+    call log_info(' Eigenvalues covariance matrix ', eig(1)/eig(npar))
     do i = 1, npar
-        write (6, *) i, eig(i)
+        call log_debug(i, eig(i))
     end do
     call dgemv('T', npar, npar, 1.d0, cov, npar, fkav, 1, 0.d0, psip, 1)
     maxsn = 0.d0
@@ -183,14 +184,14 @@ program bootback
     if (maxsn .gt. 0) maxsn = dsqrt(maxsn)
     call dgemv('N', npar, npar, 1.d0, cov, npar, psip, 1, 0.d0, fkav, 1)
 
-    write (6, *) ' Direction maximum signal/noise ratio, value = ', maxsn
+    call log_info(' Direction maximum signal/noise ratio, value = ', maxsn)
     scalef = 0.d0
     do i = 1, npar
         scalef = scalef + eig(i)
     end do
     scalef = scalef/npar
 
-    write (6, *) ' force after covariance '
+    call log_info(' force after covariance ')
     do i = 1, npar, 3
         write (6, *) (i - 1)/3 + 1, (fkav(i + k)*scalef, k=0, 2)
     end do

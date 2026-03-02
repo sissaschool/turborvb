@@ -15,6 +15,7 @@
 
 program er0read
     use allio
+    use logger_io, only: log_info
     implicit none
     integer ngenr, maxk, k, kt, i, j, maxj, ibin, nmis &
         , nbuf, kk, indpp, shellj, nbuf_dim &
@@ -52,13 +53,13 @@ program er0read
     !,ebin(0:nbuf,npm),wbin(0:nbuf),ebin2(0:nbuf,npm),eskip(npm)&
     !,tbra,etry,tmp,tmp1,npow
 
-    write (6, *) 'bin length, ibinit, write fort.10 (0/1), draw (0/1) ? '
+    call log_info('bin length, ibinit, write fort.10 (0/1), draw (0/1) ? ')
     read (5, *) lbin, ibinit, wfort10, drawpar
-    write (6, *) 'number of generations from standard input? (1  yes, 0 no) '
+    call log_info('number of generations from standard input? (1  yes, 0 no) ')
     read (5, *) query
 
     if (query .eq. 1) then
-        write (6, *) 'ngen'
+        call log_info('ngen')
         read (5, *) ngen
     end if
 
@@ -99,7 +100,7 @@ program er0read
     !mod by Kosuke Nakano on 29th May 2019
     !this arises inconsistency between drawpar=1 and 0
     !if(drawpar.ge.1) then
-    write (6, *) 'max number of ind par  for each part of the wf  '
+    call log_info('max number of ind par  for each part of the wf  ')
     read (5, *) maxp
     !else
     !maxp=1
@@ -164,8 +165,8 @@ program er0read
 
     indswc = iesinv + iesfree + iesm + iesd
 
-    write (6, *) ' # words read from unit 11 ', ntot
-    write (6, *) ' maxp= ', maxp
+    call log_info(' # words read from unit 11 ', ntot)
+    call log_info(' maxp= ', maxp)
     rewind (12)
 
     !           stop
@@ -202,12 +203,12 @@ program er0read
         do while (ngen .ge. 0)
             read (12, end=500)
             ngen = ngen + 1
-            if (mod(ngen, 1) .eq. 0) write (6, *) ' record read =', ngen
+            if (mod(ngen, 1) .eq. 0) call log_info(' record read =', ngen)
         end do
 500     continue
         rewind (12)
         if (ngen .ne. ngenr .and. ngenr .ne. 0) then
-            write (6, *) ' partial file read , ngen =', ngen
+            call log_info(' partial file read , ngen =', ngen)
             !     ngen=ngen-1
         end if
     end if
@@ -319,9 +320,9 @@ program er0read
         nmis = ibin
     end if
 
-    write (6, *) ' number of measures done =', nmis
-    write (6, *) ' Rejected measures =', irej
-    write (6, *) ' Rejection ratio =', dble(irej)/icount
+    call log_info(' number of measures done =', nmis)
+    call log_info(' Rejected measures =', irej)
+    call log_info(' Rejection ratio =', dble(irej)/icount)
 
     do i = 0, maxk
         do kk = 1, ntot
@@ -361,7 +362,7 @@ program er0read
     end if
 
     write (20, *) ' with no error bars '
-    write (6, *)
+    call log_info()
     if (wfort10 .eq. 1) then
         close (10)
         open (unit=10, file='fort.10', form='formatted', status='old', position='append')
@@ -397,7 +398,7 @@ program er0read
 
         lcol = ntot
         indpp = 0
-        write (*, *) ' Draw the story of parameters'
+        call log_info(' Draw the story of parameters')
         file_unit = 30
         command_file = 'commands.story'
         open (unit=file_unit, file=command_file, form='formatted', status='unknown')

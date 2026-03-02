@@ -16,6 +16,7 @@
 program copyjas
 
     use allio
+    use logger_io, only: log_error, log_info, log_warning, log_debug
     implicit none
     real(8), dimension(:), allocatable :: vj_sav, vju_sav, jasmat_sav, jasmatsz_sav, atom_number_sav, dup_c_store
     real(8), dimension(:, :), allocatable :: rion_store
@@ -68,22 +69,22 @@ program copyjas
         do_kpoints = .true.
         using_kcomp = 0
         copyrion = .true.
-        write (6, *) ' Warning copying ion positions '
+        call log_warning(' Warning copying ion positions ')
     elseif (trim(str) .eq. "copyR") then
         do_kpoints = .false.
         using_kcomp = 1
         copyrion = .true.
         copy_jas = .false.
-        write (6, *) ' Warning copying ONLY ion positions '
+        call log_warning(' Warning copying ONLY ion positions ')
     elseif (trim(str) .eq. "kpointsRd") then
         do_kpoints = .true.
         using_kcomp = 0
         copyrion = .true.
         copydup = .true.
-        write (6, *) ' Warning copying also contracted and ion positions '
+        call log_warning(' Warning copying also contracted and ion positions ')
     elseif (trim(str) .eq. "kpointsK") then
         using_kcomp = 1
-        write (6, *) ' Insert number of processors and number of k-points. '
+        call log_info(' Insert number of processors and number of k-points. ')
         read (5, *) nproc_in, nkpoints
     elseif (trim(str) .eq. "copy_out") then
         copy_out = .true.
@@ -175,7 +176,7 @@ program copyjas
         end if
     end if
 
-    write (6, *) ' nelorbj_sav here =', nelorbj_sav
+    call log_info(' nelorbj_sav here =', nelorbj_sav)
 
     iesfreer_sav = iesfreer
     iesmind_sav = iesmind
@@ -208,7 +209,8 @@ program copyjas
                 read (11, *, end=104) str
                 if (trim(str) .ne. "fort.10_new") nkpoints = nkpoints + 1
             end do
-104         write (6, '(A,I5/)') " Number of k-points found: ", nkpoints
+104         ! original format: (A,I5/)
+            call log_info(" Number of k-points found: ", nkpoints)
             nproc_in = nkpoints
         end if
 
@@ -216,14 +218,16 @@ program copyjas
         ! Needed for writing afterwards.
         rewind (11)
         index_file = 0
-        write (6, *) ' Wavefunctions found '
+        call log_info(' Wavefunctions found ')
         open (unit=start_index, file='fort.10', status='unknown', form='formatted', err=103)
-        write (6, '(A,I6,2A)') '  Wavefunction', 0, ' = ', 'fort.10'
+        ! original format: (A,I6,2A)
+        call log_info('  Wavefunction', 0, ' = ', 'fort.10')
         do i = 1, nproc_in
             read (11, *) str
             if (mod((i - 1), nproc_in/nkpoints) .eq. 0) then
                 index_file = index_file + 1
-                write (6, '(A,I6,2A)') '  Wavefunction', i, ' = ', trim(str)
+                ! original format: (A,I6,2A)
+                call log_info('  Wavefunction', i, ' = ', trim(str))
                 open (unit=start_index + index_file, file=trim(str), status='old', form='formatted')
             end if
         end do
@@ -278,7 +282,7 @@ program copyjas
                     end if
                 end do
                 if (.not. found) then
-                    write (6, *) ' fort.10 and fort.10_new should have the same ion positions '
+                    call log_info(' fort.10 and fort.10_new should have the same ion positions ')
                     stop
                 end if
 !         write(6,*) ' reshuff kionj_sav =',j,kionj_sav(j)
@@ -313,12 +317,12 @@ program copyjas
                     end do
                 end if
             elseif (ipj .eq. 2) then
-                write (6, *) ' ERROR new and old Jastrow not compatible with ipj=2 ! '
+                call log_error(' ERROR new and old Jastrow not compatible with ipj=2 ! ')
                 stop
             end if
-            write (6, *) ' mapping found '
+            call log_info(' mapping found ')
             do i = 1, nelorbj_c*ipj
-                write (6, *) i, mapj(i)
+                call log_debug(i, mapj(i))
             end do
             nelorb_old = nelorbj_sav*ipj_sav
         end if
@@ -340,7 +344,7 @@ program copyjas
                     end if
                 end do
                 if (.not. found) then
-                    write (6, *) ' fort.10 and fort.10_new should have the same ion positions '
+                    call log_info(' fort.10 and fort.10_new should have the same ion positions ')
                     stop
                 end if
             end do
@@ -369,12 +373,12 @@ program copyjas
                     end do
                 end if
             elseif (ipj .eq. 2) then
-                write (6, *) ' ERROR new and old Jastrow not compatible with ipj=2 ! '
+                call log_error(' ERROR new and old Jastrow not compatible with ipj=2 ! ')
                 stop
             end if
-            write (6, *) ' mapping found '
+            call log_info(' mapping found ')
             do i = 1, nelorbj_sav*ipj_sav
-                write (6, *) i, mapj(i)
+                call log_debug(i, mapj(i))
             end do
         end if
 
@@ -463,7 +467,7 @@ program copyjas
                         distr = distnew
                     end if
                 end do
-                write (6, *) ' min dist =', j, sqrt(distr)
+                call log_info(' min dist =', j, sqrt(distr))
                 rion(:, j) = rtry(:)
             end do
             celldm = celldm_store
@@ -664,15 +668,15 @@ program copyjas
     if (allocated(mapj)) deallocate (mapj)
     stop
 
-101 write (6, *) ' ERROR: wavefunction fort.10_new with the new Jastrow not found or wrong! '
+101 call log_error(' ERROR: wavefunction fort.10_new with the new Jastrow not found or wrong! ')
     stop
-102 write (6, *) ' ERROR: the wavefunction must be complex in the case of k-points!'
+102 call log_error(' ERROR: the wavefunction must be complex in the case of k-points!')
     stop
-103 write (6, *) ' ERROR: wavefunction fort.10 not found or wrong! '
+103 call log_error(' ERROR: wavefunction fort.10 not found or wrong! ')
     stop
-105 write (6, *) ' ERROR: fort.10_new has a different number of ion, fort.10 unchanged!'
+105 call log_error(' ERROR: fort.10_new has a different number of ion, fort.10 unchanged!')
     stop
-106 write (6, *) ' ERROR: inconsistency found in the definition of ghost atoms!'
+106 call log_error(' ERROR: inconsistency found in the definition of ghost atoms!')
     stop
 
 end program copyjas
@@ -753,7 +757,7 @@ subroutine mapping(nshell_c, mult_c, ioccup_c, kion_c, ioptorb_c, nion_c, nshell
             end if
         end do
     end do
-    write (6, *) ' New basis inside =', indorbnew
+    call log_info(' New basis inside =', indorbnew)
     indorb = 0
     ind = 0
     do i = 1, nshell_c

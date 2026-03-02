@@ -23,6 +23,7 @@ program find_kpoints
     use allio
     use kpoints_mod
     use cell
+    use logger_io, only: log_error, log_info, log_warning, log_debug
 
     implicit none
     integer, parameter :: ufort10 = 10
@@ -45,13 +46,13 @@ program find_kpoints
     call read_fort10(ufort10)
     ! some useful warnings
     if (.not. yes_complex) then
-        write (6, *)
-        write (6, *) 'WARNING: You need a complex wave function in order to run a k-points calculations!'
+        call log_info()
+        call log_warning('WARNING: You need a complex wave function in order to run a k-points calculations!')
         stop
     end if
     if (.not. iespbc) then
-        write (6, *)
-        write (6, *) 'ERROR: You need a PBC wave function in order to run a k-points calculations!'
+        call log_info()
+        call log_error('ERROR: You need a PBC wave function in order to run a k-points calculations!')
         stop
     end if
     ! the cell has been already initialized with read_fort10
@@ -126,16 +127,18 @@ program find_kpoints
         tot_wt_down = 1.d0
     end if
 
-    write (6, *)
-    write (6, *) ' type k-points/# k-points/total weight ', kp_type, nk, tot_wt
-    write (6, *) ' k-points up/weights:'
+    call log_info()
+    call log_info(' type k-points/# k-points/total weight ', kp_type, nk, tot_wt)
+    call log_info(' k-points up/weights:')
     do i = 1, nk
-        write (6, 90) i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i)
+        ! original format: (3x, I6, X, 4f11.7)
+        call log_debug(i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i))
     end do
-    write (6, *)
-    write (6, *) ' k-points down/weights:'
+    call log_info()
+    call log_info(' k-points down/weights:')
     do i = 1, nk
-        write (6, 90) i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i)
+        ! original format: (3x, I6, X, 4f11.7)
+        call log_debug(i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i))
     end do
 90  format(3x, I6, X, 4f11.7)
 
@@ -152,21 +155,21 @@ program find_kpoints
     !!!!!!!!!! ERRORS !!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-101 write (6, *) 'ERROR: input fort.10 not found!'
+101 call log_error('ERROR: input fort.10 not found!')
     stop
-102 write (6, *) 'ERROR: reading/generating k-points'
+102 call log_error('ERROR: reading/generating k-points')
     stop
-103 write (6, *) 'ERROR: check k-points grid !!'
+103 call log_error('ERROR: check k-points grid !!')
     stop
-104 write (6, *) 'ERROR: specify nk1 greater than 0 if using kp_type=2 !!'
+104 call log_error('ERROR: specify nk1 greater than 0 if using kp_type=2 !!')
     stop
-105 write (6, *) 'ERROR: specify nk1 and nk2 greater than 0 if using kp_type=3 !!'
+105 call log_error('ERROR: specify nk1 and nk2 greater than 0 if using kp_type=3 !!')
     stop
-106 write (6, *) 'ERROR: specify nk1 greater than 0 if using kp_type=4 !!'
+106 call log_error('ERROR: specify nk1 greater than 0 if using kp_type=4 !!')
     stop
-107 write (6, *) 'ERROR: check k-points grid for kp_type=5 !!'
+107 call log_error('ERROR: check k-points grid for kp_type=5 !!')
     stop
-108 write (6, *) 'ERROR: kp_type not recognized !!'
+108 call log_error('ERROR: kp_type not recognized !!')
     stop
 
 end program find_kpoints

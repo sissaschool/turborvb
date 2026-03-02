@@ -1,5 +1,6 @@
 program assembling_pseudo
     use allio
+    use logger_io, only: log_error, log_info
     implicit none
     real*8 atomic_sub
     real*8 ps_par1, ps_par2, ps_par3, ps_cut, dist_kel(3)
@@ -36,12 +37,12 @@ program assembling_pseudo
 !       read(5,'(A70)') dir_pseudo
     dir_pseudo = trim(name_dir)//'/pseudo/'
 
-    write (6, *) ' dir_pseudo =', dir_pseudo
-    write (6, *) ' Input file extension (e.g. filippi) '
+    call log_info(' dir_pseudo =', dir_pseudo)
+    call log_info(' Input file extension (e.g. filippi) ')
     !nome_file.extension
     read (5, '(A20)') extension
 
-    write (6, *) ' Extension read =', extension
+    call log_info(' Extension read =', extension)
 
     open (unit=33, file='pseudo.dat', status='unknown', form='formatted')
 
@@ -64,12 +65,12 @@ program assembling_pseudo
 
                 if (trim(extension) .ne. 'distance') then
 
-                    write (*, *) '##################################'
-                    write (*, *) 'Error opening the pseudo potential file'
-                    write (*, *) 'File  ', trim(file_pseudo), ' not found'
-                    write (*, *) 'Program ends'
+                    call log_info('##################################')
+                    call log_error('Error opening the pseudo potential file')
+                    call log_error('File  ', trim(file_pseudo), ' not found')
+                    call log_info('Program ends')
 
-                    write (*, *) '##################################'
+                    call log_info('##################################')
                 end if
 
             else
@@ -96,12 +97,12 @@ program assembling_pseudo
     end do
 
     if (trim(extension) .eq. 'distance') then
-        write (6, *) ' Distance atoms #i,#j,val distance '
+        call log_info(' Distance atoms #i,#j,val distance ')
         do i = 1, nion
             do j = i, nion
                 dist_kel(:) = rion(:, i) - rion(:, j)
                 if (iespbc) call ApplyPBC(dist_kel, 1)
-                write (6, *) i, j, dsqrt(sum(dist_kel(:)**2))
+                call log_info(i, j, dsqrt(sum(dist_kel(:)**2)))
             end do
         end do
     end if

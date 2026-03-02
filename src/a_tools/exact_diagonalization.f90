@@ -15,6 +15,7 @@
 
 module exact_diagonalization
 
+    use logger_io, only: log_error, log_info, log_warning
     !use constants
     implicit none
 
@@ -103,8 +104,8 @@ contains
             if (sel_ed(i)) then
                 j = j + 1
                 if (mod(i, 3) .ne. 1) then
-                    write (6, *) 'you are not allowed to change the power or the gaussian exponent by ED'
-                    write (6, *) 'please change the sel_edection options'
+                    call log_error('you are not allowed to change the power or the gaussian exponent by ED')
+                    call log_info('please change the sel_edection options')
                     stop
                 end if
             end if
@@ -322,7 +323,7 @@ contains
 
             ! cholesky factorization
             call DPOTRF('U', n, overs, n, info)
-            if (info .ne. 0) write (6, *) 'problems in dpotrf'
+            if (info .ne. 0) call log_warning('problems in dpotrf')
 
             ! compute 1-norm of the matrix overs
             norm = 0.d0
@@ -331,14 +332,14 @@ contains
             end do
 
             call DPOCON('U', n, overs, n, norm, condnumber, work, iwork, info)
-            if (info .ne. 0) write (6, *) 'problems in dpocon'
+            if (info .ne. 0) call log_info('problems in dpocon')
 
-            write (6, *) '1-norm of overlap and condition number', norm
-            write (6, *) 'condition number', condnumber
+            call log_info('1-norm of overlap and condition number', norm)
+            call log_info('condition number', condnumber)
 
             ! compute inverse
             call DPOTRI('U', n, overs, n, info)
-            if (info .ne. 0) write (6, *) 'problems in dpotri'
+            if (info .ne. 0) call log_info('problems in dpotri')
 
             ! full matrix
             do i = 1, n
@@ -381,13 +382,13 @@ contains
             call dsyevx('V', 'A', 'L', n, overs, lda, 0.d0, 0.d0, 1, 1, abstol &
                         , neig, eig, umatl, nelorb_c, work, lwork, iwork, ifail, info)
 
-            write (6, *) ' Lowest/Max  eigenvalue overlap mat =', eig(1), eig(n)
+            call log_info(' Lowest/Max  eigenvalue overlap mat =', eig(1), eig(n))
             condnumber = abs(eig(1)/eig(n))
             do i = 2, n
                 cost = abs(eig(i)/eig(n))
                 if (cost .lt. condnumber) condnumber = cost
             end do
-            write (6, *) ' Condition number basis set =', condnumber
+            call log_info(' Condition number basis set =', condnumber)
 
             do i = 1, n
                 if (eig(i)/eig(n) .gt. abs(eps)) then ! the condition number criterium
@@ -398,7 +399,7 @@ contains
                 end if
             end do
 
-            if (info .gt. 0) write (6, *) ' info > 0 in dsyevx !!! ', info
+            if (info .gt. 0) call log_warning(' info > 0 in dsyevx !!! ', info)
 
             !       we assume here that the garbage eigenvectors are the ones
             !       close to zero eigenvalue.
@@ -409,7 +410,7 @@ contains
                 end if
             end do
 
-            if (mine .ne. 1) write (6, *) ' disregarded coll. =', mine - 1
+            if (mine .ne. 1) call log_warning(' disregarded coll. =', mine - 1)
 
             ! first transformation  umatl
             do i = 1, n
@@ -438,7 +439,7 @@ contains
                 if (eig(i) .gt. eps) then
                     mat_in(:, i) = mat_in(:, i)/dsqrt(eig(i))
                 else
-                    if (eig(i) .gt. -1.d0) write (6, *) ' Further singular eigenvalue ', i
+                    if (eig(i) .gt. -1.d0) call log_info(' Further singular eigenvalue ', i)
                     mat_in(:, i) = 0.d0
                 end if
             end do
@@ -462,8 +463,8 @@ contains
 
         else
 
-            write (6, *) 'I do not know the diagonalization algorithm', trim(diag_type)
-            write (6, *) 'Choose between "cholesky" and "sorella_cavazzoni"'
+            call log_info('I do not know the diagonalization algorithm', trim(diag_type))
+            call log_info('Choose between "cholesky" and "sorella_cavazzoni"')
             stop
 
         end if

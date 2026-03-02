@@ -15,6 +15,7 @@
 
 program zerojasfort10
     use allio
+    use logger_io, only: log_info
     implicit none
     real(8) Rx, Ry, Rz
     integer i, j, inputyes
@@ -44,7 +45,7 @@ program zerojasfort10
     close (10)
 
     if (iessz) then
-        write (6, *) ' Do you want to vanish also the charge Jastrow? yes/no 1/0'
+        call log_info(' Do you want to vanish also the charge Jastrow? yes/no 1/0')
         read (5, *) inputyes
     else
         inputyes = 1

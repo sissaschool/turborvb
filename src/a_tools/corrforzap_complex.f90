@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program bootback
+    use logger_io, only: log_info, log_warning
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel
     real*8 err(2), eta(2), esav(2), eav(2), et(6), wt(6)&
@@ -63,7 +64,7 @@ program bootback
         read (15, *) e(i, 5), w(i, 5) ! log derivative wf x local energy Im
     end do
 
-    write (6, *) ' number of bins read =', nbin
+    call log_info(' number of bins read =', nbin)
 
     nmis = 200
 
@@ -143,15 +144,13 @@ program bootback
 
     err = dsqrt(err - eta**2)
 
-    write (6, *) '  Real Force   =', eta0(1), err(1), errerr(1)
+    call log_info('  Real Force   =', eta0(1), err(1), errerr(1))
     if (abs(eta(1)) .gt. 3*err(1)) then
-        write (6, *) ' Warning,  this parameter is not at minimum !!! '&
-                &, abs(eta(1)/err(1))
+        call log_warning(' Warning,  this parameter is not at minimum !!! ', abs(eta(1)/err(1)))
     end if
-    write (6, *) '  Imag Force   =', eta0(2), err(2), errerr(2)
+    call log_info('  Imag Force   =', eta0(2), err(2), errerr(2))
     if (abs(eta(2)) .gt. 3*err(2)) then
-        write (6, *) ' Warning,  this parameter is not at minimum !!! '&
-                &, abs(eta(2)/err(2))
+        call log_warning(' Warning,  this parameter is not at minimum !!! ', abs(eta(2)/err(2)))
     end if
 
     close (11)

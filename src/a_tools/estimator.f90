@@ -15,6 +15,7 @@
 
 !#define _DEBUG
 module estimator
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
 
     type :: avg_scalar
@@ -102,7 +103,7 @@ contains
 
 #ifdef _DEBUG
         if (.not. allocated(estimator%summation)) then
-            write (*, *) "ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine"
+            call log_error("ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine")
             stop
         end if
 #endif
@@ -124,7 +125,7 @@ contains
             estimator%average = 0.d0
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't allocate the same array twice!"
+            call log_warning("Warning! you can't allocate the same array twice!")
 #endif
         end if
     end subroutine allocate_avg_array
@@ -171,7 +172,7 @@ contains
             deallocate (estimator%summation, estimator%average)
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't free the same array twice!"
+            call log_warning("Warning! you can't free the same array twice!")
 #endif
         end if
     end subroutine free_avg_array
@@ -206,7 +207,7 @@ contains
             estimator%deviation = 0.d0
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't allocate the same array twice!"
+            call log_warning("Warning! you can't allocate the same array twice!")
 #endif
         end if
     end subroutine allocate_esti_array
@@ -217,7 +218,7 @@ contains
 
 #ifdef _DEBUG
         if (.not. allocated(estimator%summation)) then
-            write (*, *) "ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine"
+            call log_error("ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine")
             stop
         end if
 #endif
@@ -259,7 +260,7 @@ contains
         estimator%average = estimator%summation/estimator%num
         estimator%vari = estimator%sumsqr/estimator%num - estimator%average*estimator%average
         estimator%deviation = dsqrt(estimator%vari)
-        if (estimator%vari < 0.d0) write (6, *) "Warning : negative variation due to machine precision!"
+        if (estimator%vari < 0.d0) call log_warning("Warning : negative variation due to machine precision!")
     end subroutine calc_esti_scalar
 
     subroutine calc_esti_array(estimator)
@@ -272,7 +273,7 @@ contains
         estimator%vari = estimator%sumsqr/estimator%num - estimator%average*estimator%average
         estimator%deviation = dsqrt(estimator%vari)
         do ii = 1, estimator%dimen
-            if (estimator%vari(ii) < 0.d0) write (6, *) "Warning : negative variation due to machine precision!"
+            if (estimator%vari(ii) < 0.d0) call log_warning("Warning : negative variation due to machine precision!")
         end do
     end subroutine calc_esti_array
 
@@ -284,7 +285,7 @@ contains
             deallocate (estimator%summation, estimator%average, estimator%sumsqr, estimator%vari, estimator%deviation)
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't free the same array twice!"
+            call log_warning("Warning! you can't free the same array twice!")
 #endif
         end if
     end subroutine free_esti_array
@@ -304,7 +305,7 @@ contains
             corr%corrfun = 0.d0
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't allocate the same array twice!"
+            call log_warning("Warning! you can't allocate the same array twice!")
 #endif
         end if
     end subroutine allocate_corr_basic_array
@@ -315,7 +316,7 @@ contains
 
 #ifdef _DEBUG
         if (.not. allocated(corr%corrsum)) then
-            write (*, *) "ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine"
+            call log_error("ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine")
             stop
         end if
 #endif
@@ -362,7 +363,7 @@ contains
             deallocate (corr%corrsum, corr%corrfun)
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't free the same array twice!"
+            call log_warning("Warning! you can't free the same array twice!")
 #endif
         end if
     end subroutine free_corr_basic_array
@@ -382,7 +383,7 @@ contains
             corr%corrfun = 0.d0
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't allocate the same array twice!"
+            call log_warning("Warning! you can't allocate the same array twice!")
 #endif
         end if
     end subroutine allocate_corr_advanced_array
@@ -393,7 +394,7 @@ contains
 
 #ifdef _DEBUG
         if (.not. allocated(corr%corrsum)) then
-            write (*, *) "ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine"
+            call log_error("ERROR! all the arrays for the estimator should be allocated! please call the allocate subroutine")
             stop
         end if
 #endif
@@ -439,7 +440,7 @@ contains
             deallocate (corr%corrsum, corr%corrfun)
 #ifdef _DEBUG
         else
-            write (*, *) "Warning! you can't free the same array twice!"
+            call log_warning("Warning! you can't free the same array twice!")
 #endif
         end if
     end subroutine free_corr_advanced_array

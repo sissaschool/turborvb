@@ -15,6 +15,7 @@
 
 module amoeba_minimization
 
+    use logger_io, only: log_info, log_warning
     implicit none
 
     integer :: param_number, simplex_dim, points_number, itmax, iter, param_number_read, points_number_read
@@ -187,7 +188,7 @@ contains
         y(i + 1) = chi(x, vecsigma)
         end do
 
-        write (6, *) 'initial chi square', y(1)
+        call log_info('initial chi square', y(1))
 
     end subroutine simplex_constructor
 
@@ -342,7 +343,7 @@ contains
             iter = iter + 1
         end do
 
-        write (*, *) 'WARNING: amoeba exceeding maximum iterations'
+        call log_warning('WARNING: amoeba exceeding maximum iterations')
 
 10      deallocate (pr, prr, pbar)
 

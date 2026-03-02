@@ -19,6 +19,7 @@
 
 program bootback
 
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
 
     integer :: iseed, nbin, n, nbinm, k, j, i, nmis, kmain, nwalk, bin_length
@@ -75,7 +76,7 @@ program bootback
         read (11, *, err=101, end=500) e(i), w(i)
         read (12, *, err=102, end=500) es(i), wpip
         if (wpip .ne. w(i)) then
-            write (6, *) ' warning the measures are not correlated !!!! '
+            call log_warning(' warning the measures are not correlated !!!! ')
         end if
     end do
     close (11)
@@ -87,7 +88,7 @@ program bootback
     !  enddo
 
     eav0 = sum(e(:)*w(:))/sum(w(:))
-    write (6, *) ' number of bins read =', nbin
+    call log_info(' number of bins read =', nbin)
 
     nmis = 1000
     err = 0.d0
@@ -149,22 +150,22 @@ program bootback
     err_ = dsqrt(err_ - eta_**2)
     esav_ = dsqrt(esav_ - eav_**2)
 
-    write (6, *) ' Energy =', dble(eav0), dble(esav)
-    write (6, *) ' Variance square =', dble(eta), dble(err)
-    write (6, *) ' Est. energy error bar =', eta_, err_
-    write (6, *) ' Est. corr. time  =', eav_*nwalk, esav_*nwalk
+    call log_info(' Energy =', dble(eav0), dble(esav))
+    call log_info(' Variance square =', dble(eta), dble(err))
+    call log_error(' Est. energy error bar =', eta_, err_)
+    call log_info(' Est. corr. time  =', eav_*nwalk, esav_*nwalk)
 
     deallocate (e, es, w)
     stop
 
     !!!!!!!!!!! ERRORS !!!!!!!!!!!
-100 write (6, *) 'ERROR: file parminimized.d not found or wrong!'
+100 call log_error('ERROR: file parminimized.d not found or wrong!')
     stop
-101 write (6, *) 'ERROR: file fort.21 not found or wrong!'
+101 call log_error('ERROR: file fort.21 not found or wrong!')
     stop
-102 write (6, *) 'ERROR: file fort.22 not found or wrong!'
+102 call log_error('ERROR: file fort.22 not found or wrong!')
     stop
-103 write (6, *) 'ERROR: file kp_info.dat empty or wrong!'
+103 call log_error('ERROR: file kp_info.dat empty or wrong!')
     stop
 
 end program bootback

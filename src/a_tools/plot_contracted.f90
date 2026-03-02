@@ -12,6 +12,7 @@ program plot_contracted
 
     use allio
     use constants, only : pi, ipc
+    use logger_io, only: log_info, log_warning
 
     implicit none
 
@@ -79,7 +80,7 @@ program plot_contracted
     call read_fort10(ufort10)
 
     if(contraction.eq.0) then
-        write(6, *) ' You should have contracted orbitals ! '
+        call log_info(' You should have contracted orbitals ! ')
     endif
 
     allocate(nhybrids(nion), psi(ipc))
@@ -98,22 +99,22 @@ program plot_contracted
         enddo
     enddo
 
-    write(6, *) 'Total number of occupied contracted orbitals : ', sum(nhybrids(:))
+    call log_info('Total number of occupied contracted orbitals : ', sum(nhybrids(:)))
 
-    write(6, *) 'Reporting number of occupied contracted orbitals per atom'
+    call log_info('Reporting number of occupied contracted orbitals per atom')
     do i = 1, nion
-        write(6, *) 'atom : ', i, ' # of occupied contracted : ', nhybrids(i)
+        call log_info('atom : ', i, ' # of occupied contracted : ', nhybrids(i))
     enddo
-    write(6, *)
+    call log_info()
 
     do i = 1, 3
         center(i) = sum(rion(i, 1:nion)) / nion
     enddo
 
     if(.not.iespbc) then
-        write(*, *) ' Choose box size (x,y,z) '
+        call log_info(' Choose box size (x,y,z) ')
         read(*, *) cell_loc(:)
-        write(*, *) cell_loc(:)
+        call log_info(cell_loc(1), cell_loc(2), cell_loc(3))
         cellscale(1:3) = cell_loc(1:3)
         do i = 1, nion
             rion(1:3, i) = rion(1:3, i) - center(1:3) + cell_loc(1:3) / 2.d0
@@ -126,18 +127,18 @@ program plot_contracted
         !rion(1:3,i)=rion(1:3,i)+cellscale(1:3)/2.d0
         !enddo
         cell_loc(1:3) = cellscale(1:3)
-        write(*, *) ' Choose shift reference unit cell PBC : '
+        call log_info(' Choose shift reference unit cell PBC : ')
         read(*, *) origin(:)
         origin(1:3) = origin(1:3) * cellscale(1:3)
     endif
 
-    write(*, *) ' Choose number of mesh points (x,y,z) : '
+    call log_info(' Choose number of mesh points (x,y,z) : ')
     read(*, *) mesh(:)
-    write(*, *) mesh(:)
+    call log_info(mesh(1), mesh(2), mesh(3))
 
-    write(*, *) ' Choose ionic center between 1 and', nion
+    call log_info(' Choose ionic center between 1 and', nion)
     read(*, *) chosen_ion
-    write(*, *) chosen_ion
+    call log_info(chosen_ion)
 
 
     !spinon=.false.
@@ -148,16 +149,16 @@ program plot_contracted
     upper = nhybrids(chosen_ion)
     molecular = nhybrids(chosen_ion)
 
-    write(*, *) ' Please give a range between 1 and ', nhybrids(chosen_ion)
+    call log_info(' Please give a range between 1 and ', nhybrids(chosen_ion))
     read(*, *) lower, upper
-    write(*, *) lower, upper
+    call log_info(lower, upper)
 
-    write(*, *) ' Compute orbital spread and Hubbard U matrix elements'
+    call log_info(' Compute orbital spread and Hubbard U matrix elements')
     read(*, *) hubbardU_logic
 
     if(hubbardU_logic) then
         open(113, file = 'HubbardU_matrix.dat', form = 'formatted', status = 'unknown')
-        write(6, *) ' Warning the order of d-orbitals is the following: 3z^2-r^2,x^2-y^2,xy,yz,xz '
+        call log_warning(' Warning the order of d-orbitals is the following: 3z^2-r^2,x^2-y^2,xy,yz,xz ')
     endif
     ! To match with output plot in xcrysden
     if(iespbc.and..not.hubbardU_logic) mesh(:) = mesh(:) + 1
@@ -209,7 +210,7 @@ program plot_contracted
     enddo
 
     chosen_mol = ind_mol
-    write(*, *) ' # of orbitals written =', chosen_mol
+    call log_info(' # of orbitals written =', chosen_mol)
 
     allocate(norm(chosen_mol))
     norm = 1.d0
@@ -223,15 +224,15 @@ program plot_contracted
 
     if(hubbardU_logic.and.(step(1).ne.step(2).or.step(2).ne.step(3).or.step(1).ne.step(3))) then
         analytic = .false.
-        write(6, *) 'Computing spread and local Coulomb repulsion'
-        write(6, *) 'Integration algorithm for the U matrix: shifted grids'
+        call log_info('Computing spread and local Coulomb repulsion')
+        call log_info('Integration algorithm for the U matrix: shifted grids')
         nshift = 2
     elseif(hubbardU_logic) then
         analytic = .true.
-        write(6, *) 'Computing spread and local Coulomb repulsion'
-        write(6, *) 'Integration algorithm for the U matrix: analytic integration of divergence'
+        call log_info('Computing spread and local Coulomb repulsion')
+        call log_info('Integration algorithm for the U matrix: analytic integration of divergence')
     else
-        write(6, *) 'Plotting orbitals in xcrysden format file'
+        call log_info('Plotting orbitals in xcrysden format file')
     endif
 
     if(hubbardU_logic) then
@@ -373,7 +374,7 @@ program plot_contracted
 
                 norm(ind_mol) = psi2_norm
 
-                write(6, *) 'contracted orbital #', ind_mol, 'norm (a_0**3)=', psi2_norm, 'spread (a_0**2)=', spread
+                call log_info('contracted orbital #', ind_mol, 'norm (a_0**3)=', psi2_norm, 'spread (a_0**2)=', spread)
             endif
 
         endif
