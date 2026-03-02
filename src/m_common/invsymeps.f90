@@ -15,6 +15,7 @@
 
 subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank, comm_mpi)
     use constants, only: zone, zzero
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
     integer n, lda, info, i, j, mine, neig, rank, ierr, countexc, dimorb&
             &, dime, minen, nproc, comm_mpi, ipc
@@ -53,7 +54,7 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
         if (eig(i) .le. -1d12) countexc = countexc + 1
     end do
     if (mine .ne. countexc) then
-        if (rank .eq. 0) write (6, *) 'ERROR in dsyevx, some eigenv<= -1d12 '
+        call log_error('ERROR in dsyevx, some eigenv<= -1d12 ')
         info = -1
     end if
     condnum = eig(1)/eig(n)
@@ -62,7 +63,7 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
         i = i + 1
         condnum = eig(i)/eig(n)
     end do
-    if (rank .eq. 0) write (6, *) ' first non zero/Inverse condition number basis = ', i, condnum
+    call log_info(' first non zero/Inverse condition number basis = ', i, condnum)
     mine = 1
     do i = 1, n
         if (eig(i)/eig(n) .gt. eps) then ! the condition number criterium
@@ -71,8 +72,8 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
             eig(i) = dsqrt(eig(i))
         else
             mine = mine + 1
-            if (rank .eq. 0 .and. eig(i) .le. eps .and. eig(i) .ne. -1d12)&
-                    & write (6, *) ' warning small  eigenvalue !!! ', eig(i)
+            if (eig(i) .le. eps .and. eig(i) .ne. -1d12)&
+                    & call log_warning(' warning small  eigenvalue !!! ', eig(i))
             !        do j=1,n
             !        write(6,*) j,umat(j,i)
             !        enddo
@@ -80,8 +81,7 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
             eigmat(i) = 0.d0
         end if
     end do
-    if (info .gt. 0 .and. rank .eq. 0)                                    &
-            & write (6, *) ' info > 0 in dsyevx !!! ', info
+    if (info .gt. 0) call log_info(' info > 0 in dsyevx !!! ', info)
 
     !        define  b
 
@@ -98,8 +98,8 @@ subroutine invsymeps(ipc, n, a, lda, info, eps, mine, umat, eigmat, nproc, rank,
         call zgemm_my('N', 'C', n, n, n, zone, b, n, b, n, zzero, a, lda, nproc, rank, comm_mpi)
     end if
 
-    if (mine .ne. 1 .and. rank .eq. 0) then
-        write (6, *) ' Warning neglecting', mine - 1, 'over', n, 'directions in SVD'
+    if (mine .ne. 1) then
+        call log_warning(' Warning neglecting', mine - 1, 'over', n, 'directions in SVD')
     end if
 
     deallocate (b, eig)

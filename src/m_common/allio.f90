@@ -31,6 +31,7 @@ module allio
     ! for mpiio by Y. Luo (24/2/15)
     use mpiio, only: file_obj
     use dielectric
+    use logger_io, only: log_warning
     implicit none
 
     integer i_main, nw, max_sparse_choice, iseed, ngenc, ngg, ngn, ngs, d, nmax_ion &
@@ -902,45 +903,43 @@ contains
                 end do
             end if
             end if
-            if (rank .eq. 0) then
-                write (6, *) 'Warning: updated kgrid considering Det/Jastrow:', count1, count1j
-                write (6, *) 'Warning: lowest wf discarded=', exp(-max_rejected)
+            call log_warning('Warning: updated kgrid considering Det/Jastrow:', count1, count1j)
+            call log_warning('Warning: lowest wf discarded=', exp(-max_rejected))
 #ifdef _DEBUG
-                write (6, *) ' Grid considered /ion'
-                do i = 1, nion
-                    write (6, *) ' ion # ', i, 'dimension =', kgrid_atom(i)%dimshell
+            call log_warning(' Grid considered /ion')
+            do i = 1, nion
+                call log_warning(' ion # ', i, 'dimension =', kgrid_atom(i)%dimshell)
+                do j = 1, kgrid_atom(i)%dimshell
+                    call log_warning(' ', j, kgrid_atom(i)%kpip(1, j), kgrid_atom(i)%kpip(2, j), kgrid_atom(i)%kpip(3, j))
+                end do
+            end do
+            if (yes_crystalj) then
+                call log_warning(' Grid considered Jastrow/ion ')
+                do i = nion + 1, 2*nion
+                    call log_warning(' ion # ', i - nion, 'dimension =', kgrid_atom(i)%dimshell)
                     do j = 1, kgrid_atom(i)%dimshell
-                        write (6, *) j, kgrid_atom(i)%kpip(1, j), kgrid_atom(i)%kpip(2, j), kgrid_atom(i)%kpip(3, j)
+                        call log_warning(' ', j, kgrid_atom(i)%kpip(1, j), kgrid_atom(i)%kpip(2, j), kgrid_atom(i)%kpip(3, j))
                     end do
                 end do
-                if (yes_crystalj) then
-                    write (6, *) ' Grid considered Jastrow/ion '
-                    do i = nion + 1, 2*nion
-                        write (6, *) ' ion # ', i - nion, 'dimension =', kgrid_atom(i)%dimshell
-                        do j = 1, kgrid_atom(i)%dimshell
-                            write (6, *) j, kgrid_atom(i)%kpip(1, j), kgrid_atom(i)%kpip(2, j), kgrid_atom(i)%kpip(3, j)
-                        end do
-                    end do
-                end if
-                write (6, *) ' Grid considered '
-                do i = 1, nshell
-                    write (6, *) ' Shell # ', i, 'dimension =', kgrid(i)%dimshell
-                    do j = 1, kgrid(i)%dimshell
-                        write (6, *) j, kgrid(i)%kpip(1, j), kgrid(i)%kpip(2, j), kgrid(i)%kpip(3, j)
-                    end do
-                end do
-                if (yes_crystalj) then
-                    write (6, *) ' Grid considered Jastrow '
-                    do i = 1, nshellj
-                        write (6, *) ' Shell # ', i, 'dimension =', kgrid(i + ikshift)%dimshell
-                        do j = 1, kgrid(i + ikshift)%dimshell
-                            write (6, *) j, kgrid(i + ikshift)%kpip(1, j), &
-                                kgrid(i + ikshift)%kpip(2, j), kgrid(i + ikshift)%kpip(3, j)
-                        end do
-                    end do
-                end if
-#endif
             end if
+            call log_warning(' Grid considered ')
+            do i = 1, nshell
+                call log_warning(' Shell # ', i, 'dimension =', kgrid(i)%dimshell)
+                do j = 1, kgrid(i)%dimshell
+                    call log_warning(' ', j, kgrid(i)%kpip(1, j), kgrid(i)%kpip(2, j), kgrid(i)%kpip(3, j))
+                end do
+            end do
+            if (yes_crystalj) then
+                call log_warning(' Grid considered Jastrow ')
+                do i = 1, nshellj
+                    call log_warning(' Shell # ', i, 'dimension =', kgrid(i + ikshift)%dimshell)
+                    do j = 1, kgrid(i + ikshift)%dimshell
+                        call log_warning(' ', j, kgrid(i + ikshift)%kpip(1, j), &
+                            kgrid(i + ikshift)%kpip(2, j), kgrid(i + ikshift)%kpip(3, j))
+                    end do
+                end do
+            end if
+#endif
 !    kgrid%kpip is no longer needed
             do i = 1, nshell
                 if (allocated(kgrid(i)%kpip)) deallocate (kgrid(i)%kpip)

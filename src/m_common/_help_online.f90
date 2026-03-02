@@ -1,4 +1,5 @@
 subroutine help_online(name_tool)
+    use logger_io, only: log_info, log_warning
     implicit none
     integer ncount
     character(100) :: name_dir, name_tool, name_ext
@@ -62,8 +63,8 @@ subroutine help_online(name_tool)
 120     continue
 
         if (ncount .gt. 0) then
-            write (6, *)
-            write (6, *) ' Warning a sample input is given  ', trim(name_tool)//trim(name_ext)
+            call log_info('')
+            call log_warning(' Warning a sample input is given  ', trim(name_tool)//trim(name_ext))
             close (22)
             close (23)
         else

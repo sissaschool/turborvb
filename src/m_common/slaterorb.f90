@@ -15,6 +15,7 @@
 
 function slaterorb(ioptorb)
     use constants, only: iflagerr
+    use logger_io, only: log_error
     implicit none
     integer ioptorb
     logical slaterorb
@@ -39,8 +40,7 @@ function slaterorb(ioptorb)
         slaterorb = .false.
     case default
         !     Orbital not found
-        write (6, *) ' ERROR orbital not Slater neither Gaussian, &
-                &              check slaterorb function, ioptorb= ', ioptorb
+        call log_error(' ERROR orbital not Slater neither Gaussian, check slaterorb function, ioptorb= ', ioptorb)
         iflagerr = 1
     end select
     return

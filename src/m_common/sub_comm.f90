@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 module sub_comm
+    use logger_io, only: log_warning
     implicit none
     type :: mpi_sub_comm
         integer rank, nproc
@@ -35,7 +36,7 @@ contains
         allocate (ranks(new_size))
 #else
         if (new_size .ne. 1) then
-            write (6, *) ' Warning changing number of processors to 1 in serial '
+            call log_warning(' Warning changing number of processors to 1 in serial ')
             new_size = 1
         end if
         allocate (ranks(new_size))

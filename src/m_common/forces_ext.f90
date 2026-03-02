@@ -47,6 +47,7 @@ subroutine forces_interpolate()
     use extpot, only: n_x, n_y, n_z, pot, xdata, ydata, zdata, link_atom
     use splines, only: nxcoef, nycoef, nzcoef
     use van_der_waals, only: vdw
+    use logger_io, only: log_info
 
     implicit none
 
@@ -69,33 +70,27 @@ subroutine forces_interpolate()
     call dbsnak(n_z, zdata, f_kz, f_zknot)
 
     !interpolate
-    if (rank .eq. 0) then
-        write (*, *)
-        write (*, *) '|******************************************|'
-        write (*, *) '|     FORCES FROM THE QMC/MM POTENTIAL     |'
-        write (*, *) '|******************************************|'
-        write (*, *)
-        write (*, '(a50,3i4)') &
-                &  ' Interpolating with 3D spline of order (x,y,z) : '  &
-                &, f_kx, f_ky, f_kz
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|     FORCES FROM THE QMC/MM POTENTIAL     |')
+    call log_info('|******************************************|')
+    call log_info('')
+    call log_info(' Interpolating with 3D spline of order (x,y,z) : ', f_kx, f_ky, f_kz)
+    call log_info('')
 
     ! 3D interpolation
     call dbs3in(n_x, xdata, n_y, ydata, n_z, zdata, pot, &
             &            n_x, n_y, f_kx, f_ky, f_kz, f_xknot, f_yknot, f_zknot, &
             &            f_coef)
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) ' Interpolation done.'
-        write (*, *) ''
-        write (*, *) ''
-        write (*, *) '|******************************************|'
-        write (*, *) '|     FORCES FROM THE QMC/MM POTENTIAL     |'
-        write (*, *) '|******************************************|'
-        write (*, *)
-    end if
+    call log_info('')
+    call log_info(' Interpolation done.')
+    call log_info('')
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|     FORCES FROM THE QMC/MM POTENTIAL     |')
+    call log_info('|******************************************|')
+    call log_info('')
     nxcoef = n_x
     nycoef = n_y
     nzcoef = n_z
@@ -208,18 +203,17 @@ subroutine deallocate_forces()
     use allio, only: rank
     use van_der_waals, only: vdw
     use extpot, only: link_atom
+    use logger_io, only: log_info
 
     implicit none
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) '                    END OF                 '
-        write (*, *) ''
-        write (*, *) '|******************************************|'
-        write (*, *) '|     FORCES FROM THE QMC/MM POTENTIAL     |'
-        write (*, *) '|******************************************|'
-        write (*, *)
-    end if
+    call log_info('')
+    call log_info('                    END OF                 ')
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|     FORCES FROM THE QMC/MM POTENTIAL     |')
+    call log_info('|******************************************|')
+    call log_info('')
 
     deallocate (f_coef)
     deallocate (f_xknot, f_yknot, f_zknot)

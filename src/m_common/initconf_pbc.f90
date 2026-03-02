@@ -16,6 +16,7 @@
 subroutine initconf(nel, nelup, psiln, psisn, kel, wconf, rion, dist  &
         &, indt, nion, zeta, in1, rank, ierr, LBox, alat, rion_ref, iesrandoma, itest)
     use Cell
+    use logger_io, only: log_info, log_error
     implicit none
 
     integer nhalf, nelup, nel, i, j, ii, kk, ih, indt, nion, ion, in1, itest
@@ -101,10 +102,8 @@ subroutine initconf(nel, nelup, psiln, psisn, kel, wconf, rion, dist  &
     end if
     ! if nelupeff gt 0 --> electron affinity calculation
 
-    if (rank .eq. 0) then
-        write (6, *) '****************************************'
-        write (6, *) '****** INITIALIZATION ******************'
-    end if
+    call log_info('****************************************')
+    call log_info('****** INITIALIZATION ******************')
 
     ! the constraint here is that the spin up  alone are forbidden
 
@@ -270,16 +269,15 @@ subroutine initconf(nel, nelup, psiln, psisn, kel, wconf, rion, dist  &
 
         end if
 
-        if (rank .eq. 0 .and. kk .eq. 1) then
+        if (kk .eq. 1) then
             do i = 1, nion
-                write (6, *) 'zeta, up and down ', i, zeta(i), occup(i) - occdo(i), occdo(i)
+                call log_info('zeta, up and down ', i, zeta(i), occup(i) - occdo(i), occdo(i))
             end do
 
         end if
 
         if (nelup .ne. cup) then
-            if (rank .eq. 0)                                                  &
-                    &   write (6, *) 'error in up nesting', nelup, cup
+            call log_error('error in up nesting', nelup, cup)
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -287,8 +285,7 @@ subroutine initconf(nel, nelup, psiln, psisn, kel, wconf, rion, dist  &
         end if
 
         if (nel .ne. cup + cdown) then
-            if (rank .eq. 0)                                                  &
-                    &   write (6, *) 'error in electrons nesting', nel, cup + cdown
+            call log_error('error in electrons nesting', nel, cup + cdown)
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif

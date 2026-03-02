@@ -208,6 +208,7 @@ end subroutine ruota_lambda
 
 subroutine build_emme(emme, occ_1, u, emmed, emmef, emmeg, ioptorb_1, &
         &                        nshell_1)
+    use logger_io, only: log_info
     implicit none
     integer occ_1, nshell_1, icek, ish, i, j
     real*8 emme(occ_1, occ_1), u(3, 3), emmed(5, 5), emmef(7, 7), &
@@ -328,8 +329,7 @@ subroutine build_emme(emme, occ_1, u, emmed, emmef, emmeg, ioptorb_1, &
             ish = ish + 9
 
         case default
-            write (6, *) 'Sorry, rotation not yet defined for orbital '     &
-                    &, ioptorb_1(icek)
+            call log_info('Sorry, rotation not yet defined for orbital ', ioptorb_1(icek))
             stop
         end select
 
@@ -852,6 +852,7 @@ end
 
 subroutine prep_rotate(ipc, nshell_c, nelorb, nion, ioptorb_c, kion_c, mult_c&
 &, nparam_c, rion, zeta, emmep, emme, cellscale, iespbc, apbc)
+    use logger_io, only: log_error, log_info, log_debug
     implicit none
     integer nshell_c, nelorb, nelorbt, ind, nion, nshell, i, j, k, i3, jj, apbc_sign&
     &, ind_sco, ipc
@@ -936,7 +937,7 @@ subroutine prep_rotate(ipc, nshell_c, nelorb, nion, ioptorb_c, kion_c, mult_c&
             end if
         end do
         if (.not. found) then
-            write (6, *) ' Error symmetry not found !!!', sum(abs(dist(:)))
+            call log_error(' Error symmetry not found !!!', sum(abs(dist(:))))
             stop
         end if
 
@@ -1002,14 +1003,14 @@ subroutine prep_rotate(ipc, nshell_c, nelorb, nion, ioptorb_c, kion_c, mult_c&
     end if
     end do
 
-    write (6, *) ' Index orbitals found ='
+    call log_info(' Index orbitals found =')
     do i = 1, nshell
-        write (6, *) i, indsh(i)
+        call log_debug(i, indsh(i))
     end do
 
-    write (6, *) ' cellmap found '
+    call log_info(' cellmap found ')
     do i = 1, nion
-        write (6, *) i, cellmap(i)
+        call log_debug(i, cellmap(i))
     end do
 
     !     stop
@@ -1034,6 +1035,7 @@ end
 
 subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, &
 &                        nshell_1, indsh)
+    use logger_io, only: log_info
     implicit none
     integer occ_1, nshell_1, icek, i, j, ish, ishr, ipc
     real*8 emme(ipc*occ_1, occ_1), emmep(3, 3), emmed(5, 5), emmef(7, 7), &
@@ -1141,8 +1143,7 @@ subroutine build_emmel(ipc, emme, occ_1, emmep, emmed, emmef, emmeg, ioptorb_1, 
             end do
             ish = ish + 9
         case default
-            write (6, *) 'Sorry, rotation not yet defined for orbital '     &
-    &, ioptorb_1(icek)
+            call log_info('Sorry, rotation not yet defined for orbital ', ioptorb_1(icek))
             stop
         end select
 

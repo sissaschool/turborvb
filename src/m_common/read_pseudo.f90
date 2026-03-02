@@ -15,6 +15,7 @@
 
 subroutine read_pseudo
     use allio
+    use logger_io, only: log_info, log_warning
     implicit none
     integer :: i, j
 
@@ -66,42 +67,39 @@ subroutine read_pseudo
 
             if (pseudoname .eq. 'ECS') then
                 softcusp = .true.
-                if (rank .eq. 0) write (6, *) ' Warning use of soft cusp condition, new implementation '
+                call log_warning(' Warning use of soft cusp condition, new implementation ')
             else
                 softcusp = .false.
             end if
 
-            if (rank .eq. 0) then
-                write (6, *) '#############################################'
-                write (6, *) '    EFFECTIVE CORE POTENTIAL CALCULATION     '
-                write (6, *) '#############################################'
-            end if
+            call log_info('#############################################')
+            call log_info('    EFFECTIVE CORE POTENTIAL CALCULATION     ')
+            call log_info('#############################################')
 
-            if ((itestrfn .eq. 6 .or. itestrfn .eq. 1) .and. npow .eq. 0.d0 .and. rank .eq. 0) then
-                write (*, *) '    DMC FIXED NODE WITH LOCALITY APPROXIMATION   '
-                if (itestrfn .eq. 1) write (6, *) ' Umrigar 93 algorithm '
-                if (itestrfn .eq. 6) write (6, *) ' Improved local move integration '
+            if ((itestrfn .eq. 6 .or. itestrfn .eq. 1) .and. npow .eq. 0.d0) then
+                call log_info('    DMC FIXED NODE WITH LOCALITY APPROXIMATION   ')
+                if (itestrfn .eq. 1) call log_info(' Umrigar 93 algorithm ')
+                if (itestrfn .eq. 6) call log_info(' Improved local move integration ')
 
-            elseif ((itestrfn .eq. -2 .or. itestrfn .eq. -3) .and. npow .eq. 0.d0 .and. rank .eq. 0) then
-                write (*, *) '    DMC FIXED NODE WITH OFF DIAGONAL PSEUDO    '
-                if (itestrfn .eq. -2) write (6, *) ' heat bath after all electron diffusion '
-                if (itestrfn .eq. -3) write (6, *) ' heat bath after single electron diffusion '
+            elseif ((itestrfn .eq. -2 .or. itestrfn .eq. -3) .and. npow .eq. 0.d0) then
+                call log_info('    DMC FIXED NODE WITH OFF DIAGONAL PSEUDO    ')
+                if (itestrfn .eq. -2) call log_info(' heat bath after all electron diffusion ')
+                if (itestrfn .eq. -3) call log_info(' heat bath after single electron diffusion ')
 
             elseif (itestrfn .eq. -6 .and. npow&
-                    &.eq. 0.d0 .and. rank .eq. 0) then
-                write (*, *) '    LRDMC FIXED NODE WITH OFF DIAGONAL PSEUDO     '
+                    &.eq. 0.d0) then
+                call log_info('    LRDMC FIXED NODE WITH OFF DIAGONAL PSEUDO     ')
 
             elseif (itestrfn .eq. -6 .or. itestrfn .eq. -2&
                     &.or. itestrfn .eq. -3 .and. npow .gt. 0.d0) then
-                if (itestrfn .eq. -6 .and. rank .eq. 0) then
-                    write (*, *) ' LRDMC INTERPOLATION BETWEEN LOCALITY AND OFF DIAG '
-                    write (*, *) ' Interpolating parameter', npow
-                elseif (((itestrfn .eq. -2) .or. itestrfn .eq. -3)&
-                        &.and. rank .eq. 0) then
-                    write (*, *) ' DMC INTERPOLATION BETWEEN LOCALITY AND OFF DIAG '
-                    write (*, *) ' Interpolating parameter', npow
-                    if (itestrfn .eq. -2) write (6, *) ' heat bath after all electron diffusion '
-                    if (itestrfn .eq. -3) write (6, *) ' heat bath after single electron diffusion '
+                if (itestrfn .eq. -6) then
+                    call log_info(' LRDMC INTERPOLATION BETWEEN LOCALITY AND OFF DIAG ')
+                    call log_info(' Interpolating parameter', npow)
+                elseif ((itestrfn .eq. -2) .or. itestrfn .eq. -3) then
+                    call log_info(' DMC INTERPOLATION BETWEEN LOCALITY AND OFF DIAG ')
+                    call log_info(' Interpolating parameter', npow)
+                    if (itestrfn .eq. -2) call log_info(' heat bath after all electron diffusion ')
+                    if (itestrfn .eq. -3) call log_info(' heat bath after single electron diffusion ')
                 end if
                 if (gamma .gt. 1.d0/npow - 1.d0) then
                     write (errmsg, *) 'gamma violates the sign! choose gamma <', 1.d0/npow - 1.d0
@@ -110,8 +108,7 @@ subroutine read_pseudo
             end if
             nintpseudo = nintpsa
 
-            if (rank .eq. 0) write (*, *) ' ************ nintpseudo read '      &
-                    &, nintpseudo
+            call log_info(' ************ nintpseudo read ', nintpseudo)
 
             allocate (kindion(npsa + 1), pshell(npsa), rcutoff(npsa))
             allocate (versor(3, nintpseudo), wintpseudo(nintpseudo))
@@ -204,14 +201,12 @@ subroutine read_pseudo
 
             allocate (parshell(3, npseudopar))
 
-            if (rank .eq. 0) then
-                write (6, *) '------  parameters for pseudopotentials -------'
-                write (6, *) 'Max angular momentum pseudo ', lmax
-                write (6, *) '# of quadrature points in the projector', nintpsa
-                write (6, *) '# of pseudo atoms', npsa
-                write (6, *) '# of gaussian for pseudo', npseudopar
-                write (6, *) '-----------------------------------------------'
-            end if
+            call log_info('------  parameters for pseudopotentials -------')
+            call log_info('Max angular momentum pseudo ', lmax)
+            call log_info('# of quadrature points in the projector', nintpsa)
+            call log_info('# of pseudo atoms', npsa)
+            call log_info('# of gaussian for pseudo', npseudopar)
+            call log_info('-----------------------------------------------')
 
             ! now read the pseudo parameters (parshell)
             npseudoparn = 1

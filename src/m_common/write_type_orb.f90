@@ -15,6 +15,7 @@
 
 !> This subroutine returns typeorb for jastrow orbitals
 subroutine write_type_orb(nshellj, multij, ioccj, typeorb)
+    use logger_io, only: log_error
     implicit none
 
     ! argument parameters
@@ -51,7 +52,7 @@ subroutine write_type_orb(nshellj, multij, ioccj, typeorb)
                     typeorb(ind_type) = 15 + j
                     ind_type = ind_type + 1
                 case default
-                    write (6, *) 'ERROR non existing orbital in Jastrow '
+                    call log_error('ERROR non existing orbital in Jastrow ')
                 end select
             end if
         end do

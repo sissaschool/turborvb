@@ -299,11 +299,12 @@ subroutine DSORTX(COUNT, INUTILE, N, INDEX)
                 !    a(9)           |   2
                 !    a(10)          |   3
 
+                use logger_io, only: log_info
                 implicit none
                 integer :: gdim, np, me, nb
 
                 if (me >= np .or. me < 0) then
-                    write (6, *) ' ** ldim_block: arg no. 3 out of range '
+                    call log_info(' ** ldim_block: arg no. 3 out of range ')
                     stop
                 end if
 
@@ -357,11 +358,12 @@ subroutine DSORTX(COUNT, INUTILE, N, INDEX)
                 !  np        The total number processes over which the distributed
                 !            matrix is distributed.
 
+                use logger_io, only: log_info
                 integer, intent(IN) :: lind, n, me, np
                 integer nb
 
                 if (me >= np .or. me < 0) then
-                    write (6, *) ' ** ldim_block: arg no. 3 out of range '
+                    call log_info(' ** ldim_block: arg no. 3 out of range ')
                     stop
                 end if
 
@@ -396,11 +398,12 @@ subroutine DSORTX(COUNT, INUTILE, N, INDEX)
                 !    a(9)           |   0
                 !    a(10)          |   1
 
+                use logger_io, only: log_info
                 implicit none
                 integer :: gdim, np, me, r, q
 
                 if (me >= np .or. me < 0) then
-                    write (6, *) ' ** ldim_cyclic: arg no. 3 out of range '
+                    call log_info(' ** ldim_cyclic: arg no. 3 out of range ')
                     stop
                 end if
 

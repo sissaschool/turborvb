@@ -15,6 +15,7 @@
 
 subroutine error(routin, messag, ierror, rank)
     use allio, only: iflagerr
+    use logger_io, only: log_warning, log_error
     implicit none
     ! the name of the calling routine
     character(*) :: routin
@@ -31,24 +32,18 @@ subroutine error(routin, messag, ierror, rank)
     if (ierror == 0) return
 
     if (ierror < 0) then
-        if (rank .eq. 0) then
-            write (*, *) ' '
-            write (*, '(1x,78(''%''))')
-            write (*, '(5x,''from '',a,'' : Warning #'',i10)') routin, ierror
-            write (*, '(5x,a)') 'Warning  '//messag
-            write (*, '(1x,78(''%''))')
-        end if
+        call log_warning(' ')
+        call log_warning(' from ', trim(routin), ' : Warning #', ierror)
+        call log_warning(' Warning ', trim(messag))
     else
         if (rank .eq. 0 .or. ierror .eq. 3) then
             if (ierror .eq. 3) then
-                write (*, *) ' From proc # ', rank
+                call log_error(' From proc # ', rank)
             else
-                write (*, *) ' From Master '
+                call log_error(' From Master ')
             end if
-            !       write(*,'(1x,78(''%''))')
-            write (*, '(5x,''from '',a,'' : ERROR #'',i10)') routin, ierror
-            write (*, '(5x,a)') 'ERROR  '//messag
-            !       write(*,'(1x,78(''%''))')
+            call log_error(' from ', trim(routin), ' : ERROR #', ierror)
+            call log_error(' ERROR ', trim(messag))
         end if
     end if
 
@@ -71,6 +66,7 @@ subroutine error(routin, messag, ierror, rank)
 end subroutine error
 
 subroutine errore(a, b, ierr)
+    use logger_io, only: log_info
     implicit none
     character(LEN=*) :: A
     character(LEN=*) :: B
@@ -78,9 +74,9 @@ subroutine errore(a, b, ierr)
 
     if (ierr <= 0) return
 
-    write (6, *) A
-    write (6, *) B
-    write (6, *) IERR
+    call log_info(A)
+    call log_info(B)
+    call log_info(IERR)
     stop
 end subroutine errore
 
@@ -94,6 +90,7 @@ end subroutine errore
 subroutine checkiflagerr(iflagerr, rank, messag)
     use kpoints_mod, only: kaverage
     use allio, only: commcolrep_mpi, commrep_mpi
+    use logger_io, only: log_info
     implicit none
     integer ierr, iflagerrall, iflagerr, rank
     character(*) :: messag
@@ -109,7 +106,7 @@ subroutine checkiflagerr(iflagerr, rank, messag)
 #endif
 
     if (iflagerrall .ne. 0) then
-        if (rank .eq. 0) write (6, *) messag
+        call log_info(messag)
 #ifdef PARALLEL
 #ifdef UNREL
 !   For unreliable  networks.

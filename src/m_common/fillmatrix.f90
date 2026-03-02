@@ -71,6 +71,7 @@ subroutine fillmatrix_vec(rotmatrix, vecr)
     return
 end
 subroutine fillmatrix(rotmatrix)
+    use logger_io, only: log_error
 
     !      Written by Sorella, Mazzola and Y. Luo on 25/7/2013. Mitas
     !      routine was wrong unfortunately. All previous calculation are
@@ -135,7 +136,7 @@ subroutine fillmatrix(rotmatrix)
     z3 = x1*y2 - x2*y1
 
     xsum = z1**2 + z2**2 + z3**2
-    if (abs(1 - xsum) .gt. 1d-6) write (6, *) ' ERROR in fillmatrix '
+    if (abs(1 - xsum) .gt. 1d-6) call log_error(' ERROR in fillmatrix ')
 
     rotmatrix(1, 1) = x1
     rotmatrix(2, 1) = x2
