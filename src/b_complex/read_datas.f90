@@ -17,6 +17,7 @@ subroutine read_datasmin
     use allio
     use Thomas_Fermi_model !!!! new !!!! added by K.Nakano 11/09/2019
     use dielectric
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
     integer :: i, j, ind
     real(8) :: num_ele_core_r_c, r_c, beta_for_r_c, kappa_for_r_c !!!! new !!!! added by K.Nakano 11/09/2019
@@ -112,23 +113,20 @@ subroutine read_datasmin
 
         read (5, nml=simulation, err=111)
 
-        write (6, *) ' After  reading simulation  '
+        call log_error(' After  reading simulation  ')
         iflagerr = 0
-111     if (iflagerr .ne. 0) write (6, *) ' ERROR reading simulation '
+111     if (iflagerr .ne. 0) call log_error(' ERROR reading simulation ')
         iflagerrall = iflagerr + iflagerrall
         !          calculation itestr
         if (maxtime .lt. 0.d0) then
             maxtime = 86000
-            write (6, *) ' Default maxtime (s)= ', maxtime
-            write (6, *) ' Warning the program will stop after <~24h, &
-                 & otherwise change maxtime in simulation section '
+            call log_error(' Default maxtime (s)= ', maxtime)
+            call log_error(' Warning the program will stop after <~24h, otherwise change maxtime in simulation section ')
         end if
 
 #ifndef _OFFLOAD
         if (.not. membig .and. membigcpu) then
-            write (6, *) ' Warning this option is only  for test'//&
-                        &', otherwise put also mambigcpu=.false.'//&
-                        &' to minimize RAM memory allocation !!! '
+            call log_error(' Warning this option is only  for test, otherwise put also mambigcpu=.false. to minimize RAM memory allocation !!! ')
         end if
 #endif
 
@@ -142,13 +140,13 @@ subroutine read_datasmin
         case ('nocont')
             io_level = 0
         case DEFAULT
-            write (6, *) " Warning: unrecognized disk_io, set as 'default' !"
+            call log_error(" Warning: unrecognized disk_io, set as 'default' !")
             io_level = 1
         end select
 
-        if (io_level .eq. 0) write (6, *) " Warning: you cannot continue this run !!! Avoid disk_io='nocont' otherwise!"
+        if (io_level .eq. 0) call log_error(" Warning: you cannot continue this run !!! Avoid disk_io='nocont' otherwise!")
         if (io_level .eq. 0 .and. iopt .ne. 1) then
-            write (6, *) " Warning: disk_io changed to 'default' in continuation !!!"
+            call log_error(" Warning: disk_io changed to 'default' in continuation !!!")
             io_level = 1
         end if
 
@@ -173,7 +171,7 @@ subroutine read_datasmin
                 freqcheck = 0
             end if
 
-            write (6, *) ' Default value of check flag error ', freqcheck
+            call log_error(' Default value of check flag error ', freqcheck)
         end if
 
         itestrr = itestr3 ! a number < |10|
@@ -201,14 +199,14 @@ subroutine read_datasmin
         else
             pseudorandom = .true.
         end if
-        write (6, *) ' Default value of pseudorandom =', pseudorandom
+        call log_error(' Default value of pseudorandom =', pseudorandom)
         iflagerr = 1
         pseudofile = "pseudo.dat"
         read (5, nml=pseudo, err=112)
-        write (6, *) ' After reading pseudo '
-        write (6, *) ' Pseudopotential file name : ', trim(pseudofile)
+        call log_error(' After reading pseudo ')
+        call log_error(' Pseudopotential file name : ', trim(pseudofile))
         iflagerr = 0
-112     if (iflagerr .ne. 0) write (6, *) ' ERROR reading pseudo '
+112     if (iflagerr .ne. 0) call log_error(' ERROR reading pseudo ')
         iflagerrall = iflagerr + iflagerrall
 
         ! , you have to know if you are using pseudo or not (empty section).
@@ -235,18 +233,18 @@ subroutine read_datasmin
         if (itest .eq. 2) then
             iflagerr = 1
             read (5, nml=vmc, err=113)
-            if (hopfraction .ne. 0.d0) write (6, *) ' Read value of hopfraction ', hopfraction
-            if (epscut .ne. 0.d0) write (6, *) ' Read value of epscut ', epscut
-            if (epscuttype .ne. -1000) write (6, *) ' Read value of epscuttype ', epscuttype
-            write (6, *) ' After reading vmc '
+            if (hopfraction .ne. 0.d0) call log_error(' Read value of hopfraction ', hopfraction)
+            if (epscut .ne. 0.d0) call log_error(' Read value of epscut ', epscut)
+            if (epscuttype .ne. -1000) call log_error(' Read value of epscuttype ', epscuttype)
+            call log_error(' After reading vmc ')
             iflagerr = 0
-113         if (iflagerr .ne. 0) write (6, *) ' ERROR reading vmc '
+113         if (iflagerr .ne. 0) call log_error(' ERROR reading vmc ')
             iflagerrall = iflagerr + iflagerrall
         end if
 
         if (theta_reg .eq. 0.5d0 .and. epstlrat .eq. 0.d0) then
             epstlrat = dsqrt(epsmach) ! It looks important even if epsvar>0, machine precision error under control.
-            write (6, *) ' Warning epstlrat should be > 0 in this case, chosen one=', epstlrat
+            call log_error(' Warning epstlrat should be > 0 in this case, chosen one=', epstlrat)
         end if
 
         !          defining default values for lrdmc
@@ -307,13 +305,13 @@ subroutine read_datasmin
             nw_max = -1
             iflagerr = 1
             read (5, nml=dmclrdmc, err=114)
-            write (6, *) ' After reading dmclrdmc '
+            call log_error(' After reading dmclrdmc ')
             iflagerr = 0
-114         if (iflagerr .ne. 0) write (6, *) ' ERROR reading dmclrdmc '
+114         if (iflagerr .ne. 0) call log_error(' ERROR reading dmclrdmc ')
             iflagerrall = iflagerr + iflagerrall
             if (nw_max .gt. 1) then
                 if (mod(nw, nw_max) .ne. 0) then
-                    write (6, *) ' ERROR nw_max has to be divisor of nw  !!! '
+                    call log_error(' ERROR nw_max has to be divisor of nw  !!! ')
                     iflagerr = 1
                     iflagerrall = iflagerr + iflagerrall
                 end if
@@ -329,21 +327,21 @@ subroutine read_datasmin
                     parcutg = 0
                 end if
                 defparcutg = .true.
-                write (6, *) ' Default value of parcutg=', parcutg
+                call log_error(' Default value of parcutg=', parcutg)
             end if
 
             if (epscutdmc .ne. 0.d0 .and. epstldmc .eq. -1.d0) then
                 epstldmc = 0.d0
-                write (6, *) ' Default value for epstldmc (no cutoff) =', epstldmc
+                call log_error(' Default value for epstldmc (no cutoff) =', epstldmc)
             elseif (epscutdmc .eq. 0.d0) then
                 epstldmc = 0.d0
             end if
 
             if (epscutdmc .ne. 0.d0 .and. gamma .eq. 0.d0) then
-                write (6, *) ' Warning change gamma>0 with epscutdmc>0 !!!'
+                call log_warning(' Warning change gamma>0 with epscutdmc>0 !!!')
             end if
 
-            write (6, *) ' after dmc  '
+            call log_error(' after dmc  ')
         end if
         !          defining default values for optimization
 
@@ -392,7 +390,7 @@ subroutine read_datasmin
         parcute = 0.d0 ! no cutoff on Hessian for Nightingale linear method
 
         parcut = epsmach*100.d0 ! safe relative machine precision  at least 12 digts but usually 8
-        write (6, *) ' Default value of parcut = ', parcut
+        call log_info(' Default value of parcut = ', parcut)
 
         parcutmin = 0.d0 ! no cutoff on devmax collective parameters
 
@@ -468,12 +466,12 @@ subroutine read_datasmin
             !         &strange put membig=.true. '
             !          endif
             read (5, nml=optimization, err=115)
-            write (6, *) ' After reading optimization   '
+            call log_info(' After reading optimization   ')
             iflagerr = 0
-115         if (iflagerr .ne. 0) write (6, *) ' ERROR reading optimization '
+115         if (iflagerr .ne. 0) call log_error(' ERROR reading optimization ')
         end if
         if (oldscaling) then
-            write (6, *) ' Warning old definition wrong scaling of time sqrt(2) smaller than standard'
+            call log_warning(' Warning old definition wrong scaling of time sqrt(2) smaller than standard')
         end if
 
         if (use_stable_tpar) inc_tpar_frequency = 50
@@ -502,23 +500,22 @@ subroutine read_datasmin
 #if defined PARALLEL && defined __SCALAPACK
         if (k6gen .and. min_block .eq. 100) then
             min_block = 1000
-            write (6, *) ' Default value of min_block =', min_block
+            call log_info(' Default value of min_block =', min_block)
         end if
 #else
         if (k6gen) then
             k6gen = .false.
-            write (6, *) ' Warning to use k6gen recompile with __SCALAPACK precompiler &
-                 &  flag !!! '
+            call log_warning(' Warning to use k6gen recompile with __SCALAPACK precompiler flag !!! ')
         end if
 #endif
 
         if (parr .lt. 0.d0 .and. eps_umrigar .eq. -1.d0) then
             eps_umrigar = -parr/10.d0
-            write (6, *) ' Default value of eps_umrigar ', eps_umrigar
+            call log_info(' Default value of eps_umrigar ', eps_umrigar)
         end if
         if (parr .gt. 0.d0 .and. eps_umrigar .ne. 0.d0) then
             eps_umrigar = 0.d0
-            write (6, *) ' Warning   eps_umrigar=0 in this case , reset to  0'
+            call log_warning(' Warning   eps_umrigar=0 in this case , reset to  0')
         end if
         if (beta_learning .eq. -1.d0) then
             !     if(change_tpar) then
@@ -530,70 +527,70 @@ subroutine read_datasmin
         end if
 
         if (signalnoise .and. tion .eq. -1.d0) then
-            write (6, *) ' Default value of tion =', tpar
+            call log_info(' Default value of tion =', tpar)
             tion = tpar
         end if
         default_epsdgel = .false.
         if (epsdgel .eq. -1.d0) then
             default_epsdgel = .true.
             epsdgel = 0.001d0
-            write (6, *) ' Default value of epsdgel =', epsdgel
+            call log_info(' Default value of epsdgel =', epsdgel)
         end if
 
         if (npbra .ne. 0) noreadnpbra = .false.
         iflagerrall = iflagerr + iflagerrall
         if (nmore_force .eq. -1) then
-            write (6, *) ' Default value of nweight for forces nweight X ', nmore_force
+            call log_info(' Default value of nweight for forces nweight X ', nmore_force)
             nmore_force = 1
         end if
         if (nmore_force .gt. 1 .and. iboot .ne. 0) then
-            write (6, *) ' Warning iboot=/0 is not possible with nmore_force>0, forced to 0'
+            call log_warning(' Warning iboot=/0 is not possible with nmore_force>0, forced to 0')
             iboot = 0
         end if
         if (ncg .gt. 1 .and. itestrr .ne. -4) then
-            write (6, *) ' Warning with SR optimization ncg>1 not possible, ncg changed to 1 '
+            call log_warning(' Warning with SR optimization ncg>1 not possible, ncg changed to 1 ')
             ncg = 1
         end if
 
         if (iboot .lt. 0) then
-            write (6, *) "Warning: negative iboot is not allowed! is reset to 0 !"
+            call log_warning("Warning: negative iboot is not allowed! is reset to 0 !")
             iboot = 0
         end if
 
         if (nweight .le. iboot) then
-            write (6, *) "ERROR: nweight too small !!! > iboot >=0 "
+            call log_error("ERROR: nweight too small !!! > iboot >=0 ")
             iflagerrall = iflagerr + 1
         end if
 
         if (tolcg .eq. -1.d0) then
             tolcg = 1d-6 ! does not make any sense a too small accuracy, otherwise the energy
             !                    may increase.
-            write (6, *) ' Default value for tolcg   =', tolcg
+            call log_info(' Default value for tolcg   =', tolcg)
         end if
 
         if (minzj .eq. -1000.d0 .and. minz .ne. -1000.d0) then
             minzj = minz
-            write (6, *) ' Default value for minzj =', minzj
+            call log_info(' Default value for minzj =', minzj)
         end if
         if (maxzj .eq. -1000.d0 .and. minz .ne. -1000.d0) then
             maxzj = maxz
-            write (6, *) ' Default value for minzj =', maxzj
+            call log_info(' Default value for minzj =', maxzj)
         end if
         if (twobodyoff .and. iessz) then
             if (.not. onebodysz) then
-                write (6, *) ' Setting one body only also for spin Jastrow '
+                call log_info(' Setting one body only also for spin Jastrow ')
                 onebodysz = .true.
             end if
         end if
         if (minjonetwobody .eq. -1.d0) then
             minjonetwobody = 0.05d0
-            write (6, *) ' Default value of minimum one-two body Jastrow =', minjonetwobody
+            call log_info(' Default value of minimum one-two body Jastrow =', minjonetwobody)
         end if
 
         !added by K. Nakano for automatic gutta cavat lapidem (to adjust tpar)
         if (change_tpar) then
-            write (6, *) ' Warning: tpar is automatically changed on the fly.'
-            write (6, *) ' multiply_tpar = ', multiply_tpar
+            call log_warning(' Warning: tpar is automatically changed on the fly.')
+            call log_info(' multiply_tpar = ', multiply_tpar)
         end if
         !added by K.Nakano
 
@@ -631,26 +628,26 @@ subroutine read_datasmin
 #endif
         read (5, nml=readio, err=116)
         iflagerr = 0
-        write (6, *) ' After reading readio '
-116     if (iflagerr .ne. 0) write (6, *) ' ERROR reading readio '
+        call log_info(' After reading readio ')
+116     if (iflagerr .ne. 0) call log_error(' ERROR reading readio ')
         iflagerrall = iflagerr + iflagerrall
 
         if (iread .eq. -1 .and. optbra .gt. 3) then
             iread = 6
-            write (6, *) ' Default value of  iread ', iread
+            call log_info(' Default value of  iread ', iread)
         elseif (iread .eq. -1) then
             iread = 0
-            write (6, *) ' Default value of  iread ', iread
+            call log_info(' Default value of  iread ', iread)
         end if
 
         if (io_level .eq. 2 .and. iread .eq. 2) then
-            write (6, *) ' Warning iread promoted to 3 (you can do everything you do with iread=2) in mpiio case !!!'
+            call log_warning(' Warning iread promoted to 3 (you can do everything you do with iread=2) in mpiio case !!!')
             iread = 3
         end if
 
-        if (iread .eq. 3) write (6, *) 'CORRELATED SAMPLING'
+        if (iread .eq. 3) call log_info('CORRELATED SAMPLING')
         if (iread .eq. 2 .or. iread .eq. 3) then
-            write (6, *) 'dumping configurations each', ifreqdump, 'generations'
+            call log_info('dumping configurations each', ifreqdump, 'generations')
         end if
 
         !          default values parameters vmc with calculation of variance
@@ -743,15 +740,15 @@ subroutine read_datasmin
                 epsbas = 1.0d-7
             end if
             if (yes_scemama) epsbas = epsbas/10.d0
-            write (6, *) ' Default value of epsbas =', epsbas
+            call log_info(' Default value of epsbas =', epsbas)
         end if
         if (link_atom) vdw = .true.
         if (link_atom) mm_restr = .false.
         if (mm_restr) link_atom = .false.
 
-        write (6, *) ' After reading parameters '
+        call log_info(' After reading parameters ')
         iflagerr = 0
-117     if (iflagerr .ne. 0) write (6, *) ' ERROR reading parameters '
+117     if (iflagerr .ne. 0) call log_error(' ERROR reading parameters ')
         iflagerrall = iflagerr + iflagerrall
         if (yes_kpoints) then
             manyfort10 = .true.
@@ -765,15 +762,15 @@ subroutine read_datasmin
 
         if (nrep_bead .gt. 1 .and. yesquantum) then
             if (yesavsr) then
-                write (6, *) ' Warning yesavsr forced to .false. with nrep_bead>1'
+                call log_warning(' Warning yesavsr forced to .false. with nrep_bead>1')
                 yesavsr = .false.
             end if
             if (yesavopt) then
-                write (6, *) ' Warning yesavopt forced to .false. with nrep_bead>1'
+                call log_warning(' Warning yesavopt forced to .false. with nrep_bead>1')
                 yesavopt = .false.
             end if
         elseif (.not. yesavsr .and. yesavopt) then
-            write (6, *) ' Warning yesavsr forced to .true.  with yesavopt=.true.'
+            call log_warning(' Warning yesavsr forced to .true.  with yesavopt=.true.')
             yesavsr = .true.
         end if
 
@@ -783,7 +780,7 @@ subroutine read_datasmin
         ! during a minimization run
         if (add_pulay .eq. -1) then
             add_pulay = 2
-            write (6, *) ' Default value of add_pulay =', add_pulay
+            call log_info(' Default value of add_pulay =', add_pulay)
         end if
         !------------------------------------------------------------
 
@@ -795,12 +792,12 @@ subroutine read_datasmin
                 else
                     ieser = 1
                 end if
-                write (6, *) ' Default value for ieser=', ieser
+                call log_info(' Default value for ieser=', ieser)
             end if
             if (isfix .eq. -1) then
                 if (parcutg .eq. 0) then
                     isfix = 1
-                    write (6, *) ' Default value for isfix=', isfix
+                    call log_info(' Default value for isfix=', isfix)
                 else
                     if (gamma .ne. 0.d0 .and. optbra .ne. 3) then
                         isfix = 3
@@ -808,19 +805,19 @@ subroutine read_datasmin
                         isfix = 1
                     end if
 
-                    write (6, *) ' Default value for isfix=', isfix
+                    call log_info(' Default value for isfix=', isfix)
                 end if
             end if
         else
             if (ieser .eq. -1) then
                 ieser = 0
-                write (6, *) ' Default value for ieser=', ieser
+                call log_info(' Default value for ieser=', ieser)
             end if
             isfix = 0 ! no variance during minimization
         end if
 
-        write (6, *) ' Basis set cutoff chosen:', epsbas
-        write (6, *) ' after parameters   '
+        call log_info(' Basis set cutoff chosen:', epsbas)
+        call log_info(' after parameters   ')
         !          default values for unused
         ! no special type of DMC/LRDMC
         rsignr = 0.d0
@@ -832,8 +829,8 @@ subroutine read_datasmin
             iflagerr = 1
             read (5, nml=unused, err=118)
             iflagerr = 0
-            write (6, *) ' After reading unused    '
-118         if (iflagerr .ne. 0) write (6, *) ' ERROR reading unused '
+            call log_info(' After reading unused    ')
+118         if (iflagerr .ne. 0) call log_error(' ERROR reading unused ')
             iflagerrall = iflagerr + iflagerrall
         end if
         !          if(molopt.eq.0.and.testderiv.ge.0) testderiv=-1-testderiv
@@ -853,22 +850,22 @@ subroutine read_datasmin
         !if (link_atom) vdw=.true.
         !write(6,*) 'After reading the external potential'
         if (ext_pot) then
-            write (*, *) ''
-            write (6, *) '|**************************************|'
-            write (6, *) '| ADDING AN EXTERNAL QMC/MM POTENTIAL  |'
-            write (6, *) '|**************************************|'
-            write (*, *) ''
+            call log_info('')
+            call log_info('|**************************************|')
+            call log_info('| ADDING AN EXTERNAL QMC/MM POTENTIAL  |')
+            call log_info('|**************************************|')
+            call log_info('')
         end if !900        if (iflagerr.ne.0) write(6,*) 'ERROR reading the external potential'
 
         if (link_atom) then
             iflagerr = 1
             read (5, nml=link, err=898)
             iflagerr = 0
-898         if (iflagerr .ne. 0) write (6, *) 'ERROR reading the link namelist'
+898         if (iflagerr .ne. 0) call log_error('ERROR reading the link namelist')
         end if
 
-        write (6, *) ' Parameters: iesinv,iesm,iesd,iesfree,iessw,iesup,ieskin '
-        write (6, *) ' Parameters before read ', iesinv, iesm, iesd, iesfree, iessw, iesup, ieskin
+        call log_info(' Parameters: iesinv,iesm,iesd,iesfree,iessw,iesup,ieskin ')
+        call log_info(' Parameters before read ', iesinv, iesm, iesd, iesfree, iessw, iesup, ieskin)
 
         !
         ! correct input parameters if necessary
@@ -890,29 +887,29 @@ subroutine read_datasmin
                 if (.not. better_dmc) cutreg = 0.d0
             elseif (cutreg .ne. 0.d0) then
                 cutreg = 0.d0
-                write (6, *) ' Warning  cutreg set to zero', cutreg
+                call log_warning(' Warning  cutreg set to zero', cutreg)
             end if
         end if
 
         if (better_dmc) then
             if (cutreg .gt. 0) then
                 if (.not. yesalfe) then
-                    write (6, *) ' Warning DMC cutoff on local energy (Ry)=', cutreg*zmax**2
+                    call log_warning(' Warning DMC cutoff on local energy (Ry)=', cutreg*zmax**2)
                 else
-                    write (6, *) ' Warning DMC cutoff on local energy (Ry)=', cutreg
+                    call log_warning(' Warning DMC cutoff on local energy (Ry)=', cutreg)
                 end if
             else
                 if (cutreg .ne. -2.d0) then
-                    write (6, *) ' Warning NO DMC cutoff on the local energy'
+                    call log_warning(' Warning NO DMC cutoff on the local energy')
                 else
-                    write (6, *) ' Warning Umrigar 1993 cutoff on the local energy'
+                    call log_warning(' Warning Umrigar 1993 cutoff on the local energy')
                 end if
             end if
         else
             if (cutreg .ne. -2.d0) then
-                write (6, *) ' Warning NO DMC cutoff on the local energy'
+                call log_warning(' Warning NO DMC cutoff on the local energy')
             else
-                write (6, *) ' Warning Umrigar 1993 cutoff on the local energy'
+                call log_warning(' Warning Umrigar 1993 cutoff on the local energy')
             end if
         end if
 
@@ -922,18 +919,18 @@ subroutine read_datasmin
             !  With parcutg =/0  H^a within LRDMC is regularized with the Guiding function
             !  so that we can sample the region where psi_T ~0.
             if (itestr .ne. -6 .and. itestr4 .ne. -7 .and. itestr4 .ge. -20) then
-                write (6, *) ' Warning you cannot use the guiding =/ trial in DMC !!!'
+                call log_warning(' Warning you cannot use the guiding =/ trial in DMC !!!')
                 parcutg = 0
                 novar = 0
-                write (6, *) ' parcutg set to zero', parcutg
+                call log_info(' parcutg set to zero', parcutg)
             else
                 if (alat .eq. 0.d0) then
                     alat = -1.d0/zmax
-                    write (6, *) ' Default value for alat =', alat
+                    call log_info(' Default value for alat =', alat)
                 end if
                 if (novar .eq. -1) then
                     novar = 0
-                    write (6, *) ' Default value of novar =', novar
+                    call log_info(' Default value of novar =', novar)
                 end if
             end if
         end if
@@ -941,10 +938,10 @@ subroutine read_datasmin
         if (parcutg .eq. 2 .and. cutreg .eq. 0.d0) then
             if (zmax .gt. 0.d0) then
                 cutreg = abs(alat)/sqrt(zmax)
-                write (6, *) ' Default value of cutreg =', 1.d0/sqrt(zmax)
+                call log_info(' Default value of cutreg =', 1.d0/sqrt(zmax))
             end if
         elseif (parcutg .eq. 2) then
-            write (6, *) ' Warning input cutreg =', cutreg
+            call log_warning(' Warning input cutreg =', cutreg)
             cutreg = cutreg*abs(alat)
         end if
 
@@ -955,12 +952,12 @@ subroutine read_datasmin
             elseif (epscut .gt. 0.d0) then
                 epscuttype = 2
             end if
-            write (6, *) ' Default value of epscuttype= ', epscuttype
+            call log_info(' Default value of epscuttype= ', epscuttype)
         else
-            write (6, *) ' Read value of epscuttype= ', epscuttype
+            call log_info(' Read value of epscuttype= ', epscuttype)
         end if
         if (epscuttype .gt. 2 .or. epscuttype .lt. 0) then
-            write (6, *) ' ERROR this epscuttype does not exist !!! '
+            call log_error(' ERROR this epscuttype does not exist !!! ')
             iflagerr = 1
             iflagerrall = iflagerr + iflagerrall
             !            check if the option exists otherwise set iflagerr=1
@@ -969,14 +966,14 @@ subroutine read_datasmin
         if (epscut .eq. 0 .and. epscuttype .ne. 0) then
             if (epscuttype .le. 0) epscut = epscuttype
             if (epscuttype .gt. 0) then
-                write (6, *) ' ERROR you should define epscut in this case !!! '
+                call log_error(' ERROR you should define epscut in this case !!! ')
                 iflagerr = 1
                 iflagerrall = iflagerrall + 1
             else
-                write (6, *) ' Default value of epscut=', epscut
+                call log_info(' Default value of epscut=', epscut)
             end if
         else
-            write (6, *) ' Read value of epscut=', epscut
+            call log_info(' Read value of epscut=', epscut)
         end if
 
         if (tstep .eq. -1.d0) then
@@ -985,49 +982,47 @@ subroutine read_datasmin
             else
                 tstep = 0.d0
             end if
-            write (6, *) ' Default value of tstep=', tstep
+            call log_info(' Default value of tstep=', tstep)
         else
-            write (6, *) ' Read value of tstep=', tstep
+            call log_info(' Read value of tstep=', tstep)
         end if
 
         epstl = epstlrat*epscut
 
         if (iflagerr .eq. 0) then ! if the read was OK
             if (ireadminr .gt. 0 .and. yesfast .gt. 0) then
-                write (6, *) ' Warning in reading parameters yesfast changed to Default '
+                call log_warning(' Warning in reading parameters yesfast changed to Default ')
                 yesfast = -1
             end if
 
             if (ieskinold .ne. 0) then
                 if (warp) then
-                    write (6, *) ' Default used warp for forces '
+                    call log_info(' Default used warp for forces ')
                 else
-                    write (6, *) ' Warning no warp used for forces '
+                    call log_warning(' Warning no warp used for forces ')
                 end if
             end if
 
             if (yespress .and. iespbc .and. typedyncell .eq. -2 .and. itestr .eq. -5) then
                 typedyncell = 3
-                write (6, *) ' Warning  changed typedyncell with yespress=.true.=', 3
+                call log_warning(' Warning  changed typedyncell with yespress=.true.=', 3)
             end if
 
             if (.not. iespbc .and. (yespress .or. typedyncell .gt. 0)) then
                 if (yespress) &
-                     &write (6, *) ' Warning no calculation of pressure with open systems '
+                     call log_warning(' Warning no calculation of pressure with open systems ')
                 yespress = .false.
                 if (typedyncell .gt. 0) &
-                     &write (6, *) ' Warning no cell derivatives with open systems'
+                     call log_warning(' Warning no cell derivatives with open systems')
                 typedyncell = 0
             end if
 
             if ((typedyncell .ge. 0 .or. yespress) .and. ieskinold .eq. 0) then
                 if (yespress) &
-                    write (6, *) ' Warning no calculation of pressure without ieskin=1 '
+                    call log_warning(' Warning no calculation of pressure without ieskin=1 ')
                 yespress = .false.
                 if (typedyncell .ge. 0) &
-                     &write (6, *) ' Warning no calculation of cell derivatives/forces  &
-                     &without ieskin=1&
-                     & in the parameters section '
+                     call log_warning(' Warning no calculation of cell derivatives/forces without ieskin=1 in the parameters section ')
                 typedyncell = -1
             end if
 
@@ -1038,7 +1033,7 @@ subroutine read_datasmin
             end if
 
             if (ireadminr .ne. 0 .and. ngen .ge. nweight) then
-                write (6, *) ' Warning ngen replaced to the maximum allowed ', nweight - 1
+                call log_warning(' Warning ngen replaced to the maximum allowed ', nweight - 1)
                 ngen = nweight - 1
             elseif (mod(ngen, nweight) .ne. 0) then
                 call error('main', 'you cannot continue the run!!!', -1, rank)
@@ -1058,14 +1053,14 @@ subroutine read_datasmin
                         nintpsa = 6
                     end if
                 end if
-                write (6, *) ' Default value for nintpsa ', nintpsa
+                call log_info(' Default value for nintpsa ', nintpsa)
             else
-                write (6, *) ' Read value for nintpsa ', nintpsa
+                call log_info(' Read value for nintpsa ', nintpsa)
             end if
             if (npsa .ne. 0 .and. npsamax .eq. 0) then
                 npsamax = 2
                 if (npsa .eq. 1) npsamax = 1
-                write (6, *) ' Default value for npsamax ', npsamax
+                call log_info(' Default value for npsamax ', npsamax)
             end if
 
             if (itest .eq. 1 .or. itestr4 .eq. -7) then ! begin if DMC/LRDMC
@@ -1082,9 +1077,7 @@ subroutine read_datasmin
                             if (npsa .ne. 0) then
                                 r_c = 1.d0
                                 plat(1) = -2.d0*r_c**2 ! default length of valence region r> r_c
-                                if (rank .eq. 0) write (6, *)&
-                                   & ' Default length of valence region r> rc,'//&
-                                   & ' change it by  plat(1)=-2xrc^2 in input  =', r_c
+                                call log_info(' Default length of valence region r> rc, change it by  plat(1)=-2xrc^2 in input  =', r_c)
                             else
 
                                 beta_for_r_c = 0.75d0
@@ -1093,7 +1086,7 @@ subroutine read_datasmin
                                     &*(kappa_for_r_c*(zmax*alat)**2.0d0 + 1.0d0)&
                                     &/((zmax*alat)**2.0d0 + 1.0d0)
                                 plat(1) = -2.0d0*r_c**2.0d0
-                                write (6, *) ' r_c and alat2 are given by the Thomas-Fermi theory'
+                                call log_info(' r_c and alat2 are given by the Thomas-Fermi theory')
                                 !                 endif
 !!!! new !!!! added by K.Nakano 11/09/2019
 
@@ -1102,13 +1095,13 @@ subroutine read_datasmin
                         else
                             plat(1) = 0.d0
                         end if
-                        write (6, *) ' Default value for plat(1)=', plat(1)
+                        call log_info(' Default value for plat(1)=', plat(1))
                     elseif (alat2 .eq. -1.d0) then
                         if (plat(1) .gt. 0) then
                             r_c = plat(1)
                             plat(1) = -2.0d0*r_c**2.0d0
                         end if
-                        write (6, *) ' Default value for plat(1)=', plat(1)
+                        call log_info(' Default value for plat(1)=', plat(1))
                     end if
                     if (alat2 .eq. -1.d0) then ! default value two lattice spaces
                         if (alat .gt. 0) then
@@ -1118,22 +1111,18 @@ subroutine read_datasmin
 !!!! new !!!! added by K.Nakano 11/09/2019
                             num_ele_core_r_c = Thomas_Fermi_core_electron_number(zmax, r_c) - core_pseudo
                             if (npsa .eq. 0) then
-                                write (6, *) ' num_ele_core=', num_ele_core_r_c
-                                write (6, *) ' num_ele_core/atomic_number=', num_ele_core_r_c/zmax
+                                call log_info(' num_ele_core=', num_ele_core_r_c)
+                                call log_info(' num_ele_core/atomic_number=', num_ele_core_r_c/zmax)
 
                                 alat2 = dsqrt(l0_kousuke*(zmax - core_pseudo - num_ele_core_r_c)/num_ele_core_r_c)
 !!!! new !!!! added by K.Nakano 11/09/2019
                             else
                                 if (zmax .le. 18) then
                                     alat2 = sqrt(5.d0)
-                                    write (6, *)&
-                                       & ' Warning default alatp/alat for pseudo sqrt(5.)  !!!'//&
-                                       & ', change it by alat2=better ratio in input'
+                                    call log_warning(' Warning default alatp/alat for pseudo sqrt(5.)  !!!, change it by alat2=better ratio in input')
                                 else
                                     alat2 = sqrt(7.d0)
-                                    write (6, *)&
-                                       & ' Warning default alatp/alat for pseudo sqrt(7.)  !!!'//&
-                                       & ', change it by alat2=better ratio in input'
+                                    call log_warning(' Warning default alatp/alat for pseudo sqrt(7.)  !!!, change it by alat2=better ratio in input')
                                 end if
                             end if
 
@@ -1147,9 +1136,9 @@ subroutine read_datasmin
                             alat2 = 0.d0
                         end if
                         if (alat2 .eq. 0) then
-                            write (6, *) ' Default single mesh '
+                            call log_info(' Default single mesh ')
                         else
-                            write (6, *) ' Default double mesh alat2= ', alat2
+                            call log_info(' Default double mesh alat2= ', alat2)
                         end if
                     end if
                     if (alat2 .ne. 0.d0 .and. alat .gt. 0) then
@@ -1163,8 +1152,8 @@ subroutine read_datasmin
                         end do
 
                         if (cost .ne. 0.d0) then
-                            write (6, *) ' Warning alat2 rational number ', nint(cost), '/', nint(cost/alat2)
-                            write (6, *) ' Minimum lattice space =', alat/(cost/alat2)
+                            call log_warning(' Warning alat2 rational number ', nint(cost), '/', nint(cost/alat2))
+                            call log_info(' Minimum lattice space =', alat/(cost/alat2))
                         end if
                     end if
                     if (klrdmc .eq. -1000.d0) then
@@ -1173,29 +1162,29 @@ subroutine read_datasmin
                         else
                             klrdmc = 0.d0
                         end if
-                        write (6, *) ' Default Value for Klrdmc=', klrdmc
+                        call log_info(' Default Value for Klrdmc=', klrdmc)
                     end if
                     if (plat(2) .eq. -1000.d0) then
                         plat(2) = 1.d0 + Klrdmc*alat**2
-                        write (6, *) ' Default Value for eta=plat(2)=', plat(2)
+                        call log_info(' Default Value for eta=plat(2)=', plat(2))
                     end if
 
                     if (plat(3) .eq. -1000.d0 .and. alat2 .ne. 0.d0) then
                         plat(3) = plat(2)
-                        write (6, *) ' Default value for plat(3)=', plat(3)
+                        call log_info(' Default value for plat(3)=', plat(3))
                     end if
                     if (plat(3) .eq. -1000.d0 .and. alat2 .eq. 0.d0) then
                         plat(3) = 0.d0
-                        write (6, *) ' Default value for plat(3)=', plat(3)
+                        call log_info(' Default value for plat(3)=', plat(3))
                     end if
                     if (tbra .eq. 0.d0) then
                         tbra = 10.d0/zmax**2
-                        write (6, *) ' Default value for tbra =', tbra
+                        call log_info(' Default value for tbra =', tbra)
                     end if
                 else
                     if (tbra .eq. 0.d0) then
                         tbra = 1.d0/zmax**2
-                        write (6, *) ' Default value for tbra =', tbra
+                        call log_info(' Default value for tbra =', tbra)
                     end if
                 end if ! endif for lrdmc
 
@@ -1203,7 +1192,7 @@ subroutine read_datasmin
             if (ieskinold .ne. 0) then
                 if ((idyn .ne. 0 .or. signalnoise) .and. typedyncell .eq. -2) then
                     typedyncell = 0
-                    write (6, *) ' Default value of typedyncell (NVT) ', typedyncell
+                    call log_info(' Default value of typedyncell (NVT) ', typedyncell)
                 end if
 
                 if (typedyncell .eq. 0) then
@@ -1248,8 +1237,7 @@ subroutine read_datasmin
             end if ! endif ieskin ne 0
 
             if (typedyncell .gt. 1 .and. yesquantum) then
-                write (6, *) ' Warning quantum presssure correction not included in dynamics !!! &
-                     & but only in output writing pressure.dat'
+                call log_warning(' Warning quantum presssure correction not included in dynamics !!! but only in output writing pressure.dat')
             end if
 
             if (ipc .eq. 1 .or. itest .ne. 2) then
@@ -1261,8 +1249,7 @@ subroutine read_datasmin
                 iese = 0
             end if
 
-            write (6, *) ' Parameters after  read '                            &
-                 &, iese, iesinv, iesm, iesd, iesfree, iessw, iesup, ieskin
+            call log_info(' Parameters after  read ', iese, iesinv, iesm, iesd, iesfree, iessw, iesup, ieskin)
 
             ieskint = ieskin + iesking
 
@@ -1280,7 +1267,7 @@ subroutine read_datasmin
                     ! no output in the optimization
                     if (ncg .eq. 0 .and. noreadnpbra .and. itestrr .eq. -4) then
                         npbra = npbra + np - ieskin
-                        write (6, *) ' Default full Hessian npbra=', npbra
+                        call log_info(' Default full Hessian npbra=', npbra)
                     end if
                     np3 = 0
                 end if
@@ -1288,7 +1275,7 @@ subroutine read_datasmin
 
             if (abs(kl) .eq. 7 .and. itestr .eq. -5 .and. prep .eq. -1) then
                 prep = nint(sqrt(dble(np)/dble(nweight)))
-                write (6, *) ' Default value of prep', prep
+                call log_info(' Default value of prep', prep)
                 if (prep .le. 1) prep = -1
             end if
 
@@ -1297,9 +1284,9 @@ subroutine read_datasmin
                 def_nscra = .true.
                 nscra = 2*nel + 2 ! +2 , Otherwise sometimes it calls an unnecessary scratchdet before compute_fast
                 if (ipf .eq. 2) nscra = nel/2
-                write (6, *) ' Default value for nscra ', nscra
+                call log_info(' Default value for nscra ', nscra)
             else
-                write (6, *) ' Read value for nscra ', nscra
+                call log_info(' Read value for nscra ', nscra)
             end if
             if (nbra .eq. 0) then
                 if (itest .eq. 2) then
@@ -1316,19 +1303,19 @@ subroutine read_datasmin
                         nbra = 1 ! default for lrdmc used only for output acceptance moves
                     end if
                 end if
-                write (6, *) ' Default value for nbra ', nbra
+                call log_info(' Default value for nbra ', nbra)
             else
-                write (6, *) ' Read value for nbra ', nbra
+                call log_info(' Read value for nbra ', nbra)
             end if
 
             if (ncg .gt. np) then
                 ncg = np
-                write (6, *) ' Warning ncg<= #parameters!, changed to ', ncg
+                call log_warning(' Warning ncg<= #parameters!, changed to ', ncg)
             end if
 
             if (npbra .gt. np) then
                 npbra = max(np - ncg, 0)
-                write (6, *) ' Warning npbra<= #parameters!, changed to ', npbra
+                call log_warning(' Warning npbra<= #parameters!, changed to ', npbra)
             end if
 
             if (.not. yesdft) then
@@ -1403,19 +1390,19 @@ subroutine read_datasmin
 
                 read (5, nml=fitpar, err=119)
                 iflagerr = 0
-                write (6, *) ' After reading fitpar '
-119             if (iflagerr .ne. 0) write (6, *) ' ERROR reading fitpar '
+                call log_info(' After reading fitpar ')
+119             if (iflagerr .ne. 0) call log_error(' ERROR reading fitpar ')
                 iflagerrall = iflagerr + iflagerrall
             end if
             if (npower .gt. 0 .and. powermin .lt. 0) then
-                write (6, *) ' Warning  divergent Jastrow powermin<0 '
+                call log_warning(' Warning  divergent Jastrow powermin<0 ')
             end if
             if (npowersz .gt. 0 .and. powerminsz .lt. 0) then
-                write (6, *) ' Warning  divergent spin Jastrow powermin<0 '
+                call log_warning(' Warning  divergent spin Jastrow powermin<0 ')
             end if
 
             if (iesfree .lt. 0 .and. iessw .lt. 0 .and. iesinv .lt. 0) then
-                write (6, *) ' Parametrization lambda matrices Jas Sz Jas and Det '
+                call log_info(' Parametrization lambda matrices Jas Sz Jas and Det ')
                 !      read(5,*)   nparinv,initparinv,rmaxinv,npar,initpar,rmaxj
                 !    1,nparsw,initparsw,rmax
                 iesinv = abs(iesinv)
@@ -1425,7 +1412,7 @@ subroutine read_datasmin
                 if (rmaxj .le. 0) rmaxj = 1d-10
                 if (rmaxinv .le. 0) rmaxinv = 1d-10
             elseif (iesfree .lt. 0 .and. iessw .lt. 0) then
-                write (6, *) ' Parametrization lambda matrices Jas and Det '
+                call log_info(' Parametrization lambda matrices Jas and Det ')
                 !      read(5,*) npar,initpar,rmaxj,nparsw,initparsw,rmax
                 iesfree = abs(iesfree)
                 iessw = abs(iessw)
@@ -1435,7 +1422,7 @@ subroutine read_datasmin
                 if (rmax .le. 0) rmax = 1d-10
                 if (rmaxj .le. 0) rmaxj = 1d-10
             elseif (iesinv .lt. 0 .and. iessw .lt. 0) then
-                write (6, *) ' Parametrization lambda matrices Jas Sz and Det '
+                call log_info(' Parametrization lambda matrices Jas Sz and Det ')
                 !      read(5,*) nparinv,initparinv,rmaxinv,nparsw,initparsw,rmax
                 iesinv = abs(iesinv)
                 iessw = abs(iessw)
@@ -1445,7 +1432,7 @@ subroutine read_datasmin
                 if (rmax .le. 0) rmax = 1d-10
                 if (rmaxinv .le. 0) rmaxinv = 1d-10
             elseif (iesinv .lt. 0 .and. iesfree .lt. 0) then
-                write (6, *) ' Parametrization lambda matrices Jas Sz and Jas  '
+                call log_info(' Parametrization lambda matrices Jas Sz and Jas  ')
                 !      read(5,*) nparinv,initparinv,rmaxinv,npar,initpar,rmaxj
                 iesinv = abs(iesinv)
                 iesfree = abs(iesfree)
@@ -1455,7 +1442,7 @@ subroutine read_datasmin
                 if (rmaxj .le. 0) rmaxj = 1d-10
                 if (rmaxinv .le. 0) rmaxinv = 1d-10
             elseif (iesfree .lt. 0) then
-                write (6, *) ' Parametrization lambda matrix  Jastrow   '
+                call log_info(' Parametrization lambda matrix  Jastrow   ')
                 !      read(5,*) npar,initpar,rmaxj
                 iesfree = abs(iesfree)
                 nparsw = 0
@@ -1466,7 +1453,7 @@ subroutine read_datasmin
                 initparinv = 0
                 if (rmaxj .le. 0) rmaxj = 1d-10
             elseif (iessw .lt. 0) then
-                write (6, *) ' Parametrization lambda matrix  Det  '
+                call log_info(' Parametrization lambda matrix  Det  ')
                 !      read(5,*) nparsw,initparsw,rmax
                 iessw = abs(iessw)
                 npar = 0
@@ -1477,7 +1464,7 @@ subroutine read_datasmin
                 rmaxinv = 0.d0
                 if (rmax .le. 0) rmax = 1d-10
             elseif (iesinv .lt. 0) then
-                write (6, *) ' Parametrization lambda matrix  Jas-Sz  '
+                call log_info(' Parametrization lambda matrix  Jas-Sz  ')
                 !      read(5,*) nparinv,initparinv,rmaxinv
                 iesinv = abs(iesinv)
                 npar = 0
@@ -1500,23 +1487,23 @@ subroutine read_datasmin
             end if
 
             if (initpar .lt. -1) then
-                write (6, *) ' VdW parametrization of the charge Jastrow factor '
+                call log_info(' VdW parametrization of the charge Jastrow factor ')
                 if (mod(npar, 4) .ne. 0) then
-                    write (6, *) ' ERROR you should have npar multiple of 4 !!! '
+                    call log_error(' ERROR you should have npar multiple of 4 !!! ')
                     iflagerr = 1
                     iflagerrall = iflagerr + iflagerrall
                 end if
             end if
             if ((npar .ne. 0 .or. nparsw .ne. 0 .or. nparinv .ne. 0 .or. npower .ne. 0&
                  &.or. npowersz .ne. 0) .and. abs(kl) .ne. 7) then
-                write (6, *) ' Warning |kl| changed to 7 with parametrization '
+                call log_warning(' Warning |kl| changed to 7 with parametrization ')
                 if (kl .gt. 0) then
                     kl = 7
                 else
                     kl = -7
                 end if
             end if
-            write (6, *) ' kl read =', kl
+            call log_info(' kl read =', kl)
 
             iflagk = 0
             if (iespbc) then
@@ -1525,7 +1512,7 @@ subroutine read_datasmin
                 !1056   continue
                 if (kSq .eq. 0.d0) then
                     kSq = 1.d-8
-                    write (6, *) ' Default values for kSq (precision Ewald) ', kSq
+                    call log_info(' Default values for kSq (precision Ewald) ', kSq)
                 end if
                 if (kappar .eq. 0.d0) then
                     !             if(yes_tilted)  then
@@ -1547,18 +1534,18 @@ subroutine read_datasmin
                         kappar = kappar*2
                     end if
                     !             endif
-                    write (6, *) ' Default value for kappar=', kappar
+                    call log_info(' Default value for kappar=', kappar)
                 end if
                 if (neigh .eq. -1) then
                     neigh = 1
-                    write (6, *) ' Default value of neighbors in Ewald ', neigh
+                    call log_info(' Default value of neighbors in Ewald ', neigh)
                 end if
             else
                 kSq = 0.d0
                 kappar = 0.d0
                 rs = -1.d0
             end if
-            write (6, *) ' before dynamic '
+            call log_info(' before dynamic ')
 
             !       default values
             temp = 0.d0
@@ -1598,24 +1585,24 @@ subroutine read_datasmin
             if (idyn .ne. 0) then
                 iflagerr = 1
                 read (5, nml=dynamic, err=120)
-                write (6, *) ' After reading dynamic '
+                call log_info(' After reading dynamic ')
                 iflagerr = 0
-120             if (iflagerr .ne. 0) write (6, *) ' ERROR reading dynamic '
+120             if (iflagerr .ne. 0) call log_error(' ERROR reading dynamic ')
                 iflagerrall = iflagerr + iflagerrall
                 if (scalecov .le. 0.d0) scalecov = 1.d0
                 ! if read value of temp is negative, its absolute value is interpreted
                 if ((idyn .eq. 7 .or. idyn .eq. 8) .and. delta0q .eq. 0) then
                     delta0q = friction
-                    write (6, *) ' Default value of Ceriotti 1/tau0 =', delta0q
+                    call log_info(' Default value of Ceriotti 1/tau0 =', delta0q)
                 end if
                 if ((idyn .eq. 7 .or. idyn .eq. 8) .and. delta0k .eq. 0) then
                     delta0k = 1.d0
-                    write (6, *) ' Default value of delta0k (Ceriotti choice) =', delta0k
+                    call log_info(' Default value of delta0k (Ceriotti choice) =', delta0k)
                 end if
                 ! as the temperature in K
                 if (temp .le. 0.d0) temp = -0.5*temp*kboltz/rydberg
 
-                write (*, *) ' Temperature (Kelvin) = ', temp*2*rydberg/kboltz
+                call log_info(' Temperature (Kelvin) = ', temp*2*rydberg/kboltz)
 
                 !       if(idyn.eq.5.and.normcorr.ne.0.d0.and.tion.gt.2.d0/normcorr) then
                 !      write(6,*) ' Warning you should use input tion <=2 Temp/normcorr&
@@ -1633,17 +1620,17 @@ subroutine read_datasmin
                     oldscaling = .true. ! idyn 8 does not care about mass reference !
                 end if
                 if (idyn .eq. 5 .and. yesquantum .and. .not. yesturboq) then
-                    write (6, *) ' Warning yesturboq = true with idyn=5 and quantum, changed '
+                    call log_warning(' Warning yesturboq = true with idyn=5 and quantum, changed ')
                     yesturboq = .true.
                 end if
 
                 if (yesturboq .and. .not. yesquantum) then
                     yesturboq = .false.
-                    write (6, *) ' Warning yesturboq = .false. in the classical case !!! '
+                    call log_warning(' Warning yesturboq = .false. in the classical case !!! ')
                 end if
                 if (nbead .eq. -1 .and. yesquantum) then
                     nbead = min(nproc, 16)
-                    write (6, *) ' Default value of beads =', nbead
+                    call log_info(' Default value of beads =', nbead)
                 end if
                 if (idyn .ne. 0) then
                     ! writing information about the quantum simulation
@@ -1657,8 +1644,7 @@ subroutine read_datasmin
                 !       endif
 
                 if (yesquantum .and. yesturboq .and. yesperiodize) then
-                    write (6, *) ' Warning yesturboq force to false as periodization &
-                         & does not work with yesturboq true'
+                    call log_warning(' Warning yesturboq force to false as periodization does not work with yesturboq true')
                     yesperiodize = .false.
                 end if
 
@@ -1667,7 +1653,7 @@ subroutine read_datasmin
                     & .and. idyn&
                     & .ne. 0&
                     & .and. (idyn .ne. 6 .and. idyn .ne. 7 .and. idyn .ne. 8 .and. idyn .ne. 5)) then
-                    write (6, *) ' Warning forced to idyn=7 in this case'
+                    call log_warning(' Warning forced to idyn=7 in this case')
                     idyn = 7
                 end if
 
@@ -1676,7 +1662,7 @@ subroutine read_datasmin
                 if (nmore_force .gt. 1) iskipdyn = iskipdyn + nmore_force - 1
 
                 if (npbra .lt. ieskin) then
-                    write (6, *) ' npbra > = ieskin !!! ', npbra, ieskin
+                    call log_info(' npbra > = ieskin !!! ', npbra, ieskin)
                     iflagerr = 1
                     iflagerrall = iflagerr + iflagerrall
                 end if
@@ -1686,30 +1672,29 @@ subroutine read_datasmin
             end if
 
             if (idyn .eq. 2) then
-                write (6, *) ' 2nd order Langevin dynamic with friction =', friction
-                write (6, *) ' Move ions each ', iskipdyn, 'steps'
+                call log_info(' 2nd order Langevin dynamic with friction =', friction)
+                call log_info(' Move ions each ', iskipdyn, 'steps')
             elseif (idyn .eq. 3 .or. idyn .eq. 4 .or. idyn .eq. 6) then
-                write (6, *) ' 2nd order Langevin dynamic with noise correction,    &
-                     &  friction =', friction
-                if (idyn .eq. 4) write (6, *) ' Delta t < 3/4 Delta_0 (unit Ry^-1) =', delta0
-                if (idyn .eq. 3) write (6, *) ' Delta t < Delta_0= (unit Ry^-1) ', delta0
-                write (6, *) ' Move ions each ', iskipdyn, 'steps'
-                write (6, *) ' Matrix covariance scaled by ', scalecov
+                call log_info(' 2nd order Langevin dynamic with noise correction, friction =', friction)
+                if (idyn .eq. 4) call log_info(' Delta t < 3/4 Delta_0 (unit Ry^-1) =', delta0)
+                if (idyn .eq. 3) call log_info(' Delta t < Delta_0= (unit Ry^-1) ', delta0)
+                call log_info(' Move ions each ', iskipdyn, 'steps')
+                call log_info(' Matrix covariance scaled by ', scalecov)
             elseif (idyn .eq. 8) then
                 if (yesquantum) then
-                    write (6, *) ' IDYN=8: Langevin based PIMD with Trotter breakup'
-                    write (6, *) ' exact harmonic propagation of quantum part with optimal damping'
-                    write (6, *) ' centroid friction =', delta0q
-                    write (6, *) ' Born-Oppenheimer friction =', friction
+                    call log_info(' IDYN=8: Langevin based PIMD with Trotter breakup')
+                    call log_info(' exact harmonic propagation of quantum part with optimal damping')
+                    call log_info(' centroid friction =', delta0q)
+                    call log_info(' Born-Oppenheimer friction =', friction)
                 else
-                    write (6, *) ' IDYN=8: classical 2nd order Langevin dynamic with noise correction'
-                    write (6, *) ' friction =', friction
+                    call log_info(' IDYN=8: classical 2nd order Langevin dynamic with noise correction')
+                    call log_info(' friction =', friction)
                 end if
-                write (6, *) ' Move ions each ', iskipdyn, 'steps'
-                write (6, *) ' Matrix covariance scaled by ', scalecov
+                call log_info(' Move ions each ', iskipdyn, 'steps')
+                call log_info(' Matrix covariance scaled by ', scalecov)
             elseif (idyn .eq. 5) then
-                write (6, *) ' Structural optimization or dynamics  with covariance matrix '
-                write (6, *) ' Move ions each ', iskipdyn, 'steps'
+                call log_info(' Structural optimization or dynamics  with covariance matrix ')
+                call log_info(' Move ions each ', iskipdyn, 'steps')
             end if
 
             if (eqcellab) then
@@ -1725,15 +1710,14 @@ subroutine read_datasmin
 
             if (ieskint .ne. 0) then
 
-                write (*, *) ' Differential-Warp  nuclear Forces!'
+                call log_info(' Differential-Warp  nuclear Forces!')
 
                 if (add_pulay .eq. 0) then
-                    write (*, *) ' No pulay for ionic forces '
+                    call log_info(' No pulay for ionic forces ')
                 elseif (add_pulay .eq. 1) then
-                    write (*, *) ' Only three-body and Jastro pulay               &
-                         & for ionic forces '
+                    call log_info(' Only three-body and Jastro pulay for ionic forces ')
                 else
-                    write (*, *) ' Full Pulay for ionic forces '
+                    call log_info(' Full Pulay for ionic forces ')
                 end if
 
             end if
@@ -1741,9 +1725,9 @@ subroutine read_datasmin
             if (itestr .eq. -5) then ! only for minimization
 
                 if (kl .ge. 0) then
-                    write (6, *) ' Fixing the parameters FOREVER '
+                    call log_info(' Fixing the parameters FOREVER ')
                 else
-                    write (6, *) ' Fixing the parameters EACH TIME '
+                    call log_info(' Fixing the parameters EACH TIME ')
                 end if
 
                 !          if((abs(kl).eq.6.or.abs(kl).eq.7).and.ncg.eq.0) then
@@ -1758,14 +1742,14 @@ subroutine read_datasmin
 
             if (itestr3 .eq. -8 .or. itestr3 .eq. -4 .or. itestr3 .eq. -5 .or. itestr3 .eq. -9) then
                 nbin = nbinr*nw/nproc
-                write (6, *) ' Total number of bins per processor =', nbin
+                call log_info(' Total number of bins per processor =', nbin)
             end if
 
             if (itestr3 .eq. -8 .or. itestr3 .eq. -4 .or. itestr3 .eq. -5 .or. itestr3 .eq. -9) then
                 np = iese + abs(iesinv) + iesm + iesd + isfix + abs(iesfree) + abs(iessw) + iesup&
                      &+ ieskint + isfix
-                write (6, *) ' Collective + normal  parameters '
-                write (6, *) ' np read =', np
+                call log_info(' Collective + normal  parameters ')
+                call log_info(' np read =', np)
             else
                 ! np=nbinr  ! ok what is read in readio
                 ! no use of binning is done
@@ -1809,7 +1793,7 @@ subroutine read_datasmin
             else
 
                 iflagerr = 1
-                write (6, *) ' before kpoints '
+                call log_info(' before kpoints ')
                 read (5, nml=kpoints, err=121)
                 iflagerr = 0
                 if (nk2 .eq. -1) nk2 = nk1
@@ -1825,7 +1809,7 @@ subroutine read_datasmin
                 case (1, -1) ! MP grid of k-points. No KPOINTS section is needed.
                     nk = nk1*nk2*nk3
                     if (nk .le. 0) then
-                        write (6, *) 'Check k-points grid !!'
+                        call log_info('Check k-points grid !!')
                         iflagerr = 1
                     end if
 
@@ -1846,7 +1830,7 @@ subroutine read_datasmin
                     ! nk1 = number of k-points
                     nk = nk1
                     if (nk .le. 0) then
-                        write (6, *) 'Specify nk1 greater than 0 if using kp_type=2 !!'
+                        call log_info('Specify nk1 greater than 0 if using kp_type=2 !!')
                         iflagerr = 1
                     end if
 
@@ -1856,14 +1840,14 @@ subroutine read_datasmin
                     ! nk2 = number of k-points per line
                     nk = (nk1 - 1)*nk2 + 1
                     if (nk .le. 0) then
-                        write (6, *) 'Specify nk1 and nk2 greater than 0 if using kp_type=3 !!'
+                        call log_info('Specify nk1 and nk2 greater than 0 if using kp_type=3 !!')
                         iflagerr = 1
                     end if
 
                 case (4, -4) ! random k-points generation
                     nk = nk1
                     if (nk .le. 0) then
-                        write (6, *) 'Specify nk1 greater than 0 if using kp_type=4 !!'
+                        call log_info('Specify nk1 greater than 0 if using kp_type=4 !!')
                         iflagerr = 1
                     end if
 
@@ -1871,19 +1855,19 @@ subroutine read_datasmin
                     nk = (nk1*nk2*nk3)**2
                     if (.not. double_kpgrid) double_kpgrid = .true.
                     if (nk .le. 0) then
-                        write (6, *) 'Check k-points grid !!'
+                        call log_info('Check k-points grid !!')
                         iflagerr = 1
                     end if
 
                 case default
-                    write (6, *) 'kp_type not recognized !!'
+                    call log_info('kp_type not recognized !!')
                     iflagerr = 1
 
                 end select
                 !
-                write (6, *) ' after kpoints '
-121             if (iflagerr .ne. 0) write (6, *) 'ERROR reading k-points'
-                if (iflagerr .eq. 0) write (6, *) 'after reading k-points, kp_type =', kp_type
+                call log_info(' after kpoints ')
+121             if (iflagerr .ne. 0) call log_error('ERROR reading k-points')
+                if (iflagerr .eq. 0) call log_info('after reading k-points, kp_type =', kp_type)
                 iflagerrall = iflagerr + iflagerrall
 
             end if
@@ -2222,18 +2206,16 @@ subroutine read_datasmin
     if (max_targetsr .eq. -1) then
         max_targetsr = max_target
 #ifdef _OFFLOAD
-        if (rank .eq. 0) write (6, *) ' Default value of max_targetsr= ', max_targetsr
+        call log_info(' Default value of max_targetsr= ', max_targetsr)
 #endif
     end if
     ! # walkers must be a multiple of # processors
     if (mod(nw, nproc) .ne. 0 .or. nproc .gt. 1000000) then
-        if (rank .eq. 0) then
-            write (*, *) 'change number of processors!!!'
-            write (*, *) 'walkers', nw, ' processes', nproc
-            if (nproc .gt. 1000000) then
-                write (6, *) ' too many processors, change convertdec'
-                write (6, *) ' with more than 6 digits  '
-            end if
+        call log_info('change number of processors!!!')
+        call log_info('walkers', nw, ' processes', nproc)
+        if (nproc .gt. 1000000) then
+            call log_info(' too many processors, change convertdec')
+            call log_info(' with more than 6 digits  ')
         end if
         call mpi_finalize(ierr)
         stop
@@ -2244,12 +2226,12 @@ subroutine read_datasmin
     call init_dielectric
 
     if (enforce_detailb .or. alat .lt. 0.d0) then
-        if (.not. iesrandoma .and. rank .eq. 0) write (6, *) ' Warning random lattice forced (iesrandoma=.true.) '
+        if (.not. iesrandoma) call log_warning(' Warning random lattice forced (iesrandoma=.true.) ')
         iesrandoma = .true.
     end if
     !
     if (ipc .eq. 1 .and. srcomplex) then
-        if (rank .eq. 0) write (6, *) ' Warning srcomplex turned to false (real case) '
+        call log_warning(' Warning srcomplex turned to false (real case) ')
         srcomplex = .false.
     end if
     !
@@ -2279,31 +2261,31 @@ subroutine read_datasmin
                 tot_wt_down = tot_wt_down + wkp_down(i)
             end do
             if (abs(tot_wt - 1.d0) .gt. 1d-6) then
-                write (6, *) ' Warning: wrong k-points up weights,rescaling! '
+                call log_warning(' Warning: wrong k-points up weights,rescaling! ')
                 wkp(:) = 1.d0/nk
                 tot_wt = 1.d0
             end if
             if (abs(tot_wt_down - 1.d0) .gt. 1d-6) then
-                write (6, *) ' Warning: wrong k-points down weights,rescaling! '
+                call log_warning(' Warning: wrong k-points down weights,rescaling! ')
                 wkp_down(:) = 1.d0/nk
                 tot_wt_down = 1.d0
             end if
 
-            if (double_kpgrid .and. rank .eq. 0) &
-                write (6, *) 'Warning: up spin k-points might be different from down spin ones!'
-            write (6, *) ' '
-            write (6, *) ' type k-points/# k-points/total weight ', kp_type, nk
-            write (6, *) ' k-points up/weights:'
+            if (double_kpgrid) &
+                call log_warning('Warning: up spin k-points might be different from down spin ones!')
+            call log_warning(' ')
+            call log_warning(' type k-points/# k-points/total weight ', kp_type, nk)
+            call log_warning(' k-points up/weights:')
             do i = 1, nk
-                write (6, 300) i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i)
+                call log_warning(' ', i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i))
             end do
-            write (6, *) ' '
-            write (6, *) ' k-points down/weights:'
+            call log_warning(' ')
+            call log_warning(' k-points down/weights:')
             do i = 1, nk
-                write (6, 300) i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i)
+                call log_warning(' ', i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i))
             end do
-            write (6, *) ' '
-300         format(3x, I6, 4x, F10.7, 3x, F10.7, 3x, F10.7, 3x, F10.7)
+            call log_warning(' ')
+            ! original format 300: (3x, I6, 4x, F10.7, 3x, F10.7, 3x, F10.7, 3x, F10.7)
             ! single phase calculation, xkp not relevant
         elseif (iespbc) then
             xkp(:, 1) = phase(:)
@@ -2320,7 +2302,7 @@ subroutine read_datasmin
         if (kaverage .and. nbead .le. 1) then
             ! write file "kp_weights.dat" needed to perform averages
             open (unit=37, file='kp_info.dat', form='formatted', status='unknown', position='rewind')
-            write (6, *) ' Writing k-points information on file '
+            call log_warning(' Writing k-points information on file ')
             write (37, '(I6)') nk
             write (37, *) '# up spin electrons '
             do i = 1, nk
@@ -2355,27 +2337,25 @@ subroutine read_datasmin
 #endif
 
     if (kaverage .and. .not. decoupled_run .and. .not. yesavsr) then
-        if (rank .eq. 0) write (6, *) ' Warning yesavsr true in this case '
+        call log_warning(' Warning yesavsr true in this case ')
         yesavsr = .true.
     end if
 
     if (kaverage .and. .not. decoupled_run .and. yesavcov) then
-        if (rank .eq. 0) write (6, *) ' Warning yesavcov false in this case '
+        call log_warning(' Warning yesavcov false in this case ')
         yesavcov = .false.
     end if
 
     if (kaverage .and. .not. decoupled_run .and. yesavopt .and. molyes .and. yesavsr) then
-        if (rank .eq. 0) write (6, *) ' Warning yesavopt false in this case '
+        call log_warning(' Warning yesavopt false in this case ')
         yesavopt = .false.
     end if
 
-    if (rank .eq. 0) then
-        write (6, *)
-        if (kaverage .and. .not. decoupled_run) then
-            write (6, *) ' Warning: starting a twist-averaged calculation!'
-        elseif (kaverage .and. decoupled_run) then
-            write (6, *) ' Warning: starting a decoupled k-points calculation!'
-        end if
+    call log_warning(' ')
+    if (kaverage .and. .not. decoupled_run) then
+        call log_warning(' Warning: starting a twist-averaged calculation!')
+    elseif (kaverage .and. decoupled_run) then
+        call log_warning(' Warning: starting a decoupled k-points calculation!')
     end if
     !
     !
@@ -2387,7 +2367,7 @@ subroutine read_datasmin
     else
         tparf = 1.d0
     end if
-    if (rank .eq. 0) write (6, *) ' tparf =', tparf
+    call log_info(' tparf =', tparf)
 
     if (trim(wherescratch) .eq. 'old') then
         oldscra = .true.
@@ -2459,7 +2439,7 @@ subroutine read_datasmin
         yesnleft = .true.
         if (yes_fastbranch .and. def_nscra) then
             nscra = 2*nbra
-            if (rank .eq. 0) write (6, *) ' Warning upscratch done only after branching !!! '
+            call log_warning(' Warning upscratch done only after branching !!! ')
         end if
     else
         yesnleft = .false. ! standard lrdmc
@@ -2467,7 +2447,7 @@ subroutine read_datasmin
 
     if (true_wagner .eq. -1 .and. lrdmc_der .and. .not. lrdmc_nonodes) then
         true_wagner = 2
-        if (rank .eq. 0) write (6, *) ' Default value of true_wagner =', true_wagner
+        call log_info(' Default value of true_wagner =', true_wagner)
     end if
     if (yesnleft .and. cutweight .eq. -1.d6 .and. rank .eq. 0 .and. true_wagner .le. 0) then
         if (idyn .ne. 0) then
@@ -2475,7 +2455,7 @@ subroutine read_datasmin
         else
             cutweight = 0.d0
         end if
-        write (6, *) 'Default cutoff on the weight =', cutweight
+        call log_info('Default cutoff on the weight =', cutweight)
     end if
     if (true_wagner .gt. 0) then
         if (cutweight .gt. 0.d0) then
@@ -2484,10 +2464,10 @@ subroutine read_datasmin
             else
                 cutweight = cutweight*abs(alat)**(2.d0/3.d0)
             end if
-            if (rank .eq. 0) write (6, *) ' Warning Wagner regularization eps (scaled by alat^2/3)  = ', cutweight
+            call log_warning(' Warning Wagner regularization eps (scaled by alat^2/3)  = ', cutweight)
         elseif (cutweight .ne. -1.d6) then
             cutweight = -cutweight
-            if (rank .eq. 0) write (6, *) ' Warning Wagner regularization eps = ', cutweight
+            call log_warning(' Warning Wagner regularization eps = ', cutweight)
         else
             cutweight = 0.d0
         end if
@@ -2512,7 +2492,7 @@ subroutine read_datasmin
         iesbra = .false.
     end if
 
-    if (rank .eq. 0) write (6, *) 'itestrfn =', itestrfn
+    call log_info('itestrfn =', itestrfn)
 
     ! Sandro, please update this comment. I think there are opnions no longer used
     ! see itestr=-1 (I guess..)
@@ -2535,7 +2515,7 @@ subroutine read_datasmin
     epst = 1d-11
     if (kaverage .and. decoupled_run) then
         if (iread .gt. 0 .and. (epscut .ne. 0 .or. itest .ne. 2)) then
-            if (rank .eq. 0) write (6, *) ' Warning iread=0 in this case !!! '
+            call log_warning(' Warning iread=0 in this case !!! ')
         end if
     end if
 
@@ -2547,8 +2527,8 @@ subroutine read_datasmin
         icore = 0
 
         if (rank .eq. 0) then
-            write (6, *) '----------------------------------------------'
-            write (6, *) ' Used ', ncore + 1, 'different energy scales'
+            call log_warning('----------------------------------------------')
+            call log_warning(' Used ', ncore + 1, 'different energy scales')
 
             ind = 0
 
@@ -2575,7 +2555,7 @@ subroutine read_datasmin
 
                 ncore = ind
 
-                write (6, *) ' Core parameters =', (icore(i), i=1, ncore)
+                if (rank .eq. 0) write (6, *) ' Core parameters =', (icore(i), i=1, ncore)
 
             else
                 ncore = ieskin
@@ -2585,7 +2565,7 @@ subroutine read_datasmin
                 end do
 
                 if (tcell .eq. 0.d0 .and. typedyncell .ne. 0) then
-                    write (6, *) ' Warning default tcell=tion ', tion
+                    call log_warning(' Warning default tcell=tion ', tion)
                     tcell = tion
                 end if
 
@@ -2635,6 +2615,7 @@ end subroutine read_datasmin
 subroutine read_datasmin_mol
     use allio
     use convertmod, only: nmolmatdo
+    use logger_io, only: log_error, log_info
     implicit none
 
 #ifdef PARALLEL
@@ -2673,47 +2654,46 @@ subroutine read_datasmin_mol
             shifty = .false.
             shiftz = .false.
             read (5, nml=molecul, err=121)
-            write (6, *) ' After reading molecul '
+            call log_error(' After reading molecul ')
             if (yesavopt) then
-                if (rank .eq. 0) write (6, *) ' Warning yesavopt forced to false with mol optimiz.!!! '
+                call log_error(' Warning yesavopt forced to false with mol optimiz.!!! ')
                 yesavopt = .false.
             end if
             iflagerr = 0
             if (molecular .eq. 0) then
-                write (6, *) ' Warning   fort.10 should have molecular orbitals,&
-              & please run again with the output fort.10  !'
+                call log_error(' Warning   fort.10 should have molecular orbitals, please run again with the output fort.10  !')
                 if (nmol .eq. -1 .or. nmol .lt. neldo) then
                     iflagerr = 1
-                    write (6, *) ' ERROR you should have molecular orbitals in fort.10 '
-                    write (6, *) ' ERROR please use convertfort10mol or rerun with nmol>neldo '
+                    call log_error(' ERROR you should have molecular orbitals in fort.10 ')
+                    call log_error(' ERROR please use convertfort10mol or rerun with nmol>neldo ')
                 end if
             end if
             if (contraction .eq. 0) then
                 iflagerr = 1
-                write (6, *) ' ERROR you should have contracted orbitals in fort.10 '
-                write (6, *) ' ERROR please introduce contraction (even fake) in your AGP '
+                call log_error(' ERROR you should have contracted orbitals in fort.10 ')
+                call log_error(' ERROR please introduce contraction (even fake) in your AGP ')
             end if
 
 121         if (iflagerr .ne. 0) then
-                write (6, *) ' ERROR reading molecul '
+                call log_error(' ERROR reading molecul ')
                 iflagerrall = iflagerr + iflagerrall
             else
                 if (ny .eq. 0) then
                     ny = nx
-                    write (6, *) ' Default value for ny=', ny
+                    call log_error(' Default value for ny=', ny)
                 end if
                 if (nz .eq. 0) then
                     nz = ny
-                    write (6, *) ' Default value for nz=', nz
+                    call log_error(' Default value for nz=', nz)
                 end if
                 if (.not. iespbc) then
                     if (ay .eq. 0.d0) then
                         ay = ax
-                        write (6, *) ' Default value for ay=', ay
+                        call log_error(' Default value for ay=', ay)
                     end if
                     if (az .eq. 0.d0) then
                         az = ay
-                        write (6, *) ' Default value for az=', az
+                        call log_error(' Default value for az=', az)
                     end if
                 end if
                 if (symmagp .and. ipc .eq. 1) then
@@ -2721,17 +2701,17 @@ subroutine read_datasmin_mol
                 else
                     nmol = (molecular - ndiff)/2
                 end if
-                write (6, *) ' Default value of nmol ', nmol
+                call log_error(' Default value of nmol ', nmol)
                 if (nmolmin .eq. 0) then
                     nmolmin = neldo
-                    write (6, *) ' Default value of nmolmin ', nmolmin
+                    call log_error(' Default value of nmolmin ', nmolmin)
                 end if
                 if (nmolmax .eq. 0) then
                     nmolmax = neldo
-                    write (6, *) ' Default value of nmolmax ', nmolmax
+                    call log_error(' Default value of nmolmax ', nmolmax)
                 end if
 
-                write (6, *) ' after  read molec '
+                call log_error(' after  read molec ')
 
                 if (weight_loc .eq. 0.d0) then
                     if (epsdgm .ne. 0.d0) then
@@ -2739,28 +2719,28 @@ subroutine read_datasmin_mol
                     else
                         weight_loc = 1d-8
                     end if
-                    write (6, *) ' Default value for weight_loc =', weight_loc
+                    call log_error(' Default value for weight_loc =', weight_loc)
                 end if
 
                 if (nmol .ne. 0 .and. nmolmax .eq. 0) then
                     nmolmax = nmol
-                    write (6, *) ' Default value for nmolmax =', nmolmax
+                    call log_error(' Default value for nmolmax =', nmolmax)
                 end if
 
                 if (nmolmaxw .eq. 0) then
                     nmolmaxw = nmolmax
-                    write (6, *) ' Default value of nmolmaxw=', nmolmaxw
+                    call log_error(' Default value of nmolmaxw=', nmolmaxw)
                 end if
 
                 if (nmolmax .lt. neldo) then
                     iflagerrall = iflagerrall + 1
-                    write (6, *) ' Too small  nmolmax> =', neldo
+                    call log_error(' Too small  nmolmax> =', neldo)
                 end if
 
 !       read(5,*) epsdgm
-                write (6, *) ' error converter  ', epsdgm
+                call log_error(' error converter  ', epsdgm)
 !       read(5,*) nx,ny,nz
-                write (6, *) ' # mesh read ', nx, ny, nz
+                call log_error(' # mesh read ', nx, ny, nz)
 
                 if (nbufd .eq. -1) then
 #ifdef __SCALAPACK
@@ -2772,7 +2752,7 @@ subroutine read_datasmin_mol
                         else
                             nbufd = 1000 ! almost maximum efficiency dgemm
                         end if
-                        write (6, *) 'Default value for buffer =', nbufd
+                        call log_error('Default value for buffer =', nbufd)
                     end if
 
                 end if
@@ -2818,18 +2798,16 @@ subroutine read_datasmin_mol
             end if
 
             if (gramyes .and. .not. orthoyes) then
-                if (rank .eq. 0) write (6, *) &
-         &' Warning with Gram-Schmidt ortho, changed orthoyes= true'
+                call log_error(' Warning with Gram-Schmidt ortho, changed orthoyes= true')
                 orthoyes = .true.
             end if
             if (iespbc) then
                 ax = cellscale(1)/nx
                 ay = cellscale(2)/ny
                 az = cellscale(3)/nz
-                if (rank .eq. 0)                                                  &
-            &write (6, *) ' lattice mesh chosen ', ax, ay, az, cellscale(1)
+                call log_error(' lattice mesh chosen ', ax, ay, az, cellscale(1))
             else
-                if (rank .eq. 0) write (6, *) ' lattice mesh read ax,ay,az ', ax, ay, az
+                call log_error(' lattice mesh read ax,ay,az ', ax, ay, az)
 !       if(rank.eq.0) read(5,*) ax,ay,az
 #ifdef PARALLEL
                 call mpi_bcast(ax, 1, MPI_DOUBLE_PRECISION                        &
@@ -2850,10 +2828,8 @@ subroutine read_datasmin_mol
                 call checkiflagerr(1, rank, errmsg)
             end if
 
-            if (rank .eq. 0) then
-                write (6, *) '# molecular orbital Det considered/projected'
-                write (6, *) nmol, nmolmin, nmolmax
-            end if
+            call log_info('# molecular orbital Det considered/projected')
+            call log_info(' ', nmol, nmolmin, nmolmax)
 
 #ifdef PARALLEL
             call mpi_bcast(nmol, 1, MPI_INTEGER                               &
@@ -2874,8 +2850,7 @@ subroutine read_datasmin_mol
             yesmin = 0
             if (molopt .ne. 0) then
                 yesmin = 1
-                if (rank .eq. 0 .and. .not. yesdft) write (6, *) ' Warning molecular orbitals&
-                & are constraint to be written in terms of contracted orbitals'
+                if (.not. yesdft) call log_error(' Warning molecular orbitals are constraint to be written in terms of contracted orbitals')
                 detc_proj = .true.
                 molopt = 1
             end if
