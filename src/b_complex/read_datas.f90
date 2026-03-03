@@ -113,20 +113,20 @@ subroutine read_datasmin
 
         read (5, nml=simulation, err=111)
 
-        call log_error(' After  reading simulation  ')
+        call log_warning(' After  reading simulation  ')
         iflagerr = 0
 111     if (iflagerr .ne. 0) call log_error(' ERROR reading simulation ')
         iflagerrall = iflagerr + iflagerrall
         !          calculation itestr
         if (maxtime .lt. 0.d0) then
             maxtime = 86000
-            call log_error(' Default maxtime (s)= ', maxtime)
-            call log_error(' Warning the program will stop after <~24h, otherwise change maxtime in simulation section ')
+            call log_warning(' Default maxtime (s)= ', maxtime)
+            call log_warning(' Warning the program will stop after <~24h, otherwise change maxtime in simulation section ')
         end if
 
 #ifndef _OFFLOAD
         if (.not. membig .and. membigcpu) then
-            call log_error(' Warning this option is only  for test, otherwise put also mambigcpu=.false. to minimize RAM memory allocation !!! ')
+            call log_warning(' Warning this option is only  for test, otherwise put also mambigcpu=.false. to minimize RAM memory allocation !!! ')
         end if
 #endif
 
@@ -140,13 +140,13 @@ subroutine read_datasmin
         case ('nocont')
             io_level = 0
         case DEFAULT
-            call log_error(" Warning: unrecognized disk_io, set as 'default' !")
+            call log_warning(" Warning: unrecognized disk_io, set as 'default' !")
             io_level = 1
         end select
 
-        if (io_level .eq. 0) call log_error(" Warning: you cannot continue this run !!! Avoid disk_io='nocont' otherwise!")
+        if (io_level .eq. 0) call log_warning(" Warning: you cannot continue this run !!! Avoid disk_io='nocont' otherwise!")
         if (io_level .eq. 0 .and. iopt .ne. 1) then
-            call log_error(" Warning: disk_io changed to 'default' in continuation !!!")
+            call log_warning(" Warning: disk_io changed to 'default' in continuation !!!")
             io_level = 1
         end if
 
@@ -171,7 +171,7 @@ subroutine read_datasmin
                 freqcheck = 0
             end if
 
-            call log_error(' Default value of check flag error ', freqcheck)
+            call log_warning(' Default value of check flag error ', freqcheck)
         end if
 
         itestrr = itestr3 ! a number < |10|
@@ -199,12 +199,12 @@ subroutine read_datasmin
         else
             pseudorandom = .true.
         end if
-        call log_error(' Default value of pseudorandom =', pseudorandom)
+        call log_warning(' Default value of pseudorandom =', pseudorandom)
         iflagerr = 1
         pseudofile = "pseudo.dat"
         read (5, nml=pseudo, err=112)
-        call log_error(' After reading pseudo ')
-        call log_error(' Pseudopotential file name : ', trim(pseudofile))
+        call log_warning(' After reading pseudo ')
+        call log_warning(' Pseudopotential file name : ', trim(pseudofile))
         iflagerr = 0
 112     if (iflagerr .ne. 0) call log_error(' ERROR reading pseudo ')
         iflagerrall = iflagerr + iflagerrall
@@ -233,10 +233,10 @@ subroutine read_datasmin
         if (itest .eq. 2) then
             iflagerr = 1
             read (5, nml=vmc, err=113)
-            if (hopfraction .ne. 0.d0) call log_error(' Read value of hopfraction ', hopfraction)
-            if (epscut .ne. 0.d0) call log_error(' Read value of epscut ', epscut)
-            if (epscuttype .ne. -1000) call log_error(' Read value of epscuttype ', epscuttype)
-            call log_error(' After reading vmc ')
+            if (hopfraction .ne. 0.d0) call log_warning(' Read value of hopfraction ', hopfraction)
+            if (epscut .ne. 0.d0) call log_warning(' Read value of epscut ', epscut)
+            if (epscuttype .ne. -1000) call log_warning(' Read value of epscuttype ', epscuttype)
+            call log_warning(' After reading vmc ')
             iflagerr = 0
 113         if (iflagerr .ne. 0) call log_error(' ERROR reading vmc ')
             iflagerrall = iflagerr + iflagerrall
@@ -244,7 +244,7 @@ subroutine read_datasmin
 
         if (theta_reg .eq. 0.5d0 .and. epstlrat .eq. 0.d0) then
             epstlrat = dsqrt(epsmach) ! It looks important even if epsvar>0, machine precision error under control.
-            call log_error(' Warning epstlrat should be > 0 in this case, chosen one=', epstlrat)
+            call log_warning(' Warning epstlrat should be > 0 in this case, chosen one=', epstlrat)
         end if
 
         !          defining default values for lrdmc
@@ -305,7 +305,7 @@ subroutine read_datasmin
             nw_max = -1
             iflagerr = 1
             read (5, nml=dmclrdmc, err=114)
-            call log_error(' After reading dmclrdmc ')
+            call log_warning(' After reading dmclrdmc ')
             iflagerr = 0
 114         if (iflagerr .ne. 0) call log_error(' ERROR reading dmclrdmc ')
             iflagerrall = iflagerr + iflagerrall
@@ -327,12 +327,12 @@ subroutine read_datasmin
                     parcutg = 0
                 end if
                 defparcutg = .true.
-                call log_error(' Default value of parcutg=', parcutg)
+                call log_warning(' Default value of parcutg=', parcutg)
             end if
 
             if (epscutdmc .ne. 0.d0 .and. epstldmc .eq. -1.d0) then
                 epstldmc = 0.d0
-                call log_error(' Default value for epstldmc (no cutoff) =', epstldmc)
+                call log_warning(' Default value for epstldmc (no cutoff) =', epstldmc)
             elseif (epscutdmc .eq. 0.d0) then
                 epstldmc = 0.d0
             end if
@@ -341,7 +341,7 @@ subroutine read_datasmin
                 call log_warning(' Warning change gamma>0 with epscutdmc>0 !!!')
             end if
 
-            call log_error(' after dmc  ')
+            call log_warning(' after dmc  ')
         end if
         !          defining default values for optimization
 
@@ -2654,14 +2654,14 @@ subroutine read_datasmin_mol
             shifty = .false.
             shiftz = .false.
             read (5, nml=molecul, err=121)
-            call log_error(' After reading molecul ')
+            call log_warning(' After reading molecul ')
             if (yesavopt) then
-                call log_error(' Warning yesavopt forced to false with mol optimiz.!!! ')
+                call log_warning(' Warning yesavopt forced to false with mol optimiz.!!! ')
                 yesavopt = .false.
             end if
             iflagerr = 0
             if (molecular .eq. 0) then
-                call log_error(' Warning   fort.10 should have molecular orbitals, please run again with the output fort.10  !')
+                call log_warning(' Warning   fort.10 should have molecular orbitals, please run again with the output fort.10  !')
                 if (nmol .eq. -1 .or. nmol .lt. neldo) then
                     iflagerr = 1
                     call log_error(' ERROR you should have molecular orbitals in fort.10 ')
@@ -2680,20 +2680,20 @@ subroutine read_datasmin_mol
             else
                 if (ny .eq. 0) then
                     ny = nx
-                    call log_error(' Default value for ny=', ny)
+                    call log_warning(' Default value for ny=', ny)
                 end if
                 if (nz .eq. 0) then
                     nz = ny
-                    call log_error(' Default value for nz=', nz)
+                    call log_warning(' Default value for nz=', nz)
                 end if
                 if (.not. iespbc) then
                     if (ay .eq. 0.d0) then
                         ay = ax
-                        call log_error(' Default value for ay=', ay)
+                        call log_warning(' Default value for ay=', ay)
                     end if
                     if (az .eq. 0.d0) then
                         az = ay
-                        call log_error(' Default value for az=', az)
+                        call log_warning(' Default value for az=', az)
                     end if
                 end if
                 if (symmagp .and. ipc .eq. 1) then
@@ -2701,17 +2701,17 @@ subroutine read_datasmin_mol
                 else
                     nmol = (molecular - ndiff)/2
                 end if
-                call log_error(' Default value of nmol ', nmol)
+                call log_warning(' Default value of nmol ', nmol)
                 if (nmolmin .eq. 0) then
                     nmolmin = neldo
-                    call log_error(' Default value of nmolmin ', nmolmin)
+                    call log_warning(' Default value of nmolmin ', nmolmin)
                 end if
                 if (nmolmax .eq. 0) then
                     nmolmax = neldo
-                    call log_error(' Default value of nmolmax ', nmolmax)
+                    call log_warning(' Default value of nmolmax ', nmolmax)
                 end if
 
-                call log_error(' after  read molec ')
+                call log_warning(' after  read molec ')
 
                 if (weight_loc .eq. 0.d0) then
                     if (epsdgm .ne. 0.d0) then
@@ -2719,22 +2719,22 @@ subroutine read_datasmin_mol
                     else
                         weight_loc = 1d-8
                     end if
-                    call log_error(' Default value for weight_loc =', weight_loc)
+                    call log_warning(' Default value for weight_loc =', weight_loc)
                 end if
 
                 if (nmol .ne. 0 .and. nmolmax .eq. 0) then
                     nmolmax = nmol
-                    call log_error(' Default value for nmolmax =', nmolmax)
+                    call log_warning(' Default value for nmolmax =', nmolmax)
                 end if
 
                 if (nmolmaxw .eq. 0) then
                     nmolmaxw = nmolmax
-                    call log_error(' Default value of nmolmaxw=', nmolmaxw)
+                    call log_warning(' Default value of nmolmaxw=', nmolmaxw)
                 end if
 
                 if (nmolmax .lt. neldo) then
                     iflagerrall = iflagerrall + 1
-                    call log_error(' Too small  nmolmax> =', neldo)
+                    call log_warning(' Too small  nmolmax> =', neldo)
                 end if
 
 !       read(5,*) epsdgm
@@ -2752,7 +2752,7 @@ subroutine read_datasmin_mol
                         else
                             nbufd = 1000 ! almost maximum efficiency dgemm
                         end if
-                        call log_error('Default value for buffer =', nbufd)
+                        call log_warning('Default value for buffer =', nbufd)
                     end if
 
                 end if
@@ -2798,16 +2798,16 @@ subroutine read_datasmin_mol
             end if
 
             if (gramyes .and. .not. orthoyes) then
-                call log_error(' Warning with Gram-Schmidt ortho, changed orthoyes= true')
+                call log_warning(' Warning with Gram-Schmidt ortho, changed orthoyes= true')
                 orthoyes = .true.
             end if
             if (iespbc) then
                 ax = cellscale(1)/nx
                 ay = cellscale(2)/ny
                 az = cellscale(3)/nz
-                call log_error(' lattice mesh chosen ', ax, ay, az, cellscale(1))
+                call log_warning(' lattice mesh chosen ', ax, ay, az, cellscale(1))
             else
-                call log_error(' lattice mesh read ax,ay,az ', ax, ay, az)
+                call log_warning(' lattice mesh read ax,ay,az ', ax, ay, az)
 !       if(rank.eq.0) read(5,*) ax,ay,az
 #ifdef PARALLEL
                 call mpi_bcast(ax, 1, MPI_DOUBLE_PRECISION                        &
@@ -2850,7 +2850,7 @@ subroutine read_datasmin_mol
             yesmin = 0
             if (molopt .ne. 0) then
                 yesmin = 1
-                if (.not. yesdft) call log_error(' Warning molecular orbitals are constraint to be written in terms of contracted orbitals')
+                if (.not. yesdft) call log_warning(' Warning molecular orbitals are constraint to be written in terms of contracted orbitals')
                 detc_proj = .true.
                 molopt = 1
             end if
