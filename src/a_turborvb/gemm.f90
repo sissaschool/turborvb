@@ -15,6 +15,7 @@
 
 subroutine gemm(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
     use allio, only: rank
+    use logger_io, only: log_error
     implicit none
     complex*16 alpha, beta
     integer M, N, K, LDA, LDB, LDC, i, j
@@ -511,7 +512,7 @@ subroutine gemm(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
         end if
         call conja
     else
-        write (6, *) ' Case not treated in gemm !!! ', TRANSA, TRANSB
+        call log_error(' Case not treated in gemm !!! ', TRANSA, TRANSB)
     end if
     return
 contains

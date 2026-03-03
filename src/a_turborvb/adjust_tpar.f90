@@ -17,6 +17,7 @@
 
 subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, itestr4)
 
+    use logger_io, only: log_info, log_warning
     use allio, only: energy_list, error_energy_list, tpar_buffer_filled, &
                      tpar_increased, inc_tpar_frequency, stop_increasing_tpar, &
                      tpar_unstble_stop, counter_unstable_tpar, &
@@ -43,7 +44,7 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
 
         ! if we have all the stable values of tpar we just use the mean of the last ten values
         if (index_stable_list .gt. size(tpar_stable_list)) then
-            write (*, *) 'adjust_tpar: warning, using average of stable value for tpar', int(i_main/nweight)
+            call log_warning('adjust_tpar: warning, using average of stable value for tpar', int(i_main/nweight))
             tpar = sum(tpar_stable_list(size(tpar_stable_list) - (half_stable_tpars - 1):size(tpar_stable_list)))/half_stable_tpars
             return
         end if
@@ -74,7 +75,7 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
     running_std_energy = std(energy_list, running_ave_energy, count_list)
 
     if ((running_std_energy/error_energy)**2 .ge. 3) then !.and. count_list .ge. len_shorter_buffer) then
-        write (*, *) 'adjust_tpar: warning, using only last elements of the buffer', int(i_main/nweight)
+        call log_warning('adjust_tpar: warning, using only last elements of the buffer', int(i_main/nweight))
         running_ave_energy = sum(energy_list(tpar_buffer_len - len_shorter_buffer + 1:tpar_buffer_len))/len_shorter_buffer
         running_std_energy = std(energy_list(tpar_buffer_len - len_shorter_buffer + 1), running_ave_energy, len_shorter_buffer)
         running_ave = sum(error_energy_list(tpar_buffer_len - len_shorter_buffer + 1:tpar_buffer_len))/len_shorter_buffer
@@ -95,8 +96,7 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
         min_running_std_energy = running_std_energy
     end if
 
-    write (*, *) "adjust_tpar: minimum running average and std var/ene", &
-        min_running_ave, min_running_std, min_running_ave_energy, min_running_std_energy
+    call log_info("adjust_tpar: minimum running average and std var/ene", min_running_ave, min_running_std, min_running_ave_energy, min_running_std_energy)
 
     iter_step = mod(i_main/nweight, inc_tpar_frequency) + 1
 
@@ -143,11 +143,11 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
             end if
 
             if (counter_unstable_energy .ge. stop_tpar .and. counter_unstable_err .lt. stop_tpar) then
-                write (*, *) " adjust_tpar: energy too big, tpar decreased", tpar
+                call log_info(" adjust_tpar: energy too big, tpar decreased", tpar)
             elseif (counter_unstable_err .ge. stop_tpar .and. counter_unstable_energy .lt. stop_tpar) then
-                write (*, *) " adjust_tpar: variance too big, tpar decreased", tpar
+                call log_info(" adjust_tpar: variance too big, tpar decreased", tpar)
             else
-                write (*, *) " adjust_tpar: variance & energy too big, tpar decreased", tpar
+                call log_info(" adjust_tpar: variance & energy too big, tpar decreased", tpar)
             end if
 
             counter_unstable_energy = 0
@@ -155,7 +155,7 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
             stop_increasing_tpar = .true.
             times_tpar_decreased = times_tpar_decreased + 1
             if (times_tpar_decreased .gt. 1) then
-                write (*, *) 'adjust_tpar: warning, reinitializing references at iteration ', int(i_main/nweight)
+                call log_warning('adjust_tpar: warning, reinitializing references at iteration ', int(i_main/nweight))
                 tpar_increased = .false.
                 min_running_ave_energy = (running_ave_energy + min_running_ave_energy)/2
                 min_running_std_energy = running_std_energy

@@ -15,6 +15,7 @@
 
 subroutine dsyev_sing(nbin, cov, eig, tcin, psip, lwork           &
         &, iwork, ilwork, info)
+    use logger_io, only: log_debug
     implicit none
     integer ipiv, nbin, lwork, info, i, j, nbin2, nbinm, iwork(*), ilwork
     real*8 cov(nbin, *), eig(*), psip(*), nmax, dnrm2                  &
@@ -110,7 +111,7 @@ subroutine dsyev_sing(nbin, cov, eig, tcin, psip, lwork           &
         !c         preconditioning after
         do j = 1, nbin
             do i = 1, nbin
-                write (6, *) i, j, cov(i, j), cov(j, i)
+                call log_debug(i, j, cov(i, j), cov(j, i))
                 !             tcin(j,i)=tcin(j,i)/fkav(j)
             end do
         end do

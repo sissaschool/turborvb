@@ -25,6 +25,7 @@ subroutine reshuffhub(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
         &, winvfn, nel2wtfn, winvbarfn, nel2barfn, vpotsav_ee, nelsquare)
     use allio, only: ipc, nbra_cyrus, first_cyrus, dim_cyrus, queue_cyrus&
             &, yes_fastbranch, istart
+    use logger_io, only: log_error
     implicit none
 
     integer nw, np, nel2up, nel2do, nel2upt, nel2dot, jbra(*), j, kmax2       &
@@ -244,8 +245,7 @@ subroutine reshuffhub(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
                 if (.not. yes_fastbranch) then
                     call dcopy(np, econf(ind_proc), in1, psip(shift + (ind_proc - 1)*skip), 1)
                     if (shift + np - 1 .ne. skip) then
-                        write (6, *) ' Error in dimensioning skipreshuff  in main !!! ',    &
-                             &rank, shift + np - 1, skip
+                        call log_error(' Error in dimensioning skipreshuff  in main !!! ', rank, shift + np - 1, skip)
                         call mpi_finalize(ierr)
                         stop
                     end if
@@ -317,8 +317,7 @@ subroutine reshuffhub(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel       &
                     end if
                 else
                     if (shift - 1 .ne. skip) then
-                        write (6, *) ' Error in dimensioning skipreshuff  in main !!! ',    &
-                             &rank, shift - 1, skip
+                        call log_error(' Error in dimensioning skipreshuff  in main !!! ', rank, shift - 1, skip)
                         call mpi_finalize(ierr)
                         stop
                     end if
@@ -518,6 +517,7 @@ subroutine reshuffhub_noblock(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel  
         &, jastrowall_ee, dimee, jastrowall_ei, dimei, indtm, yesivic, vcut, diffkin&
         &, winvfn, nel2wtfn, winvbarfn, nel2barfn, vpotsav_ee, nelsquare)
     use allio, only: ipc, nbra_cyrus, first_cyrus, dim_cyrus, queue_cyrus, istart
+    use logger_io, only: log_error
     implicit none
 
     integer nw, np, nel2up, nel2do, nel2upt, nel2dot, jbra(*), j, k, kmax2       &
@@ -732,8 +732,7 @@ subroutine reshuffhub_noblock(Lz, Lzr, Ltab, Ltabb, nelnion, nw, np, jbra, kel  
                 call dcopy(np, econf(ind_proc), in1, psip(shift + (ind_proc - 1)*skip), 1)
 
                 if (shift + np - 1 .ne. skip) then
-                    write (6, *) ' Error in dimensioning skipreshuff  in main !!! ',    &
-                         &rank, shift + np - 1, skip
+                    call log_error(' Error in dimensioning skipreshuff  in main !!! ', rank, shift + np - 1, skip)
                     call mpi_finalize(ierr)
                     stop
                 end if

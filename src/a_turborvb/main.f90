@@ -18,6 +18,7 @@ program main
     use allio
     use convertmod
     use IO_m
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
     ! by E. Coccia (8/11/10)
     use extpot
     ! by E. Coccia (28/12/10)
@@ -118,51 +119,49 @@ program main
     if (nn .gt. 0) then
         select case (str)
             case ('help', '-help', '--help')
-                write (*, *) 'Choose among the following cases'
-                write (*, *) 'vmc      Input file for VMC'
-                write (*, *) 'dmc      Input file for DMC'
-                write (*, *) 'lrdmc    Input file for lattice reguralized DMC'
-                write (*, *) 'opt      Input file for the optimization'
-                write (*, *) 'optmol   Input file for the optimization with'// &
-                   & ' molecular orbitals'
-                write (*, *) 'dyn      Input file for the dynamics'
-                write (*, *) 'quantum  Input file for the quantum dynamics'
-                write (*, *) 'test     Input file for testing TurboRVB'
+                call log_info('Choose among the following cases')
+                call log_info('vmc      Input file for VMC')
+                call log_info('dmc      Input file for DMC')
+                call log_info('lrdmc    Input file for lattice reguralized DMC')
+                call log_info('opt      Input file for the optimization')
+                call log_info('optmol   Input file for the optimization with molecular orbitals')
+                call log_info('dyn      Input file for the dynamics')
+                call log_info('quantum  Input file for the quantum dynamics')
+                call log_info('test     Input file for testing TurboRVB')
             case ('vmc')
-                write (*, *) ' Sample file for the Variational Monte Carlo '
+                call log_info(' Sample file for the Variational Monte Carlo ')
                 name_tool = 'datasvmc'
                 call help_online(name_tool)
             case ('dmc')
-                write (*, *) ' Sample file for the DMC '
+                call log_info(' Sample file for the DMC ')
                 name_tool = 'datasdmc'
                 call help_online(name_tool)
             case ('lrdmc')
-                write (*, *) ' Sample file for the LRDMC '
+                call log_info(' Sample file for the LRDMC ')
                 name_tool = 'datasfn'
                 call help_online(name_tool)
             case ('opt')
-                write (*, *) ' Sample file for the optimization'
+                call log_info(' Sample file for the optimization')
                 name_tool = 'datasmin'
                 call help_online(name_tool)
             case ('optmol')
-                write (*, *) ' Sample file for the optimization with'// &
-                   & ' molecular orbitals'
+                call log_info(' Sample file for the optimization with molecular orbitals')
                 name_tool = 'datasminmol'
                 call help_online(name_tool)
             case ('dyn')
-                write (*, *) ' Sample file for the molecular dynamics'
+                call log_info(' Sample file for the molecular dynamics')
                 name_tool = 'datasdyn'
                 call help_online(name_tool)
             case ('quantum')
-                write (*, *) ' Sample file for the quantum molecular dynamics'
+                call log_info(' Sample file for the quantum molecular dynamics')
                 name_tool = 'datasquantum'
                 call help_online(name_tool)
             case ('test')
-                write (*, *) ' Sample file for testing TurboRVB'
+                call log_info(' Sample file for testing TurboRVB')
                 name_tool = 'datastest'
                 call help_online(name_tool)
                 case default
-                write (*, *) ' help not available'
+                call log_info(' help not available')
         end select
         stop
 
@@ -180,9 +179,10 @@ program main
     nproc = 1
 #endif
 
+    call logger_config(rank=rank)
+
 #ifdef _OFFLOAD
-    if (rank .eq. 0) write (6, *) ' #  GPU used/1mpi process=:'&
-        &, omp_get_num_devices()
+    call log_info(' #  GPU used/1mpi process=:', omp_get_num_devices())
 #endif
 
     inittime = cclock()
@@ -193,25 +193,21 @@ program main
     !     output version information
     if (rank .eq. 0) call print_version
 
-    if (nproc .gt. 1 .and. rank .eq. 0) write (6, *)&
-       & ' Number of mpi proc =', nproc
+    if (nproc .gt. 1) call log_info(' Number of mpi proc =', nproc)
 #ifdef _OPENMP
     old_threads = omp_get_max_threads()
 #else
     old_threads = 1
 #endif
-    if (rank .eq. 0) write (6, *) ' Number of threads/mpi proc =', old_threads
+    call log_info(' Number of threads/mpi proc =', old_threads)
     new_threads = old_threads
 #ifdef UNREL_SMP
 #ifdef PARALLEL
     call mpi_bcast(old_threads, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 #endif
     call omp_set_num_threads(old_threads) ! force the same.
-    if (new_threads .ne. old_threads) write (6, *) &
-         &' Warning error in number of threads (recovered) in proc # '&
-         &, rank, old_threads, new_threads
-    if (rank .eq. 0) write (6, *) ' Warning init. value of threads/mpi task'&
-         &, old_threads
+    if (new_threads .ne. old_threads) call log_info(' Warning error in number of threads (recovered) in proc # ', rank, old_threads, new_threads)
+    call log_warning(' Warning init. value of threads/mpi task', old_threads)
 #endif
     timepp = cclock()
     time_main = 0.d0
@@ -221,12 +217,10 @@ program main
     ! in the external potential is present
     call Initializeall
     yes_ontarget = .false.
-  if(rank.eq.0) write(6,*) ' Size arrays ', size(jasmat), size(muj_c)&
-      &, size(jasmat_c), size(detmat), size(detmat_c), size(projm), size(mu_c)&
-      &, size(eagp_pfaff), size(psip), size(ainvs), size(winvs), size(winvsj)&
-      &, size(winv), size(winvj), size(psinew)+size(agp), size(agpn)&
-      &, size(ainv), size(winvbar), size(winvjbar), size(winvfn)&
-      &, size(winvbarfn),size(ainvdo),size(ainvup)
+    call log_info(' Size arrays (1) ', size(jasmat), size(muj_c), size(jasmat_c), size(detmat), size(detmat_c), size(projm), size(mu_c))
+    call log_info(' Size arrays (2) ', size(eagp_pfaff), size(psip), size(ainvs), size(winvs), size(winvsj), size(winv), size(winvj))
+    call log_info(' Size arrays (3) ', size(psinew) + size(agp), size(agpn), size(ainv), size(winvbar), size(winvjbar), size(winvfn), size(winvbarfn))
+    call log_info(' Size arrays (4) ', size(ainvdo), size(ainvup))
 
 #ifdef _OFFLOAD
     if (itest .eq. 2) then
@@ -247,7 +241,7 @@ program main
         yes_ontarget = .false.
     end if
     if (iessz) then
-        write (6, *) ' Warning  GPU is not optimized  with Jsz, use the more general e.g. -27 '
+        call log_warning(' Warning  GPU is not optimized  with Jsz, use the more general e.g. -27 ')
     end if
     gpu_size = size(jasmat) + size(muj_c) + size(jasmat_c) + size(detmat) + size(detmat_c)
     gpu_size = gpu_size + size(projm) + size(mu_c) + size(eagp_pfaff) + size(psip)
@@ -258,15 +252,11 @@ program main
     gpu_sizej = size(jasmat) + size(muj_c) + size(jasmat_c)
     gpu_sizej = gpu_sizej + size(winvsj) + size(winvj) + size(winvjbar)
 
-    if (rank .eq. 0) write (6, *)&
-       & ' Memory allocated in  the GPU (Gb) ALL/Jastwow =  '&
-       &, gpu_size*8.d-9, gpu_sizej*8d-9
+    call log_info(' Memory allocated in  the GPU (Gb) ALL/Jastwow =  ', gpu_size*8.d-9, gpu_sizej*8d-9)
 
     gpu_sizej = size(jasmat) + size(muj_c) + size(jasmat_c)
     gpu_size = gpu_sizej + size(detmat) + size(detmat_c) + size(projm) + size(mu_c)
-    if (rank .eq. 0) write (6, *)&
-       & ' Memory common in the GPU All/Jastrow='&
-       &, gpu_size*8d-9, gpu_sizej*8d-9
+    call log_info(' Memory common in the GPU All/Jastrow=', gpu_size*8d-9, gpu_sizej*8d-9)
 
 ! matrix common to all walkers and unchanged during the Markov chain
 ! May be changed in optimization of dynamics:
@@ -283,17 +273,15 @@ program main
 !$omp &  map(to:psip&
 !$omp &,ainvs,winvs,winvsj,winv,winvj,psinew&
 !$omp &,agp,agpn,ainv,winvbar,winvjbar,winvfn,winvbarfn,ainvup,ainvdo)
-    if (rank .eq. 0) then
-        if (yes_ontarget) then
-            write (6, *) ' Warning Blas2 in target  '
-        else
-            if (rank .eq. 0) write (6, *) ' Warning Blas2 in cpu '
-        end if
+    if (yes_ontarget) then
+        call log_warning(' Warning Blas2 in target  ')
+    else
+        call log_warning(' Warning Blas2 in cpu ')
     end if
 
 #ifdef _CUSOLVER
     if (ipf .ne. 2) then
-        if (rank .eq. 0) write (6, *) ' Warning, using cusolver routines '
+        call log_warning(' Warning, using cusolver routines ')
         ldworkspace = 1
         lzworkspace = 1
         !
@@ -332,7 +320,7 @@ program main
 !$omp target data map(to:ipsip, dev_Info&
 !$omp &,dev_dgetri_workspace,dev_zgetri_workspace&
 !$omp &,dev_dgetrf_workspace,dev_zgetrf_workspace) if(ipf.ne.2)
-    if (rank .eq. 0) write (6, *) ' GPU memory for cusolver allocated'
+    call log_info(' GPU memory for cusolver allocated')
 #endif
 #endif
 
@@ -395,7 +383,7 @@ program main
             timings = 0.d0
             timingsb = 0.d0
 #endif
-            if (rank .eq. 0) write (6, *) ' Initialization OK '
+            call log_info(' Initialization OK ')
 
             !       if(rank.eq.0) write(6,*) ' Initial projm =',sum(abs(projm(1:nelorbh*nelorb_c)))
             !       if(rank.eq.0) write(6,*) ' Initial mu_c =',sum(abs(mu_c(:,1:nelorb_c)))
@@ -421,13 +409,10 @@ program main
                          &   rpar(ii) = 0.d0
                 end do
 
-                if (rank .eq. 0 .and. ncg_adr .gt. 0) then
-                    if (npar .gt. 0) write (6, *)&
-                       & ' Parametrization charge-Jastrow ', npar
-                    if (nparinv .gt. 0) write (6, *)&
-                       & ' Parametrization spin-Jastrow ', nparinv
-                    if (nparsw .gt. 0) write (6, *)&
-                       & ' Parametrization AGP matrix ', nparsw
+                if (ncg_adr .gt. 0) then
+                    if (npar .gt. 0) call log_info(' Parametrization charge-Jastrow ', npar)
+                    if (nparinv .gt. 0) call log_info(' Parametrization spin-Jastrow ', nparinv)
+                    if (nparsw .gt. 0) call log_info(' Parametrization AGP matrix ', nparsw)
                 end if
 #ifdef PARALLEL
                 if (yesquantum .and. commrep_mpi .ne. commsr_mpi) then
@@ -471,7 +456,7 @@ program main
             time = cclock() ! count the time without inizialization
             ! progress indicator
             nprogress = max(1, int(ngen*0.01))
-            if (rank .eq. 0) write (6, *) 0, "% progress starts!"
+            call log_info(0, "% progress starts!")
             time1p = time
 
         end if ! end if for scratch i.eq.iend+1
@@ -613,8 +598,8 @@ program main
             if (yesnleft .and. (i_main .ge. ibinit .or. cclock_zero .ge. maxtime/20.d0&
                  &.or. iopt .eq. 0 .or. iopt .eq. 3)) lambda = -avener
             if (yesnleft .and. (i_main .ge. ibinit .or. cclock_zero .ge. maxtime/20.d0)&
-                 &.and. (iopt .eq. 1 .or. iopt .eq. 2) .and. rank .eq. 0 .and. wdone) then
-                write (6, *) ' Warning beginning to change trial energy=', i_main, avener*ris(2)
+                 &.and. (iopt .eq. 1 .or. iopt .eq. 2) .and. wdone) then
+                call log_warning(' Warning beginning to change trial energy=', i_main, avener*ris(2))
                 wdone = .false.
             end if
         end if
@@ -626,8 +611,7 @@ program main
                 & .and. mod(i_main, ifreqchanger) .eq. 0&
                 & .and. i_main .ne. ngen) then
                 tstep = tstep*avratio/target_ratio
-                if (rank .eq. 0) write (6, *) ' Warning changing tstep/Acceptance ='&
-                     &, i_main, real(tstep), real(avratio)
+                call log_warning(' Warning changing tstep/Acceptance =', i_main, real(tstep), real(avratio))
                 nacc = 0.d0
                 nmovet = 0.d0
             end if
@@ -652,8 +636,7 @@ program main
                 epscut = epscutu
                 epstlu = epstlrat*epscutu
                 epstl = epstlrat*epscut
-                if (rank .eq. 0) write (6, *) ' Warning changing epscut/reweight ', i_main&
-                     &, real(epscutu), real(avreweight)
+                call log_warning(' Warning changing epscut/reweight ', i_main, real(epscutu), real(avreweight))
                 countt = 0.d0
                 countav = 0.d0
                 psirav = 0.d0
@@ -713,9 +696,8 @@ program main
 
         ! progress indicator
         if ((i_main - iend) .ge. nprogress) then
-            if (rank .eq. 0)&
-               & write (6, '(I15," steps, ",I3," % done in ", f10.2," sec")')&
-               & i_main - iend, int(nprogress*100.d0/ngen), cclock() - time1p
+            ! original format: (I15," steps, ",I3," % done in ", f10.2," sec")
+            call log_info(i_main - iend, " steps, ", int(nprogress*100.d0/ngen), " % done in ", cclock() - time1p, " sec")
             time1p = cclock()
             do while ((i_main - iend) .ge. nprogress)
                 nprogress = nprogress + max(1, int(ngen*0.01))
@@ -875,16 +857,16 @@ program main
 #endif
         if (rank .eq. 0) then
             call vdw_final()
-            write (6, *) ' New Energy (no MM) = ', ener_true(1)*ris(2) - sum_pot, sigma_true(1)*ris(2)
-            write (*, *) '|******************************************|'
-            write (*, *) '|         EXTERNAL QMC/MM POTENTIAL        |'
-            write (*, *) '|******************************************|'
-            write (*, *) ''
+            call log_info(' New Energy (no MM) = ', ener_true(1)*ris(2) - sum_pot, sigma_true(1)*ris(2))
+            call log_info('|******************************************|')
+            call log_info('|         EXTERNAL QMC/MM POTENTIAL        |')
+            call log_info('|******************************************|')
+            call log_info('')
         end if
     end if
 
     !       count the final time inside the routine
-    if (rank .eq. 0) write (6, *) ' Before finalizeall '
+    call log_info(' Before finalizeall ')
 
     call Finalizeall
     stop
@@ -1416,7 +1398,7 @@ contains
 
                             if (indvic .lt. 0) then
                                 iflagerr = 1
-                                write (6, *) ' Error in random in processor #,walker #', rank, j
+                                call log_error(' Error in random in processor #,walker #', rank, j)
                                 indvic = -indvic
                             end if
                             if (.not. fncont) then
@@ -1636,7 +1618,7 @@ contains
 
                         if (iflagerr .ne. 0) then
                             if (nw .gt. 1) then
-                                write (6, *) ' Warning walker singular !!! ', js
+                                call log_warning(' Warning walker singular !!! ', js)
                                 !                     wconf(js)=0.d0
                                 wconfn(js) = 0.d0
                                 if (iesbra) iflagerr = 0 ! trying to continue
@@ -1654,7 +1636,7 @@ contains
 
                         !if(psisn(j).eq.0) then
                         if (singdet(j)) then
-                            write (6, *) ' Warning psi singular !!! # walker= ', js
+                            call log_warning(' Warning psi singular !!! # walker= ', js)
                             if (nw .gt. 1) then
                                 !                     wconf(js)=0.d0
                                 wconfn(js) = 0.d0
@@ -1884,21 +1866,21 @@ contains
             if (developer .eq. -1 .and. flagcont .and. rank .eq. 0) then
                 if (i_main .eq. 1) then
                     kelsav(1:3, 1:nel) = kel(1:3, indkj:indkj + nel - 1)
-                    write (6, *) ' Initial configuration ='
+                    call log_info(' Initial configuration =')
                     do jj = 1, nel
-                        write (6, *) jj, kelsav(1:3, indkj + jj - 1)
+                        call log_info(jj, kelsav(1, indkj + jj - 1), kelsav(2, indkj + jj - 1), kelsav(3, indkj + jj - 1))
                     end do
                 else
-                    write (6, *) ' Reset configuration , iteration =', i
+                    call log_info(' Reset configuration , iteration =', i)
                     kel(1:3, indkj:indkj + nel - 1) = kelsav(1:3, 1:nel)
                 end if
             end if
             timep = cclock()
             ! upscratch when doing standard VMC
             call upscratch_global(js, pseudologic, iesrandoml)
-            if (flagcont .and. developer .eq. -1 .and. rank .eq. 0) then
-                write (6, *) ' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j))
-                write (6, *) ' Jastrowall-ei =', sum(jastrowall_ei(:, :, j))
+            if (flagcont .and. developer .eq. -1) then
+                call log_debug(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
+                call log_debug(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
             end if
             timescra = timescra + cclock() - timep
 
@@ -1959,8 +1941,8 @@ contains
                 end if
                 diffkin(3, j) = diffkin(3, j) + enerdiff
 
-                if (flagcont .and. developer .eq. -1 .and. rank .eq. 0) then
-                    write (6, *) ' Energy same conf =', j, enertrue(j), diag(j), tmu(indtabbj), veff, veffright
+                if (flagcont .and. developer .eq. -1) then
+                    call log_debug(' Energy same conf =', j, enertrue(j), diag(j), tmu(indtabbj), veff, veffright)
                 end if
 
                 !           write(6,'(A,2X,I3,2X,3F10.6,2X,2I3,2X,3F10.6)') ' Energy same conf =',j,enertrue(j),diag(j),&
@@ -3227,7 +3209,7 @@ contains
 !$omp barrier
 #endif
             time0 = cclock()
-            if (rank .eq. 0) write (6, *) ' Time boots =', time0 - timep
+            call log_info(' Time boots =', time0 - timep)
             timep = time0
             nweightu = perbin*nweight
             call reweight0(Nw, in1, np, npmn, factorsr                      &
@@ -3245,7 +3227,7 @@ contains
                  &, row_comm, row_id, yescomm)
 
             time0 = cclock()
-            if (rank .eq. 0) write (6, *) ' Total time reweight =', time0 - timep
+            call log_info(' Total time reweight =', time0 - timep)
             timep = time0
 
             if (change_epscut) then
@@ -3287,7 +3269,7 @@ contains
                     epscut = epscutu
                     epstlu = epstlrat*epscutu
                     epstl = epstlrat*epscut
-                    if (rank .eq. 0) write (6, *) ' Warning changing epscut in reweight', i_main, epscutu, avreweight
+                    call log_warning(' Warning changing epscut in reweight', i_main, epscutu, avreweight)
                     countt = 0.d0
                     countav = 0.d0
                     psirav = 0.d0
@@ -3305,7 +3287,7 @@ contains
 
                 energyq = ener_true(1) + ekinq
 
-                if (rank .eq. 0) write (6, *) 'New quantum energy/kin =', energyq*ris(2), ekinq*ris(2)
+                call log_info('New quantum energy/kin =', energyq*ris(2), ekinq*ris(2))
 
                 !            Correction to the pressure  + 2 the quantum Kinetic energy.
                 if (iespbc) then
@@ -3383,7 +3365,7 @@ contains
 
             indc = iesinv + iesm
             if (change_tpar) then
-                if (rank .eq. 0) write (6, *) 'tpar before adjust', tpar
+                call log_info('tpar before adjust', tpar)
                 call adjust_tpar(i_main, nweight, ener_true(1)*ris(2), sigma_true(1)*ris(2), tpar, ngentry, itestr4)
             end if
 
@@ -3392,7 +3374,7 @@ contains
                     vj(k - indc) = vj(k - indc) + alphab(k)*tpar
 
                     if (vj(k - indc) .le. minjonetwobody) then
-                        if (rank .eq. 0) write (6, *) ' Warning one/two body too small', vj(k - indc), minjonetwobody
+                        call log_warning(' Warning one/two body too small', vj(k - indc), minjonetwobody)
                         vj(k - indc) = minjonetwobody
 
                     end if
@@ -3416,7 +3398,7 @@ contains
                 !      One has to define the new Z and the new detmat,jasmat,jasmatsz
                 !      used by convertmol
                 noproj = .false.
-                if (rank .eq. 0) write (6, *) ' Projecting '
+                call log_info(' Projecting ')
                 if (iessw .ne. 0) then
                     indc = iesinv + iesm + iesd + iesfree
                     do k = indc + 1, indc + iessw
@@ -3425,7 +3407,7 @@ contains
                         psip(k - indc) = alphab(k)*tpar
                     end do
                     !                 from real to effective
-                    if (rank .eq. 0) write (6, *) ' Passi qui XIX real-eff'
+                    call log_debug(' Passi qui XIX real-eff')
                     if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                     call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                          &, nozero_c, psip(iessw + 1), psip, 1, jbradet, symmagp, .true.)
@@ -3566,7 +3548,7 @@ contains
                 call update_ionpos
                 if (yeszagp .or. cellderiv) call update_kgrid
                 if (nmolmax .gt. 0 .and. iessw .gt. 0) then
-                    if (rank .eq. 0) write (6, *) ' Passi qui XX eff-real'
+                    call log_debug(' Passi qui XX eff-real')
                     if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                     !                 Here one should check whether is symmetric...
                 end if
@@ -3603,16 +3585,16 @@ contains
                         call scontract_mat_det(nelorbh, nelorbh, nelcolh, nelorb_c&
                              &, nelcol_c, detmat, detmat_c, mu_c, psip)
                     end if
-                    if (rank .eq. 0) write (6, *) ' Time convertmol =', cclock() - timepp
+                    call log_info(' Time convertmol =', cclock() - timepp)
                     if (iessw .gt. 0) then
                         !       from real to effective load dsw effective parameters if allowed_averagek
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXI real-eff'
+                        call log_debug(' Passi qui XXI real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                         call constrbra_complex(iessw, nnozero_c, jbradet, nozero_c, detmat_c      &
                              &, dsw, 1, 1)
                         !       from effective to real
                         if (allowed_averagek) call attach_phase2det(.true., detmat_c)
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXII eff-real'
+                        call log_debug(' Passi qui XXII eff-real')
                         indc = iesinv + iesm + iesd + iesfree
                         do k = indc + 1, indc + iessw
                             alphavar(k) = dsw(k - indc)
@@ -3705,7 +3687,7 @@ contains
             end if
             !               endif
             time0 = cclock()
-            if (rank .eq. 0) write (6, *) ' Time around convertmol =', time0 - timep
+            call log_info(' Time around convertmol =', time0 - timep)
 
             timep = time0
 
@@ -3787,7 +3769,7 @@ contains
 
             if (rank .eq. 0) then
                 if (inext + nweight - iend .gt. ngen) then
-                    write (6, *) 'Warning  stopping the program to terminate VMC bin'
+                    call log_error('Warning  stopping the program to terminate VMC bin')
                     ngen = inext - iend
                 end if
                 open (unit=7, file='stop.dat', form='formatted', status='unknown')
@@ -3798,10 +3780,10 @@ contains
                 end if
                 if (ngentry .eq. 0) then
                     ngen = inext - iend
-                    write (6, *) ' The program will stop at iteration', ngen
+                    call log_error(' The program will stop at iteration', ngen)
                 elseif (ngentry .gt. 0) then
                     ngen = ngentry
-                    write (6, *) ' The program will stop at iteration', ngen + iend
+                    call log_error(' The program will stop at iteration', ngen + iend)
                 elseif (ngentry .eq. -1) then
                     !        read also parr and epsi
                     if (ncg .eq. 0) then
@@ -3813,7 +3795,7 @@ contains
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
 
-                    write (6, *) ' Warning changing parr and epsi on fly  ', parr, epsi
+                    call log_error(' Warning changing parr and epsi on fly  ', parr, epsi)
                 elseif (ngentry .eq. -2) then
                     if (ncg .eq. 0) then
                         read (7, *, end=1155) epsdgel, epsi, tpar
@@ -3821,7 +3803,7 @@ contains
                     else
                         read (7, *, end=1155) parr, epsi, tpar
                     end if
-                    write (6, *) ' Warning changing parr,epsi,tpar on fly  ', parr, epsi, tpar
+                    call log_error(' Warning changing parr,epsi,tpar on fly  ', parr, epsi, tpar)
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
                 elseif (ngentry .eq. -3) then
@@ -3833,10 +3815,9 @@ contains
                     end if
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
-                    write (6, *) ' Warning changing parr,epsi,tpar,nweight on fly '&
-                         &, parr, epsi, tpar, rweight
+                    call log_error(' Warning changing parr,epsi,tpar,nweight on fly ', parr, epsi, tpar, rweight)
                     if (iskipdyn .gt. 1 .and. rweight .ne. nweight) then
-                        write (6, *) ' ERROR nweight cannot be changed during dynamic with iskipdyn>1'
+                        call log_error(' ERROR nweight cannot be changed during dynamic with iskipdyn>1')
                         iflagerr = 1
                     end if
                 elseif (ngentry .eq. -4) then
@@ -3844,7 +3825,7 @@ contains
                     cost = cost/(2.d0*dt)
                     dt = dt*cost
                     call dscal(ieskin, cost, scalpar(np - ieskin + 1), 1)
-                    write (6, *) ' Warning changing tion on fly New tion (H)=', dt*2.d0
+                    call log_error(' Warning changing tion on fly New tion (H)=', dt*2.d0)
                 end if
 1155            continue
                 if (ngentry .ne. -3 .and. ngentry .ne. -4) ngentry = 0
@@ -4015,11 +3996,11 @@ contains
                 ! print the energy of the last iteration
                 if (pressfixed .ne. 0.d0) then
                     enthalpy = (ener_true(1) + pressfixed*cellscale(1)*cellscale(2)*cellscale(3))*ris(2)
-                    write (6, *) ' New Enthalpy/Energy = ', enthalpy, ener_true(1)*ris(2), sigma_true(1)*ris(2)
+                    call log_info(' New Enthalpy/Energy = ', enthalpy, ener_true(1)*ris(2), sigma_true(1)*ris(2))
                 else
-                    write (6, *) ' New Energy = ', ener_true(1)*ris(2), sigma_true(1)*ris(2)
+                    call log_info(' New Energy = ', ener_true(1)*ris(2), sigma_true(1)*ris(2))
                 end if
-                if (itest .eq. 2 .and. psirav_all .ne. 0.d0) write (6, *) ' Average inverse A wf =', psirav_all
+                if (itest .eq. 2 .and. psirav_all .ne. 0.d0) call log_info(' Average inverse A wf =', psirav_all)
                 ! by E. Coccia (7/12/10): write the external potential
                 if (ext_pot) then
                     call extpot_final(nel)
@@ -4033,22 +4014,22 @@ contains
                 ! by E. Coccia (10/12/11): MM restraints
                 if (mm_restr) then
                     call vdw_final()
-                    write (6, *) ' New Energy (no MM) = ', ener_true(1)*ris(2) - sum_pot, sigma_true(1)*ris(2)
-                    write (*, *) '|******************************************|'
-                    write (*, *) '|         EXTERNAL QMC/MM POTENTIAL        |'
-                    write (*, *) '|******************************************|'
-                    write (*, *) ''
+                    call log_info(' New Energy (no MM) = ', ener_true(1)*ris(2) - sum_pot, sigma_true(1)*ris(2))
+                    call log_info('|******************************************|')
+                    call log_info('|         EXTERNAL QMC/MM POTENTIAL        |')
+                    call log_info('|******************************************|')
+                    call log_info('')
                 end if
 
                 !         check the energy is lower and the variance is not too large
                 if (ngentry .eq. -3) then
                     if (ngentry .eq. -3) then
-                        write (6, *) ' Initializing again '
+                        call log_info(' Initializing again ')
                         ndone = rweight - ibinit
                         lbin = ndone/nbinr
                         ndone = nbinr*lbin
                         rweight = ndone + ibinit
-                        write (6, *) ' Changing nweight = ', rweight
+                        call log_info(' Changing nweight = ', rweight)
                         iesconv = 0
                     end if
                 end if
@@ -4088,7 +4069,7 @@ contains
                 t_ave_impr = 0.d0; t_ave2_impr = 0.d0; t_ncount_impr = 0
             end if
 
-            if (rank .eq. 0) write (6, *) ' Used epscut,epstl =', epscutu, epstlu
+            call log_info(' Used epscut,epstl =', epscutu, epstlu)
 
 #ifdef PARALLEL
             call mpi_bcast(tpar, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
@@ -4106,13 +4087,13 @@ contains
 
             time0 = cclock()
 
-            if (rank .eq. 0) write (6, *) ' Time before changing guiding ', time0 - timep
+            call log_info(' Time before changing guiding ', time0 - timep)
 
             timep = time0
 
             !by Andrea Tirelli: ADAM optimizer
             if (yes_adams) then
-                if (rank .eq. 0) write (6, *) ' Perfoming ADAM optimization'
+                call log_info(' Perfoming ADAM optimization')
                 call adam_opt(i_main, nweight, ndimp, first_moment, second_moment, alphab)
             end if
 
@@ -4169,7 +4150,7 @@ contains
                     do k = indc + 1, indc + iesd
                         vj(k - indc) = vj(k - indc) + alphab(k)*tpar
                         if (vj(k - indc) .le. minjonetwobody) then
-                            if (rank .eq. 0) write (6, *) ' Warning one/two body too small', vj(k - indc), minjonetwobody
+                            call log_warning(' Warning one/two body too small', vj(k - indc), minjonetwobody)
                             vj(k - indc) = minjonetwobody
 
                         end if
@@ -4226,7 +4207,7 @@ contains
 
                     if (contraction .eq. 0) then
                         !    From real to effective
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXIII real-eff'
+                        call log_debug(' Passi qui XXIII real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat)
 
                         call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
@@ -4267,7 +4248,7 @@ contains
                         !            enddo
                         !           enddo
                         !         endif
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXV real-eff'
+                        call log_debug(' Passi qui XXV real-eff')
                         !      from real to effective
                         if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                         call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
@@ -4384,10 +4365,10 @@ contains
 
                 if (noproj .and. iessw .ne. 0) then
                     if (contraction .ne. 0) then
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXVI eff-real'
+                        call log_debug(' Passi qui XXVI eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                     else
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXIV eff-real'
+                        call log_debug(' Passi qui XXIV eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat)
                     end if
                 end if
@@ -4401,7 +4382,7 @@ contains
                         alphab(k) = 0.d0
                     end do
                     if ((yesmin .eq. 0 .or. .not. noproj) .and. yesupdate_ion) then
-                        if (rank .eq. 0) write (6, *) ' Recomputing rpar '
+                        call log_info(' Recomputing rpar ')
                         call eval_iond(iond, rion, nion, LBox, psip, iond_cart)
                         psip(1:kp_ion) = rpar(1:kp_ion) ! store old rpar
                         call preprpar(rpar, kp_ion, iond, nion, kiontotj                &
@@ -4460,7 +4441,7 @@ contains
                             call project_alphavar
                         elseif (rmaxj .ne. 0 .or. rmaxinv .ne. 0 .or. rmax .ne. 0) then
                             !    no parametrization but locality
-                            if (rank .eq. 0) write (6, *) ' Warning setting to zero unoptimazible > rmax '
+                            call log_warning(' Warning setting to zero unoptimazible > rmax ')
                             call project_rmax
                         end if
 
@@ -4468,8 +4449,7 @@ contains
                         !        Compute and write variational parameters (do not recompute mat)
                         if (ncg_adr .gt. 0) call project_v(.false.)
                         if (smoothcut .ne. 0.d0 .and. killcut) then
-                            if (rank .eq. 0) write (6, *) &
-                                 &' Warning damping  to zero unoptimazible > rmax by ', smoothcut
+                            call log_warning(' Warning damping  to zero unoptimazible > rmax by ', smoothcut)
                             call project_rmax
                         end if
                     end if ! endif idyn>0
@@ -4487,7 +4467,7 @@ contains
                     flagcont = .true.
                     singdet(1:in1) = .true.
                     time0 = cclock()
-                    if (rank .eq. 0) write (6, *) ' Time around preprpar ', time0 - timep
+                    call log_info(' Time around preprpar ', time0 - timep)
                     timep = time0
                     ! Updating matrix before recomputing by scratch.
 #ifdef _OFFLOAD
@@ -4495,7 +4475,7 @@ contains
 #endif
                     call makeallmeas_fast
                     time0 = cclock()
-                    if (rank .eq. 0) write (6, *) ' Time makeallmeas_fast =', time0 - timep
+                    call log_info(' Time makeallmeas_fast =', time0 - timep)
                     time_meas = time_meas + time0 - timep
                 end if ! end changhing GUIDING (np.ne.0)
             end if ! fine if (np.gt.0)
@@ -4507,7 +4487,7 @@ contains
             if (rank .eq. 0 .and. (ieskint .eq. 0 .or. (yeswrite12 .and. acc_dyn)) .and.&
                  &.not. nowrite12) then
 
-                write (6, *) ' Warning writing WF '
+                call log_warning(' Warning writing WF ')
 
                 psip(nmat) = alphab(nmat)
                 do k = 1, nmat - 1
@@ -4521,7 +4501,7 @@ contains
                         if (detc_proj) then
                             !               From real to effective
                             ! From real to effective
-                            if (rank .eq. 0) write (6, *) ' Passi qui XXVI real-eff'
+                            call log_debug(' Passi qui XXVI real-eff')
                             if (allowed_averagek) call attach_phase2det(.false., detmat_proj)
 
                             if (yes_complex) then
@@ -4535,11 +4515,11 @@ contains
                                 end do
                             end if
                    !!               Back to real
-                            if (rank .eq. 0) write (6, *) ' Passi qui XXVII eff-real'
+                            call log_debug(' Passi qui XXVII eff-real')
                             if (allowed_averagek) call attach_phase2det(.true., detmat_proj)
                         else
                    !!               From real to effective
-                            if (rank .eq. 0) write (6, *) ' Passi qui XXIX real-eff'
+                            call log_debug(' Passi qui XXIX real-eff')
                             if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                             if (yes_complex) then
                                 do ii = 1, nnozero_c
@@ -4552,13 +4532,13 @@ contains
                                 end do
                             end if
                    !!               Back to real
-                            if (rank .eq. 0) write (6, *) ' Passi qui XXVIII eff-real'
+                            call log_debug(' Passi qui XXVIII eff-real')
                             if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                         end if ! endif detc_proj
                         ind = ipc*nnozero_c + inddsw - 1
                     else ! if contraction
                 !!               From real to effective
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXX real-eff'
+                        call log_debug(' Passi qui XXX real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat)
                         if (yes_complex) then
                             do ii = 1, nnozero
@@ -4571,7 +4551,7 @@ contains
                             end do
                         end if
                 !!               Back to real
-                        if (rank .eq. 0) write (6, *) ' Passi qui XXXI eff-real'
+                        call log_debug(' Passi qui XXXI eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat)
                         ind = ipc*nnozero + inddsw - 1
                     end if ! endif contraction
@@ -4866,9 +4846,9 @@ contains
 
             if (old_threads .ne. new_threads) then
 #ifdef UNREL_SMP
-                write (6, *) 'Warning number of threads not conserved', new_threads, old_threads
+                call log_warning('Warning number of threads not conserved', new_threads, old_threads)
 #else
-                write (6, *) 'ERROR in number of threads !!! ', new_threads, old_threads
+                call log_error('ERROR in number of threads !!! ', new_threads, old_threads)
                 iflagerr = 1
 #endif
             end if
@@ -5069,23 +5049,23 @@ contains
                             !                    SP_block_size=(1+ipc+3*nel)*in1
                             !                  endif
                             call mpiio_file_create_view(details_SP, SP_block_size, MPI_REAL)
-                            if (rank == 0) write (6, *) "mpiio: details SP part size", SP_block_size
+                            call log_info("mpiio: details SP part size", SP_block_size)
                             call mpiio_file_reset_view(details_SP)
                             buffer_depth = 10.0/(cclock() - time1p) ! dump data every 10s
                             if (buffer_depth*SP_block_size*4 > 1048576) then
-                                if (rank .eq. 0) write (6, *) "mpiio: buffer_size is limited below 1MB!"
+                                call log_info("mpiio: buffer_size is limited below 1MB!")
                                 buffer_depth = 1048576/(SP_block_size*4)
                             end if
                             if (buffer_depth < 1) buffer_depth = 1
                             call mpi_bcast(buffer_depth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-                            if (rank .eq. 0) write (6, *) "mpiio: buffer_depth", buffer_depth
-                            if (rank .eq. 0) write (6, *) "mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4
+                            call log_info("mpiio: buffer_depth", buffer_depth)
+                            call log_info("mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4)
                             buffer_counter = 0
                             allocate (SP_buffer(SP_block_size, buffer_depth))
                         end if
                         if (details_DP%view == MPI_DATATYPE_NULL) then
                             DP_block_size = 1 + in1*2
-                            if (rank == 0) write (6, *) "mpiio: details DP part size", DP_block_size
+                            call log_info("mpiio: details DP part size", DP_block_size)
                             call mpiio_file_get_disp(details_DP)
                             call mpiio_file_create_view(details_DP, DP_block_size, MPI_DOUBLE_PRECISION)
                             call mpiio_file_reset_view(details_DP)
@@ -5290,23 +5270,23 @@ contains
                     !                    SP_block_size=(1+ipc+3*nel)*in1
                     !                  endif
                     call mpiio_file_create_view(details_SP, SP_block_size, MPI_REAL)
-                    if (rank == 0) write (6, *) "mpiio: details SP part size", SP_block_size
+                    call log_info("mpiio: details SP part size", SP_block_size)
                     call mpiio_file_reset_view(details_SP)
                     buffer_depth = 10.0/(cclock() - time1p) ! dump data every 10s
                     if (buffer_depth*SP_block_size*4 > 1048576) then
-                        if (rank .eq. 0) write (6, *) "mpiio: buffer_size is limited below 1MB!"
+                        call log_info("mpiio: buffer_size is limited below 1MB!")
                         buffer_depth = 1048576/(SP_block_size*4)
                     end if
                     if (buffer_depth < 1) buffer_depth = 1
                     call mpi_bcast(buffer_depth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-                    if (rank .eq. 0) write (6, *) "mpiio: buffer_depth", buffer_depth
-                    if (rank .eq. 0) write (6, *) "mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4
+                    call log_info("mpiio: buffer_depth", buffer_depth)
+                    call log_info("mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4)
                     buffer_counter = 0
                     allocate (SP_buffer(SP_block_size, buffer_depth))
                 end if
                 if (details_DP%view == MPI_DATATYPE_NULL) then
                     DP_block_size = 1 + in1*2
-                    if (rank == 0) write (6, *) "mpiio: details DP part size", DP_block_size
+                    call log_info("mpiio: details DP part size", DP_block_size)
                     call mpiio_file_get_disp(details_DP)
                     call mpiio_file_create_view(details_DP, DP_block_size, MPI_DOUBLE_PRECISION)
                     call mpiio_file_reset_view(details_DP)
@@ -5481,7 +5461,7 @@ contains
 !          will continue if and only if all processor have not found any error.
 !
         call get_dir(path)
-        if (rank == 0) write (6, *) ' Initial path : ', trim(path)
+        call log_info(' Initial path : ', trim(path))
 
 ! Read all input cards excpet &molecul from standard input.
 ! Set default values of main quantities.
@@ -5598,7 +5578,7 @@ contains
             else ! k-points sampling
                 mcol = nproc/nk
                 if (mcol*nk .ne. nproc) then
-                    if (rank .eq. 0) write (6, *) ' # processors / # k-points :', nproc, nk
+                    call log_info(' # processors / # k-points :', nproc, nk)
                     call error(' Initializeall ', ' # of processors must be multiple of &
                          &  the # of k-points !!', 1, rank)
                 end if
@@ -5678,7 +5658,7 @@ contains
             else
                 prep = -1
             end if
-            if (rank .eq. 0) write (6, *) ' Warning prep should be a divisor of', nprocsr, ' Chosen =', prep
+            call log_warning(' Warning prep should be a divisor of', nprocsr, ' Chosen =', prep)
         end if
         if (prep .gt. 0) then
             ! another split
@@ -5706,7 +5686,7 @@ contains
         ranseedfilename = trim(scratchpath)//'randseed.'//trim(chara)
 !
         iese_eff = min(iese, 3) ! no more than 3 averaged on time corr fun so far
-        if (rank .eq. 0) write (6, *) ' iese_eff=', iese_eff
+        call log_info(' iese_eff=', iese_eff)
 !
 ! reading pseudo potential if any (npsa>0 read by datasmin)
         call read_pseudo
@@ -5715,15 +5695,12 @@ contains
 !      alat=1.d0
 !      if(rank.eq.0) write(6,*) ' warning alat set to one ',alat
 !   endif
-        if (rank .eq. 0) then
-            if (alat2 .ne. 0.d0) then
-                write (6, *) ' lattice spacing a1 a2 =', abs(alat)              &
-                     &, abs(alat*alat2)
-            else
-                write (6, *) ' Single mesh  =', abs(alat)
-            end if
-            write (6, *) ' scratch of determinant each ', nscra
+        if (alat2 .ne. 0.d0) then
+            call log_info(' lattice spacing a1 a2 =', abs(alat), abs(alat*alat2))
+        else
+            call log_info(' Single mesh  =', abs(alat))
         end if
+        call log_info(' scratch of determinant each ', nscra)
 ! rsignr=0    fixed node
 ! rsignr=1     VMC ref.
         if (tstepfn .eq. 0.d0) then
@@ -5736,10 +5713,8 @@ contains
 
         if (abs(itestr) .eq. 1 .or. abs(itestr) .eq. 6 .or. itestr .eq. -2 .or. itestr .eq. -3 .or. itestr4 .lt. -10) then
 
-            if (rsignr .ne. 0 .and. rank .eq. 0)                              &
-                 &  write (6, *) ' Warning non standard Fixed node !!!!', rsignr
-            if (rsignr .eq. 0 .and. rank .eq. 0)                              &
-                 &  write (6, *) ' Standard Fixed node '
+            if (rsignr .ne. 0) call log_warning(' Warning non standard Fixed node !!!!', rsignr)
+            if (rsignr .eq. 0) call log_info(' Standard Fixed node ')
 
         end if
 
@@ -5782,7 +5757,7 @@ contains
             if (nproc_diag .gt. 32) nproc_diag = (nproc_diag/32)*32
 #endif
         end if
-        if (rank .eq. 0) write (6, *) "sub_comm_diag uses", nproc_diag, "processors"
+        call log_info("sub_comm_diag uses", nproc_diag, "processors")
         call mpi_sub_comm_create(commrep_mpi, nproc_diag, sub_comm_diag, ierr)
 ! create sub communicator for diagonalization
 ! protect the size of nproc_diag
@@ -5852,8 +5827,8 @@ contains
         np3m = (np3 - 1)/nmat + 1
 
         if (rank .eq. 0) then
-            write (6, *) ' Number of corr functions written =', np3m*nmat
-            write (6, *) ' iopt =', iopt
+            call log_info(' Number of corr functions written =', np3m*nmat)
+            call log_info(' iopt =', iopt)
         end if
 
         ngn = 0
@@ -5914,7 +5889,7 @@ contains
             if (i .ne. rank + 1) iflagerr = 1
             call mpi_allreduce(iflagerr, iflagerrall, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
             if (iflagerrall .ne. 0) then
-                if (rank .eq. 0) write (6, *) ' ERROR in random seed generation, try with different iseed !!! '
+                call log_error(' ERROR in random seed generation, try with different iseed !!! ')
                 deallocate (ipsip, psip)
                 call mpi_finalize(ierr)
                 stop
@@ -5928,11 +5903,11 @@ contains
         irstart = iseed
         iseed = 2*irstart + 1
 #endif
-        if (rank .eq. 0) write (6, *) ' initial iseed =', rank, iseed
+        call log_info(' initial iseed =', rank, iseed)
 !     write(6,*) ' Chosen iseed =',rank,iseed
         call rand_init(iseed)
         if (nproc .eq. 1) then ! for tests
-            if (rank .eq. 0) write (6, *) ' initial random number =', drand1()
+            call log_info(' initial random number =', drand1())
             call rand_init(iseed)
         end if
 
@@ -5980,14 +5955,10 @@ contains
         end if
 
         maxoutput = (dble(in1)*(2*dble(npdim) + ipc + 1) + 1)*dble(nweight)*8.d0/1d9
-        if (rank .eq. 0) then
-            if (writescratch .eq. 0) then
-                write (6, *) ' Warning TurboRVB needs ', maxoutput, &
-                     &' Gygabyte disc space per processor '
-            else
-                write (6, *) ' Warning TurboRVB needs ', maxoutput, &
-                     &' Gygabyte RAM per processor '
-            end if
+        if (writescratch .eq. 0) then
+            call log_warning(' Warning TurboRVB needs ', maxoutput, ' Gygabyte disc space per processor ')
+        else
+            call log_warning(' Warning TurboRVB needs ', maxoutput, ' Gygabyte RAM per processor ')
         end if
 
         if (writescratch .ne. 0 .and. itestr .eq. -5) then
@@ -6006,14 +5977,12 @@ contains
 
         if (defparcutg .and. .not. fncont) then
             parcutg = 1
-            if (rank .eq. 0) write (6, *) ' Default value of parcutg= ', parcutg
+            call log_info(' Default value of parcutg= ', parcutg)
         end if
-        if (rank .eq. 0) then
-            if (.not. defparcutg .and. itest .eq. 1 .and. .not. fncont .and. n_body_on .ne. 0 .and. parcutg .le. 1) then
-                write (6, *) ' Warning parcutg should be equal to 2 in this case !!! You are doing a test? '
-            elseif (.not. defparcutg .and. itest .eq. 1 .and. .not. fncont .and. n_body_on .eq. 0 .and. parcutg .ne. 1) then
-                write (6, *) ' Warning parcutg should be equal to 1 in this case !!! You are doing a test? '
-            end if
+        if (.not. defparcutg .and. itest .eq. 1 .and. .not. fncont .and. n_body_on .ne. 0 .and. parcutg .le. 1) then
+            call log_warning(' Warning parcutg should be equal to 2 in this case !!! You are doing a test? ')
+        elseif (.not. defparcutg .and. itest .eq. 1 .and. .not. fncont .and. n_body_on .eq. 0 .and. parcutg .ne. 1) then
+            call log_warning(' Warning parcutg should be equal to 1 in this case !!! You are doing a test? ')
         end if
         if (allfit) then
             ntpar = nmax_ion*nmax_ion*4
@@ -6023,7 +5992,7 @@ contains
         if (npower .gt. 0) then
             initpar = -2 - powermin
             npar = ntpar*npower
-            if (rank .eq. 0) write (6, *) ' Default #parameters in the long range Jastrow', npar
+            call log_info(' Default #parameters in the long range Jastrow', npar)
         elseif (initpar .lt. -1) then
             if (mod(npar, ntpar) .ne. 0) then
                 write (errmsg, *) 'ERROR Jastrow #parameters npar multiple of', ntpar
@@ -6034,7 +6003,7 @@ contains
         if (npowersz .gt. 0) then
             initparinv = -2 - powerminsz
             nparinv = ntpar*npowersz
-            if (rank .eq. 0) write (6, *) ' Default #parameters in the long range spin Jastrow', nparinv
+            call log_info(' Default #parameters in the long range spin Jastrow', nparinv)
         elseif (initparinv .lt. -1) then
             if (mod(nparinv, ntpar) .ne. 0) then
                 write (errmsg, *) 'ERROR spin Jastrow #parameters nparinv multiple of', ntpar
@@ -6094,13 +6063,13 @@ contains
 !       stop for trivial input
         if (nelup .le. 0 .or. nelorb .le. 0 .or. nelup .lt. neldo .or. neldo .lt. 0) then
 
-            if (nelup .eq. 0) write (6, *) ' No electrons up  ', nelup
-            if (nelup .lt. neldo) write (6, *) ' Please put  #electrons up > #neldo ', nelup, neldo
+            if (nelup .eq. 0) call log_info(' No electrons up  ', nelup)
+            if (nelup .lt. neldo) call log_info(' Please put  #electrons up > #neldo ', nelup, neldo)
 
-            if (nelorb .le. 0) write (6, *) ' The electron basis is empty ', nelorb
+            if (nelorb .le. 0) call log_info(' The electron basis is empty ', nelorb)
 
-            if (nelup .lt. 0) write (6, *) ' Negative # electrons up? ', nelup
-            if (neldo .lt. 0) write (6, *) ' Negative # electrons down? ', neldo
+            if (nelup .lt. 0) call log_info(' Negative # electrons up? ', nelup)
+            if (neldo .lt. 0) call log_info(' Negative # electrons down? ', neldo)
 
             call checkiflagerr(1, rank, "Stop for trivial input!")
 
@@ -6192,8 +6161,8 @@ contains
             end if
         end if
 
-        if (rank .eq. 0 .and. contraction .ne. 0 .and. lastmol .lt. nelorb_c - ndiff .and. molecular .ne. 0)&
-           & write (6, *) ' Warning estimated last relevant molecular orbital =', lastmol
+        if (contraction .ne. 0 .and. lastmol .lt. nelorb_c - ndiff .and. molecular .ne. 0) &
+           call log_warning(' Warning estimated last relevant molecular orbital =', lastmol)
 
         if (yesfast .eq. -1) then
 
@@ -6301,12 +6270,12 @@ contains
             if (symmagp .and. ipc .eq. 1 .and. ipf .eq. 1) then
                 if (nmol .ne. molecular - ndiff) then
                     nmol = molecular - ndiff
-                    if (rank .eq. 0) write (6, *) ' Warning replacing nmol =', nmol
+                    call log_warning(' Warning replacing nmol =', nmol)
                 end if
             else
                 if (nmol .ne. (molecular - ndiff)/2) then
                     nmol = (molecular - ndiff)/2
-                    if (rank .eq. 0) write (6, *) ' Warning replacing nmol =', nmol
+                    call log_warning(' Warning replacing nmol =', nmol)
                 end if
             end if
 
@@ -6337,7 +6306,7 @@ contains
                     if (yesfast .eq. 1) then
                         firstmol = nelorb_c - molecular + 1
                     elseif (yesfast .eq. 2) then
-                        if (rank .eq. 0) write (6, *) ' Warning it should be faster with yesfast= 1 !!! '
+                        call log_warning(' Warning it should be faster with yesfast= 1 !!! ')
                         firstmol = 1
                     end if
                     nmolfn = lastmol - firstmol + 1
@@ -6354,7 +6323,7 @@ contains
 
         if (yesmin .ne. 0 .or. read_molecul) then
 
-            if ((yesmin .ne. 0. .or. read_molecul) .and. rank .eq. 0) write (6, *) ' Projection scheme !!! '
+            if (yesmin .ne. 0. .or. read_molecul) call log_info(' Projection scheme !!! ')
 
             if (detc_proj .and. itestr .eq. -5 .or. read_molecul) then
                 if (molecular .eq. 0) then
@@ -6363,8 +6332,7 @@ contains
                     call checkiflagerr(1, rank, errmsg)
                 end if
                 allocate (detmat_proj(ipc*nelorb_c*max(nelcol_c, nel)))
-                if (rank .eq. 0) write (6, *) ' Warning molecular orbitals optimization &
-                     &  with contracted coefficients '
+                call log_warning(' Warning molecular orbitals optimization with contracted coefficients ')
                 detmat_proj = 0.d0
             end if
 
@@ -6473,7 +6441,7 @@ contains
                     !               endif ! endif second big if ireadmin
                 elseif (ireadmin .gt. 0) then ! referred to the first big if
 
-                    if (rank .eq. 0) write (6, *) ' Warning this part is not tested !!! '
+                    call log_warning(' Warning this part is not tested !!! ')
 
                     call convertmol_fast
 
@@ -6594,7 +6562,7 @@ contains
             if (ndiff .ne. 0 .and. molecular .ne. 0) then
                 nmolfn = nelorb_c - firstmol + 1
                 lastmol = nelorb_c
-                if (rank .eq. 0) write (6, *) ' Warning changing nmolfn for LRDMC/DMC =', nmolfn
+                call log_warning(' Warning changing nmolfn for LRDMC/DMC =', nmolfn)
             end if
             if (contraction .ne. 0 .and. firstmol + nmolfn - 1 .gt. nelorb_c) then
                 nmolfn = nelorb_c - firstmol + 1
@@ -6603,7 +6571,7 @@ contains
         end if
 
         if ((nelorbh .le. nmolmax .or. iessw .eq. 0) .and. rank .eq. 0 .and. yesmin .ne. 0) then
-            write (6, *) ' Warning using fast algorithm, but not necessary !!! '
+            call log_warning(' Warning using fast algorithm, but not necessary !!! ')
         end if
 
         if (molecular .ne. 0) then
@@ -6625,16 +6593,15 @@ contains
         end if
 
         if (rank .eq. 0) then
-            write (6, *) ' Default chosen yesfast ', yesfast
+            call log_warning(' Default chosen yesfast ', yesfast)
             if (yesfast .ne. 0) then
-                write (6, *) ' Warning nmolfn, Speeding factor =  ', nmolfn&
-                     &, nelorbh/dble(2*nmolfn)
+                call log_warning(' Warning nmolfn, Speeding factor =  ', nmolfn, nelorbh/dble(2*nmolfn))
             end if
             if (itest .ne. 2 .and. ipf .ne. 2) then
                 if (nosingledet) then
-                    write (6, *) ' Warning AGP algorithm update '
+                    call log_warning(' Warning AGP algorithm update ')
                 else
-                    write (6, *) ' Warning Single determinant  algorithm update (faster) '
+                    call log_warning(' Warning Single determinant  algorithm update (faster) ')
                 end if
             end if
         end if
@@ -6682,8 +6649,8 @@ contains
         if (LBox .gt. 0) then
             call InitEwald(nion, zetar, nel, nws)
             if (rank .eq. 0) then
-                write (*, *) ' Number of G vectors ', n_gvec
-                write (*, *) ' Ewald Self Energy ', eself
+                call log_info(' Number of G vectors ', n_gvec)
+                call log_info(' Ewald Self Energy ', eself)
             end if
             kmax = n_gvec
             kmax2 = 2*kmax
@@ -6699,58 +6666,56 @@ contains
         end if
 
         if (rank .eq. 0) then
-            write (6, *) '*********************************************'
-            write (6, *) '*********************************************'
+            call log_info('*********************************************')
             if (itestr .eq. -5) then
 
                 if (itestr4 .ge. -10) then
-                    write (6, *) 'VMC with ENERGY MINIMIZATION'
+                    call log_info('VMC with ENERGY MINIMIZATION')
                 else
-                    write (6, *) 'FN   with ENERGY MINIMIZATION'
+                    call log_info('FN   with ENERGY MINIMIZATION')
                 end if
 
                 if (itestrr .eq. -4) then
-                    write (6, *) 'STOCHASTIC RECONFIGURATION WITH HESSIAN'
-                    write (6, *) ' Beta used =', beta
+                    call log_info('STOCHASTIC RECONFIGURATION WITH HESSIAN')
+                    call log_info(' Beta used =', beta)
                 elseif (itestrr .eq. -5) then
-                    write (6, *) 'SIMPLE STOCHASTIC RECONFIGURATION'
+                    call log_info('SIMPLE STOCHASTIC RECONFIGURATION')
                 end if
-                write (6, *) ' Stochastic acceleration =', tpar
-                if (itestr3 .eq. -9) write (6, *)                                   &
-                     &' No optimization Z with contracted '
+                call log_info(' Stochastic acceleration =', tpar)
+                if (itestr3 .eq. -9) call log_info(' No optimization Z with contracted ')
             elseif (itestr .eq. 2) then
-                write (6, *) 'VARIATIONAL MONTE CARLO'
+                call log_info('VARIATIONAL MONTE CARLO')
             elseif (itestr .eq. 1 .or. itestr .eq. -2 .or. itestr .eq. -3) then
-                write (6, *) 'DIFFUSION MONTE CARLO'
+                call log_info('DIFFUSION MONTE CARLO')
                 if (rejweight) then
-                    write (6, *) 'weights updated according to acceptance/rejection in diffusion'
+                    call log_info('weights updated according to acceptance/rejection in diffusion')
                 else
-                    write (6, *) 'weights always updated'
+                    call log_info('weights always updated')
                 end if
             elseif (itestr .eq. -6) then
-                write (6, *) 'LATTICE REGULARIZED DIFFUSION MONTE CARLO'
+                call log_info('LATTICE REGULARIZED DIFFUSION MONTE CARLO')
             end if
-            write (6, *) '*********************************************'
-            write (6, *) '*********************************************'
+            call log_info('*********************************************')
+            call log_info('*********************************************')
         end if
 
         if (itestrr .eq. -4 .or. itestrr .eq. -5) then
 
             if (contraction .ne. 0 .or. contractionj .ne. 0) then
                 if (iesup .ne. 0 .and. .not. yeszagp) then
-                    if (rank .eq. 0) write (6, *) 'zeta exponents in determinant excluded'
+                    call log_info('zeta exponents in determinant excluded')
                 end if
                 if (iesm .ne. 0 .and. .not. yeszj) then
-                    if (rank .eq. 0) write (6, *) 'zeta exponents in Jastrow  excluded'
+                    call log_info('zeta exponents in Jastrow  excluded')
                 end if
                 if ((iesm .ne. 0 .and. contractionj .eq. 0)&
                      &.and. (.not. yeszj .or. itestr3 .eq. -4 .or. itestr3 .eq. -9)) then
-                    if (rank .eq. 0) write (6, *) ' Warning optimization Z Jastrow on '
+                    call log_warning(' Warning optimization Z Jastrow on ')
                     yeszj = .true.
                 end if
                 if ((iesup .ne. 0 .and. contraction .eq. 0)                           &
                      &.and. (.not. yeszagp .or. itestr3 .eq. -4 .or. itestr3 .eq. -9)) then
-                    write (6, *) ' Warning optimization Z AGP  on '
+                    call log_warning(' Warning optimization Z AGP  on ')
                     yeszagp = .true.
                 end if
             end if
@@ -6767,13 +6732,11 @@ contains
         dup = 0.d0
         if (itestr .eq. -5) then ! only for the optimization this memory is required
             if (stodim .gt. iscramax) then
-                if (rank .eq. 0) then
-                    write (6, *) ' Warning changing iscramax for the master ', stodim
-                    deallocate (psip)
-                    iscramax = stodim
-                    allocate (psip(iscramax))
-                    psip = 0.d0
-                end if
+                call log_warning(' Warning changing iscramax for the master ', stodim)
+                deallocate (psip)
+                iscramax = stodim
+                allocate (psip(iscramax))
+                psip = 0.d0
             end if
             !      ALLOCATE(alphasto(stodim))
             allocate (ef(ieskindim, 3, nbindim), efenergy(1 + ipc, nbindim)             &
@@ -6798,14 +6761,14 @@ contains
             !     Initialize randomly according to the given temperature
             if (temp .ne. 0.d0) then
                 if (yesquantum) then
-                    if (rank .eq. 0) write (6, *) ' Initializing velocities at temp (a.u.)', nbead*temp*ris(2)
+                    call log_info(' Initializing velocities at temp (a.u.)', nbead*temp*ris(2))
                     do ii = 1, ieskindim
                         arg1 = 1.d0 - drand1()
                         arg2 = TWO_PI*drand1()
                         velion(3, ii) = dsqrt(-2.d0*dlog(arg1)*nbead*temp)*dcos(arg2)
                     end do
                 else
-                    if (rank .eq. 0) write (6, *) ' Initializing velocities at temp (a.u.)', temp*ris(2)
+                    call log_info(' Initializing velocities at temp (a.u.)', temp*ris(2))
                     do ii = 1, ieskindim
                         arg1 = 1.d0 - drand1()
                         arg2 = TWO_PI*drand1()
@@ -6893,8 +6856,8 @@ contains
             call omp_set_num_threads(1) ! restore the scalar code
 #endif
 
-            write (6, *) '%%%%%%%%%%%%%%% DETERMINANTAL GEMINAL %%%%%%%%%%%%%%'
-            write (6, *) ' Eigenvalues matrix lambda ', info, rank
+            call log_info('%%%%%%%%%%%%%%% DETERMINANTAL GEMINAL %%%%%%%%%%%%%%')
+            call log_info(' Eigenvalues matrix lambda ', info, rank)
 
             if (contraction .eq. 0) then
                 maxdimeig = nelorbh*ipf
@@ -6921,9 +6884,9 @@ contains
                 write (errmsg, *) ' Singular matrix !!! ', irankdet
                 call checkiflagerr(1, rank, errmsg)
             elseif (irankdet .eq. neldo) then
-                if (rank .eq. 0) write (6, *) ' No resonance simple det !!! ', irankdet
+                call log_info(' No resonance simple det !!! ', irankdet)
             else
-                if (rank .eq. 0) write (6, *) ' RVB is starting !!! ', irankdet
+                call log_info(' RVB is starting !!! ', irankdet)
             end if
 
         end if ! if yesfast=0
@@ -6980,51 +6943,50 @@ contains
            &, vju, 1, 1)
 
         if (rank .eq. 0 .and. allowed_averagek) then
-            write (6, *) ' Warning allowed translation via phase flux attaching'
+            call log_warning(' Warning allowed translation via phase flux attaching')
         end if
 
         if (contraction .ne. 0) then
             !  From real to effective load dsw
-            if (rank .eq. 0) write (6, *) ' Passi qui I real-eff '
+            call log_debug(' Passi qui I real-eff ')
             if (allowed_averagek) call attach_phase2det(.false., detmat_c)
             call constrbra_complex(iessw, nnozero_c, jbradet, nozero_c, detmat_c&
                  &, dsw, 1, 1)
             !  back to real
             if (allowed_averagek) call attach_phase2det(.true., detmat_c)
-            if (rank .eq. 0) write (6, *) ' Passi qui III eff-real '
+            call log_debug(' Passi qui III eff-real ')
         else
             !  From real to effective load dsw
-            if (rank .eq. 0) write (6, *) ' Passi qui II real-eff '
+            call log_debug(' Passi qui II real-eff ')
             if (allowed_averagek) call attach_phase2det(.false., detmat)
             call constrbra_complex(iessw, nnozero, jbradet, nozero, detmat            &
                  &, dsw, 1, 1)
             !  back to real
-            if (rank .eq. 0) write (6, *) ' Passi qui IV eff-real '
+            call log_debug(' Passi qui IV eff-real ')
             if (allowed_averagek) call attach_phase2det(.true., detmat)
         end if
 
         if (rank .eq. 0) then
-            write (6, *) '%%%%%%%%%%%%%%%%%% 2 BODY JASTROW %%%%%%%%%%%%%%%%'
-            write (6, *) 'Number 2 body Jastrow parameters ', niesd
+            call log_info('%%%%%%%%%%%%%%%%%% 2 BODY JASTROW %%%%%%%%%%%%%%%%')
+            call log_info('Number 2 body Jastrow parameters ', niesd)
             if (niesd .ge. 1) then
                 do i = 1, niesd
-                    write (6, *) i, vj(i)
+                    call log_info(i, vj(i))
                 end do
             else
-                write (6, *) '2 body Jastrow not present'
+                call log_info('2 body Jastrow not present')
             end if
             if (iesdr .le. -5) then
-                write (6, *) ' initial costz, costz3, zeta_Q_Caffarel '
+                call log_info(' initial costz, costz3, zeta_Q_Caffarel ')
                 do i = 1, nion
-                    write (6, *) i, costz(i), costz3(i), zetaq(i)
+                    call log_info(i, costz(i), costz3(i), zetaq(i))
                 end do
             end if
             if (iesfree .ne. 0 .or. iesm .ne. 0 .or. iesfreesz .ne. 0) then
-                write (6, *) '%%%%%%%%%%%%%%%%%% 3 BODY JASTROW %%%%%%%%%%%%%%%%'
+                call log_info('%%%%%%%%%%%%%%%%%% 3 BODY JASTROW %%%%%%%%%%%%%%%%')
             end if
-            write (6, *) 'Total independent parameters in Jastrow sector', &
-                 &              inddsw - 1
-            write (6, *)
+            call log_info('Total independent parameters in Jastrow sector', inddsw - 1)
+            call log_info('')
 
         end if ! endif rank=0
 
@@ -7179,9 +7141,9 @@ contains
 !---------------------------
 
         if (rank .eq. 0) then
-            write (6, *) ' nwfix given =', nwfix, nwrep
-            write (6, *) ' Number of parameters in SR =', nindt
-            write (6, *) ' Hartree Atomic Units '
+            call log_info(' nwfix given =', nwfix, nwrep)
+            call log_info(' Number of parameters in SR =', nindt)
+            call log_info(' Hartree Atomic Units ')
         end if
 
         if (nprest .lt. 0) then
@@ -7223,18 +7185,15 @@ contains
             if (ieskint .eq. ieskinr_pos + 2) then
                 dek(ieskinr_pos + 1 - iesking) = cellscale(2)
                 dek(ieskinr_pos + 2 - iesking) = cellscale(3)
-                if (rank .eq. 0) write (6, *) ' PBC Updating cellscale b,c=', ieskinr_pos &
-                     &, dek(ieskinr_pos + 1 - iesking), dek(ieskinr_pos + 2 - iesking)
+                call log_info(' PBC Updating cellscale b,c=', ieskinr_pos, dek(ieskinr_pos + 1 - iesking), dek(ieskinr_pos + 2 - iesking))
             elseif (ieskint .eq. ieskinr_pos + 1) then
                 dek(ieskinr_pos + 1 - iesking) = cellscale(1)
-                if (rank .eq. 0) write (6, *) ' PBC Updating cellscale a=', ieskinr_pos   &
-                     &, dek(ieskinr_pos + 1 - iesking)
+                call log_info(' PBC Updating cellscale a=', ieskinr_pos, dek(ieskinr_pos + 1 - iesking))
             elseif (ieskint .eq. ieskinr_pos + 3) then
                 dek(ieskinr_pos + 1 - iesking) = cellscale(1)
                 dek(ieskinr_pos + 2 - iesking) = cellscale(2)
                 dek(ieskinr_pos + 3 - iesking) = cellscale(3)
-                if (rank .eq. 0) write (6, *) ' PBC Updating cellscale a,b,c=', ieskinr_pos  &
-                     &, dek(ieskinr_pos + 1 - iesking), dek(ieskinr_pos + 2 - iesking), dek(ieskinr_pos + 3 - iesking)
+                call log_info(' PBC Updating cellscale a,b,c=', ieskinr_pos, dek(ieskinr_pos + 1 - iesking), dek(ieskinr_pos + 2 - iesking), dek(ieskinr_pos + 3 - iesking))
             end if
         end if
 
@@ -7292,7 +7251,7 @@ contains
             deallocate (psip)
             allocate (psip(skip))
             psip = 0.d0
-            if (rank .eq. 0) write (6, *) 'iscramax changed!', skip
+            call log_info('iscramax changed!', skip)
         end if
 #endif
         if (iscramax .lt. nparshellmax + nelorbpp) then
@@ -7362,7 +7321,7 @@ contains
             call findrionfref(nion, alat, rion_sav, rion_ref, mind(1))
             call findrionfref(nion, alat, rion_sav(2, 1), rion_ref(2), mind(2))
             call findrionfref(nion, alat, rion_sav(3, 1), rion_ref(3), mind(3))
-            if (rank .eq. 0) write (6, *) ' Minimum ion-mesh distance =', dsqrt(sum(mind(:)**2))
+            call log_info(' Minimum ion-mesh distance =', dsqrt(sum(mind(:)**2)))
             if (iespbc) rion_ref(:) = rion_ref(1)*at(:, 1) + rion_ref(2)*at(:, 2) + rion_ref(3)*at(:, 3)
             if (yes_deallocate) then
                 deallocate (rion_sav)
@@ -7418,8 +7377,7 @@ contains
 
         if (mod(nbra, nel) .ne. 0 .and. fncont) then
             nbra = ((nbra - 1)/nel + 1)*nel
-            if (rank .eq. 0)                                                &
-                 &     write (6, *) ' Warning changing nbra multiple of nel =', nbra
+            call log_warning(' Warning changing nbra multiple of nel =', nbra)
         end if
         nbram = nbra - 1
 
@@ -7488,12 +7446,10 @@ contains
             end if
         end do
 
-        if (rank .eq. 0 .and. ldynsecond .and. idyn .gt. 0) write (6, *)&
-            & ' Warning Chosen Dt /component (a.u.) =', dt/ris(5), ref_comp
-        if (rank .eq. 0 .and. .not. ldynsecond .and. idyn .gt. 0) write (6, *)&
-           & ' Warning Chosen Dt /component (a.u.) =', dt/ris(2), ref_comp
+        if (ldynsecond .and. idyn .gt. 0) call log_warning(' Warning Chosen Dt /component (a.u.) =', dt/ris(5), ref_comp)
+        if (.not. ldynsecond .and. idyn .gt. 0) call log_warning(' Warning Chosen Dt /component (a.u.) =', dt/ris(2), ref_comp)
         if (dt .eq. 0 .and. idyn .gt. 0) then
-            if (rank .eq. 0) write (6, *) ' ERROR no component to do dynamics  Dt=0!!!!', dt
+            call log_error(' ERROR no component to do dynamics  Dt=0!!!!', dt)
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -7588,7 +7544,7 @@ contains
 #endif
 
             if (nbra_cyrus .ne. nbra_cyrus_read) then
-                if (rank .eq. 0) write (6, *) ' ERROR nbra_cyrus cannot be changed! use the same nbra_cyrus also in VMC!!!'
+                call log_error(' ERROR nbra_cyrus cannot be changed! use the same nbra_cyrus also in VMC!!!')
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -7603,8 +7559,8 @@ contains
                 call checkiflagerr(iflagerr, rank, "Fail in reading random seeds!")
             elseif (iopt .eq. 0 .or. iopt .eq. 3) then
                 if (rank .eq. 0) then
-                    write (6, *) ' Warning continuing with different number of processors '
-                    write (6, *) ' Warning the random number are initialized again '
+                    call log_warning(' Warning continuing with different number of processors ')
+                    call log_warning(' Warning the random number are initialized again ')
                 end if
             end if
 
@@ -7624,7 +7580,7 @@ contains
                 if (nweight .eq. nweightr .and. iskipdyn .eq. iskipdynr) then
                     iend = iendr
                 else
-                    if (rank .eq. 0) write (6, *) ' Warning starting again the record counter '
+                    call log_warning(' Warning starting again the record counter ')
                     iend = 0
                     yeschange_nweight = .true.
                 end if
@@ -7767,9 +7723,8 @@ contains
                     if (nbra_cyrus .gt. 0) then
                         kelcont_size = kelcont_size + in1*(dim_cyrus + 1)
                     end if
-                    if (rank .eq. 0) write (6, '(A, A, /, A, I10, A)')&
-                        & " Reading electronic configurations from ", trim(kelcont%name), &
-                        & " Each MPI task reads ", kelcont_size, " double precision data."
+                    ! original format: (A, A, /, A, I10, A)
+                    call log_info(" Reading electronic configurations from ", trim(kelcont%name), " Each MPI task reads ", kelcont_size, " double precision data.")
                     call mpiio_file_create_view(kelcont, kelcont_size, MPI_DOUBLE_PRECISION)
                     call mpiio_file_reset_view(kelcont)
                     do ii = 1, in1
@@ -7806,7 +7761,7 @@ contains
             end if
 
             call checkiflagerr(iflagerr, rank, 'Error in main')
-            if (rank .eq. 0) write (6, *) ' All files are read correctly ...'
+            call log_info(' All files are read correctly ...')
 #ifdef PARALLEL
             if (contraction .gt. 0) &
                  &call mpi_bcast(allowcontr, 2*nelorb_c, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
@@ -7827,8 +7782,7 @@ contains
                 end if
                 call mpi_barrier(MPI_COMM_WORLD, ierr)
 !$omp barrier
-                if (rank .eq. 0 .and. idyn .gt. 2 .and. idyn .ne. 5) write (6, *) &
-                     &' Temp velocities read =', dnrm2(ieskin, velion(3, 1), 3)**2/ieskin*ris(2)
+                if (idyn .gt. 2 .and. idyn .ne. 5) call log_info(' Temp velocities read =', dnrm2(ieskin, velion(3, 1), 3)**2/ieskin*ris(2))
             end if
 #endif
 
@@ -7836,7 +7790,7 @@ contains
             !   The old covariance matrix, if allocated, is always common to all processors
             !   even in the quantum case.
             if (allocated(cov_old)) then
-                if (rank .eq. 0) write (6, *) ' Warning read old covariance matrix '
+                call log_warning(' Warning read old covariance matrix ')
                 call bcast_real(cov_old, size(cov_old), 0, MPI_COMM_WORLD)
             end if
 #endif
@@ -7869,13 +7823,13 @@ contains
                 epscutu = epscut
                 epstlu = epstl
             end if
-            if (rank .eq. 0) write (6, *) ' Used epscut,epstl,tstep =', epscutu, epstlu, tstep
+            call log_info(' Used epscut,epstl,tstep =', epscutu, epstlu, tstep)
 
             if (rank .eq. 0) then
-                if (itestr .eq. -5) write (6, *) ' Cut off used (parr) for sr when kl=6,7 =', parr
-                write (6, *) ' Number of QMC iterations  in this run', ngen
-                if (itestr .eq. -5) write (6, *) ' Number of previous optimization steps', ng
-                write (6, *) ' Number of previous QMC iterations ', ngs
+                if (itestr .eq. -5) call log_info(' Cut off used (parr) for sr when kl=6,7 =', parr)
+                call log_info(' Number of QMC iterations  in this run', ngen)
+                if (itestr .eq. -5) call log_info(' Number of previous optimization steps', ng)
+                call log_info(' Number of previous QMC iterations ', ngs)
             end if
 
             ! ngs number of optimization steps, ng number of QMC iterations.
@@ -7887,7 +7841,7 @@ contains
         call read_alphavar
 
         if (rank .eq. 0 .and. ieskin .ne. 0) then
-            write (6, *) ' Warning rescaling acc forces ion  in Hartree'
+            call log_warning(' Warning rescaling acc forces ion  in Hartree')
         end if
 
         if (idyn .eq. 0) delta0 = 0.d0
@@ -7897,8 +7851,7 @@ contains
                 !          if(delta0.lt.2.d0*dt) then
                 !          delta0=2.d0*dt
                 delta0 = 4.d0/3.d0*dt*normcorr
-                if (rank .eq. 0) write (6, *) ' Warning  delta_0 >= 4/3 dt !!! Changed to ' &
-                     &, delta0
+                call log_warning(' Warning  delta_0 >= 4/3 dt !!! Changed to ', delta0)
             end if
         end if
 
@@ -7907,8 +7860,7 @@ contains
                 !          if(delta0.lt.2.d0*dt) then
                 !          delta0=2.d0*dt
                 delta0 = dt*normcorr
-                if (rank .eq. 0) write (6, *) ' Warning  delta_0 >= dt !!! Changed to ' &
-                     &, delta0
+                call log_warning(' Warning  delta_0 >= dt !!! Changed to ', delta0)
             end if
         end if
 
@@ -7916,22 +7868,21 @@ contains
             if (yesrootc) then
                 if (temp .ne. 0.d0 .and. delta0 .lt. 2.d0*dsqrt(max(normcorr, 0.d0)/temp)) then
                     !        delta0=2.d0*dsqrt(normcorr/temp)
-                    if (rank .eq. 0) write (6, *) ' Warning  delta_0 >  2/sqrt(T) !!! Change to &
-                         & if you see many Warning, alias reduce tion ', 2.d0*dsqrt(normcorr/temp)
+                    call log_warning(' Warning  delta_0 >  2/sqrt(T) !!! Change to if you see many Warning, alias reduce tion ', 2.d0*dsqrt(normcorr/temp))
                 end if
             else
                 if (delta0 .lt. dt*normcorr) then
                     delta0 = dt*normcorr
                     if (yessecond) delta0 = delta0/2.d0
-                    if (rank .eq. 0) write (6, *) ' Warning  delta_0 >  dt !!! Changed to ', delta0/dt, 'dt'
+                    call log_warning(' Warning  delta_0 >  dt !!! Changed to ', delta0/dt, 'dt')
                 end if
             end if
         end if
 
-        if (rank .eq. 0 .and. itestr .eq. -5) then
-            write (6, *) ' Initial scaling '
+        if (itestr .eq. -5) then
+            call log_info(' Initial scaling ')
             do i = 1, np
-                if (scalpar(i) .ge. 0.d0) write (6, *) i, scalpar(i)
+                if (scalpar(i) .ge. 0.d0) call log_info(i, scalpar(i))
             end do
         end if
         if (typedyncell .eq. 2 .and. fixa) scalpar(np - 2) = 0.d0
@@ -7966,7 +7917,7 @@ contains
             lambda = dabs(-etry)
         else
             lambda = -etry
-            if (rank .eq. 0) write (6, *) ' lambda chosen =', lambda
+            call log_info(' lambda chosen =', lambda)
         end if
         ngg = ng
         ngn = ngs
@@ -7975,7 +7926,7 @@ contains
         end do
         rweight = nweight
         if (rank .eq. 0 .and. itestr .eq. -5) then
-            write (6, *) ' nweight before starting ', nweight
+            call log_info(' nweight before starting ', nweight)
         end if
 !       write(6,*) 'before  nweight nweightr # proc  ='
 !    1,nweight,nweightr,rank+1
@@ -7992,8 +7943,7 @@ contains
         if (nbinr*lbin .ne. ndone .and. itestr .eq. -5) flag = .true.
         ndone = nbinr*lbin
         nweight = ndone + ibinit
-        if (rank .eq. 0 .and. flag)                                                 &
-           &write (6, *) ' Warning nweight changed  !!!', nweight
+        if (flag) call log_warning(' Warning nweight changed  !!!', nweight)
         i_main = iend
         if ((iopt .ne. 0 .and. iopt .ne. 3) .or. yeschange_nweight) then
             inext = iend + nweight
@@ -8074,7 +8024,7 @@ contains
 !   endif
 
         if (ieskint .ne. 0) then
-            if (rank .eq. 0) write (6, *) ' DIFFERENTIAL WARP ALGORITHM FOR FORCES  '
+            call log_info(' DIFFERENTIAL WARP ALGORITHM FOR FORCES  ')
         end if
 
 !        write(6,*) ' Initial tabs AGP '
@@ -8089,12 +8039,11 @@ contains
 
 !         stop
 
-        if (rank .eq. 0 .and. .not. yespulay) &
-           &write (6, *) ' Warning calculation of pulay suppressed '
+        if (.not. yespulay) call log_warning(' Warning calculation of pulay suppressed ')
 
         if (ieskin .ne. 0) then
             ieskinion = ieskin - (ieskint - ieskinr_pos)
-            if (rank .eq. 0) write (6, *) ' Number of components ions =', ieskinion
+            call log_info(' Number of components ions =', ieskinion)
         end if
         nelsquare = nel*nel
         if (itest .ne. 2) then
@@ -8180,29 +8129,25 @@ contains
             end do
         end if
 
-        if (scalepulay .ne. 1.d0 .and. rank .eq. 0) &
-           &write (6, *) ' Warning biased Pulay scheme !!!  ', scalepulay
+        if (scalepulay .ne. 1.d0) call log_warning(' Warning biased Pulay scheme !!!  ', scalepulay)
         dt4 = 1.d0
-        if (rank .eq. 0 .and. idyn .ne. 8 .and. idyn .ne. 0) then
+        if (idyn .ne. 8 .and. idyn .ne. 0) then
             if (ref_atom .ne. 0) then
-                write (6, *) 'Reference unit mass atom (in your fort.10 in ascending order) ', ref_atom
+                call log_info('Reference unit mass atom (in your fort.10 in ascending order) ', ref_atom)
                 if (ldynsecond) then
-                    write (6, *) ' Then your real time step used in dynamics is (a.u.)=', dt&
-                       & *sqrt(atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass*2.d0)
-                    write (6, *) 'Remind 1a.u.= 0.0242fs'
+                    call log_info(' Then your real time step used in dynamics is (a.u.)=', dt*sqrt(atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass*2.d0))
+                    call log_info('Remind 1a.u.= 0.0242fs')
                 elseif (idyn .ne. 5) then
-                    write (6, *) ' Then your real time step used in dynamics is (a.u.)=', dt&
-                       & *atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass*2 ! the factor 2 is for Rydberg unit
-                    write (6, *) 'Remind 1a.u.= 0.0242fs'
+                    call log_info(' Then your real time step used in dynamics is (a.u.)=', dt*atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass*2)
+                    call log_info('Remind 1a.u.= 0.0242fs')
                 else
-                    write (6, *) ' Then your real time step used in dynamics is (a.u.)=', dt&
-                       & *atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass/2 ! the factor 2 is for Rydberg unit
-                    write (6, *) 'Remind 1a.u.= 1H'
+                    call log_info(' Then your real time step used in dynamics is (a.u.)=', dt*atom_weight(nint(atom_number(ref_atom)))/mass_unit*scale_mass/2)
+                    call log_info('Remind 1a.u.= 1H')
                 end if
             end if
-        elseif (rank .eq. 0 .and. idyn .eq. 8) then
-            write (6, *) 'Your time units are a.u.!!!'
-            write (6, *) 'Your time step is dt=', dt*2.d0*0.0241888, 'fs'
+        elseif (idyn .eq. 8) then
+            call log_info('Your time units are a.u.!!!')
+            call log_info('Your time step is dt=', dt*2.d0*0.0241888, 'fs')
         end if
 
         if (yesquantum) then
@@ -8214,12 +8159,12 @@ contains
             fbead = 0.d0
             mass_ion = 0.d0
             dt4 = 4.d0/temp
-            if (rank .eq. 0) write (6, *) ' Mass particles (unit m_e) '
+            call log_info(' Mass particles (unit m_e) ')
 
             do ii = 1, 3
                 do jj = 1, nion
                     mass_ion(ii, jj) = atom_weight(nint(atom_number(jj)))/mass_unit*scale_mass
-                    if (rank .eq. 0 .and. ii .eq. 1) write (6, *) jj, mass_ion(ii, jj)
+                    if (ii .eq. 1) call log_info(jj, mass_ion(ii, jj))
                     !         Use the same mass in the classical dynamics
                 end do
             end do
@@ -8274,25 +8219,23 @@ contains
                 call bcast_real(kdyn_eig, nbead, 0, MPI_COMM_WORLD)
                 call bcast_real(kdyn, size(kdyn), 0, MPI_COMM_WORLD)
 #endif
-                if (rank .eq. 0) then
-                    write (6, *) ' Eigenvalues elastic quantum term '
-                    do ii = 1, nbead
-                        write (6, *) ii, kdyn_eig(ii)
-                    end do
-                end if
+                call log_info(' Eigenvalues elastic quantum term ')
+                do ii = 1, nbead
+                    call log_info(ii, kdyn_eig(ii))
+                end do
             end if
 
         elseif (idyn .eq. 8) then
 
-            if (rank .eq. 0) write (6, *) ' Classical dynamics idyn 8'
-            if (rank .eq. 0) write (6, *) ' Mass particles (unit m_e) '
+            call log_info(' Classical dynamics idyn 8')
+            call log_info(' Mass particles (unit m_e) ')
             ! classical dynamics in a.u. (no mass reference!)
             allocate (mass_ion(3, nion))
 
             do ii = 1, 3
                 do jj = 1, nion
                     mass_ion(ii, jj) = atom_weight(nint(atom_number(jj)))/mass_unit*scale_mass
-                    if (rank .eq. 0 .and. ii .eq. 1) write (6, *) jj, mass_ion(ii, jj)
+                    if (ii .eq. 1) call log_info(jj, mass_ion(ii, jj))
                     !         Use the same mass rescaling as in the quantum dynamics for idyn.eq.8
                 end do
             end do
@@ -8322,31 +8265,31 @@ contains
         celldm_write(1:3) = celldm(1:3)
         rs_write = rs
         if (iesup + iessw + iesking + ieskint .gt. 0) then
-            if (rank .eq. 0) write (6, *) ' Warning AAD  determinant or forces !!!'
+            call log_warning(' Warning AAD  determinant or forces !!!')
             yesdodet = .true.
         else
             yesdodet = .false.
         end if
         if (iesup + iessw .gt. 0) then
-            if (rank .eq. 0) write (6, *) ' Warning AAD  determinant !!!'
+            call log_warning(' Warning AAD  determinant !!!')
             yesdodet_nof = .true.
         else
             yesdodet_nof = .false.
         end if
         yes_hessc = .false.
         if (ipc .eq. 2 .and. yesdodet_nof .and. itestr .eq. -5) then
-            if (rank .eq. 0) write (6, *) ' Warning complex Hessian ! '
+            call log_warning(' Warning complex Hessian ! ')
             yes_hessc = .true.
         end if
         if (iesup .gt. 0 .and. yeszagp) then
-            if (rank .eq. 0) write (6, *) ' Warning AAD Z  determinant !!!'
+            call log_warning(' Warning AAD Z  determinant !!!')
         end if
         if (iesm .gt. 0 .and. yeszj) then
-            if (rank .eq. 0) write (6, *) ' Warning AAD Z  Jastrow !!!'
+            call log_warning(' Warning AAD Z  Jastrow !!!')
         end if
         if (iesm + iesd + iessw + iesup + iesking + iesinv + iesfree .gt. 0) then
             someparameter = .true.
-            if (rank .eq. 0) write (6, *) ' Warning AAD for some parameter more than  energy !!!'
+            call log_warning(' Warning AAD for some parameter more than  energy !!!')
         else
             someparameter = .false.
         end if
@@ -8362,7 +8305,7 @@ contains
                 ip_reshuff = 2
                 nelorbh_ip = nelorbh*2
                 nmol_ip = nmolfn/2
-                if (rank .eq. 0) write (6, *) ' Warning ip_reshuff set to 2 '
+                call log_warning(' Warning ip_reshuff set to 2 ')
             else
                 ip_reshuff = 1
                 nmol_ip = nmolfn
@@ -8371,7 +8314,7 @@ contains
         else
             if (ip_reshuff .gt. 2) ip_reshuff = 2
             if (ip_reshuff .lt. 1) ip_reshuff = 1
-            if (rank .eq. 0) write (6, *) ' Warning forced ip_reshuff =', ip_reshuff
+            call log_warning(' Warning forced ip_reshuff =', ip_reshuff)
             if (ip_reshuff .eq. 1) then
                 nmol_ip = nmolfn
                 nelorbh_ip = nelorbh
@@ -8380,14 +8323,12 @@ contains
                 nmol_ip = nmolfn/2
             end if
         end if
-        if (rank .eq. 0) write (6, *) ' nmol_ip nelorbh_ip used =', nmol_ip, nelorbh_ip
+        call log_info(' nmol_ip nelorbh_ip used =', nmol_ip, nelorbh_ip)
         if (someparameterdet .and. yes_complex) then
-            if (rank .eq. 0) then
-                if (yes_correct) then
-                    write (6, *) ' Warning corrected derivatives for complex case '
-                else
-                    write (6, *) ' Warning corrected complex derivatives with REAL algorithm '
-                end if
+            if (yes_correct) then
+                call log_warning(' Warning corrected derivatives for complex case ')
+            else
+                call log_warning(' Warning corrected complex derivatives with REAL algorithm ')
             end if
         elseif (.not. yes_complex) then
             yes_correct = .false.
@@ -8401,7 +8342,7 @@ contains
         allowed_par(:) = .true.
         do i = 1, ndimiesup + ieskin
             if (scalpar(i) .eq. 0.d0) then
-                if (rank .eq. 0) write (6, *) ' Not allowed par =', i, scalpar(i)
+                call log_info(' Not allowed par =', i, scalpar(i))
                 allowed_par(i) = .false.
             end if
         end do
@@ -8446,13 +8387,12 @@ contains
                 if (srcomplex .or. yes_hermite .or. contraction .eq. 0 .or. real_agp) then
                     !   Imaginary part of exponent and contracted orbitals set to zero
                     if (.not. real_contracted) then
-                        if (rank .eq. 0) write (6, *) &
-                             &' Warning real_contracted forced to .true. in this case'
+                        call log_warning(' Warning real_contracted forced to .true. in this case')
                         real_contracted = .true.
                     end if
                     do kk = 1, iesup_c - 2*ipf*nelorbh*molecular
                         if (dup_c(2*kk) .ne. 0.d0) then
-                            if (rank .eq. 0.d0) write (6, *) ' NON zero dup_c =', dup_c(2*kk)
+                            call log_info(' NON zero dup_c =', dup_c(2*kk))
                             call error(' Initializeall ', ' Contracted orbitals &
                                  & should be real in this case. ', 1, rank)
                         end if
@@ -8498,7 +8438,7 @@ contains
                     else
                         do kk = 1, iesup_c - 2*ipf*nelorbh*molecular
                             if (dup_c(2*kk) .ne. 0.d0) then
-                                if (rank .eq. 0.d0) write (6, *) ' NON zero dup_c =', dup_c(2*kk)
+                                call log_info(' NON zero dup_c =', dup_c(2*kk))
                                 call error(' Initializeall ', ' Contracted orbitals &
                                      & should be real in this case. Use real_contracted=.false. ! ', 1, rank)
                             end if
@@ -8559,10 +8499,10 @@ contains
             end if
         end if ! ipc=2
 
-        if (rank .eq. 0 .and. itestr .eq. -5) then
-            write (6, *) ' Not Allowed parameters '
+        if (itestr .eq. -5) then
+            call log_info(' Not Allowed parameters ')
             do kk = 1, ndimiesup + ieskin
-                if (.not. allowed_par(kk)) write (6, *) kk, allowed_par(kk)
+                if (.not. allowed_par(kk)) call log_info(kk, allowed_par(kk))
             end do
         end if
 
@@ -8570,7 +8510,7 @@ contains
             yes_real = .true.
             if (scaleeloc .eq. -1.d0) scaleeloc = 0.5d0 ! Umrigar choice.
             if (srcomplex) then
-                if (rank .eq. 0) write (6, *) ' Warning srcomplex turned to .false. (real var) '
+                call log_warning(' Warning srcomplex turned to .false. (real var) ')
                 srcomplex = .false.
             end if
         else
@@ -8578,7 +8518,7 @@ contains
         end if
         if (((itestr .eq. -5 .and. itest .eq. 1 .and. scaleeloc .ne. 0.d0)&
            &.or. scaleeloc .gt. 0) .and. .not. yes_real .and. ipc .eq. 1) then
-            if (rank .eq. 0) write (6, *) ' Warning computing der local energy '
+            call log_warning(' Warning computing der local energy ')
             if (scaleeloc .eq. -1.d0) scaleeloc = 0.5d0 ! Umrigar choice.
             yes_real = .true.
         end if
@@ -8618,7 +8558,7 @@ contains
         end if
         if (itestr .ne. -5 .and. iopt .ge. 1 .and. itest .ne. 2 .and. yesnleft .and. changelambda) then
             ibinit = min(nint(0.04999999d0*ngen + 1), 100)
-            if (rank .eq. 0) write (6, *) ' Warning starting averaging energies from ', ibinit
+            call log_warning(' Warning starting averaging energies from ', ibinit)
         end if
         if ((iopt .eq. 0 .or. iopt .eq. 3) .and. yesnleft .and. changelambda) then
 #ifdef PARALLEL
@@ -8633,8 +8573,7 @@ contains
 #else
             lambda = -avenernum/avenerden
 #endif
-            if (rank .eq. 0) write (6, *) ' Warning restoring value of trial energy='&
-                 &, -lambda*ris(2)
+            call log_warning(' Warning restoring value of trial energy=', -lambda*ris(2))
         end if
         nwnk = nw/nk
         nwnkp = nwnk + 1
@@ -8650,10 +8589,10 @@ contains
             iscrapip = iscrapip + 8*(ncg + npbra) ! just to be sure
             if (iscrapip .le. 8*(ncg + npbra) + maxall) then
                 iscrapip = 8*(ncg + npbra) + maxall
-                write (6, *) ' Warning increasing iscrapip for Hessian complex '
+                call log_warning(' Warning increasing iscrapip for Hessian complex ')
             end if
         end if
-        if (rank .eq. 0) write (6, *) ' firstmol nmolfn after all ', firstmol, nmolfn
+        call log_info(' firstmol nmolfn after all ', firstmol, nmolfn)
 !  Define always acc_dyn
         acc_dyn = .true.
         weight_vir = 1.d0
@@ -8708,7 +8647,7 @@ contains
         count_zerowf = 0.d0
         count_allwf = 0.d0
         if (yes_sparse .and. rank .eq. 0 .and. .not. iessz .and. contractionj .eq. 0 .and. nelorbjh .ne. 0) then
-            write (6, *) ' Warning using SPARSE matrix algorithm for Jastrow '
+            call log_warning(' Warning using SPARSE matrix algorithm for Jastrow ')
         end if
         enerdiff = 0.d0 ! just to be sure it is initialized.
     end subroutine Initializeall
@@ -8836,7 +8775,7 @@ contains
         if (rank .eq. 0) then
             ! only with minimization
             if (itestr .eq. -5) then
-                write (6, *) ' Write the parameters of the final wavefunction '
+                call log_info(' Write the parameters of the final wavefunction ')
                 ! to speed up the writing
                 close (10, status='DELETE')
                 open (unit=10, file='fort.10', form='formatted', status='unknown')
@@ -8852,8 +8791,7 @@ contains
             call write_fort11_begin
 
             if (ireadmin .ne. 1) call write_fort11_end
-            if (rank .eq. 0 .and. idyn .ge. 2 .and. idyn .ne. 5) write (6, *) ' Temp velocities write ='&
-                 &, dnrm2(ieskin, velion(3, 1), 3)**2/ieskin*ris(2)
+            if (idyn .ge. 2 .and. idyn .ne. 5) call log_info(' Temp velocities write =', dnrm2(ieskin, velion(3, 1), 3)**2/ieskin*ris(2))
 
         end if ! endif rank.eq.0
 
@@ -8870,7 +8808,7 @@ contains
                 !        write(9) (kel(1:3,(ii-1)*nrnel+1:(ii-1)*nrnel+nel),ii=1,in1),angle
                 write (9) (((kel(kk, jj), kk=1, 3), jj=(ii - 1)*nrnel + 1, (ii - 1)*nrnel + nel), ii=1, in1)&
                      &, angle, epscutu, epstlu, countav, countt, nacc, nmovet, avenernum, avenerden
-                if (rank .eq. 0) write (6, *) ' write  epscut =', epscutu, epstlu
+                call log_info(' write  epscut =', epscutu, epstlu)
                 if (kaverage .and. allocated(detmat_proj)) then
                     write (9) detmat_proj, projmat_c
                 end if
@@ -8892,8 +8830,8 @@ contains
                     kelcont_size = kelcont_size + in1*(dim_cyrus + 1)
                 end if
 
-                if (rank .eq. 0) write (6, '(A, A, /, A, I10, A)') " Writing electronic configurations to ", trim(kelcont%name), &
-                     & " Each MPI task writes ", kelcont_size, " double precision data."
+                ! original format: (A, A, /, A, I10, A)
+                call log_info(" Writing electronic configurations to ", trim(kelcont%name), " Each MPI task writes ", kelcont_size, " double precision data.")
                 call mpiio_file_create_view(kelcont, kelcont_size, MPI_DOUBLE_PRECISION)
                 call mpiio_file_reset_view(kelcont)
                 do ii = 1, in1
@@ -9112,9 +9050,9 @@ contains
 
             call upscratch_global(js, pseudologic, iesrandoml)
 
-            if (flagcont .and. developer .eq. -1 .and. rank .eq. 0) then
-                write (6, *) ' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j))
-                write (6, *) ' Jastrowall-ei =', sum(jastrowall_ei(:, :, j))
+            if (flagcont .and. developer .eq. -1) then
+                call log_debug(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
+                call log_debug(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
             end if
 
             timescra = timescra + cclock() - timep
@@ -9251,12 +9189,11 @@ contains
                     temp = temp + v_adr(i)*reducel(i, j)
                 end do
                 check0 = abs(temp - alphavar(j))
-                if (check0 .gt. 1d-6 .and. rank .eq. 0) write (6, *) ' ERROR in parametr =', j, check0&
-                     &, alphavar(j), temp
+                if (check0 .gt. 1d-6) call log_error(' ERROR in parametr =', j, check0, alphavar(j), temp)
                 check = check + check0
             end if
         end do
-        if (rank .eq. 0) write (6, *) ' Error parametrization =', check
+        call log_error(' Error parametrization =', check)
 #endif
 #ifdef __KCOMP
 123     format(32767e15.7)
@@ -9325,21 +9262,21 @@ contains
             end do
             if (contraction .eq. 0) then
                 ! From real to effective
-                if (rank .eq. 0) write (6, *) ' Passi qui VII real-eff '
+                call log_debug(' Passi qui VII real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat)
                 call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
                      &, nozero, psip, dsw, 1, jbradet, symmagp, .false.)
                 !  Back to real
-                if (rank .eq. 0) write (6, *) ' Passi qui V eff-real '
+                call log_debug(' Passi qui V eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat)
             else
                 ! From real to effective
-                if (rank .eq. 0) write (6, *) ' Passi qui VIII real-eff '
+                call log_debug(' Passi qui VIII real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                 call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                      &, nozero_c, psip, dsw, 1, jbradet, symmagp, .false.)
                 !  Back to real
-                if (rank .eq. 0) write (6, *) ' Passi qui VI eff-real '
+                call log_debug(' Passi qui VI eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat_c)
             end if
         end if
@@ -9412,21 +9349,21 @@ contains
             end do
             if (contraction .eq. 0) then
                 !    From real to effective
-                if (rank .eq. 0) write (6, *) ' Passi qui IX real-eff '
+                call log_debug(' Passi qui IX real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat)
                 call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
                      &, nozero, psip, dsw, 1, jbradet, symmagp, .false.)
                 !    Back to real
-                if (rank .eq. 0) write (6, *) ' Passi qui XIII eff-real '
+                call log_debug(' Passi qui XIII eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat)
             else
                 !    From real to effective
-                if (rank .eq. 0) write (6, *) ' Passi qui XI real-eff '
+                call log_debug(' Passi qui XI real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                 call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                      &, nozero_c, psip, dsw, 1, jbradet, symmagp, .false.)
                 !    Back to real
-                if (rank .eq. 0) write (6, *) ' Passi qui XII eff-real '
+                call log_debug(' Passi qui XII eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat_c)
             end if
         end if
@@ -9465,7 +9402,7 @@ contains
                     cellscale(2) = cellscale(2) + dek(ieskinr_pos + 1 - iesking)
                     cellscale(3) = cellscale(3) + dek(ieskinr_pos + 2 - iesking)
                     cellscale(1) = omega/cellscale(2)/cellscale(3)
-                    if (rank .eq. 0) write (6, *) ' New PBC a,b (a=V/cb) =', cellscale(1:3)
+                    call log_info(' New PBC a,b (a=V/cb) =', cellscale(1), cellscale(2), cellscale(3))
                     scalecell(1) = cellscale(1)/celldm(1)
                     scalecell(2) = cellscale(2)/celldm(1)/celldm(2)
                     scalecell(3) = cellscale(3)/celldm(1)/celldm(3)
@@ -9483,7 +9420,7 @@ contains
                         cellscale(1) = (cellscale(1) + cellscale(3))/2.d0
                         cellscale(3) = cellscale(1)
                     end if
-                    if (rank .eq. 0) write (6, *) ' New PBC a,b,c =', cellscale(1:3)
+                    call log_info(' New PBC a,b,c =', cellscale(1), cellscale(2), cellscale(3))
                     scalecell(1) = cellscale(1)/celldm(1)
                     scalecell(2) = cellscale(2)/celldm(1)/celldm(2)
                     scalecell(3) = cellscale(3)/celldm(1)/celldm(3)
@@ -9491,7 +9428,7 @@ contains
                     cellscale(1) = cellscale(1) + dek(ieskinr_pos + 1 - iesking)
                     cellscale(2) = cellscale(1)*celldm(2)
                     cellscale(3) = cellscale(1)*celldm(3)
-                    if (rank .eq. 0) write (6, *) ' New PBC a,b,c =', cellscale(1:3)
+                    call log_info(' New PBC a,b,c =', cellscale(1), cellscale(2), cellscale(3))
                     scalecell(1) = cellscale(1)/celldm(1)
                     scalecell(2) = cellscale(2)/celldm(1)/celldm(2)
                     scalecell(3) = cellscale(3)/celldm(1)/celldm(3)
@@ -9515,11 +9452,11 @@ contains
                     if (cost .ne. 1.d0) then
                         if (rmax .gt. 1d-10) then
                             rmax = rmax*cost
-                            if (rank .eq. 0) write (6, *) ' Warning scaled rmax =', rmax
+                            call log_warning(' Warning scaled rmax =', rmax)
                         end if
                         if (rmaxj .gt. 1d-10) then
                             rmaxj = rmaxj*cost
-                            if (rank .eq. 0) write (6, *) ' Warning scaled rmaxj =', rmaxj
+                            call log_warning(' Warning scaled rmaxj =', rmaxj)
                         end if
                     end if
                 end if
@@ -9533,7 +9470,7 @@ contains
                 kmax2 = 2*kmax
 
                 rs = (omega/nel*3.d0/4.d0/pi)**(1.d0/3.d0)
-                if (rank .eq. 0) write (6, *) ' Old/New rs =', rs_write, rs
+                call log_info(' Old/New rs =', rs_write, rs)
                 !         Update ax,ay,az
                 ax = cellscale(1)/nx
                 ay = cellscale(2)/ny
