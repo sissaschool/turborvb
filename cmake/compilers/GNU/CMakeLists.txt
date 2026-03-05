@@ -57,6 +57,16 @@ macro(SET_GNU_FORTRAN_COMPILER)
           target_link_libraries( ${TARGET} PUBLIC CUDA::cusolver)
         endif()
       endforeach()
+  else()
+    # OpenMP without GPU: add -fopenmp so OpenMP is enabled when EXT_GPU=OFF
+    add_fortran_flag_if_avail( "-fopenmp" )
+    add_c_flag_if_avail( "-fopenmp" )
+    foreach( TARGET IN LISTS EXECUTABLES_S_L
+                             EXECUTABLES_P_L
+                             LIBRARIES_S_L
+                             LIBRARIES_P_L)
+      target_link_options( ${TARGET} PRIVATE "-fopenmp" )
+    endforeach()
   endif()
 
   if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND
