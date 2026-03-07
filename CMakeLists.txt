@@ -137,6 +137,7 @@ option(EXT_SPEEDTEST  "Enable speed tests targets"           OFF)
 option(EXT_STATICPACK "Produce static packaging if possible" OFF)
 option(EXT_DETAIL     "Produce more detailed config output"  OFF)
 option(EXT_NVTX       "Turn on Nvidia NVTX ranges"           OFF)
+option(EXT_OPENMP     "Turn on OpenMP parallelization"        ON)
 
 set(EXT_BLAS_LIB   ""    CACHE STRING    "Blas libraries")
 set(EXT_LAPACK_LIB ""    CACHE STRING    "Lapack libraries")
@@ -165,9 +166,11 @@ endif()
 # CPack part
 #
 
-if(EXT_STATIC_PACK)
+if(EXT_STATICPACK)
   set(CMAKE_INSTALL_MFC_LIBRARIES ON)
-  set(CMAKE_INSTALL_OPENMP_LIBRARIES ON)
+  if (EXT_OPENMP)
+    set(CMAKE_INSTALL_OPENMP_LIBRARIES ON)
+  endif()
   include(InstallRequiredSystemLibraries)
 endif()
 
@@ -307,7 +310,9 @@ set( NATIVE_OMP_B OFF )
 #
 ######################################################################
 
-find_package(OpenMP)
+if (EXT_OPENMP)
+  find_package(OpenMP)
+endif()
 find_package(Threads)
 
 if(EXT_GPU)
