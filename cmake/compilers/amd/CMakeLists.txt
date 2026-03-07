@@ -33,9 +33,10 @@ macro(SET_AMD_FORTRAN_COMPILER)
     add_fortran_flag_if_avail( "-fnt-store" )
   endif()
 
-  add_fortran_flag_if_avail( "-openmp" )
-
-  add_link_options("-qopenmp")
+  if( ${EXT_OPENMP} )
+    add_fortran_flag_if_avail( "-openmp" )
+    add_link_options("-qopenmp")
+  endif()
 
   # Set optimization flags:
   foreach( LIBRARY IN LISTS LIBRARIES_S_L
@@ -83,7 +84,10 @@ macro(SET_AMD_C_COMPILER)
 
   add_c_flag_if_avail( "-g" )
   add_c_flag_if_avail( "-march=native" )
-  add_c_flag_if_avail( "-openmp" )
+
+  if( ${EXT_OPENMP} )
+    add_c_flag_if_avail( "-openmp" )
+  endif()
 
   if( ${EXT_OPT} )
     add_c_flag_if_avail( "-O3" )
