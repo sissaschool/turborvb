@@ -66,6 +66,7 @@ SUBROUTINE UPVPOTDIAG_B(rkel, rkelb, nel, zeta, rion, rionb, iond,iond_cart&
 !           pot_aa=pot_aa+2.d0*zeta(i)*zeta(j)*temp0
             tempb0=2.d0*pot_aab*zeta(i)*zeta(j)
             if(tempb0.ne.0.d0) then 
+            iondb=0.d0
             call veps_b(iond(i,j),iondb,tempb0)
 !           reverse  of iond=sqrt(iond_cart**2)
            iond_cartb(:,i,j)=iond_cartb(:,i,j)+iondb*iond_cart(:,i,j)/iond(i,j)
