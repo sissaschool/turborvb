@@ -105,6 +105,7 @@ module stdlib_logger
         integer                   :: max_width = 0
         logical                   :: time_stamp = .true.
         integer                   :: units = 0
+        logical                   :: message_prefix = .false.
 
     contains
 
@@ -405,7 +406,7 @@ contains
 
 
     pure subroutine configuration( self, add_blank_line, indent, level, &
-        max_width, time_stamp, log_units )
+        max_width, time_stamp, log_units, message_prefix )
 !! version: experimental
 
 !! Reports the logging configuration of `self`. The following attributes are
@@ -438,6 +439,7 @@ contains
 !! A logical flag to add a time stamp
         integer, intent(out), allocatable, optional :: log_units(:)
 !! The I/O units used in output
+        logical, intent(out), optional              :: message_prefix
 
 !!##### Example
 !!
@@ -472,12 +474,13 @@ contains
                 allocate(log_units(0))
             end if
         end if
+        if ( present(message_prefix) ) time_stamp = self % message_prefix
 
     end subroutine configuration
 
 
     pure subroutine configure( self, add_blank_line, indent, level, max_width, &
-        time_stamp )
+        time_stamp, message_prefix )
 !! version: experimental
 
 !! Configures the logging process for SELF. The following attributes are
@@ -510,6 +513,7 @@ contains
         integer, intent(in), optional     :: level
         integer, intent(in), optional     :: max_width
         logical, intent(in), optional     :: time_stamp
+        logical, intent(in), optional     :: message_prefix
 
         if ( present(add_blank_line) ) self % add_blank_line = add_blank_line
         if ( present(level) ) self % level = level
@@ -522,6 +526,7 @@ contains
             end if
         end if
         if ( present(time_stamp) ) self % time_stamp = time_stamp
+        if ( present(message_prefix) ) self % message_prefix = message_prefix
 
     end subroutine configure
 
@@ -1168,12 +1173,20 @@ contains
             m_and_p = ''
         end if
 
-        call format_output_string( self,                         &
-                                   d_and_t // m_and_p // pref // &
-                                   trim( message ),              &
-                                   '    ',                       &
-                                   len_buffer,                   &
-                                   buffer)
+        if ( self % message_prefix ) then
+           call format_output_string( self,   &
+                d_and_t // m_and_p // pref // &
+                trim( message ),              &
+                '    ',                       &
+                len_buffer,                   &
+                buffer)
+        else
+           call format_output_string( self,   &
+                trim( message ),              &
+                '    ',                       &
+                len_buffer,                   &
+                buffer)
+        endif
 
         if ( self % units == 0 ) then
             if ( self % add_blank_line ) then
