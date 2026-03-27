@@ -43,7 +43,7 @@ program erread
     end if
     !    AAA   end lines to be added
 
-    write (6, *) ' max k corrections, bin length, ibinit,iskip  ?'
+    call log_info(' max k corrections, bin length, ibinit,iskip  ?')
     read (5, *) maxk, lbin, ibinit, iskipr
 
     if (iskipr .ge. 0) then

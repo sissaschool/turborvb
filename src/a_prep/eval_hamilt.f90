@@ -85,7 +85,7 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
 #else
     use allio, only: rankrep, commrep_mpi
 #endif
-    use logger_io, only: log_info, log_warning, log_debug
+    use logger_io, only: log_info, log_warning
     implicit none
     integer, intent(in) :: nlax
     integer nelorb_c, i, j, rank, info, n, lda, mine, dimo, neig, lwork, optprint&
@@ -204,11 +204,11 @@ subroutine eval_hamilt(nelorb_c, oversav, matsav&
             call log_info(' Lowest/Max  eigenvalue overlap mat =', eig(n), eig(1))
             condnumber = abs(eig(n)/eig(1))
             if (eig(1) .lt. 0.d0) condnumber = condnumber/100.d0
-            call log_debug(1, eig(1), 1.d0)
+            call log_info(1, eig(1), 1.d0)
             do i = 2, n
                 cost = abs(eig(i)/eig(1))
                 if (eig(i) .lt. 0.d0) cost = cost/100.d0
-                call log_debug(i, eig(i), cost)
+                call log_info(i, eig(i), cost)
                 if (cost .lt. condnumber) condnumber = cost
             end do
             call log_info(' Inverse Condition Number basis set =', condnumber)

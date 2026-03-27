@@ -15,7 +15,7 @@
 
 subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, forza&
         &, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, eps_umrigar)
-    use logger_io, only: log_warning, log_error
+    use logger_io, only: log_info, log_warning, log_error
     implicit none
     integer np, npk, i, ii, j, k, nl, npp, nbin, maxit, iter, rank, info, np3, np4&
             &, npm, ierr, countzero, comm_mpi, kpr, kpc, kp_complex, kpcp, npt, kpp, rank_t
@@ -400,7 +400,7 @@ subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, 
             iter = iter + 1
 
         end do
-        call log_error(' Output  cg  iter error   =', iter, error)
+        call log_info(' Output  cg  iter error   =', iter, error)
         ! endif countzero
     end if
     do i = 1, np

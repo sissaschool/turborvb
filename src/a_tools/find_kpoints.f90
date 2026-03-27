@@ -23,7 +23,7 @@ program find_kpoints
     use allio
     use kpoints_mod
     use cell
-    use logger_io, only: log_error, log_info, log_warning, log_debug
+    use logger_io, only: log_error, log_info, log_warning
 
     implicit none
     integer, parameter :: ufort10 = 10
@@ -46,12 +46,12 @@ program find_kpoints
     call read_fort10(ufort10)
     ! some useful warnings
     if (.not. yes_complex) then
-        call log_info()
+        call log_warning()
         call log_warning('WARNING: You need a complex wave function in order to run a k-points calculations!')
         stop
     end if
     if (.not. iespbc) then
-        call log_info()
+        call log_error()
         call log_error('ERROR: You need a PBC wave function in order to run a k-points calculations!')
         stop
     end if
@@ -132,13 +132,13 @@ program find_kpoints
     call log_info(' k-points up/weights:')
     do i = 1, nk
         ! original format: (3x, I6, X, 4f11.7)
-        call log_debug(i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i))
+        call log_info(i, xkp(1, i), xkp(2, i), xkp(3, i), wkp(i))
     end do
     call log_info()
     call log_info(' k-points down/weights:')
     do i = 1, nk
         ! original format: (3x, I6, X, 4f11.7)
-        call log_debug(i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i))
+        call log_info(i, xkp_down(1, i), xkp_down(2, i), xkp_down(3, i), wkp_down(i))
     end do
 90  format(3x, I6, X, 4f11.7)
 

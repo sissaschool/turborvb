@@ -57,7 +57,7 @@ program erread
     iflag = 0
 101 if (iflag .eq. 1) kp_read = 1
 
-    write (6, *) ' max k corrections, bin length, ibinit,iskip  ?'
+    call log_info(' max k corrections, bin length, ibinit,iskip  ?')
     read (5, *) maxk, lbin, ibinitr, iskipr
 
     yes_weight = .false.

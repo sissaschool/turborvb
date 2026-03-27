@@ -2688,7 +2688,7 @@ program readforward
 
                             if (longio) then
                                 !DEBUG
-                                call log_debug("ebin", ebin(1, 1), ebin(2, 1), ebin(3, 1))
+                                call log_info("ebin", ebin(1, 1), ebin(2, 1), ebin(3, 1))
                                 call write_corr_fun(ebin, ebin2, wbin, ibin_av, ibinit &
                                                     , nind_corrfun, maxf_r, ddim, ell, nel, nelup &
                                                     , nrhoind, dxil, ind_offset, psip_for, write_start, ncell, ifrho &

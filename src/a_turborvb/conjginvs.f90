@@ -15,7 +15,7 @@
 
 subroutine conjginvs(np, npp, nbin, rank_out, rank, comm_mpi, mat, forza&
         &, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, nproc, eps_umrigar)
-    use logger_io, only: log_error
+    use logger_io, only: log_info, log_error
     implicit none
     integer np, npp, i, ii, j, k, nl, nbin, maxit, iter, rank, info, np3, np4, rank_out&
             &, npm, indj, itert, ierr, jblock, countzero, nproc, nbinr, nppp, comm_mpi
@@ -252,7 +252,7 @@ subroutine conjginvs(np, npp, nbin, rank_out, rank, comm_mpi, mat, forza&
 
         ! endif countzero
     end if
-    call log_error(' Output  cg  iter error   =', iter, error)
+    call log_info(' Output  cg  iter error   =', iter, error)
     !      write(6,*) ' Check orthogonality gs '
 
     do i = 1, np

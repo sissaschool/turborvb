@@ -46,6 +46,8 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
     integer, allocatable :: iwork(:), ifail(:)
     complex(8) :: zzero, zone
 
+    integer :: kk
+
     zzero = (0.d0, 0.d0)
     zone = (1.d0, 0.d0)
 
@@ -71,7 +73,9 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
 
     if (ierr .gt. 0) then
         call log_error("ERROR DSTEVX: the eigenvectors did not converged! ierr=", ierr)
-        write (6, *) ifail(1:ierr)
+        do kk=1, ierr
+           call log_error(ifail(kk))
+        end do
     else if (ierr .lt. 0) then
         call log_error("ERROR DSTEVX: the parameter:", ierr, "has an illegal value!")
     end if
@@ -496,7 +500,7 @@ end subroutine fill_tridiag
 !Subroutine that  matrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine print_matrix(lda, nelorb_c, ipc, detmat_c)
-    use logger_io, only: log_debug
+    use logger_io, only: log_info
     implicit none
     integer :: nelorb_c, lda, ipc
     integer :: i, j !Auxiliary variables
@@ -509,10 +513,10 @@ subroutine print_matrix(lda, nelorb_c, ipc, detmat_c)
         do j = 1, nelorb_c
             if (ipc .eq. 2) then
                 if (abs(detmat_c(2*j, i)) + abs(detmat_c(2*j - 1, i)) .gt. prec) &
-                    call log_debug(j, i, detmat_c(2*j - 1, i), detmat_c(2*j, i))
+                    call log_info(j, i, detmat_c(2*j - 1, i), detmat_c(2*j, i))
             else
                 if (abs(detmat_c(j, i)) .gt. prec) &
-                    call log_debug(j, i, detmat_c(j, i))
+                    call log_info(j, i, detmat_c(j, i))
 
             end if
         end do

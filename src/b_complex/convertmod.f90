@@ -958,12 +958,16 @@ contains
                 call log_info(' Overlap matrix ', nmoltot, nmolmax, nmol)
                 do i = 1, nelorb_diagu
                     do j = i, nelorb_diagu
-                        write (6, *) i, j, overs(ipc*(i - 1) + 1:ipc*i, j)
+                        do kk=ipc*(i - 1) + 1, ipc*i
+                            call log_info(i, j, overs(kk, j))
+                        end do
                     end do
                 end do
                 call log_info(' Diagonal part ')
                 do i = 1, nelorb_diagu
-                    write (6, *) i, overs(ipc*(i - 1) + 1:ipc*i, i)
+                    do kk=ipc*(i - 1) + 1, ipc*i
+                       call log_info(i, overs(kk, i))
+                    end do
                 end do
             end if
 

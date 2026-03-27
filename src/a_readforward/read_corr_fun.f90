@@ -347,7 +347,9 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
 
     if (ifpair .or. ifspin .or. ifrho .or. (grid_points .eq. 0 .and. ifrho_assar)) then
         if (sphere_radius .eq. 0.d0) then
-            write (6, *) 'ngrid (ngrid) =', (ngrid(i), i=1, corrfun_dim)
+            do i=1, corrfun_dim
+               call log_info('ngrid (ngrid) =', ngrid(i))
+            end do
         else
             call log_warning('Warning: site occupation instead of standard density!!!')
             if (ddim .eq. 2) then

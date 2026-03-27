@@ -394,7 +394,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #endif
 
 #ifdef _DEBUG
-            call log_error(' i_max / force / error / deviation: ', jmax, forza(jmax), err(jmax), forza(jmax)/cost)
+            call log_debug(' i_max / force / error / deviation: ', jmax, forza(jmax), err(jmax), forza(jmax)/cost)
 #endif
             call log_info(' devmax par Normal   =', devmaxp, jmax, iesconv)
             !             devmaxp=max(devmaxp,devmaxc)
@@ -970,14 +970,14 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                     end do
                                 end do
 
-                                call log_error(' Check symmetry =', cost)
+                                call log_info(' Check symmetry =', cost)
                                 call dsyev('V', 'L', ku_ion, sr, ku_ionp, psip, psip(n2), 3*ku_ion, info)
-                                call log_error(' diagonal part ')
+                                call log_info(' diagonal part ')
                                 do i = 1, ku_ion
                                 if (psip(i) .le. 0.) then
                                     call log_error(' ERROR negative eigenvalue ')
                                 end if
-                                call log_error(i, psip(i))
+                                call log_info(i, psip(i))
                                 end do
                             end if
                             call log_info(' Everything works ! ')
@@ -2105,7 +2105,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         ! a factor two is needed
                         !        psip(indin)=-sov(i,npp,5)*2.d0
                         psip(indin) = forza(i)
-                        if (idyn .gt. 0) call log_debug(i, forza(i), err(i))
+                        if (idyn .gt. 0) call log_info(i, forza(i), err(i))
                         !        endif
                     end do
                     ndsr = indin - indi
@@ -2149,7 +2149,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         indi = indi + 1
                         psip(i) = psip(n2 + indi - 1)
                         !         endif
-                        if (idyn .gt. 0) call log_debug(i, psip(i))
+                        if (idyn .gt. 0) call log_info(i, psip(i))
                     end do
 
                     !         evaluation norm correction
@@ -2241,7 +2241,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         indin = indin + 1
                         ! the io
                         psip(indin) = forza(i)
-                        call log_debug(i, psip(indin), err(i))
+                        call log_info(i, psip(indin), err(i))
                     end do
                     ndsr = indin - indi
                     if (ndsr .ne. 0) call ion_dynamics

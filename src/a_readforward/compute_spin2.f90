@@ -31,7 +31,7 @@ module Spin2
     use allio, only: LBox
     use allio, only: rank
     use constants, only: ipj, ipf, ipc
-    use logger_io, only: log_info, log_debug
+    use logger_io, only: log_debug, log_info, log_warning, log_error    
     use cell, only: CartesianToCrystal, cellscale, car2cry, map
     implicit none
     logical ifspin2 !(global) label for spin^2 correlation
@@ -424,20 +424,58 @@ contains
         end if
 
 #ifdef DEBUG
-        call log_debug("winvbar")
-        write (6, *) winvbar(:, 1:nelup)
-        call log_debug("winvbar_ext")
-        write (6, *) winvbar_ext(:, 1:nelup)
-        call log_debug("Amatrix")
-        write (6, *) Amatrix
-        call log_debug("Ainv")
-        write (6, *) Ainv
-        call log_debug("UpUp")
-        write (6, *) UpUp
-        call log_debug("DownDown")
-        write (6, *) DownDown
-        call log_debug("DownUp")
-        write (6, *) DownUp
+        block
+          integer ii,jj
+          call log_debug("winvbar")
+          !write (6, *) winvbar(:, 1:nelup)
+          do ii=1,ipf*ipc*nelorb
+             do jj=1,nelup
+                call log_debug(winbar(ii,jj))
+             end do
+          end do
+          call log_debug("winvbar_ext")
+          !write (6, *) winvbar_ext(:, 1:nelup)
+          do ii=1,ipf*ipc*nelorb
+             do jj=1,nelup
+                call log_debug(winvbar_ext(ii,jj))
+             end do
+          end do
+          call log_debug("Amatrix")
+          !write (6, *) Amatrix
+          do ii=1,ipc*nelup
+             do jj=1,nelup
+                call log_debug(Amatrix(ii,jj))
+             end do
+          end do
+          call log_debug("Ainv")
+          !write (6, *) Ainv
+          do ii=1,ipc*nelup
+             do jj=1,nelup
+                call log_debug(Ainv(ii,jj))
+             end do
+          end do
+          call log_debug("UpUp")
+          !write (6, *) UpUp
+          do ii=1,ipc*nelup
+             do jj=1,nelup
+                call log_debug(UpUp(ii,jj))
+             end do
+          end do
+          call log_debug("DownDown")
+          !write (6, *) DownDown
+          do ii=1,ipc*neldo
+             do jj=1,nelup
+                call log_debug(DownDown(ii,jj))
+             end do
+          end do
+          call log_debug("DownUp")
+          !write (6, *) DownUp
+          do ii=1,ipc*nelup
+             do jj=1,neldo
+                call log_debug(DownUp(ii,jj))
+             end do
+          end do
+        end block
 #endif
 
         if (ipj .eq. 2) then
@@ -522,10 +560,23 @@ contains
                         det_update_matrix(1, 1) = 1.d0
                         det_update_matrix(2, 2) = 1.d0
 #ifdef DEBUG
-                        call log_debug("det_update_vec1")
-                        write (6, *) det_update_vec1
-                        call log_debug("det_update_vec2")
-                        write (6, *) det_update_vec2
+                        block
+                          integer :: ii, jj
+                          call log_debug("det_update_vec1")
+                          !write (6, *) det_update_vec1
+                          do jj=1,2
+                             do ii=1,ipc*nelup
+                                call log_debug(det_update_vec1(ii,jj))
+                             end do
+                          end do
+                          call log_debug("det_update_vec2")
+                          !write (6, *) det_update_vec2
+                          do jj=1,2
+                             do ii=1,ipc*nelup
+                                call log_debug(det_update_vec2(ii,jj))
+                             end do
+                          end do
+                        end block
 #endif
                         call dgemm('T', 'N', 2, 2, nelup, 1.d0, det_update_vec1, nelup &
                                    , det_update_vec2, nelup, 1.d0, det_update_matrix, 2)
@@ -563,7 +614,7 @@ contains
                 end if
                 !           jastrow parts ends
                 spin2_local = spin2_local + spin2_det*dexp(spin2_jastrow)
-                if (.not. allocated(ratiospin)) call log_debug("DEBUG HERE IT IS THE BUG")
+                if (.not. allocated(ratiospin)) call log_error("DEBUG HERE IT IS THE BUG")
                 ratiospin(k, l) = -spin2_det*dexp(spin2_jastrow)
             end do !k
         end do !l
@@ -629,7 +680,7 @@ end module Spin2
 subroutine det_update(l, k, nelup, neldo, det_update_vec1, det_update_vec2, DownDown, Amatrix, Ainv, Buu&
         &, Bud, Downup, UpUp, det_update_matrix, spin2_det)
     use constants, only: zzero, zone, zmone
-    use logger_io, only: log_debug
+    use logger_io, only: log_debug, log_info, log_warning, log_error
     implicit none
     integer nelup, neldo, l, k, i
     complex*16 det_update_vec1(nelup, 2), det_update_vec2(nelup, 2), Amatrix(nelup, nelup), Ainv(nelup, nelup)&
@@ -649,10 +700,23 @@ subroutine det_update(l, k, nelup, neldo, det_update_vec1, det_update_vec2, Down
     det_update_matrix(1, 1) = zone
     det_update_matrix(2, 2) = zone
 #ifdef DEBUG
-    call log_debug("det_update_vec1")
-    write (6, *) det_update_vec1
-    call log_debug("det_update_vec2")
-    write (6, *) det_update_vec2
+    block
+      integer :: ii, jj
+      call log_debug("det_update_vec1")
+      !write (6, *) det_update_vec1
+      do jj=1,2
+         do ii=1,nelup
+            call log_debug(det_update_vec1(ii,jj))
+         end do
+      end do
+      call log_debug("det_update_vec2")
+      !write (6, *) det_update_vec2
+      do jj=1,2
+         do ii=1,nelup
+            call log_debug(det_update_vec2(ii,jj))
+         end do
+      end do
+    end block
 #endif
     call zgemm('T', 'N', 2, 2, nelup, zone, det_update_vec1, nelup, det_update_vec2, nelup, zone, det_update_matrix, 2)
     spin2_det = det_update_matrix(1, 1)*det_update_matrix(2, 2) - det_update_matrix(2, 1)*det_update_matrix(1, 2)

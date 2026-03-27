@@ -16,7 +16,7 @@
 program copyjas
 
     use allio
-    use logger_io, only: log_error, log_info, log_warning, log_debug
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
     real(8), dimension(:), allocatable :: vj_sav, vju_sav, jasmat_sav, jasmatsz_sav, atom_number_sav, dup_c_store
     real(8), dimension(:, :), allocatable :: rion_store
@@ -322,7 +322,7 @@ program copyjas
             end if
             call log_info(' mapping found ')
             do i = 1, nelorbj_c*ipj
-                call log_debug(i, mapj(i))
+                call log_info(i, mapj(i))
             end do
             nelorb_old = nelorbj_sav*ipj_sav
         end if
@@ -378,7 +378,7 @@ program copyjas
             end if
             call log_info(' mapping found ')
             do i = 1, nelorbj_sav*ipj_sav
-                call log_debug(i, mapj(i))
+                call log_info(i, mapj(i))
             end do
         end if
 

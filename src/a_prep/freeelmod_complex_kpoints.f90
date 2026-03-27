@@ -1825,9 +1825,12 @@ contains
                 !        now applying the inverse to alpha
                 call dgemv('T', maxdim, maxdim, 1.d0, ujac, dimjac, alpha, 1, 0.d0, psip, 1)
                 !        Removing singular directions
-                ! implied-do output: left as write (variable-length list)
-                if (rank .eq. 0) write (6, *) ' svd  jac =', (sjac(ii), ii=1, maxdim)
-                if (rank .eq. 0) write (6, *) 'svd   overlap left/right=', (sum(ujac(1:maxdim, ii)*vjac(1:maxdim, ii)), ii=1, maxdim)
+                do ii=1, maxdim
+                   call log_info(' svd  jac =', sjac(ii))
+                end do
+                do ii=1, maxdim
+                   call log_info('svd   overlap left/right=', sum(ujac(1:maxdim, ii)*vjac(1:maxdim, ii)))
+                end do
 
                 nsvd = 0
                 do ii = 2, maxdim
@@ -1859,8 +1862,9 @@ contains
 
                 alpha(1:itersto) = -overjac(1:itersto, itersto)
                 call dgetrf(maxdim, maxdim, jac, dimjac, ipsip, info)
-                ! implied-do output: left as write (variable-length list)
-                if (rank .eq. 0) write (6, *) ' jac diag=', (jac(ii, ii), ii=1, maxdim)
+                do ii=1, maxdim
+                   call log_info(' jac diag=', jac(ii, ii))
+                end do
                 call dgetrs('N', maxdim, 1, jac, dimjac, ipsip, alpha, maxdim, info)
 
             end if

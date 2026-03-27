@@ -518,6 +518,7 @@ contains
         real(kind=dbl) :: dik
         real(kind=dbl), dimension(nxvec, kx) :: dl, dr, biatx, work
         real(kind=dbl), dimension(nxvec) :: save1, save2, term
+        integer :: kk
 
         logical :: same, next
 
@@ -545,7 +546,9 @@ contains
                 call log_info(' ', ix, xknot(ix), xknot(ix + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) xknot
+                do i=kk, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
@@ -947,6 +950,8 @@ contains
         integer :: ix, iy, iky, leftx, lefty
         real(kind=dbl), dimension(ky) :: work
 
+        integer :: kk
+
         !
         !     check if knot(i) <= knot(i+1) and calculation of i so that
         !     knot(i) <= x < knot(i+1)
@@ -961,7 +966,9 @@ contains
                 call log_info(' ', ix, xknot(ix), xknot(ix + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) xknot
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
             if ((xknot(ix) .le. x) .and. (x .lt. xknot(ix + 1))) leftx = ix
@@ -973,7 +980,9 @@ contains
             call log_info("x = ", x)
             call log_info(' ')
             call log_info('')
-                write (6, *) xknot
+            do kk=1, size(xknot)
+               call log_info(xknot(kk))
+            end do
             stop
         end if
 
@@ -1177,6 +1186,8 @@ contains
 
         logical :: same, next
 
+        integer :: kk
+
         leftx(1) = 0
 
         call huntn(xknot, nx + kx, kx, xvec(1), leftx(1))
@@ -1201,7 +1212,9 @@ contains
                 call log_info(' ', i, xknot(i), xknot(i + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) xknot
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
@@ -1238,7 +1251,9 @@ contains
                 call log_info(' ', i, yknot(i), yknot(i + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) yknot
+                do kk=1, size(yknot)
+                   call log_info(yknot(kk))
+                end do
                 stop
             end if
         end do
@@ -1785,6 +1800,8 @@ contains
 
         logical :: same, next
 
+        integer :: kk
+
         do i = 1, nx + kx - 1
             if (xknot(i) .gt. xknot(i + 1)) then
                 call log_info("subroutine dbs3gd:")
@@ -1792,7 +1809,9 @@ contains
                 call log_info(' ', i, xknot(i), xknot(i + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) xknot
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
@@ -1829,7 +1848,9 @@ contains
                 call log_info(' ', i, yknot(i), yknot(i + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) yknot
+                do kk=1, size(yknot)
+                   call log_info(yknot(kk))
+                end do
                 stop
             end if
         end do
@@ -1866,7 +1887,9 @@ contains
                 call log_info(' ', i, zknot(i), zknot(i + 1))
                 call log_info(' ')
                 call log_info('')
-                write (6, *) zknot
+                do kk=1, size(zknot)
+                   call log_info(zknot(kk))
+                end do
                 stop
             end if
         end do

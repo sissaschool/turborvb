@@ -267,14 +267,14 @@ subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip,
             call log_info(' input  matrix element DET AGP (real/imag) ')
             do i = 1, nelup_mat
                 do j = 1, nelup_mat
-                    write (6, *) i, j, psip(2*i - 1, j), psip(2*i, j)
+                    call log_info(i, j, psip(2*i - 1, j), psip(2*i, j))
                 end do
             end do
         else
             call log_info(' input  matrix element DET AGP  ')
             do i = 1, nelup_mat
                 do j = 1, nelup_mat
-                    write (6, *) i, j, psip(i, j)
+                    call log_info(i, j, psip(i, j))
                 end do
             end do
         end if

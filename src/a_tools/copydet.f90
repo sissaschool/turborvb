@@ -16,7 +16,7 @@
 program copydet
 
     use allio
-    use logger_io, only: log_error, log_info, log_debug
+    use logger_io, only: log_error, log_info
     implicit none
     real(8), dimension(:), allocatable :: vj_sav, vju_sav, jasmat_sav, jasmatsz_sav, atom_number_sav, dup_c_store
     real(8), dimension(:, :), allocatable :: rion_store
@@ -161,7 +161,9 @@ program copydet
     indpar = 0
     !    dup_c=0.d0
     do i = 1, nshellj_sav
-        write (6, *) i, kionj_sav(i), (dup_c_store(indpar + j), j=1, ipc*nparamj_sav(i))
+        do j=1, ipc*nparamj_sav(i)
+           call log_info(i, kionj_sav(i), dup_c_store(indpar + j))
+        end do
         if (i .eq. 1) then
             countat_old = 0
         elseif (kionj_sav(i) .ne. kionj_sav(i - 1)) then
@@ -210,7 +212,7 @@ program copydet
 
     call log_info(' Final new dup_c ', k, iesupr, iesup_c, size(dup_c))
     do i = 1, k
-        call log_debug(i, dup_c(i))
+        call log_info(i, dup_c(i))
     end do
 
     allocate (atbasis(nion_sav))

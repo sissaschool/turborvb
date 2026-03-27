@@ -16,7 +16,7 @@
 subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, rank&
         &, comm_mpi, comm_raw, comm_col, mat, forza, g, h, psip, maxit, eps, epsdgel, fkav&
         &, x, parcut, eps_umrigar, yes_ontarget)
-    use logger_io, only: log_warning, log_error
+    use logger_io, only: log_info, log_warning, log_error
     implicit none
     integer np, npk, i, ii, j, k, nl, npp, nbin, maxit, iter, rank, info, np3, np4         &
             &, npm, ierr, countzero, comm_mpi, kpr, kpc, kp_complex, kpcp, npt, kpp, mini, maxi&
@@ -603,7 +603,7 @@ subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, ra
 
             iter = iter + 1
         end do
-        call log_error(' Output  cg  iter error   =', iter, error)
+        call log_info(' Output  cg  iter error   =', iter, error)
         ! endif countzero
     end if
 #ifdef _OFFLOAD

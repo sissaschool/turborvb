@@ -829,7 +829,7 @@ subroutine check_complex(n, eig, molecorb, mat)
     call log_info(' Output complex matrix ')
     do j = 1, n
         do k = 1, n
-            call log_debug(j, k, mat(j, k))
+            call log_info(j, k, mat(j, k))
         end do
     end do
     return

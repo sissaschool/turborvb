@@ -14,7 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program bootback
-    use logger_io, only: log_error, log_info, log_warning, log_debug
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
     integer nh, npar, nm, nmis, n, nbin, iseed, i, j, jj, kk, k, kmain, nel&
             &, lwork, info
@@ -153,7 +153,7 @@ program bootback
     end do
     call log_info(' Force before covariance ')
     do i = 1, npar, 3
-        write (6, *) (i - 1)/3 + 1, (fkav(i + k), k=0, 2)
+       call log_info((i - 1)/3 + 1, fkav(i + 0), fkav(i + 1), fkav(i + 2))
     end do
 
     call dgemm('T', 'N', npar, npar, nbin, 1.d0, fk, nbin, fk, nbin, 0.d0, cov, npar)
@@ -161,7 +161,7 @@ program bootback
     call log_info(' Covariance matrix ')
     do i = 1, npar
         do j = i, npar
-            call log_debug(i, j, cov(i, j))
+            call log_info(i, j, cov(i, j))
         end do
     end do
 
@@ -169,7 +169,7 @@ program bootback
     if (info .ne. 0) call log_error(' ERROR in diagonalization ')
     call log_info(' Eigenvalues covariance matrix ', eig(1)/eig(npar))
     do i = 1, npar
-        call log_debug(i, eig(i))
+        call log_info(i, eig(i))
     end do
     call dgemv('T', npar, npar, 1.d0, cov, npar, fkav, 1, 0.d0, psip, 1)
     maxsn = 0.d0
@@ -193,7 +193,7 @@ program bootback
 
     call log_info(' force after covariance ')
     do i = 1, npar, 3
-        write (6, *) (i - 1)/3 + 1, (fkav(i + k)*scalef, k=0, 2)
+        call log_info((i - 1)/3 + 1, fkav(i + 0)*scalef, fkav(i + 1)*scalef, fkav(i + 2)*scalef)
     end do
 
     close (11)

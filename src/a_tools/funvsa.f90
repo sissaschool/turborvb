@@ -206,10 +206,10 @@ program fitvsa
     if (map .ne. 0.d0) call log_info(' Machine learning Evidence =', real(evidencem), '+/-', real(evidences))
     call log_info(' Coefficient found ')
     do i = 1, orderp
-        call log_debug(i, coeff(i), coefferr(i))
+        call log_info(i, coeff(i), coefferr(i))
     end do
 
-    call log_error(' Predicted error /measured error ')
+    call log_info(' Predicted error /measured error ')
 
     ermax = 0.d0
     do i = 1, N
@@ -246,12 +246,12 @@ program fitvsa
         if (wy(i) .ne. 0.d0) then
             if (abs(cost - y(i)) .gt. ermax) ermax = abs(cost - y(i))
             ! original format: (I4, 7f15.7)
-            call log_debug(i, xw, cost, yprederr(i), dcost, dyprederr(i), y(i), wy(i))
+            call log_info(i, xw, cost, yprederr(i), dcost, dyprederr(i), y(i), wy(i))
         else
-            call log_debug(i, xw, cost, yprederr(i), dcost, dyprederr(i))
+            call log_info(i, xw, cost, yprederr(i), dcost, dyprederr(i))
         end if
     end do
-    call log_error(' Max error in fit =', ermax)
+    call log_info(' Max error in fit =', ermax)
 
 123 format(I4, 7f15.7)
 

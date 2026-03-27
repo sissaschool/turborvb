@@ -152,7 +152,7 @@ program bootback
 
     call log_info(' Energy =', dble(eav0), dble(esav))
     call log_info(' Variance square =', dble(eta), dble(err))
-    call log_error(' Est. energy error bar =', eta_, err_)
+    call log_info(' Est. energy error bar =', eta_, err_)
     call log_info(' Est. corr. time  =', eav_*nwalk, esav_*nwalk)
 
     deallocate (e, es, w)

@@ -104,8 +104,8 @@ contains
             if (sel_ed(i)) then
                 j = j + 1
                 if (mod(i, 3) .ne. 1) then
-                    call log_error('you are not allowed to change the power or the gaussian exponent by ED')
-                    call log_info('please change the sel_edection options')
+                    call log_warning('you are not allowed to change the power or the gaussian exponent by ED')
+                    call log_warning('please change the sel_edection options')
                     stop
                 end if
             end if

@@ -1005,12 +1005,12 @@ subroutine prep_rotate(ipc, nshell_c, nelorb, nion, ioptorb_c, kion_c, mult_c&
 
     call log_info(' Index orbitals found =')
     do i = 1, nshell
-        call log_debug(i, indsh(i))
+        call log_info(i, indsh(i))
     end do
 
     call log_info(' cellmap found ')
     do i = 1, nion
-        call log_debug(i, cellmap(i))
+        call log_info(i, cellmap(i))
     end do
 
     !     stop

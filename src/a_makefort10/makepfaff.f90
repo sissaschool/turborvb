@@ -28,7 +28,7 @@
 
 subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
                     lenrec, nrec, ipsip, rion, ntotatoms, orb2atom, cellscale, deps, zeta, yes_hermite)
-    use logger_io, only: log_error, log_info
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
 
     integer norb, nrot, ntra, symrot(norb, nrot), symtra(norb, ntra)
@@ -100,7 +100,7 @@ subroutine makeskew(norb, symrot, nrot, symtra, ntra, occupied, recordsym, &
                     end if
 
                     if (imap .eq. 0 .or. jmap .eq. 0) then
-                        call log_error(' Error in symtra !!! ', imap, jmap)
+                        call log_warning(' Error in symtra !!! ', imap, jmap)
 
                     end if
                     do l = 1, nrot
@@ -308,7 +308,9 @@ subroutine makepfaff(norb, nrot, ntra, occupied, recordsymagp, lenrecagp, record
                     call log_warning(' Repetition !!! j,k, record  ', j, k, i)
                     call log_info(' first pair --> ', recordsym(1, j, i), recordsym(2, j, i))
                     call log_info(' second pair --> ', recordsym(1, k, i), recordsym(2, k, i))
-                    write (6, *) lenrec(i), (recordsym(1, kk, i), recordsym(2, kk, i), kk=1, lenrec(i))
+                    do kk=1, lenrec(i)
+                       call log_info(lenrec(i), recordsym(1, kk, i), recordsym(2, kk, i))
+                    end do
                     stop
                 end if
             end do

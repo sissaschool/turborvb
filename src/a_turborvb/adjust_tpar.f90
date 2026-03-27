@@ -40,7 +40,12 @@ subroutine adjust_tpar(i_main, nweight, energy, error_energy, tpar, ngentry, ite
             if (tpar_stable_list(index_stable_list) .eq. -1) exit
         end do
 
-        write (*, *) tpar_stable_list
+        block
+          integer kk
+          do kk=1,size(tpar_stable_list)
+             call log_info(tpar_stable_list(kk))
+          end do
+         end block
 
         ! if we have all the stable values of tpar we just use the mean of the last ten values
         if (index_stable_list .gt. size(tpar_stable_list)) then

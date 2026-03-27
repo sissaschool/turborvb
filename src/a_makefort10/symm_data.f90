@@ -14,7 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 module symm_data
-    use logger_io, only: log_error, log_debug
+    use logger_io, only: log_error, log_warning, log_info, log_debug
     implicit none
 
     !***** Symmetries variables
@@ -82,13 +82,13 @@ contains
         car2cry = at_qe
         call dgetrf(3, 3, car2cry, 3, ipiv, info)
         if (info .ne. 0) then
-            call log_error(' ERROR in initialization cell (dgetrf) !!! ', info)
+            call log_warning(' ERROR in initialization cell (dgetrf) !!! ', info)
             do i = 1, 3
-                call log_debug(i, ipiv(i), car2cry(i, i))
+                call log_warning(i, ipiv(i), car2cry(i, i))
             end do
         else
             call dgetri(3, car2cry, 3, ipiv, matscra, 9, info)
-            if (info .ne. 0) call log_error(' ERROR in initialization cell (dgetri) !!! ')
+            if (info .ne. 0) call log_warning(' ERROR in initialization cell (dgetri) !!! ')
         end if
     end subroutine init_cell
     subroutine CartesianToCrystal(r, howmany)

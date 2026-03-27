@@ -16,7 +16,7 @@
 program makefort10
     use symm_data
     use constants
-    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
+    use logger_io, only: log_error, log_warning, log_info, logger_config
     use mod_orbital, only: parsymm, print_orbitals &
             &, apply_symm_to_orbitals, apply_symm_to_forces&
             &, orbmap, generate_orbidx, par_symm, read_orbitals &
@@ -309,7 +309,7 @@ program makefort10
             end do
         end do
         do i1 = 1, ndettot
-            call log_debug(i1, orb2atom(i1))
+            call log_info(i1, orb2atom(i1))
         end do
     end if
 
@@ -333,7 +333,7 @@ program makefort10
     call log_info(' Mapping force components ')
 
     do i = 1, nsym
-        call log_debug(i, orbf_map(1, i), orbf_map(2, i), orbf_map(3, i))
+        call log_info(i, orbf_map(1, i), orbf_map(2, i), orbf_map(3, i))
     end do
 
     if (.not. yesmolat) then
@@ -357,7 +357,7 @@ program makefort10
     call generate_indion
     call log_info(' Independent atoms in the orthorombic cell ')
     do i1 = 1, natoms
-        call log_debug(i1, indion(i1), indionz(i1))
+        call log_info(i1, indion(i1), indionz(i1))
     end do
 
     call generate_orbidx(zeta, natoms, detorbidx, detorb, ndetorb, indion)
@@ -465,7 +465,7 @@ program makefort10
         call log_info(' n basis found =', nbas)
 
         do i2 = 1, ndetorbat
-            call log_debug(i2, detorbat(i2)%ioptorb, detorbat(i2)%kion)
+            call log_info(i2, detorbat(i2)%ioptorb, detorbat(i2)%kion)
         end do
         !    No rotation symmetry imposed.
         nsym = 1
@@ -485,7 +485,7 @@ program makefort10
         do is = 1, ntra
             call log_info(' Sym =', is)
             do i1 = 1, nbas
-                call log_debug(i1, symtra(i1, is))
+                call log_info(i1, symtra(i1, is))
             end do
         end do
         allocate (detyes(nbas, nbas))
@@ -505,7 +505,7 @@ program makefort10
             end do
         end do
         do i1 = 1, ndettot
-            call log_debug(i1, orb2atom(i1))
+            call log_info(i1, orb2atom(i1))
         end do
 
         nrec = 1
@@ -775,7 +775,7 @@ program makefort10
                 end do
             end do
             do i1 = 1, njasorb
-                call log_debug(i1, orb2atom(i1))
+                call log_info(i1, orb2atom(i1))
             end do
             if (.not. noonebody) orb2atom(njastot) = 0
         end if
@@ -911,7 +911,7 @@ program makefort10
             call log_info(' n basis Jastrow found =', nbas)
 
             do i2 = 1, njasorbat
-                call log_debug(i2, jasorbat(i2)%ioptorb, jasorbat(i2)%kion)
+                call log_info(i2, jasorbat(i2)%ioptorb, jasorbat(i2)%kion)
             end do
             !  No rotation symmetry imposed.
             nsym = 1
@@ -1082,7 +1082,7 @@ contains
         do i1 = 1, nrot
             call log_info(' Sym op 3x3 matrix ', i1)
             do is = 1, 3
-                call log_debug(isymm(1, is, i1), isymm(2, is, i1), isymm(3, is, i1))
+                call log_info(isymm(1, is, i1), isymm(2, is, i1), isymm(3, is, i1))
             end do
         end do
 
@@ -1125,7 +1125,7 @@ contains
 
         call log_info('Atom coordinates')
         do j = 1, ntotatoms
-            call log_debug(j, rion(1, j), rion(2, j), rion(3, j))
+            call log_info(j, rion(1, j), rion(2, j), rion(3, j))
             dist(:) = rion(:, j) - rion(:, 1)
             call CartesianToCrystal(dist, 1)
         end do
@@ -2315,7 +2315,7 @@ contains
             call log_info(' newcell =')
 
             do i1 = 1, 3
-                call log_debug(i1, newcell(1, i1), newcell(2, i1), newcell(3, i1))
+                call log_info(i1, newcell(1, i1), newcell(2, i1), newcell(3, i1))
                 do i2 = i1 + 1, 3
                     if (abs(newcell(i1, i2)) .gt. 1.e-7 .or. abs(newcell(i2, i1)) .gt. 1e-7) is_ok = .false.
                 end do
@@ -2846,7 +2846,7 @@ contains
         !    redefine newcell
         do j = 1, 3
             newcell(:, j) = newcell(:, j)*smallcell(j)/sqrt(sum(newcell(:, j)**2))
-            call log_debug(j, newcell(1, j), newcell(2, j), newcell(3, j))
+            call log_info(j, newcell(1, j), newcell(2, j), newcell(3, j))
         end do
         ! ********** Find the type of each atom *********
 
@@ -3045,7 +3045,7 @@ contains
                         if (i4 .le. nskip) then
                             ind = ind + 1
                             trasl(:, ind) = rion(:, counter) - rion(:, ref_atom)
-                            call log_debug(ind, trasl(1, ind), trasl(2, ind), trasl(3, ind))
+                            call log_info(ind, trasl(1, ind), trasl(2, ind), trasl(3, ind))
                         end if
                     end do
                 end do

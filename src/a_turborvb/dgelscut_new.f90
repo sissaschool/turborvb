@@ -171,9 +171,9 @@ subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
             ind = ind + 1
             indscali = indexpar(i)
             if (indscali .eq. 0) then
-                call log_debug(ind, i)
+                call log_info(ind, i)
             else
-                call log_debug(ind, indscali)
+                call log_info(ind, indscali)
             end if
         end if
         ! only the regul

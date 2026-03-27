@@ -738,7 +738,9 @@ contains
                         do j = 1, nys
                             read (5, *) (spin_input(i, j, k), i=1, nxs)
                             ! implied-do output: left as write (variable-length list)
-                            write (6, *) (spin_input(i, j, k), i=1, nxs)
+                            do i=1, nxs
+                               call log_info(spin_input(i, j, k))
+                            end do
                         end do
                         if (k .ne. nzs) then
                             read (5, *)
@@ -771,7 +773,9 @@ contains
                     do k = 1, nzs
                         do j = 1, nys
                             read (5, *) (charge_input(i, j, k), i=1, nxs)
-                            write (6, *) (charge_input(i, j, k), i=1, nxs)
+                            do i=1, nxs
+                               call log_info(charge_input(i, j, k))
+                            end do
                         end do
                         if (k .ne. nzs) then
                             read (5, *)

@@ -1879,8 +1879,8 @@ contains
             ! upscratch when doing standard VMC
             call upscratch_global(js, pseudologic, iesrandoml)
             if (flagcont .and. developer .eq. -1) then
-                call log_debug(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
-                call log_debug(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
+                call log_info(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
+                call log_info(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
             end if
             timescra = timescra + cclock() - timep
 
@@ -1942,7 +1942,7 @@ contains
                 diffkin(3, j) = diffkin(3, j) + enerdiff
 
                 if (flagcont .and. developer .eq. -1) then
-                    call log_debug(' Energy same conf =', j, enertrue(j), diag(j), tmu(indtabbj), veff, veffright)
+                    call log_info(' Energy same conf =', j, enertrue(j), diag(j), tmu(indtabbj), veff, veffright)
                 end if
 
                 !           write(6,'(A,2X,I3,2X,3F10.6,2X,2I3,2X,3F10.6)') ' Energy same conf =',j,enertrue(j),diag(j),&
@@ -3407,7 +3407,7 @@ contains
                         psip(k - indc) = alphab(k)*tpar
                     end do
                     !                 from real to effective
-                    call log_debug(' Passi qui XIX real-eff')
+                    call log_info(' Passi qui XIX real-eff')
                     if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                     call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                          &, nozero_c, psip(iessw + 1), psip, 1, jbradet, symmagp, .true.)
@@ -3548,7 +3548,7 @@ contains
                 call update_ionpos
                 if (yeszagp .or. cellderiv) call update_kgrid
                 if (nmolmax .gt. 0 .and. iessw .gt. 0) then
-                    call log_debug(' Passi qui XX eff-real')
+                    call log_info(' Passi qui XX eff-real')
                     if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                     !                 Here one should check whether is symmetric...
                 end if
@@ -3588,13 +3588,13 @@ contains
                     call log_info(' Time convertmol =', cclock() - timepp)
                     if (iessw .gt. 0) then
                         !       from real to effective load dsw effective parameters if allowed_averagek
-                        call log_debug(' Passi qui XXI real-eff')
+                        call log_info(' Passi qui XXI real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                         call constrbra_complex(iessw, nnozero_c, jbradet, nozero_c, detmat_c      &
                              &, dsw, 1, 1)
                         !       from effective to real
                         if (allowed_averagek) call attach_phase2det(.true., detmat_c)
-                        call log_debug(' Passi qui XXII eff-real')
+                        call log_info(' Passi qui XXII eff-real')
                         indc = iesinv + iesm + iesd + iesfree
                         do k = indc + 1, indc + iessw
                             alphavar(k) = dsw(k - indc)
@@ -3769,7 +3769,7 @@ contains
 
             if (rank .eq. 0) then
                 if (inext + nweight - iend .gt. ngen) then
-                    call log_error('Warning  stopping the program to terminate VMC bin')
+                    call log_warning('Warning  stopping the program to terminate VMC bin')
                     ngen = inext - iend
                 end if
                 open (unit=7, file='stop.dat', form='formatted', status='unknown')
@@ -3780,10 +3780,10 @@ contains
                 end if
                 if (ngentry .eq. 0) then
                     ngen = inext - iend
-                    call log_error(' The program will stop at iteration', ngen)
+                    call log_info(' The program will stop at iteration', ngen)
                 elseif (ngentry .gt. 0) then
                     ngen = ngentry
-                    call log_error(' The program will stop at iteration', ngen + iend)
+                    call log_info(' The program will stop at iteration', ngen + iend)
                 elseif (ngentry .eq. -1) then
                     !        read also parr and epsi
                     if (ncg .eq. 0) then
@@ -3795,7 +3795,7 @@ contains
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
 
-                    call log_error(' Warning changing parr and epsi on fly  ', parr, epsi)
+                    call log_warning(' Warning changing parr and epsi on fly  ', parr, epsi)
                 elseif (ngentry .eq. -2) then
                     if (ncg .eq. 0) then
                         read (7, *, end=1155) epsdgel, epsi, tpar
@@ -3803,7 +3803,7 @@ contains
                     else
                         read (7, *, end=1155) parr, epsi, tpar
                     end if
-                    call log_error(' Warning changing parr,epsi,tpar on fly  ', parr, epsi, tpar)
+                    call log_warning(' Warning changing parr,epsi,tpar on fly  ', parr, epsi, tpar)
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
                 elseif (ngentry .eq. -3) then
@@ -3815,7 +3815,7 @@ contains
                     end if
                     if (abs(parr)/10.d0 .lt. tolcg) tolcg = abs(parr)/10.d0
 !            if(default_epsdgel.and.ncg.ne.0) epsdgel = abs(parr) / 10.d0
-                    call log_error(' Warning changing parr,epsi,tpar,nweight on fly ', parr, epsi, tpar, rweight)
+                    call log_warning(' Warning changing parr,epsi,tpar,nweight on fly ', parr, epsi, tpar, rweight)
                     if (iskipdyn .gt. 1 .and. rweight .ne. nweight) then
                         call log_error(' ERROR nweight cannot be changed during dynamic with iskipdyn>1')
                         iflagerr = 1
@@ -4207,7 +4207,7 @@ contains
 
                     if (contraction .eq. 0) then
                         !    From real to effective
-                        call log_debug(' Passi qui XXIII real-eff')
+                        call log_info(' Passi qui XXIII real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat)
 
                         call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
@@ -4248,7 +4248,7 @@ contains
                         !            enddo
                         !           enddo
                         !         endif
-                        call log_debug(' Passi qui XXV real-eff')
+                        call log_info(' Passi qui XXV real-eff')
                         !      from real to effective
                         if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                         call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
@@ -4365,10 +4365,10 @@ contains
 
                 if (noproj .and. iessw .ne. 0) then
                     if (contraction .ne. 0) then
-                        call log_debug(' Passi qui XXVI eff-real')
+                        call log_info(' Passi qui XXVI eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                     else
-                        call log_debug(' Passi qui XXIV eff-real')
+                        call log_info(' Passi qui XXIV eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat)
                     end if
                 end if
@@ -4501,7 +4501,7 @@ contains
                         if (detc_proj) then
                             !               From real to effective
                             ! From real to effective
-                            call log_debug(' Passi qui XXVI real-eff')
+                            call log_info(' Passi qui XXVI real-eff')
                             if (allowed_averagek) call attach_phase2det(.false., detmat_proj)
 
                             if (yes_complex) then
@@ -4515,11 +4515,11 @@ contains
                                 end do
                             end if
                    !!               Back to real
-                            call log_debug(' Passi qui XXVII eff-real')
+                            call log_info(' Passi qui XXVII eff-real')
                             if (allowed_averagek) call attach_phase2det(.true., detmat_proj)
                         else
                    !!               From real to effective
-                            call log_debug(' Passi qui XXIX real-eff')
+                            call log_info(' Passi qui XXIX real-eff')
                             if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                             if (yes_complex) then
                                 do ii = 1, nnozero_c
@@ -4532,13 +4532,13 @@ contains
                                 end do
                             end if
                    !!               Back to real
-                            call log_debug(' Passi qui XXVIII eff-real')
+                            call log_info(' Passi qui XXVIII eff-real')
                             if (allowed_averagek) call attach_phase2det(.true., detmat_c)
                         end if ! endif detc_proj
                         ind = ipc*nnozero_c + inddsw - 1
                     else ! if contraction
                 !!               From real to effective
-                        call log_debug(' Passi qui XXX real-eff')
+                        call log_info(' Passi qui XXX real-eff')
                         if (allowed_averagek) call attach_phase2det(.false., detmat)
                         if (yes_complex) then
                             do ii = 1, nnozero
@@ -4551,7 +4551,7 @@ contains
                             end do
                         end if
                 !!               Back to real
-                        call log_debug(' Passi qui XXXI eff-real')
+                        call log_info(' Passi qui XXXI eff-real')
                         if (allowed_averagek) call attach_phase2det(.true., detmat)
                         ind = ipc*nnozero + inddsw - 1
                     end if ! endif contraction
@@ -6948,21 +6948,21 @@ contains
 
         if (contraction .ne. 0) then
             !  From real to effective load dsw
-            call log_debug(' Passi qui I real-eff ')
+            call log_info(' Passi qui I real-eff ')
             if (allowed_averagek) call attach_phase2det(.false., detmat_c)
             call constrbra_complex(iessw, nnozero_c, jbradet, nozero_c, detmat_c&
                  &, dsw, 1, 1)
             !  back to real
             if (allowed_averagek) call attach_phase2det(.true., detmat_c)
-            call log_debug(' Passi qui III eff-real ')
+            call log_info(' Passi qui III eff-real ')
         else
             !  From real to effective load dsw
-            call log_debug(' Passi qui II real-eff ')
+            call log_info(' Passi qui II real-eff ')
             if (allowed_averagek) call attach_phase2det(.false., detmat)
             call constrbra_complex(iessw, nnozero, jbradet, nozero, detmat            &
                  &, dsw, 1, 1)
             !  back to real
-            call log_debug(' Passi qui IV eff-real ')
+            call log_info(' Passi qui IV eff-real ')
             if (allowed_averagek) call attach_phase2det(.true., detmat)
         end if
 
@@ -9051,8 +9051,8 @@ contains
             call upscratch_global(js, pseudologic, iesrandoml)
 
             if (flagcont .and. developer .eq. -1) then
-                call log_debug(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
-                call log_debug(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
+                call log_info(' Jastrowall-ee =', sum(jastrowall_ee(:, :, 0, j)))
+                call log_info(' Jastrowall-ei =', sum(jastrowall_ei(:, :, j)))
             end if
 
             timescra = timescra + cclock() - timep
@@ -9262,21 +9262,21 @@ contains
             end do
             if (contraction .eq. 0) then
                 ! From real to effective
-                call log_debug(' Passi qui VII real-eff ')
+                call log_info(' Passi qui VII real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat)
                 call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
                      &, nozero, psip, dsw, 1, jbradet, symmagp, .false.)
                 !  Back to real
-                call log_debug(' Passi qui V eff-real ')
+                call log_info(' Passi qui V eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat)
             else
                 ! From real to effective
-                call log_debug(' Passi qui VIII real-eff ')
+                call log_info(' Passi qui VIII real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                 call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                      &, nozero_c, psip, dsw, 1, jbradet, symmagp, .false.)
                 !  Back to real
-                call log_debug(' Passi qui VI eff-real ')
+                call log_info(' Passi qui VI eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat_c)
             end if
         end if
@@ -9349,21 +9349,21 @@ contains
             end do
             if (contraction .eq. 0) then
                 !    From real to effective
-                call log_debug(' Passi qui IX real-eff ')
+                call log_info(' Passi qui IX real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat)
                 call bconstraint(iessw, detmat, ipf*nelorbh, nnozero&
                      &, nozero, psip, dsw, 1, jbradet, symmagp, .false.)
                 !    Back to real
-                call log_debug(' Passi qui XIII eff-real ')
+                call log_info(' Passi qui XIII eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat)
             else
                 !    From real to effective
-                call log_debug(' Passi qui XI real-eff ')
+                call log_info(' Passi qui XI real-eff ')
                 if (allowed_averagek) call attach_phase2det(.false., detmat_c)
                 call bconstraint(iessw, detmat_c, nelorb_c, nnozero_c&
                      &, nozero_c, psip, dsw, 1, jbradet, symmagp, .false.)
                 !    Back to real
-                call log_debug(' Passi qui XII eff-real ')
+                call log_info(' Passi qui XII eff-real ')
                 if (allowed_averagek) call attach_phase2det(.true., detmat_c)
             end if
         end if

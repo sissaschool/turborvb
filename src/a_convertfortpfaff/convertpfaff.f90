@@ -23,7 +23,7 @@ program convertpfaff
     use constants
     use IO_m
     use sub_comm
-    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
+    use logger_io, only: log_error, log_warning, log_info, logger_config
     implicit none
     integer i, j, k, nelorbin, nelcolin, nelorbout, nelcolout, nunp, nshell_in, indparo, indpar, nelorbh_in, ipf_in, nelorbin2
     real(8), allocatable :: detmatin(:, :), detmatout(:, :), unpaired(:, :), mat_unp(:, :), dup_in(:)
@@ -239,7 +239,7 @@ program convertpfaff
             call log_info(' Matrix rotation')
             do i = 1, 2
                 do j = 1, 2
-                    call log_debug(i, j, surot(i, j))
+                    call log_info(i, j, surot(i, j))
                 end do
             end do
         else
@@ -252,7 +252,7 @@ program convertpfaff
             call log_info(' Matrix rotation')
             do i = 1, 2
                 do j = 1, 2
-                    call log_debug(i, j, surot(2*i - 1, j), surot(2*i, j))
+                    call log_info(i, j, surot(2*i - 1, j), surot(2*i, j))
                 end do
             end do
 
@@ -298,7 +298,7 @@ program convertpfaff
             do k = 1, nunp
                 call log_info(' Unpaired # =', k)
                 do i = 1, nelorbin
-                    call log_debug(i, unpaired(i, k))
+                    call log_info(i, unpaired(i, k))
                 end do
             end do
             do k = 1, nunp - ndiff, 2

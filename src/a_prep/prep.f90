@@ -16,7 +16,7 @@
 program main
 
     use setup
-    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
+    use logger_io, only: log_error, log_warning, log_info, logger_config
     use freeelmod_complex, only: self_consistent_run
     use parallel_module, only: old_threads, setup_para
     use allio, only: cublas_handle

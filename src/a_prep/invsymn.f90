@@ -20,7 +20,7 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
     use descriptors
     use dspev_module
 #endif
-    use logger_io, only: log_info, log_warning, log_debug
+    use logger_io, only: log_info, log_warning
     implicit none
 
 #ifdef PARALLEL
@@ -133,7 +133,7 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
         mine = 1
         do i = 1, n
             if (eig(i)/eig(n) .gt. eps) then ! the condition number criterium
-                call log_debug(i, eig(i))
+                call log_info(i, eig(i))
                 eigmat(i) = dsqrt(1.d0/eig(i))
             else
                 mine = mine + 1
@@ -214,7 +214,7 @@ subroutine invsymn(n, a, lda, info, epsr, mine, rank, epssr, bands, nlax)
     mine = 1
     do i = 1, n
         if (eig(i)/eig(n) .gt. eps) then ! the condition number criterium
-            call log_debug(i, eig(i))
+            call log_info(i, eig(i))
             eigmat(i) = dsqrt(1.d0/eig(i))
         else
             mine = mine + 1

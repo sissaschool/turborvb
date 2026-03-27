@@ -14,7 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 subroutine print_eigenvalues(rank, eig, maxdimeig, irankdet)
-    use logger_io, only: log_debug
+    use logger_io, only: log_info
     implicit none
     integer, intent(in) :: rank, maxdimeig
     integer i, irankdet
@@ -24,7 +24,7 @@ subroutine print_eigenvalues(rank, eig, maxdimeig, irankdet)
         if (abs(eig(i)) .gt. 1.d-11) then
             irankdet = irankdet + 1
         end if
-        call log_debug(i, eig(i))
+        call log_info(i, eig(i))
     end do
     return
 end subroutine print_eigenvalues

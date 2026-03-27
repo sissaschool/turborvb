@@ -75,7 +75,7 @@ subroutine improvediag
 !$omp barrier
 
 #ifdef DEBUG
-    call log_info(' Check orthogonality eigenvectors: ')
+    call log_debug(' Check orthogonality eigenvectors: ')
     allocate (molecorb_part(ipc*nelorbu, nelocc + neloccdo))
     molecorb_part = 0.d0
 

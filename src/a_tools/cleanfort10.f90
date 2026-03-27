@@ -2157,7 +2157,7 @@ end
 !================
 subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
     use constants, only: zone, zzero
-    use logger_io, only: log_error, log_debug
+    use logger_io, only: log_error, log_warning, log_debug
     implicit none
     integer n, i, j, ncoeff, info, lwork, ipc
     real*8 psi_in(ncoeff*ipc, n), psi_out(ncoeff*ipc, n), umat(ipc*n, n)
@@ -2212,9 +2212,9 @@ subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
         end if
 
     else
-        call log_error(' Orbitals are not independent, ERROR in dgetrf !!!! ', info)
+        call log_warning(' Orbitals are not independent, ERROR in dgetrf !!!! ', info)
         do i = 1, n
-            call log_debug(i, smat(ipc*(i - 1) + 1, ipc*(i - 1) + 1))
+            call log_warning(i, smat(ipc*(i - 1) + 1, ipc*(i - 1) + 1))
         end do
         !       stop
     end if
