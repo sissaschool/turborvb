@@ -11,12 +11,14 @@ module logger_io
 
   public :: log_error, log_warning, log_info, log_debug, logger_config
   public :: all_level, debug_level, info_level, warning_level, error_level, none_level
+  ! export
+  public :: tostring
 
 contains
   subroutine log_error(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
     class(*),intent(in),optional :: arg1, arg2, arg3, arg4, arg5
     class(*),intent(in),optional :: arg6, arg7, arg8, arg9
-    if (export_) then
+    if (.true.) then  ! all ranks
        log_msg_ = tostring(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9)
        call global_logger%log_error(message=log_msg_)
     end if
@@ -58,6 +60,8 @@ contains
     integer :: rank_info = 0
     character(len=256) :: filename_buf
     integer :: stat
+
+    ! call global_logger%configure(message_prefix=.true.)
     
     if (present(level)) then
        call global_logger%configure(level=level)
