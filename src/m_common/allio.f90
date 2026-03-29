@@ -971,7 +971,7 @@ contains
       write (6,*) 'developer            = ', developer
       write (6,*) 'dielectric_length    = ', dielectric_length
       write (6,*) 'dielectric_ratio     = ', dielectric_ratio
-      write (6,*) 'disk_io              = ', disk_io
+      write (6,*) 'disk_io              = ', trim(disk_io)
       write (6,*) 'double_mesh          = ', double_mesh
       write (6,*) 'freqcheck            = ', freqcheck
       write (6,*) 'iopt                 = ', iopt
@@ -1022,7 +1022,7 @@ contains
       write (6,*) 'np                   = ', np
       write (6,*) 'np3                  = ', np3
       write (6,*) 'unreliable           = ', unreliable
-      write (6,*) 'wherescratch         = ', wherescratch
+      write (6,*) 'wherescratch         = ', trim(wherescratch)
       write (6,*) 'writescratch         = ', writescratch
       end if
     end subroutine dump_parameters_readio

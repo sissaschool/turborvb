@@ -213,6 +213,9 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     write (6, *) 'offset =', (offset(i), i=1, corrfun_dim)
     write (6, *) 'cutoff log wave function (shiftlog) =', shiftlog
 
+    ! dump parameters
+    call dump_parameters
+    
     if (sum(abs(offset(:))) .eq. 0.d0) then
         if (ngrid(1) .ge. 1 .and. ngrid(2) .ge. 1 .and. ngrid(3) .ge. 1) then
             write (6, *) 'Default shift offset for centering xcrysden -0.5,-0.5,-0.5 in mesh grid units'
@@ -407,12 +410,12 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
         write (6, *) 'ell(z) =', ell(3)
     end if
 
-    !
-
     close (55)
 
-
-    ! write parameter values
+  contains
+    subroutine dump_parameters
+      implicit none
+      ! write parameter values
       write (6,*) '==== namelist simulation ===='
       write (6,*) 'decouple_files       = ', decouple_files
       write (6,*) 'decouple_k           = ', decouple_k
@@ -467,5 +470,6 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
       write (6,*) 'sphere_radius        = ', sphere_radius
       write (6,*) 'spin_density         = ', spin_density
       write (6,*) 'structure_factor     = ', structure_factor
+    end subroutine dump_parameters
     
 end subroutine read_corr_fun

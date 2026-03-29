@@ -20,8 +20,7 @@ program makefort10
             &, apply_symm_to_orbitals, apply_symm_to_forces&
             &, orbmap, generate_orbidx, par_symm, read_orbitals &
             &, orbital, lsym_type, read_atoms, atomstypes, yesmolat &
-            &, yesmolatj, yesalloc_jas, atomic_jasmat, real_contracted &
-            &, dump_parameters_orbital => dump_parameters
+            &, yesmolatj, yesalloc_jas, atomic_jasmat, real_contracted
 
     implicit none
 
@@ -174,7 +173,6 @@ program makefort10
     call read_input(5)
     !
     call dump_parameters
-    call dump_parameters_orbital
 
     orbtype = trim(orbtype)
     jorbtype = trim(jorbtype)

@@ -273,9 +273,6 @@ program convertfort10mol
     call mpi_bcast(printoverlap, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
 
-    ! print parameter values
-    call dump_parameters
-    
     if (nmol .lt. neldo) then
         if (rank .eq. 0) write (6, *) ' Warning nmol>=neldo , changed to ', neldo
         nmol = neldo
@@ -294,6 +291,11 @@ program convertfort10mol
     nmolmaxw = nmolmax
 
     if (rank .eq. 0) write (6, *) ' Chosen nmolmin nmolmax =', nmolmin, nmolmax
+
+    ! print parameter values
+    call dump_parameters
+    
+    
 #ifdef _OFFLOAD
 !$omp target data map(to:mu_c)
 #endif

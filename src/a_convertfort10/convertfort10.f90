@@ -2559,9 +2559,6 @@ contains
             end if
         end if
 
-        ! print parameter values
-        call dump_parameters
-
         call checkiflagerr(iflagerr, rankn, 'ERROR reading mesh_info')
 #ifdef PARALLEL
         call mpi_bcast(nx, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -2603,6 +2600,9 @@ contains
 #endif
             stop
         end if
+
+        ! print parameter values
+        call dump_parameters
 
         mesh = nx
         mesh = mesh*ny
@@ -3795,7 +3795,7 @@ contains
       write (6,*) 'bigram               = ', bigram
       write (6,*) 'eqion                = ', eqion
       write (6,*) 'symiesup             = ', symiesup
-      write (6,*) 'wherescratch         = ', wherescratch
+      write (6,*) 'wherescratch         = ', trim(wherescratch)
       write (6,*) '==== namelist control ===='
       write (6,*) 'change_contr         = ', change_contr
       write (6,*) 'change_jas           = ', change_jas
