@@ -55,6 +55,7 @@ program readforward
 
     use grid_module
     use Ewald, only: InitEwald, kmax, n_gvec, eself, sum_q_cos_gr, sum_q_sin_gr
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
 
     use Assar_module
     use Spin2, only: ifspin2, nspin2, spin2_local, inits2pfaff, inits2pfaff_c, ratiospin
@@ -214,11 +215,9 @@ program readforward
 !call mpi_init_thread(MPI_THREAD_FUNNELED,ithread,ierr)
     call mpi_comm_size(MPI_COMM_WORLD, sizep, ierr)
     call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
-    if (rank .eq. 0) then
-        write (6, *) 'PARALLEL CALCULATION'
-        write (6, *) 'largest tag value for point-to-point communication', MPI_TAG_UB
+    call log_info('PARALLEL CALCULATION')
+    call log_info('largest tag value for point-to-point communication', MPI_TAG_UB)
 !  if(rank.eq.0) write(6,*) ' Initial mpi value of threads',ithread
-    end if
 ! define also these values for the read_fort10
     rankrep = rank
     commrep_mpi = MPI_COMM_WORLD
@@ -232,6 +231,9 @@ program readforward
     commcolrep_mpi = 0
     sizep = 1
 #endif
+
+    ! configure logger so that only rank 0 outputs
+    call logger_config(rank=rank)
 
     ! output version information
     if (rank .eq. 0) call print_version
@@ -339,8 +341,7 @@ program readforward
 !    write(6,*) 'cellscale test',cellscale_sav(1:3), cellscale(1:3), ncell(1:3)
 
     if (.not. decouple_k .and. decouple_files) then
-        if (rank .eq. 0) write (6, *) &
-            ' Warning decouple_files only with decouple_k = true!'
+        call log_warning(' Warning decouple_files only with decouple_k = true!')
         decouple_files = .false.
     end if
 
@@ -351,7 +352,7 @@ program readforward
 #endif
 
     if (err_stop) then
-        if (rank .eq. 0) write (6, *) 'I am sorry: something went wrong in reading readforward.input file'
+        call log_info('I am sorry: something went wrong in reading readforward.input file')
 #ifdef PARALLEL
         call mpi_finalize(ierr)
 #endif
@@ -366,7 +367,7 @@ program readforward
     nproc = sizep
 
     call get_dir(path)
-    if (rank .eq. 0) write (*, *) ' Initial path : ', path
+    call log_info(' Initial path : ', path)
     epsmach = 1000.d0*dlamch('e')
     safemin = 10000.d0*dlamch('s')
 
@@ -380,15 +381,13 @@ program readforward
 
     if (nk .gt. 1 .and. decouple_k) then
 
-        if (rank .eq. 0) then
-            write (6, *) ' weight given '
-            do i = 1, nk
-                write (6, *) ' K / weight =', i, wkp(i)
-            end do
-        end if
+        call log_info(' weight given ')
+        do i = 1, nk
+            call log_info(' K / weight =', i, wkp(i))
+        end do
         mcol = nproc/nk
         if (mcol*nk .ne. nproc .or. nproc .ne. size_run) then
-            if (rank .eq. 0) write (6, *) ' # processors / # k-points :', nproc, nk
+            call log_info(' # processors / # k-points :', nproc, nk)
             if (mcol*nk .ne. nproc) then
                 call error(' Initializeall ', ' # of processors must be multiple of &
                         &  the # of k-points !!', 1, rank)
@@ -490,18 +489,18 @@ program readforward
             !      if(ifrho_assar.or.ifspin2.or.ifdipole) then
             if (ifrho_assar .or. ifspin2 .or. ifspin) then
                 if (decouple_k .and. molyes) then
-                    if (rank .eq. 0) write (6, *) ' Warning reading correlated wf from turborvb.scratch folder'
+                    call log_warning(' Warning reading correlated wf from turborvb.scratch folder')
                     open (unit=10, file=trim(scratchpath)//'fort.10_'//trim(charaq), form='formatted', status='unknown')
                 else
-                    if (rank .eq. 0) write (6, *) ' Warning reading correlated wf from fort.10_corr '
+                    call log_warning(' Warning reading correlated wf from fort.10_corr ')
                     open (unit=10, file='fort.10', form='formatted', status='unknown')
                 end if
             else
                 if (decouple_k .and. molyes) then
-                    if (rank .eq. 0) write (6, *) ' Warning reading correlated wf from turborvb.scratch folder'
+                    call log_warning(' Warning reading correlated wf from turborvb.scratch folder')
                     open (unit=10, file=trim(scratchpath)//'fort.10_'//trim(charaq), form='formatted', status='unknown')
                 else
-                    if (rank .eq. 0) write (6, *) ' Warning reading correlated wf from fort.10_corr '
+                    call log_warning(' Warning reading correlated wf from fort.10_corr ')
                     open (unit=10, file=trim(scratchpath)//'fort.10_'//trim(charaq), form='formatted', status='unknown')
                     open (unit=10, file='fort.10_corr', form='formatted', status='unknown')
                 end if
@@ -525,10 +524,8 @@ program readforward
                 rion_center(:) = rion_center(:) + rion(:, i)
             end do
             rion_center(:) = rion_center(:)/nion
-            if (rank .eq. 0) then
-                write (6, *) 'geometrical center of the molecule', rion_center(:)
-                write (6, *) 'offset shifted by geometrical center of the molecule'
-            end if
+            call log_info('geometrical center of the molecule', rion_center(1), rion_center(2), rion_center(3))
+            call log_info('offset shifted by geometrical center of the molecule')
             r_offset(:) = r_offset(:) + rion_center(:)
             r_offset_pair(1:3) = -cellscale(1:3)/2.d0 - 0.5d0/dxil(:)
         else
@@ -545,14 +542,12 @@ program readforward
 
         call update_nmolfn
 
-        if (rank .eq. 0) write (6, *) ' firstmol nmolfn =', firstmol, nmolfn
+        call log_info(' firstmol nmolfn =', firstmol, nmolfn)
 
         if (LBox .gt. 0) then
             call InitEwald(nion, zetar, nel, nws)
-            if (rank .eq. 0) then
-                write (*, *) ' Number of G vectors ', n_gvec
-                write (*, *) ' Ewald Self Energy ', eself
-            end if
+            call log_info(' Number of G vectors ', n_gvec)
+            call log_info(' Ewald Self Energy ', eself)
             kmax = n_gvec
             kmax2 = 2*kmax
         else
@@ -617,7 +612,7 @@ program readforward
 !$omp &,agp,agpn,ainv,winvbar,winvjbar,winvfn,winvbarfn,ainvup,ainvdo)
 #ifdef _CUSOLVER
     if (ipf .ne. 2) then
-        if (rank .eq. 0) write (6, *) ' Warning, using cusolver routines '
+        call log_warning(' Warning, using cusolver routines ')
         ldworkspace = 1
         lzworkspace = 1
         !
@@ -650,7 +645,7 @@ program readforward
     !$omp target data map(to:ipsip, dev_Info&
     !$omp &,dev_dgetri_workspace,dev_zgetri_workspace&
     !$omp &,dev_dgetrf_workspace,dev_zgetrf_workspace) if(ipf.ne.2)
-    if (rank .eq. 0) write (6, *) ' GPU memory for cusolver allocated'
+    call log_info(' GPU memory for cusolver allocated')
 
 #endif
 #else
@@ -693,26 +688,23 @@ program readforward
         end if
         call InitCell(nion, nel, yes_complex)
         call init_berry_phase(nel)
-        if (rank .eq. 0) then
-            write (*, "(a13,2x,i15)") '# [nel]      ', nel
-            write (*, "(a13,3(2x,f15.8))") '# [rec. cell]', berry_comp_vec(1), berry_comp_vec(2), berry_comp_vec(3)
-        end if
+        ! original format: (a13,2x,i15) and (a13,3(2x,f15.8))
+        call log_info('# [nel]      ', nel)
+        call log_info('# [rec. cell]', berry_comp_vec(1), berry_comp_vec(2), berry_comp_vec(3))
         !          write( 120,"(a13,2x,i15)" )     '# [nel]      ', nel
         !          write( 120,"(a13,3(2x,f15.8))" ) '# [rec. cell]',berry_comp_vec(1),berry_comp_vec(2),berry_comp_vec(3)
     end if
 
 #ifdef PARALLEL
     if (mod(size_run, sizep) .ne. 0) then
-        if (rank .eq. 0) then
-            write (6, *) '# files must be the same for every process !!'
-            write (6, *) '# processors', sizep
-            write (6, *) '# files', size_run
-        end if
+        call log_info('# files must be the same for every process !!')
+        call log_info('# processors', sizep)
+        call log_info('# files', size_run)
         call mpi_finalize(ierr)
         stop
     else
         size_per_proc = size_run/sizep
-        if (rank .eq. 0) write (6, *) '# files per process', size_per_proc
+        call log_info('# files per process', size_per_proc)
     end if
 #else
     size_per_proc = size_run
@@ -727,7 +719,7 @@ program readforward
 
     if (ifkspin) then
         kspin(1:3) = 2.d0*pi*kspin(1:3)/cellscale(1:3)
-        if (rank .eq. 0) write (6, *) ' Chosen momentum structure factor =', kspin(1:3)
+        call log_info(' Chosen momentum structure factor =', kspin(1), kspin(2), kspin(3))
     end if
 
     !by E. Coccia (22/11/11): read the external electric field
@@ -804,9 +796,9 @@ program readforward
             end if
             !
             if (rank .eq. 0) then
-                write (6, *) ' Atomic species found:'
+                call log_info(' Atomic species found:')
                 do i = 1, nspec
-                    write (6, *) i, atom_spec(i)
+                    call log_info(i, atom_spec(i))
                 end do
             end if
 
@@ -864,7 +856,7 @@ program readforward
             end do
             drmax = dble(ngrid_p)/rmax
 
-            if (rank .eq. 0) write (6, *) 'rmax and radial step found in g(r)', rmax, 1.d0/drmax
+            call log_info('rmax and radial step found in g(r)', rmax, 1.d0/drmax)
 
         else
 
@@ -969,11 +961,9 @@ program readforward
             end do
 
             nshellsp = ishell - nshell - 1
-            if (rank .eq. 0) then
-                write (6, *) 'number of non-inequivalent shells in site-site corr fun', nshell + nshellsp
-                write (6, *) 'total number of inequivalent shells for atomic species pairs', nshellsp
-                write (6, *) 'total number of site-site pairs', sum(mult(1:nshell))
-            end if
+            call log_info('number of non-inequivalent shells in site-site corr fun', nshell + nshellsp)
+            call log_info('total number of inequivalent shells for atomic species pairs', nshellsp)
+            call log_info('total number of site-site pairs', sum(mult(1:nshell)))
             npairind = nshell + nshellsp
         end if
 
@@ -999,7 +989,7 @@ program readforward
         call shells(ddim, tpiell, cutk, nshlls, rkcomp, rknorm, kmult, nvects, max_shells, max_shells, ndim, rank)
 
         nvects = kmult(nshlls - 1)
-        if (rank .eq. 0) write (6, *) '# k-points with |k| < k_cut ', nvects
+        call log_info('# k-points with |k| < k_cut ', nvects)
 
         ! sorting of the kvectors
         ! determine simap
@@ -1168,7 +1158,7 @@ program readforward
 
         allocate (nuclear_dipole(ddim))
 
-        if (rank .eq. 0) write (6, *) 'offset applied', r_offset
+        call log_info('offset applied', r_offset(1), r_offset(2), r_offset(3))
 
         nuclear_dipole = 0.d0
         do i = 1, nion
@@ -1183,7 +1173,7 @@ program readforward
     countlog = 0.d0
     logav = 0.d0
 
-    if (rank .eq. 0) write (6, *) '***************************************************'
+    call log_info('***************************************************')
     qpwftable = 0
     rhotable = 0
     spintable = 0
@@ -1195,7 +1185,7 @@ program readforward
 
     !(Ye) Adding Spin^2 calculation
     if (ifspin2) then
-        if (rank .eq. 0) write (6, *) "COMPUTING Spin^2"
+        call log_info("COMPUTING Spin^2")
         nind = nind + 1
         nspin2 = 1
     else
@@ -1209,7 +1199,7 @@ program readforward
     !(Matteo) Adding Rho calculation of the electron density with Assaraf Method
     if (ifrho_assar) then
         if (rank .eq. 0) then
-            write (6, *) "COMPUTING Rho with Assaraf Method"
+            call log_info("COMPUTING Rho with Assaraf Method")
         end if
         nrhoind = grid_points
         rhotable = grid_points
@@ -1222,7 +1212,7 @@ program readforward
 
     ! Adding calculation of dipole moment
     if (ifdipole) then
-        if (rank .eq. 0) write (6, *) "COMPUTING Dipole and Quadrupole Moment"
+        call log_info("COMPUTING Dipole and Quadrupole Moment")
         ndipole = ddim
         nquad = ddim
         allocate (dipole(ndipole), quad(nquad, nquad), cc_chg(nquad), quad_diag(nquad))
@@ -1235,7 +1225,7 @@ program readforward
     !(Matteo) Rho calculation with new method
     if (ifrho_corr) then
         if (rank .eq. 0) then
-            write (6, *) "COMPUTING Rho with new method"
+            call log_info("COMPUTING Rho with new method")
         end if
         nrhoind = grid_points
         rhotable = grid_points
@@ -1246,9 +1236,9 @@ program readforward
     !-----------------------------------------------------------
     if (ifrho .and. .not. allocated(density)) then
         if (rank .eq. 0) then
-            write (6, *) 'COMPUTING rho'
+            call log_info('COMPUTING rho')
             if (ddim .eq. 2) then
-                write (6, *) 'density contour plot'
+                call log_info('density contour plot')
             end if
         end if
         !  nrhoind=nrhoind+3   ! adding order parameters
@@ -1260,7 +1250,7 @@ program readforward
 
         if (ifpair) then
             if (rank .eq. 0) then
-                write (6, *) 'COMPUTING charge-charge corr fun'
+                call log_info('COMPUTING charge-charge corr fun')
             end if
             pairtable = npairind + ngrid_p
         else
@@ -1279,9 +1269,9 @@ program readforward
 
     if (ifspin) then
         if (rank .eq. 0) then
-            write (6, *) 'COMPUTING spin'
+            call log_info('COMPUTING spin')
             if (ddim .eq. 2) then
-                write (6, *) 'spin density contour plot'
+                call log_info('spin density contour plot')
             end if
         end if
         if (.not. ifkspin) then
@@ -1296,7 +1286,7 @@ program readforward
 
         if (ifpair) then
             if (rank .eq. 0) then
-                write (6, *) 'COMPUTING spin-spin corr fun'
+                call log_info('COMPUTING spin-spin corr fun')
             end if
             spairtable = npairind + ngrid_p
         else
@@ -1311,7 +1301,7 @@ program readforward
     end if
 
     if (ifsofk) then
-        if (rank .eq. 0) write (6, *) 'COMPUTING S(k)'
+        call log_info('COMPUTING S(k)')
         nskind = nvects
         if (fermi_flag) then
             nind = nind + 5*nvects
@@ -1327,19 +1317,19 @@ program readforward
     !-----------------------------------------
     !(Matteo) QPWF calculations
     if (ifqpwf .and. .not. ifqpwf_extr .and. .not. ifqpwf_k) then
-        if (rank .eq. 0) write (6, *) 'COMPUTING QPWF'
+        call log_info('COMPUTING QPWF')
         nrhoind = grid_points
         qpwftable = ipc*grid_points
         nind = nind + ipc*grid_points
         allocate (qpwf_image(max(ipc*grid_points, 1)))
     elseif (ifqpwf_k) then
-        if (rank .eq. 0) write (6, *) 'COMPUTING QPWF IN MOMENTUM SPACE'
+        call log_info('COMPUTING QPWF IN MOMENTUM SPACE')
         nrhoind = 2*grid_points
         qpwftable = 2*grid_points
         nind = nind + 2*grid_points
         allocate (qpwf_image(max(2*grid_points, 1)))
     elseif (ifqpwf_extr) then
-        if (rank .eq. 0) write (6, *) 'COMPUTING QPWF'
+        call log_info('COMPUTING QPWF')
         nrhoind = n_extr_points
         qpwftable = ipc*n_extr_points
         nind = nind + ipc*n_extr_points
@@ -1350,7 +1340,7 @@ program readforward
 
     !-----------------------------------------
     if (ifcorrs) then
-        if (rank .eq. 0) write (6, *) 'COMPUTING Correlated Sampling'
+        call log_info('COMPUTING Correlated Sampling')
         ncorrsamp = 3 + ipc
         nind = nind + ncorrsamp
         allocate (corrsamp(ncorrsamp))
@@ -1380,14 +1370,14 @@ program readforward
         nind_corrfun = nind
     end if
 
-    if (rank .eq. 0) write (6, *) ' nind (n_correlation_functions)=', nind, nw, sizep
+    call log_info(' nind (n_correlation_functions)=', nind, nw, sizep)
 
 #ifdef PARALLEL
 !cccccccccccccccccccccccccccccccccccccccccccc
 ! each process goes from ist to ien walker
     n1 = mod(nw, sizep)
     if (n1 .ne. 0) then
-        if (rank .eq. 0) write (6, *) 'nw must be multiple of number of processors!', nw, sizep
+        call log_warning('nw must be multiple of number of processors!', nw, sizep)
         call mpi_finalize(ierr)
         stop
     end if
@@ -1471,12 +1461,12 @@ program readforward
         if (iopt .eq. 0) then
             inquire (file='fort.readforward', exist=ife)
             if (.not. ife) then
-                write (6, *) 'file fort.1 does not exist'
-                write (6, *) 'you cannot continue the readforward.x run'
-                write (6, *) 'taking into account only the generations in the last QMC run'
+                call log_error('file fort.1 does not exist')
+                call log_error('you cannot continue the readforward.x run')
+                call log_error('taking into account only the generations in the last QMC run')
                 err_read = .true.
             else
-                write (6, *) 'CONTINUING A PREVIOUS readforward.x RUN'
+                call log_info('CONTINUING A PREVIOUS readforward.x RUN')
             end if
             ! check also the length here (to be done)
         end if
@@ -1508,34 +1498,34 @@ program readforward
 #endif
 
             if (iopt .eq. 0 .and. lbinr .ne. lbin) then
-                write (6, *) ' Warning  continuing  readforward with the same bin length', lbinr
+                call log_warning(' Warning  continuing  readforward with the same bin length', lbinr)
                 lbin = lbinr
             end if
 
             ngendone = ibin_start*lbinr*ifreqdump
 
             if (mod(lbin, ifreqdump) .ne. 0) then
-                write (6, *) ' ERROR the code does not work for mod(lbin,ifreqdump) =/0 '
+                call log_error(' ERROR the code does not work for mod(lbin,ifreqdump) =/0 ')
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
                 stop
             end if
 
-            write (6, *) 'last number of generations ', ngendone
-            write (6, *) 'total number of generations (in fort.11)', ngenc
-            write (6, *) 'requested number of generations (in readfoward.input)', ngenr
+            call log_info('last number of generations ', ngendone)
+            call log_info('total number of generations (in fort.11)', ngenc)
+            call log_info('requested number of generations (in readfoward.input)', ngenr)
 
             if (ngenr .eq. 0 .or. ngenr + ngendone .gt. ngenc) then
-                if (ngenr + ngendone .gt. ngenc) write (6, *) ' Warning: Max number of generations in last run=', ngen
+                if (ngenr + ngendone .gt. ngenc) call log_warning(' Warning: Max number of generations in last run=', ngen)
                 ngenr = ngenc - ngendone
             end if
             skip_read = ngendone/ifreqdump
             ngen = ngenr/ifreqdump
-            write (6, *) 'previously dumped generations', skip_read
+            call log_info('previously dumped generations', skip_read)
         else
             if (ngenr .eq. 0 .or. ngenr .gt. ngenc) then
-                if (ngenr .gt. ngenc) write (6, *) ' Warning max number of generations =', ngenc
+                if (ngenr .gt. ngenc) call log_warning(' Warning max number of generations =', ngenc)
                 ngenr = ngenc
             end if
 
@@ -1585,20 +1575,20 @@ program readforward
     nrest = ngen - (ng - 1)*nbuf
 
     if (rank .eq. 0) then
-        write (6, *) '***************************************************'
-        write (6, *) '# ions', nion
-        write (6, *) '# electrons', nel
-        write (6, *) '# generations', ngen
-        write (6, *) '# walkers', nw
-        write (6, *) '# datafiles', size_run
-        write (6, *) '# processors', sizep
-        write (6, *) 'population bias correction', nbias
-        write (6, *) 'bin length (bin_length) =', lbin
-        write (6, *) 'initial bin for averages =', ibinit
-        write (6, *) 'forward walking propagation', maxf
-        write (6, *) 'averages computed every', iskip, 'forwarded iterations'
-        write (6, *) 'forwarded iterations written', maxf_r
-        write (6, *) '***************************************************'
+        call log_info('***************************************************')
+        call log_info('# ions', nion)
+        call log_info('# electrons', nel)
+        call log_info('# generations', ngen)
+        call log_info('# walkers', nw)
+        call log_info('# datafiles', size_run)
+        call log_info('# processors', sizep)
+        call log_info('population bias correction', nbias)
+        call log_info('bin length (bin_length) =', lbin)
+        call log_info('initial bin for averages =', ibinit)
+        call log_info('forward walking propagation', maxf)
+        call log_info('averages computed every', iskip, 'forwarded iterations')
+        call log_info('forwarded iterations written', maxf_r)
+        call log_info('***************************************************')
     end if
 
     ! end INITIALIZATION
@@ -1715,17 +1705,17 @@ program readforward
                 !call mpiio_file_create_view(details_SP, jj*nw_per_file,
                 !MPI_REAL)
                 call mpiio_file_create_view(details_SP, SP_block_size, MPI_REAL)
-                if (rank == 0) write (6, *) "details_SP data size per file per iteration", jj*nw_per_file
-                if (rank == 0) write (6, *) "details_SP data size per proc per iteration", SP_block_size
-                if (rank == 0) write (6, *) "details_SP total data size per iteration", jj*nw
+                call log_info("details_SP data size per file per iteration", jj*nw_per_file)
+                call log_info("details_SP data size per proc per iteration", SP_block_size)
+                call log_info("details_SP total data size per iteration", jj*nw)
                 call mpiio_file_reset_view(details_SP)
 
                 buffer_depth = 1048576/(SP_block_size*4)
                 if (buffer_depth > ngen) buffer_depth = ngen
                 if (buffer_depth < 1) buffer_depth = 1
                 call mpi_bcast(buffer_depth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-                if (rank .eq. 0) write (6, *) "mpiio: buffer_depth", buffer_depth
-                if (rank .eq. 0) write (6, *) "mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4
+                call log_info("mpiio: buffer_depth", buffer_depth)
+                call log_info("mpiio: buffer_size (Byte)", buffer_depth*SP_block_size*4)
 
                 allocate (SP_buffer(SP_block_size, buffer_depth))
                 buffer_counter = buffer_depth
@@ -1737,9 +1727,9 @@ program readforward
                 details_DP%disp = disp
                 !call mpiio_file_create_view(details_DP, 1+nw_per_file*4,MPI_DOUBLE_PRECISION)
                 call mpiio_file_create_view(details_DP, DP_block_size, MPI_DOUBLE_PRECISION)
-                if (rank == 0) write (6, *) "details_DP data size per file per iteration", 1 + nw_per_file*2
-                if (rank == 0) write (6, *) "details_DP data size per proc per iteration", DP_block_size
-                if (rank == 0) write (6, *) "details_DP total data size per iteration", (1 + nw_per_file*2)*size_run
+                call log_info("details_DP data size per file per iteration", 1 + nw_per_file*2)
+                call log_info("details_DP data size per proc per iteration", DP_block_size)
+                call log_info("details_DP total data size per iteration", (1 + nw_per_file*2)*size_run)
                 call mpiio_file_reset_view(details_DP)
                 allocate (DP_buffer(DP_block_size, buffer_depth))
             end if
@@ -1747,7 +1737,7 @@ program readforward
             if (buffer_counter == buffer_depth) then
                 if (ngen - (kt - 1)*nbuf - ib + 1 .lt. buffer_depth) then
                     buffer_depth = ngen - (kt - 1)*nbuf - ib + 1
-                    if (rank .eq. 0) write (6, *) "mpiio: last buffer depth", buffer_depth
+                    call log_info("mpiio: last buffer depth", buffer_depth)
                 end if
                 call MPI_File_read_all(details_SP%fp, SP_buffer, SP_block_size*buffer_depth, MPI_REAL, status, ierr)
                 call MPI_File_read_all(details_DP%fp, DP_buffer, DP_block_size*buffer_depth, MPI_DOUBLE_PRECISION, status, ierr)
@@ -2136,7 +2126,7 @@ program readforward
                         shiftlog = logav/countlog
 #endif
 
-                        if (rank .eq. 0) write (6, *) ' Default value of shiftlog =', shiftlog
+                        call log_info(' Default value of shiftlog =', shiftlog)
 
                     end if
                     !        write(6,*) ' ibin here after init =',ibin,logav,countlog
@@ -2235,11 +2225,11 @@ program readforward
 
                             ibin_av = ibin + ibin_start
                             if (rank .eq. 0) then
-                                write (6, *) 'total bin for averaging', ibin_av - ibinit + 1
-                                write (6, *) 'frequency of onsite change', history_change_onsite_s/history_total_s
+                                call log_info('total bin for averaging', ibin_av - ibinit + 1)
+                                call log_info('frequency of onsite change', history_change_onsite_s/history_total_s)
 #ifdef PARALLEL
-                                write (6, *) 'frequency of send change', history_change_send_s/history_total_s
-                                write (6, *) 'frequency of receive change', history_change_rec_s/history_total_s
+                                call log_info('frequency of send change', history_change_send_s/history_total_s)
+                                call log_info('frequency of receive change', history_change_rec_s/history_total_s)
 #endif
                             end if
                             if (longio) then
@@ -2586,7 +2576,7 @@ program readforward
 #else
                         shiftlog = logav/countlog
 #endif
-                        if (rank .eq. 0) write (6, *) ' Default value of shiftlog =', shiftlog
+                        call log_info(' Default value of shiftlog =', shiftlog)
 
                     end if
 
@@ -2684,13 +2674,13 @@ program readforward
                             !         write(6,*) 'bin',ibin
                             ibin_av = ibin + ibin_start
                             if (rank .eq. 0) then
-                                write (6, *) 'total bin for averaging ', ibin_av - ibinit + 1
+                                call log_info('total bin for averaging ', ibin_av - ibinit + 1)
 
                                 if (history_change_onsite_s .ne. 0) then
-                                    write (6, *) 'frequency of onsite change', history_change_onsite_s/history_total_s
+                                    call log_info('frequency of onsite change', history_change_onsite_s/history_total_s)
 #ifdef PARALLEL
-                                    write (6, *) 'frequency of send change', history_change_send_s/history_total_s
-                                    write (6, *) 'frequency of receive change', history_change_rec_s/history_total_s
+                                    call log_info('frequency of send change', history_change_send_s/history_total_s)
+                                    call log_info('frequency of receive change', history_change_rec_s/history_total_s)
 
 #endif
                                 end if
@@ -2698,7 +2688,7 @@ program readforward
 
                             if (longio) then
                                 !DEBUG
-                                if (rankrep .eq. 0) write (*, *) "ebin", ebin(1:3, 1)
+                                call log_info("ebin", ebin(1, 1), ebin(2, 1), ebin(3, 1))
                                 call write_corr_fun(ebin, ebin2, wbin, ibin_av, ibinit &
                                                     , nind_corrfun, maxf_r, ddim, ell, nel, nelup &
                                                     , nrhoind, dxil, ind_offset, psip_for, write_start, ncell, ifrho &
@@ -2757,9 +2747,9 @@ program readforward
         if (rankrep .eq. 0) then
             nmis = ibin_av - ibinit + 1
             if (rank .eq. 0) then
-                write (6, *) 'writing final averages'
-                write (6, *) 'bin length', lbin
-                write (6, *) 'total # bin considered', nmis
+                call log_info('writing final averages')
+                call log_info('bin length', lbin)
+                call log_info('total # bin considered', nmis)
             end if
             !DEBUG
             call write_corr_fun(ebin, ebin2, wbin, ibin_av, ibinit, nind_corrfun, maxf_r, ddim &
@@ -2783,8 +2773,8 @@ program readforward
 #endif
 
             if (rank .eq. 0) then
-                write (6, *) ' Warning use the number below to determine shiftlog input '
-                write (6, *) ' Average log exponent =', (psip_for(1)/psip_for(2))
+                call log_warning(' Warning use the number below to determine shiftlog input ')
+                call log_warning(' Average log exponent =', (psip_for(1)/psip_for(2)))
             end if
 
         end if
@@ -2901,8 +2891,8 @@ program readforward
                 end if
             end if
 
-            if (rank .eq. 0 .and. contraction .ne. 0 .and. lastmol .lt. nelorb_c - ndiff .and. molecular .ne. 0)&
-                        & write (6, *) ' Warning estimated last relevant molecular orbital =', lastmol
+            if (rank .eq. 0 .and. contraction .ne. 0 .and. lastmol .lt. nelorb_c - ndiff .and. molecular .ne. 0) &
+                call log_warning(' Warning estimated last relevant molecular orbital =', lastmol)
 
             if (yesfast .eq. -1) then
 
@@ -2978,7 +2968,7 @@ program readforward
                 end if
             end if
 
-            if (rank .eq. 0) write (6, *) ' Chosen yesfast =', yesfast
+            call log_info(' Chosen yesfast =', yesfast)
 
         end subroutine update_nmolfn
 

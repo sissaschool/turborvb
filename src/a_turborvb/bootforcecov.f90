@@ -18,6 +18,7 @@ subroutine bootforcecov(nbin, efenergy, ndimp, ef, ieskin, eta       &
     !     use allio, only: col_id
     use constants, only: ipc
     use allio, only: normcorr
+    use logger_io, only: log_info
     implicit none
 
     ! *** Does BootStrap to evalute force and its error for each bin
@@ -44,11 +45,8 @@ subroutine bootforcecov(nbin, efenergy, ndimp, ef, ieskin, eta       &
     nsamp_f = dble(nbin)*dble(nproc_f)
     nsamp_c = dble(nbin)*dble(nproc_c)
     if (nsamp_c .le. 1 .or. nsamp_f .le. 1) then
-        if (rank .eq. 0) then
-            write (6, *)                                                     &
-                    &' You should have more than 1 bin to estimate error bars !!!'
-            write (6, *) ' nbin , nproc =', nbin, nproc_c, nproc_f
-        end if
+        call log_info(' You should have more than 1 bin to estimate error bars !!!')
+        call log_info(' nbin , nproc =', nbin, nproc_c, nproc_f)
 #ifdef PARALLEL
         call mpi_finalize(ierr)
 #endif

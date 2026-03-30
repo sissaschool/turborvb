@@ -14,7 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr)
-    !
+    use logger_io, only: log_warning, log_error
     implicit none
     character(3) pseudoname
     integer maxint, lmax, i, j, rank, iflagerr
@@ -419,9 +419,9 @@ subroutine definition(maxint, wintpseudo, lmax, versor, legendre, rank, iflagerr
         versor(3, 50) = -r
 
     elseif (maxint .eq. 0) then
-        if (rank .eq. 0) write (6, *) ' Warning no quadrature points with pseudo '
+        call log_warning(' Warning no quadrature points with pseudo ')
     else
-        if (rank .eq. 0) write (6, *) 'ERROR # of quadrature points non defined!!!'
+        call log_error('ERROR # of quadrature points non defined!!!')
         iflagerr = 1
         return
     end if

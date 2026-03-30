@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program erread
+    use logger_io, only: log_error, log_info
     implicit none
     integer(4) k, kt, i, iread, j, ng, nrest, nbin, npm         &
             &, iskip, icount, ibin, nmis, nbuf, nbufp, iskipr, countread&
@@ -56,7 +57,7 @@ program erread
     iflag = 0
 101 if (iflag .eq. 1) kp_read = 1
 
-    write (6, *) ' max k corrections, bin length, ibinit,iskip  ?'
+    call log_info(' max k corrections, bin length, ibinit,iskip  ?')
     read (5, *) maxk, lbin, ibinitr, iskipr
 
     yes_weight = .false.
@@ -100,7 +101,7 @@ program erread
     yes_read = .false.
     if (lbin .lt. 0) then
         lbin = -lbin
-        write (6, *) ' ngen max read ? '
+        call log_info(' ngen max read ? ')
         read (5, *) iread
         yes_read = .true.
     end if
@@ -122,15 +123,17 @@ program erread
     if (kp_read .gt. nkps) then
         kave_read = (kp_read + nkps - 1)/nkps
         kp_read = kp_read - (kave_read - 1)*nkps
-        write (6, *) ' kp_read kave_read =', kp_read, kave_read
+        call log_info(' kp_read kave_read =', kp_read, kave_read)
     end if
     if (nkps .gt. 1) then
-        write (6, '(2X,A,X,2I5)') ' number of k-points / index read ', nkps, kp_read
+        ! original format: (2X,A,X,2I5)
+        call log_info(' number of k-points / index read ', nkps, kp_read)
         do i = 1, kp_read
             read (37, *)
         end do
         read (37, *) i, kps(:), wkps
-        write (6, '(2X,A,X,4E12.5)') 'kpoint/weight chosen: ', kps(:), wkps
+        ! original format: (2X,A,X,4E12.5)
+        call log_info('kpoint/weight chosen: ', kps(1), kps(2), kps(3), wkps)
     end if
     close (37)
 
@@ -377,7 +380,7 @@ program erread
     ! Calculation error bars
     nmis = ibin - ibinit + 1
     call jack
-    write (6, *) ' number of measures done =', nmis
+    call log_info(' number of measures done =', nmis)
     write (20, *) ' Independent bins ', nmis, 'of length ', lbin
     write (20, *)
     if (iskip .eq. 0 .and. tbra .ne. 0.d0) then
@@ -405,17 +408,17 @@ program erread
 
     !!!!!!!!!!! ERRORS !!!!!!!!!!!
 
-102 write (6, *) 'ERROR: file fort.12 not found or empty!'
+102 call log_error('ERROR: file fort.12 not found or empty!')
     stop
-103 write (6, *) 'ERROR: file fort.12.fn not found or empty!'
+103 call log_error('ERROR: file fort.12.fn not found or empty!')
     stop
-104 write (6, *) 'ERROR: file kp_info.dat not found or empty!'
+104 call log_error('ERROR: file kp_info.dat not found or empty!')
     stop
-106 write (6, *) 'ERROR: k-point index out of bounds!'
+106 call log_error('ERROR: k-point index out of bounds!')
     stop
-107 write (6, *) 'ERROR: number of measures not multiple of number of k-points!'
+107 call log_error('ERROR: number of measures not multiple of number of k-points!')
     stop
-108 write (6, *) 'ERROR: wrong number of bins or k correcting factors!'
+108 call log_error('ERROR: wrong number of bins or k correcting factors!')
     stop
 
 contains

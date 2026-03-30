@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program bootback
+    use logger_io, only: log_info, log_warning
     implicit none
     integer nh, nbinm, nm, nmis, n, nbin, iseed, i, j, jj, k, kmain, nel
     parameter(nh=500, nbinm=100000, nm=1)
@@ -47,10 +48,10 @@ program bootback
     if (nbin .ne. nbinm) then
         nbin = nbin - 1
     else
-        write (6, *) ' Warning maximum number of bins exceeded !!!'
+        call log_warning(' Warning maximum number of bins exceeded !!!')
     end if
 
-    write (6, *) ' number of bins read =', nbin
+    call log_info(' number of bins read =', nbin)
 
     nmis = 200
 
@@ -129,10 +130,10 @@ program bootback
     err = dsqrt(err - eta**2)
 
     if (abs(eta0) .gt. 3*err) then
-        write (6, *) '  Force   =', eta0, err, errerr&
-                &, ' Warning large fluctuation=', abs(eta/err)
+        call log_info('  Force   =', eta0, err, errerr)
+        call log_warning(' Warning large fluctuation=', abs(eta/err))
     else
-        write (6, *) '  Force   =', eta0, err, errerr
+        call log_info('  Force   =', eta0, err, errerr)
     end if
 
     close (11)

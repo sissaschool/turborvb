@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 module mpiio
+    use logger_io, only: log_error, log_info
     implicit none
 
 #ifdef PARALLEL
@@ -57,10 +58,10 @@ contains
 
         call MPI_File_open(myfile%comm, trim(filename), amode, MPI_INFO_NULL, myfile%fp, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            if (myfile%rank .eq. 0) write (6, *) "ERROR: Fail to open file ", trim(filename), " with MPI-IO!"
+            if (myfile%rank .eq. 0) call log_error("ERROR: Fail to open file ", trim(filename), " with MPI-IO!")
             call MPI_Abort(myfile%comm, ierr)
         end if
-        if (myfile%rank .eq. 0) write (6, *) "Successfully open file ", trim(myfile%name), " with MPI-IO!"
+        if (myfile%rank .eq. 0) call log_info("Successfully open file ", trim(myfile%name), " with MPI-IO!")
 
         myfile%view = MPI_DATATYPE_NULL
     end subroutine mpiio_file_open
@@ -75,7 +76,7 @@ contains
 
         call MPI_File_get_position(myfile%fp, myfile%disp, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            if (myfile%rank .eq. 0) write (6, *) "ERROR: Fail to get file pointer position ", trim(myfile%name), " with MPI-IO!"
+            if (myfile%rank .eq. 0) call log_error("ERROR: Fail to get file pointer position ", trim(myfile%name), " with MPI-IO!")
             call MPI_Abort(myfile%comm, ierr)
         end if
         !write(6,*) "my disp", myfile%disp, ", rank ", myfile%rank
@@ -106,13 +107,13 @@ contains
         call MPI_Type_create_struct(3, myfile%array_of_blocklengths, myfile%array_of_displacements, &
                                     myfile%array_of_types, myfile%view, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            write (*, *) 'MPI_Type_create_struct failed'
+            call log_info('MPI_Type_create_struct failed')
             call MPI_Abort(myfile%comm, ierr)
         end if
 
         call MPI_Type_commit(myfile%view, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            write (*, *) 'MPI_Type_myfile%commit failed'
+            call log_info('MPI_Type_commit failed')
             call MPI_Abort(myfile%comm, ierr)
         end if
 
@@ -135,7 +136,7 @@ contains
         zero = 0
         call MPI_File_set_size(myfile%fp, zero, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            write (*, *) 'MPI_FILE_SET_ZERO failed'
+            call log_info('MPI_FILE_SET_ZERO failed')
             call MPI_Abort(myfile%comm, ierr)
         end if
         myfile%disp = zero
@@ -150,7 +151,7 @@ contains
         call MPI_File_set_view(myfile%fp, myfile%disp, myfile%etype, myfile%view, &
                                'native', MPI_INFO_NULL, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            write (*, *) 'MPI_FILE_SET_VIEW failed'
+            call log_info('MPI_FILE_SET_VIEW failed')
             call MPI_Abort(myfile%comm, ierr)
         end if
     end subroutine mpiio_file_reset_view
@@ -164,10 +165,10 @@ contains
         call MPI_Type_free(myfile%view, ierr)
         call MPI_File_close(myfile%fp, ierr)
         if (ierr .ne. MPI_SUCCESS) then
-            write (*, *) 'MPI_FILE_CLOSE failed'
+            call log_info('MPI_FILE_CLOSE failed')
             call MPI_Abort(myfile%comm, ierr)
         end if
-        if (myfile%rank .eq. 0) write (*, *) "Successfully closed file ", trim(myfile%name), " with MPI-IO!"
+        if (myfile%rank .eq. 0) call log_info("Successfully closed file ", trim(myfile%name), " with MPI-IO!")
     end subroutine mpiio_file_close
 
 #else

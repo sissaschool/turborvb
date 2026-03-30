@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program erread
+    use logger_io, only: log_info
     implicit none
     integer(4) ngen, maxk, k, kt, i, j, ng, nrest, nbin, npm         &
             &, iskip, ibinit, icount, ibin, nmis, lbin, nbuf, nbufp, iskipr, countread&
@@ -42,7 +43,7 @@ program erread
     end if
     !    AAA   end lines to be added
 
-    write (6, *) ' max k corrections, bin length, ibinit,iskip  ?'
+    call log_info(' max k corrections, bin length, ibinit,iskip  ?')
     read (5, *) maxk, lbin, ibinit, iskipr
 
     if (iskipr .ge. 0) then
@@ -213,7 +214,7 @@ program erread
     !            calculation error bars
     nmis = ibin - ibinit + 1
     call boot
-    write (6, *) ' number of measures done =', nmis
+    call log_info(' number of measures done =', nmis)
     write (20, *) ' Independent bins ', nmis, 'of length ', lbin
     write (20, *)
     write (20, *) ' Energy , error, derror, # of bias  correcting factor '

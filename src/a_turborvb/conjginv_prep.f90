@@ -16,6 +16,7 @@
 subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, rank&
         &, comm_mpi, comm_raw, comm_col, mat, forza, g, h, psip, maxit, eps, epsdgel, fkav&
         &, x, parcut, eps_umrigar, yes_ontarget)
+    use logger_io, only: log_info, log_warning, log_error
     implicit none
     integer np, npk, i, ii, j, k, nl, npp, nbin, maxit, iter, rank, info, np3, np4         &
             &, npm, ierr, countzero, comm_mpi, kpr, kpc, kp_complex, kpcp, npt, kpp, mini, maxi&
@@ -250,8 +251,7 @@ subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, ra
                 x(i + 1) = 0.d0
             end if
         else
-            if (rank_t .eq. 0 .and. fkav(i) .ne. 0.d0) &
-                    &  write (6, *) ' Warning sr parameter too small !!! '
+            if (fkav(i) .ne. 0.d0) call log_warning(' Warning sr parameter too small !!! ')
             countzero = countzero + 1
             if (i .le. maxi .and. i .ge. mini) then
                 do j = 1, nbin
@@ -279,8 +279,7 @@ subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, ra
             end if
             x(i) = forza(i)/fkav(i)
         else
-            if (rank_t .eq. 0 .and. fkav(i) .ne. 0.d0) &
-                    &  write (6, *) ' Warning sr parameter too small !!! '
+            if (fkav(i) .ne. 0.d0) call log_warning(' Warning sr parameter too small !!! ')
             countzero = countzero + 1
             if (i .ge. mini .and. i .le. maxi) then
                 do j = 1, nbin
@@ -513,8 +512,7 @@ subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, ra
                     error = abs(lambda)*dsqrt(abs(cost))
 #endif
                 else
-                    if (rank .eq. 0)&
-                            & write (6, *) ' ERROR  Non positive  definite matrix !!!', cost
+                    call log_error(' ERROR  Non positive  definite matrix !!!', cost)
 #ifdef PARALLEL
                     call mpi_finalize(ierr)
 #endif
@@ -605,7 +603,7 @@ subroutine conjginv_prep(np, prep, nprepm, kp_complex, symmagp, nbin, rank_t, ra
 
             iter = iter + 1
         end do
-        if (rank .eq. 0) write (6, *) ' Output  cg  iter error   =', iter, error
+        call log_info(' Output  cg  iter error   =', iter, error)
         ! endif countzero
     end if
 #ifdef _OFFLOAD

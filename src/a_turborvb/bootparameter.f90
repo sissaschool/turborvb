@@ -21,6 +21,7 @@ subroutine bootparameter(nbin, efenergy, e, ndimj, ndimp, eta       &
     use allio, only: ndims, ndimsp, ndimjp, ndimiesup, symmagp, yes_hermite, yes_correct, kaverage, lrdmc_der
     !,iesuptrans,iesupr_2&
     !     &,contraction,nozero_c,nelorb_c,jbradet,nnozero_c
+    use logger_io, only: log_info, log_error
     implicit none
 
     ! *** Does BootStrap to evalute force and its error for each bin
@@ -57,13 +58,12 @@ subroutine bootparameter(nbin, efenergy, e, ndimj, ndimp, eta       &
     nsamp = dble(nbin)*dble(nproc)
 
     if (nsamp_c .le. 1 .or. nsamp_f .le. 1 .or. max_par .gt. ndimp .or. min_par .lt. 1) then
-        if (rank .eq. 0 .and. (nsamp_c .le. 1 .or. nsamp_f .le. 1)) then
-            write (6, *)                                                     &
-                    &' You should have more than 1 bin to estimate error bars !!!'
-            write (6, *) ' nbin , nproc_c, nproc_f =', nbin, nproc_c, nproc_f
+        if (nsamp_c .le. 1 .or. nsamp_f .le. 1) then
+            call log_info(' You should have more than 1 bin to estimate error bars !!!')
+            call log_info(' nbin , nproc_c, nproc_f =', nbin, nproc_c, nproc_f)
         end if
         if (max_par .gt. ndimp .or. min_par .lt. 1) then
-            if (rank .eq. 0) write (6, *) 'ERROR outside range 1<= # <= ndimp'
+            call log_error('ERROR outside range 1<= # <= ndimp')
         end if
 #ifdef PARALLEL
         call mpi_finalize(ierr)

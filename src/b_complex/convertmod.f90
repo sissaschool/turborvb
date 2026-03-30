@@ -15,6 +15,7 @@
 
 module convertmod
     use allio
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
     real(dp), allocatable, dimension(:, :) :: overs
     integer nummol, nmolmatdo
@@ -782,16 +783,14 @@ contains
                     allocate (agp_kp(nk))
                     if (rankrep .eq. 0) call mpi_gather(overlapsquare, 1, MPI_DOUBLE_PRECISION, agp_kp,&
                         &1, MPI_DOUBLE_PRECISION, 0, commcolrep_mpi, ierr)
-                    if (rank .eq. 0) then
-                        do ii = 1, nk
-                            write (6, *) ' K#/Overlap square  ', ii, agp_kp(ii)
-                            if (agp_kp(ii) .lt. 0.99999) write (6, *) ' ERROR Overlap K=', ii
-                        end do
-                    end if
+                    do ii = 1, nk
+                        call log_error(' K#/Overlap square  ', ii, agp_kp(ii))
+                        if (agp_kp(ii) .lt. 0.99999) call log_error(' ERROR Overlap K=', ii)
+                    end do
                     deallocate (agp_kp)
 #endif
                 else
-                    if (rank .eq. 0) write (6, *) ' Overlap square atomic vs molec =', overlapsquare
+                    call log_info(' Overlap square atomic vs molec =', overlapsquare)
                 end if
 
                 if (ipc .eq. 1) then
@@ -877,17 +876,15 @@ contains
                             call mpi_gather(imin, 1, MPI_INTEGER, imin_kp,&
                                  &1, MPI_INTEGER, 0, commcolrep_mpi, ierr)
                         end if
-                        if (rank .eq. 0) then
-                            do ii = 1, nk
-                                write (6, *) ' K#/ Min Overlap square unpaired   ', ii, imin_kp(ii), agp_kp(ii)
-                                if (agp_kp(ii) .lt. 0.99999) write (6, *) ' ERROR Overlap K=', ii
-                            end do
-                        end if
+                        do ii = 1, nk
+                            call log_error(' K#/ Min Overlap square unpaired   ', ii, imin_kp(ii), agp_kp(ii))
+                            if (agp_kp(ii) .lt. 0.99999) call log_error(' ERROR Overlap K=', ii)
+                        end do
                         deallocate (agp_kp, imin_kp)
 #endif
                     else
 
-                        if (rank .eq. 0) write (6, *) 'Minimum Overlap unpaired=', imin, cost
+                        call log_info('Minimum Overlap unpaired=', imin, cost)
 
                     end if
 
@@ -897,8 +894,7 @@ contains
                 if (.not. symmagp .or. ipc .eq. 2 .or. ipf .eq. 2) deallocate (mats)
 
             elseif (detc_proj) then
-                if (rank .eq. 0) write (6, *) ' Warning atomic orbitals found assuming&
-                        & molecular  empty', nelorb_c, nelorb_diag
+                call log_warning(' Warning atomic orbitals found assuming molecular  empty', nelorb_c, nelorb_diag)
                 sumdet = 0.d0
                 do i = nelorb_at + 1, nelorb_c
                     do j = ipc*nelorb_at + 1, ipc*nelorb_c
@@ -906,7 +902,7 @@ contains
                     end do
                 end do
                 if (sumdet .ne. 0.d0) then
-                    if (rankopt .eq. 0) write (6, *) ' ERROR molecular not empty ', rank
+                    if (rankopt .eq. 0) call log_error(' ERROR molecular not empty ', rank)
 #ifdef PARALLEL
                     call mpi_finalize(ierr)
 #endif
@@ -936,13 +932,9 @@ contains
                 else
 
                     if (i .le. nelorb_at) then
-                        if (rank .eq. 0) then
-                            write (6, *) ' Warning atomic contracted #', i, ' singular norm ', overs(ipc*(i - 1) + 1, i)
-                        end if
+                        call log_warning(' Warning atomic contracted #', i, ' singular norm ', overs(ipc*(i - 1) + 1, i))
                     elseif (i .gt. nelorb_at .and. i .le. nelorb_at + nmolmax) then
-                        if (rank .eq. 0) then
-                            write (6, *) ' Warning molecular orbital  #', i, ' zero or singular ', overs(ipc*(i - 1) + 1, i)
-                        end if
+                        call log_warning(' Warning molecular orbital  #', i, ' zero or singular ', overs(ipc*(i - 1) + 1, i))
                     end if
                     contrnorm(i) = 0.d0
                 end if
@@ -962,20 +954,24 @@ contains
                 oversl(ipc*(i - nelorb_diag + ipf*nelorbh - 1) + 1, i) = 1.d0
             end do
 
-            if (printoverlap .and. rank .eq. 0) then
-                write (6, *) ' Overlap matrix ', nmoltot, nmolmax, nmol
+            if (printoverlap) then
+                call log_info(' Overlap matrix ', nmoltot, nmolmax, nmol)
                 do i = 1, nelorb_diagu
                     do j = i, nelorb_diagu
-                        write (6, *) i, j, overs(ipc*(i - 1) + 1:ipc*i, j)
+                        do kk=ipc*(i - 1) + 1, ipc*i
+                            call log_info(i, j, overs(kk, j))
+                        end do
                     end do
                 end do
-                write (6, *) ' Diagonal part '
+                call log_info(' Diagonal part ')
                 do i = 1, nelorb_diagu
-                    write (6, *) i, overs(ipc*(i - 1) + 1:ipc*i, i)
+                    do kk=ipc*(i - 1) + 1, ipc*i
+                       call log_info(i, overs(kk, i))
+                    end do
                 end do
             end if
 
-            if (rank .eq. 0.) write (6, *) ' Eigenvalue det 1 '
+            call log_info(' Eigenvalue det 1 ')
 
             if (ndiff .eq. 0 .or. npar_eagp .gt. 0) then
 
@@ -1049,17 +1045,17 @@ contains
 
                 if (printoverlap .and. rank .eq. 0) then
                     if (ipf .eq. 2 .or. (ipc .eq. 1 .and. symmagp)) then
-                        write (6, *) ' Molecular orbitals in the contracted basis '
+                        call log_info(' Molecular orbitals in the contracted basis ')
                         do i = 1, nelorb_diagu
-                            write (6, *) ' Eigenvalue = ', i, eigmol((i - 1)/ipf + 1)
+                            call log_info(' Eigenvalue = ', i, eigmol((i - 1)/ipf + 1))
                             do j = 1, nelorb_diagu
                                 write (6, *) j, overs(ipc*(j - 1) + 1:ipc*j, i)
                             end do
                         end do
                     else
-                        write (6, *) ' Left/right  Molecular orbitals in the contracted basis '
+                        call log_info(' Left/right  Molecular orbitals in the contracted basis ')
                         do i = 1, nelorb_diag
-                            write (6, *) ' Eigenvalue = ', eigmol(i)
+                            call log_info(' Eigenvalue = ', eigmol(i))
                             do j = 1, nelorb_diag
                                 write (6, *) j, overs(ipc*(j - 1) + 1:ipc*j, i), overs(ipc*(j - 1) + 1:ipc*j, i + nelorb_diag)
                             end do
@@ -1262,7 +1258,7 @@ contains
                         eigmol(nelorb_diag - nmol - ndiff + i) = 0.d0
 
                     else
-                        if (rank .eq. 0) write (6, *) ' ERROR too many molecular orbitals, pls. decrease nmol  !!! '
+                        call log_error(' ERROR too many molecular orbitals, pls. decrease nmol  !!! ')
 #ifdef  PARALLEL
                         call mpi_finalize(ierr)
 #endif
@@ -1859,7 +1855,7 @@ contains
 
         timechange = cclock() - timechange
 
-        if (rank .eq. 0) write (6, *) ' Time change fort.10 =', timechange
+        call log_info(' Time change fort.10 =', timechange)
         !!  TEST
         !!  From real to effective
         !    if(rank.eq.0) write(6,*) ' before attach ',nelorb_c,2*nnozero_c,size(dsw),size(psip),size(ipsip)
@@ -2255,7 +2251,7 @@ contains
                    &1, MPI_DOUBLE_PRECISION, 0, commcolrep_mpi, ierr)
 #endif
                 else
-                    if (rank .eq. 0) write (6, *) ' before  symmetrize agp sum rule= ', cost
+                    call log_info(' before  symmetrize agp sum rule= ', cost)
                 end if
 
                 !   dsw can be used as is recomputed outside
@@ -2293,17 +2289,15 @@ contains
                     if (rank .eq. 0) then
                     do ii = 1, nk
                     if (abs((agpo_kp(ii) - agp_kp(ii))/agpo_kp(ii)) .gt. 1d-6) then
-                        write (6, *) ' ERROR agp symmetrize in momentum K= before/after'&
-                        &, ii, agpo_kp(ii), agp_kp(ii)
+                        call log_error(' ERROR agp symmetrize in momentum K= before/after', ii, agpo_kp(ii), agp_kp(ii))
                     end if
                     end do
-                    write (6, *) ' after symmetrize agp relative error='&
-                  &, sum(abs(agpo_kp(:) - agp_kp(:)))/sum(abs(agpo_kp(:)))
+                    call log_error(' after symmetrize agp relative error=', sum(abs(agpo_kp(:) - agp_kp(:)))/sum(abs(agpo_kp(:))))
                     end if
                     deallocate (agp_kp, agpo_kp)
 #endif
                 else
-                    if (rank .eq. 0) write (6, *) ' after  symmetrize agp sum rule= ', cost
+                    call log_info(' after  symmetrize agp sum rule= ', cost)
                 end if
 
                 do i = 1, nelorb_at
@@ -2327,7 +2321,7 @@ contains
         end if ! endif yesmin (basically always)
 
         if (ndiff .eq. 0) then
-            if (rank .eq. 0) write (6, *) ' Eigenvalue det 2 '
+            call log_info(' Eigenvalue det 2 ')
             call eval_molec_epsdgel(nelorb_at, overs, detmat_c, molecorb_c&
                     &, eigmol, nelorb_at, epsdgm, nprocu, rank, rankopt, commopt_mpi, 1, symmagp)
 
@@ -2418,7 +2412,7 @@ contains
 #endif
 
                 if (info .ne. 0) then
-                    if (rank .eq. 0) write (6, *) ' Error dependency in unpaired orbitals ', info
+                    call log_error(' Error dependency in unpaired orbitals ', info)
 #ifdef PARALLEL
                     call mpi_finalize(ierr)
 #endif
@@ -2693,7 +2687,7 @@ contains
         if (allocated(buffer)) deallocate (buffer)
         if (allocated(buffer_c)) deallocate (buffer_c)
 
-        if (rank .eq. 0) write (6, *) ' Time change fort.10 =', cclock() - timechange
+        call log_info(' Time change fort.10 =', cclock() - timechange)
         LBox = LBox_sav
 
     end subroutine convertmol_c
@@ -2724,7 +2718,7 @@ contains
 
         call shift_originref
 
-        if (.not. iespbc .and. rank .eq. 0) write (6, *) ' Updated Center of mesh =', rion_ref(:)
+        if (.not. iespbc) call log_info(' Updated Center of mesh =', rion_ref(1), rion_ref(2), rion_ref(3))
 
         x = 0.d0
 
@@ -2846,7 +2840,7 @@ contains
         !       Input wheremol(1:nummol),nummol
 
         if (rank .eq. 0) then
-            write (6, *) ' Overlap matrix between molecular orbitals  '
+            call log_info(' Overlap matrix between molecular orbitals  ')
             do i = 1, nummol
                 do j = i, nummol
                     write (6, *) i, wheremol(i), j, wheremol(j), overs(ipc*(wheremol(i) - 1) + 1:&

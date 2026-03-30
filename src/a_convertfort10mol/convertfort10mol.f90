@@ -19,6 +19,7 @@ program convertfort10mol
     use convertmod
     use allio
     use sub_comm
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
     implicit none
     logical yesbig
     integer rankn, nprocn, ithread, comm_mpi, j, i
@@ -62,6 +63,8 @@ program convertfort10mol
     end if
     !    AAA   end lines to be added
 #endif
+    ! configure logger so that only rank 0 outputs (rankn is the MPI rank)
+    call logger_config(rank=rankn)
     ! output version information
     if (rankn .eq. 0) call print_version
 
@@ -71,7 +74,7 @@ program convertfort10mol
 
     if (rankn .eq. 0) then
 
-        write (*, *) " * * * READ fort.10 and COMPUTE molecular orbitals * * * "
+        call log_info(" * * * READ fort.10 and COMPUTE molecular orbitals * * * ")
 
         open (unit=10, file='fort.10_in', form='formatted', status='unknown')
 
@@ -101,7 +104,7 @@ program convertfort10mol
         add_offmol = .false.
         read (5, nml=control, err=115)
         iflagerr = 0
-115     if (iflagerr .ne. 0) write (6, *) ' ERROR reading control !!! '
+115     if (iflagerr .ne. 0) call log_error(' ERROR reading control !!! ')
 
         if (epsdgm .ge. 0.d0) then
             if (nelorb .lt. 2000) then
@@ -127,9 +130,9 @@ program convertfort10mol
             iflagerr = 1
             read (5, nml=mesh_info, err=116)
             iflagerr = 0
-116         if (iflagerr .ne. 0) write (6, *) ' ERROR reading mesh_info !!! '
+116         if (iflagerr .ne. 0) call log_error(' ERROR reading mesh_info !!! ')
             if (nx .eq. 0) then
-                write (6, *) ' The number of mesh point is zero !!! ', nx, ny, nz
+                call log_error(' The number of mesh point is zero !!! ', nx, ny, nz)
                 stop
             end if
             if (ny .eq. 0) ny = nx
@@ -165,7 +168,7 @@ program convertfort10mol
     call mpi_bcast(shiftz, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 #endif
     if (add_offmol .and. .not. only_molecular) then
-        if (rank .eq. 0) write (6, *) ' Warning add_offmol works only with only_molecular on,  set to .true.  '
+        call log_warning(' Warning add_offmol works only with only_molecular on,  set to .true.  ')
         only_molecular = .true.
     end if
 
@@ -187,18 +190,17 @@ program convertfort10mol
     call read_pseudo
     call read_fort10(10)
     ! ----------------------
-    if (allowed_averagek .and. rank .eq. 0) write (6, *) ' Warning attaching flux to det !!! '
+    if (allowed_averagek) call log_warning(' Warning attaching flux to det !!! ')
 
-    if (rank .eq. 0 .and. nelorb_c .lt. 100) then
-        write (6, *) ' Read matrix detmat_c ', nelorb_c, nelorbh, sum(abs(detmat_c(:)))
+    if (nelorb_c .lt. 100) then
+        call log_info(' Read matrix detmat_c ', nelorb_c, nelorbh, sum(abs(detmat_c(:))))
         if (contraction .eq. 0) then
             do i = 1, nelorb_c
                 do j = i, nelorb_c
                     if (ipc .eq. 1) then
-                        write (6, *) i, j, detmat(nelorb_c*(j - 1) + i)
+                        call log_info(i, j, detmat(nelorb_c*(j - 1) + i))
                     else
-                        write (6, *) i, j, detmat(ipc*nelorb_c*(j - 1) + 2*i - 1), &
-                            detmat(ipc*nelorb_c*(j - 1) + 2*i)
+                        call log_info(i, j, detmat(ipc*nelorb_c*(j - 1) + 2*i - 1), detmat(ipc*nelorb_c*(j - 1) + 2*i))
                     end if
                 end do
             end do
@@ -206,10 +208,9 @@ program convertfort10mol
             do i = 1, nelorb_c
                 do j = i, nelorb_c
                     if (ipc .eq. 1) then
-                        write (6, *) i, j, detmat_c(nelorb_c*(j - 1) + i)
+                        call log_info(i, j, detmat_c(nelorb_c*(j - 1) + i))
                     else
-                        write (6, *) i, j, detmat_c(ipc*nelorb_c*(j - 1) + 2*i - 1), &
-                            detmat_c(ipc*nelorb_c*(j - 1) + 2*i)
+                        call log_info(i, j, detmat_c(ipc*nelorb_c*(j - 1) + 2*i - 1), detmat_c(ipc*nelorb_c*(j - 1) + 2*i))
                     end if
                     !write(6,*) i,j,detmat_c(ipc*nelorb_c*(j-1)+2*i-1:ipc*nelorb_c*(j-1)+2*i)
                 end do
@@ -224,7 +225,7 @@ program convertfort10mol
             iscramax = nelorbh*ipf*nelcol_c
             allocate (psip(iscramax))
         end if
-        if (rank .eq. 0) write (6, *) ' Warning recomputing detmat '
+        call log_warning(' Warning recomputing detmat ')
         yesfast = 0
         if (allocated(detmat)) deallocate (detmat)
         allocate (detmat(nelorbh*ipf*nelcolh))
@@ -238,12 +239,12 @@ program convertfort10mol
         ax = cellscale(1)/nx
         ay = cellscale(2)/ny
         az = cellscale(3)/nz
-        if (rank .eq. 0) write (6, *) ' lattice mesh chosen ', ax, ay, az, Lbox
+        call log_info(' lattice mesh chosen ', ax, ay, az, Lbox)
     else
-        if (rank .eq. 0) write (6, *) ' lattice mesh ax,ay,az '
+        call log_info(' lattice mesh ax,ay,az ')
         if (ay .eq. 0.d0) ay = ax
         if (az .eq. 0.d0) az = ay
-        if (rank .eq. 0) write (6, *) ax, ay, az
+        call log_info(ax, ay, az)
     end if
     !
     if (rank .eq. 0) then
@@ -260,7 +261,7 @@ program convertfort10mol
         if (nmolmax .eq. 0) nmolmax = nmol
         if (nmol .lt. nmolmax) then
             nmol = nmolmax
-            write (6, *) ' Warning nmol>= nmolmax, changed nmol=nmolmax', nmol
+            call log_warning(' Warning nmol>= nmolmax, changed nmol=nmolmax', nmol)
         end if
         if (nmolmin .eq. 0 .and. nmol .gt. 0) nmolmin = 1
     end if
@@ -274,23 +275,23 @@ program convertfort10mol
 #endif
 
     if (nmol .lt. neldo) then
-        if (rank .eq. 0) write (6, *) ' Warning nmol>=neldo , changed to ', neldo
+        call log_warning(' Warning nmol>=neldo , changed to ', neldo)
         nmol = neldo
         nmolmax = nmol
         nmolmin = nmol
     end if
     if (nmolmax .lt. neldo) then
-        if (rank .eq. 0) write (6, *) ' Warning nmolmax>=neldo , changed to ', neldo
+        call log_warning(' Warning nmolmax>=neldo , changed to ', neldo)
         nmolmax = neldo
         nmolmin = neldo
     end if
     if (nmolmin .eq. 0) then
-        if (rank .eq. 0) write (6, *) ' Default value of nmolmin= ', neldo
+        call log_info(' Default value of nmolmin= ', neldo)
         nmolmin = neldo
     end if
     nmolmaxw = nmolmax
 
-    if (rank .eq. 0) write (6, *) ' Chosen nmolmin nmolmax =', nmolmin, nmolmax
+    call log_info(' Chosen nmolmin nmolmax =', nmolmin, nmolmax)
 #ifdef _OFFLOAD
 !$omp target data map(to:mu_c)
 #endif

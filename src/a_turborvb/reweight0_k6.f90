@@ -40,6 +40,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
             &, maxiter_changeparr, prep, comm_raw, comm_col, rankcol, rankraw, beta_learning&
             &, eps_umrigar, max_targetsr, scale_grad, norm_corr, change_tpar, yes_dgelscut, nproc_diag
     use scal_lins
+    use logger_io, only: log_error, log_warning, log_info, log_debug
     implicit none
     integer Nw, nion, nwr, np, npp, nps, npps, npsr, i, j, ipip(*), k, info, k_par       &
             &, ncg, npm, iweight, iflagerr, iesconv, kk, kkk                        &
@@ -187,10 +188,10 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                 stepcg = stepcg + 1
             elseif (stepcg .gt. ncg) then
                 stepcg = ncg
-                if (rank .eq. 0) write (6, *) ' Warning setting ncg steps = ncg', ncg
+                call log_warning(' Warning setting ncg steps = ncg', ncg)
             end if
 
-            if (rank .eq. 0) write (6, *) ' Number of cg steps=', stepcg
+            call log_info(' Number of cg steps=', stepcg)
 
             ind = ncg
             indmin = ind
@@ -236,11 +237,11 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     !
 
                     if (cost .lt. parcutmin) then
-                        if (rank .eq. 0) write (6, *) ' disregarded coll =', kk, cost
+                        call log_info(' disregarded coll =', kk, cost)
                         ! disregard this collective parameter
                         ipip(n3 + kk - 1) = -1
                     else
-                        if (cost .ne. 0.d0 .and. rank .eq. 0) write (6, *) ' collective =', kk, cost
+                        if (cost .ne. 0.d0) call log_info(' collective =', kk, cost)
                     end if
                     ! endif rank=0
                     !                endif
@@ -248,7 +249,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                 end do
                 !!      if(idyn.ge.2.and.ieskin2.gt.0) then
 
-                if (rank .eq. 0) write (6, *) ' devmax force = ', devinv
+                call log_info(' devmax force = ', devinv)
                 ! endif  devinv
             end if
 
@@ -333,7 +334,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
             if (ind - indmin .eq. 0 .and. indmin .eq. 0) then
                 !        take at least one parameter
-                if (rank .eq. 0) write (6, *) ' Warning I take at least one parameter '
+                call log_warning(' Warning I take at least one parameter ')
                 i = ipip(n4 + npk - 1)
                 if (err(i) .ne. 0.d0) then
                     cost = abs(forza(i)/err(i))
@@ -342,19 +343,19 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     psip(ind) = err(i)**2
                     psip(n2 + ind - 1) = psip(n3 + i - 1)
                 else
-                    if (rank .eq. 0) write (6, *) ' There should be some error !!! '
+                    call log_error(' There should be some error !!! ')
                     errnoise = 10
                 end if
             end if
 
             numpar = ind
-            if (rank .eq. 0) write (6, *) ' Normal parameters considered ', ind - indmin
+            call log_info(' Normal parameters considered ', ind - indmin)
             !        nbinmax-ncg=npbra= Max  # Normal parameters  input unchanged
 
             !        if(ind.eq.indmax) write(6,*)
             !    1' Warning increase nbin or parcutmin !!! '
             do i = indmin + 1, ind
-                if (rank .eq. 0) write (6, *) i - indmin, ipip(n3 + i - 1)
+                call log_info(i - indmin, ipip(n3 + i - 1))
             end do
 
             devmaxp = 0.d0
@@ -368,7 +369,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         end if
                     end if
                 end do
-                if (rank .eq. 0) write (6, *) ' devmax par ions  =', devmaxp, jmax
+                call log_info(' devmax par ions  =', devmaxp, jmax)
             end if
 
             devmaxc = devmaxp
@@ -393,10 +394,9 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #endif
 
 #ifdef _DEBUG
-            if (rank .eq. 0) write (6, *) ' i_max / force / error / deviation: ', &
-                jmax, forza(jmax), err(jmax), forza(jmax)/cost
+            call log_debug(' i_max / force / error / deviation: ', jmax, forza(jmax), err(jmax), forza(jmax)/cost)
 #endif
-            if (rank .eq. 0) write (6, *) ' devmax par Normal   =', devmaxp, jmax, iesconv
+            call log_info(' devmax par Normal   =', devmaxp, jmax, iesconv)
             !             devmaxp=max(devmaxp,devmaxc)
 
             !         Replace the vector forza with the sorted ones in the order chosen.
@@ -453,11 +453,11 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     iesconv = iesconv + 1
                 else
                     iesconv = 0
-                    if (rank .eq. 0) write (6, *) ' Warning reinitializing iesconv'
+                    call log_warning(' Warning reinitializing iesconv')
                 end if
                 if (iesconv .ge. maxiter_changeparr .and. maxiter_changeparr .gt. 0&
                         &.and. change_parr .and. cut .lt. parr_min*1.0000001d0) then
-                    if (rank .eq. 0) write (6, *) ' Wanderful Warning:  Optimization converged !!!'
+                    call log_warning(' Wanderful Warning:  Optimization converged !!!')
                     ngentry = -5
                 end if
                 if (iesconv .ge. 3 .and. change_parr .and. iesdelay .ge. delay_changeparr) then
@@ -472,13 +472,13 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     end if
                 end if
                 if (rank .eq. 0 .and. abs(parr) .lt. cut) then
-                    write (6, *) ' New decreased parr =', abs(parr)
+                    call log_info(' New decreased parr =', abs(parr))
                     iesconv = 0
                 end if
             elseif (devmaxc .ne. 0) then
                 if (iesconv .gt. 0) then
                     iesconv = 0
-                    if (rank .eq. 0) write (6, *) ' Warning reinitializing iesconv'
+                    call log_warning(' Warning reinitializing iesconv')
                 elseif (devmaxc .gt. dble(parcutpar + 3)) then
                     iesconv = iesconv - 1
                 end if
@@ -494,7 +494,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     end if
                 end if
                 if (rank .eq. 0 .and. abs(parr) .gt. cut) then
-                    write (6, *) ' New increased parr =', abs(parr)
+                    call log_info(' New increased parr =', abs(parr))
                     iesconv = 0
                 end if
             end if
@@ -557,7 +557,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                             nprocm = ku_ionp/block
                         end if
                         if (ipc .eq. 2 .and. srcomplex .and. mod(block, 2) .ne. 0 .and. block .ne. ku_ionp) then
-                            if (rank .eq. 0) write (6, *) ' Warning block even in this case !!! '
+                            call log_warning(' Warning block even in this case !!! ')
                             block = block + 1 !even blocking
                             nprocm = ku_ionp/block
                         end if
@@ -567,7 +567,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                             nprocm = nprocm - 1
                         end if
                         if (k6gen .and. nprocm .gt. nproc_ortho) then
-                            if (rank .eq. 0) write (6, *) ' Warning # processors changed for k6gen on pool! '
+                            call log_warning(' Warning # processors changed for k6gen on pool! ')
                             block = max(ku_ionp/nproc_ortho, 1)
                             if (block*nproc_ortho .ne. ku_ionp) block = block + 1
                             if (ipc .eq. 2 .and. mod(block, 2) .eq. 1) block = block + 1 ! in the complex case always even
@@ -763,10 +763,8 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                             skdiag(i) = 0.d0
                         end if
                     end do
-                    if (rank .eq. 0) then
-                        write (6, *) ' loading time  ', cclock() - time
-                        time = cclock()
-                    end if
+                    call log_info(' loading time  ', cclock() - time)
+                    time = cclock()
 !        Save known term.
                     psip(n4:n4 + ku_ion - 1) = psip(1:ku_ion)
                     if (nprocm .gt. 0) then
@@ -826,10 +824,8 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                 if (skdiag(j) .gt. maxsr*parcut2 .or. yes_umrigar) then
                                     skdiag(j) = dsqrt(skdiag(j) + eps_umrigar)
                                 else
-                                    if(rank.eq.0.and.allowed_par(index(j))&
-                                        & .and..not.yes_umrigar) write(6,*)&
-                                        & ' Warning sr parameter too small !!!'&
-                                        & ,index(j),skdiag(j)
+                                    if (allowed_par(index(j)) .and. .not. yes_umrigar) &
+                                        call log_warning(' Warning sr parameter too small !!!', index(j), skdiag(j))
                                     if (yes_umrigar .and. allowed_par(index(j))) then
                                         skdiag(j) = dsqrt(maxsr*parcut2)
                                     else
@@ -883,7 +879,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 !         if(rank.eq.0) write(6,*) ' Sum matrix elements  before input k6gen ',cost,sum(psip(1:ku_ion))
 !       write(6,*) ' Solution before ',rank,sum(psip(1:ku_ion)),sum(psip(1:601)),sum(psip(602:1202))
 
-                            if (rank .eq. 0) write (6, *) ' Parallel linear system Blacs k6gen=true '
+                            call log_info(' Parallel linear system Blacs k6gen=true ')
 
 !      call mpi_finalize(ierr)
 !      stop
@@ -974,17 +970,17 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                     end do
                                 end do
 
-                                write (6, *) ' Check symmetry =', cost
+                                call log_info(' Check symmetry =', cost)
                                 call dsyev('V', 'L', ku_ion, sr, ku_ionp, psip, psip(n2), 3*ku_ion, info)
-                                write (6, *) ' diagonal part '
+                                call log_info(' diagonal part ')
                                 do i = 1, ku_ion
                                 if (psip(i) .le. 0.) then
-                                    write (6, *) ' ERROR negative eigenvalue '
+                                    call log_error(' ERROR negative eigenvalue ')
                                 end if
-                                write (6, *) i, psip(i)
+                                call log_info(i, psip(i))
                                 end do
                             end if
-                            if (rank .eq. 0) write (6, *) ' Everything works ! '
+                            call log_info(' Everything works ! ')
 #ifdef PARALLEL
                             call mpi_finalize(ierr)
 #endif
@@ -1005,8 +1001,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                         sr(ku_ionp*(i - 1) + i) = sr(ku_ionp*(i - 1) + i)*(1.d0 + cost)
                                     end if
                                 else
-                                    if (rank .eq. 0 .and. allowed_par(ii)) write (6, *) ' Warning sr parameter too small !!!'&
-                                  &, index(i), forza_sav(index(i)), sr(ku_ionp*(i - 1) + i)
+                                    if (allowed_par(ii)) call log_warning(' Warning sr parameter too small !!!', index(i), forza_sav(index(i)), sr(ku_ionp*(i - 1) + i))
                                     psip(i) = 0.d0
                                     do j = 1, ku_ion
                                         sr(ku_ionp*(i - 1) + j) = 0.d0
@@ -1041,7 +1036,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 !        endif
 !       Choleski decomposition
                         if (abs(klr) .eq. 2) then
-                            if (rank .eq. 0) write (6, *) ' Warning steepest descend '
+                            call log_warning(' Warning steepest descend ')
                         else
                             call dpotrf('L', ku_ion, sr, ku_ionp, info)
                             call dpotrs('L', ku_ion, 1, sr, ku_ionp, psip, ku_ion, info)
@@ -1061,10 +1056,8 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                     end if
 
-                    if (rank .eq. 0) then
-                        time = cclock() - time
-                        write (6, *) ' Time inverse Conjugate  Gradients =', time
-                    end if
+                    time = cclock() - time
+                    call log_info(' Time inverse Conjugate  Gradients =', time)
 !         if(rank.eq.0) write(6,*) ' Output reduce '
                     if (sum(abs(reduce(1, 1:npr))) .eq. 0.d0) then
                         beta_used = 0.d0
@@ -1091,7 +1084,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #endif
 
 #else
-                    write (6, *) ' loading time  ', cclock() - time
+                    call log_info(' loading time  ', cclock() - time)
                     !        normalization matrix sr
                     !        write(6,*) ' Normalization const =',sr(npsr)
                     cost = 1.d0/sr(npsr)
@@ -1188,7 +1181,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                     time = cclock() - time
 
-                    write (6, *) ' Inverse time kl=6 ', time
+                    call log_info(' Inverse time kl=6 ', time)
                     if (sum(abs(reduce(1, 1:npr))) .eq. 0.d0) then
                         beta_used = 0.d0
                     else
@@ -1365,17 +1358,15 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     end do
                     cost = cut
                     psip(n4:n4 + ku_ion - 1) = psip(1:ku_ion)
-                    if (rank .eq. 0) then
-                        write (6, *) ' loading time  ', cclock() - time
-                        time = cclock()
-                    end if
+                    call log_info(' loading time  ', cclock() - time)
+                    time = cclock()
                     yes_targetprep = .false.
 #ifdef   PARALLEL
                     if (prep .gt. 0) then
                         allocate (mat_prep(nprepm, dimmat*prep), mat_buf(nprepm, dimmat))
 #ifdef _OFFLOAD
                         if (nprepm*dimmat*prep .gt. max_targetsr) yes_targetprep = .true.
-                        if (rank .eq. 0 .and. yes_targetprep) write (6, *) 'Warning SR inversion with GPU'
+                        if (yes_targetprep) call log_warning('Warning SR inversion with GPU')
 #endif
                         mat_prep = 0.d0
                         mat_buf = 0.d0
@@ -1394,14 +1385,14 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                            &, nprepm*dimmat, MPI_DOUBLE_PRECISION, i, comm_raw, ierr)
                         end do
 
-                        if (rank .eq. 0) write (6, *) ' Time reshuff matrix =', cclock() - timep
+                        call log_info(' Time reshuff matrix =', cclock() - timep)
 
                         timep = cclock()
                         call conjginv_prep(ku_ion, prep, nprepm, kp_complex, symmagp, dimmat*prep, rank&
                          &, ranksr, commsr_mpi, comm_raw, comm_col, mat_prep, psip, v1, v2, v4, maxit, tolcg&
                          &, cost, skdiag, v3, parcut, eps_umrigar, yes_targetprep)
 
-                        if (rank .eq. 0) write (6, *) ' Time conjugate grad new =', cclock() - timep
+                        call log_info(' Time conjugate grad new =', cclock() - timep)
                         deallocate (mat_prep, mat_buf)
 
                     else
@@ -1427,10 +1418,8 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         end if
                     end if
 
-                    if (rank .eq. 0) then
-                        time = cclock() - time
-                        write (6, *) ' Time inverse Conjugate  Gradients =', time
-                    end if
+                    time = cclock() - time
+                    call log_info(' Time inverse Conjugate  Gradients =', time)
 
                     if (sum(abs(reduce(1, 1:npr))) .eq. 0.d0) then
                         beta_used = 0.d0
@@ -1502,7 +1491,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #endif
                 if (rank .eq. 0 .and. ncg .gt. 0 .and. cost .gt. 0.) then
                     cost0 = ddot(npr, reduce, ncg, forza_sav, 1)
-                    write (6, *) ' devmax SR step =', abs(cost0/dsqrt(cost))
+                    call log_info(' devmax SR step =', abs(cost0/dsqrt(cost)))
                 end if
 
             end if
@@ -1786,7 +1775,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                 end if
 #endif
                 time_load = cclock() - time_load
-                if (rank .eq. 0) write (6, *) ' Loading matrices linear method =', time_load
+                call log_info(' Loading matrices linear method =', time_load)
                 do i = 1, nps
                     indscali = ipip(n3 + i - 1)
                     if (indscali .eq. 0) then
@@ -1938,7 +1927,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     call dsyev('V', 'L', indi, sov(1, 1, 4), npm, psip, psip(n2), lwork, info)
                 end if
                 if (info .ne. 0) then
-                    if (rank .eq. 0) write (6, *) ' Error in lapack dsyev !!! ', rankopt
+                    call log_error(' Error in lapack dsyev !!! ', rankopt)
 
                     !       stop
                     !#ifdef PARALLEL
@@ -1962,7 +1951,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                         end do
                         indj = indi
                     else
-                        if (rank .eq. 0) write (6, *) ' Lowest/largest eig SR mat =', psip(1), psip(indi)
+                        call log_info(' Lowest/largest eig SR mat =', psip(1), psip(indi))
                         indj = indi
                         indi = 0
                         do i = 1, indj
@@ -1973,7 +1962,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                                 call dscal(indj, cost, sov(1, indi, 4), 1)
                             end if
                         end do
-                        if (rank .eq. 0 .and. indj - indi .gt. 0) write (6, *) ' Warning eliminated small eig up to', indj - indi
+                        if (indj - indi .gt. 0) call log_warning(' Warning eliminated small eig up to', indj - indi)
                     end if
 
                     !      now change basis for sov(1,1,3)
@@ -1992,7 +1981,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     ncoll = min(indi - 1, ncg)
 
                     if (info .ne. 0) then
-                        write (6, *) ' Error in lapack dgeev !!! ', rankopt
+                        call log_error(' Error in lapack dgeev !!! ', rankopt)
                         errnoise = -2
                     end if
 
@@ -2070,7 +2059,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                     !       stop
 
-                    if (imin .eq. 0 .and. rank .eq. 0) write (6, *) ' Warning all positive eigenvalues '
+                    if (imin .eq. 0) call log_warning(' Warning all positive eigenvalues ')
                     !       Then no constraint on energy gain, choose the closest real
 
                     over2 = sov(indi, max(imin, 1), 5)**2
@@ -2089,8 +2078,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                     eigmin = psip(imin)
 
-                    if(rank.eq.0) write(6, *) 'Chosen  Eigenvalue (new-previous)'//&
-                       &' #, Real/Ima3g, dimension  H', imin, psip(imin) / 2.d0, psip(n2-1+imin)/2.d0,indi_save
+                    call log_info('Chosen  Eigenvalue (new-previous) #, Real/Ima3g, dimension  H', imin, psip(imin)/2.d0, psip(n2 - 1 + imin)/2.d0, indi_save)
 
                     do i = 1, indi - 1
                         psip(i + n2 - 1) = sov(i, imin, 5)/sov(indi, imin, 5)
@@ -2110,14 +2098,14 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     indi = indi - 1
                     indin = indi
 
-                    if (idyn .gt. 0 .and. rank .eq. 0) write (6, *) ' Ion forces '
+                    if (idyn .gt. 0) call log_info(' Ion forces ')
                     do i = npps, np
                         !        if(ipip(i).eq.2) then
                         indin = indin + 1
                         ! a factor two is needed
                         !        psip(indin)=-sov(i,npp,5)*2.d0
                         psip(indin) = forza(i)
-                        if (idyn .gt. 0 .and. rank .eq. 0) write (6, *) i, forza(i), err(i)
+                        if (idyn .gt. 0) call log_info(i, forza(i), err(i))
                         !        endif
                     end do
                     ndsr = indin - indi
@@ -2132,9 +2120,9 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #ifdef PARALLEL
                     call mpi_barrier(MPI_COMM_WORLD, ierr)
 #endif
-                    if (rank .eq. 0) write (6, *) ' Before dynamic ', info, idyn
+                    call log_info(' Before dynamic ', info, idyn)
                     if (ndsr .ne. 0) call ion_dynamics
-                    if (rank .eq. 0) write (6, *) ' After dynamic ', info
+                    call log_info(' After dynamic ', info)
 
                     if (write_cov .and. acc_dyn .and. rank .eq. 0) then
                         write (18, 123) ((ris(4)*cov_sav(ii + (jj - 1)*ieskin), ii=jj, ieskin), jj=1, ieskin)
@@ -2155,13 +2143,13 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     end do
 
                     indin = indi
-                    if (idyn .gt. 0 .and. rank .eq. 0) write (6, *) ' Forces '
+                    if (idyn .gt. 0) call log_info(' Forces ')
                     do i = npps, np
                         !         if(ipip(i).eq.2) then
                         indi = indi + 1
                         psip(i) = psip(n2 + indi - 1)
                         !         endif
-                        if (idyn .gt. 0 .and. rank .eq. 0) write (6, *) i, psip(i)
+                        if (idyn .gt. 0) call log_info(i, psip(i))
                     end do
 
                     !         evaluation norm correction
@@ -2179,25 +2167,25 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     if (cost .gt. abs(epsi) .and. epsi .ne. 0) then
                         costn = abs(epsi)/cost
 
-                        if (rank .eq. 0) write (6, *) ' Warning decelerated ', costn
+                        call log_warning(' Warning decelerated ', costn)
                         call dscal(nps, costn, psip, 1)
                     end if
 
                     if (epsi .lt. 0 .and. cost*1.5 .lt. -epsi) then
                         epsi = -1.5*cost
-                        if (rank .eq. 0) write (6, *) 'Warning changing epsi on the fly =', epsi
+                        call log_warning('Warning changing epsi on the fly =', epsi)
                     end if
-                    if (rank .eq. 0) write (6, *) ' Norm correction = ', costn*cost
+                    call log_info(' Norm correction = ', costn*cost)
                     norm_corr = costn*cost
 
                     if (np .gt. ncg) then
 
-                        if ((abs(klr) .eq. 6 .or. abs(klr) .eq. 7 .or. abs(klr) .eq. 2) .and. ncoll .eq. 1 .and. rank .eq. 0)&
-                                & write (6, *) ' Dt found =', psip(1)*tjas
+                        if ((abs(klr) .eq. 6 .or. abs(klr) .eq. 7 .or. abs(klr) .eq. 2) .and. ncoll .eq. 1) &
+                                call log_info(' Dt found =', psip(1)*tjas)
                         scale_grad = psip(1)
 
                         if (ncoll .eq. 1 .and. psip(1) .lt. 0 .and. npbra .eq. 0) then
-                            if (rank .eq. 0) write (6, *) ' Move rejected negative Dt !!! '
+                            call log_info(' Move rejected negative Dt !!! ')
                             if (.not. change_tpar) psip(1) = 0.d0
                         end if
 
@@ -2215,12 +2203,12 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                     else
 
-                        if ((abs(klr) .eq. 6 .or. abs(klr) .eq. 7 .or. abs(klr) .eq. 2) .and. ncoll .eq. 1 .and. rank .eq. 0)&
-                                &  write (6, *) ' Dt found =', psip(1)*tjas
+                        if ((abs(klr) .eq. 6 .or. abs(klr) .eq. 7 .or. abs(klr) .eq. 2) .and. ncoll .eq. 1) &
+                                call log_info(' Dt found =', psip(1)*tjas)
                         scale_grad = psip(1)
 
                         if (ncoll .eq. 1 .and. psip(1) .lt. 0) then
-                            if (rank .eq. 0) write (6, *) ' Move rejected negative Dt !!! '
+                            call log_info(' Move rejected negative Dt !!! ')
                             if (.not. change_tpar) psip(1) = 0.d0
                         end if
                         call dgemv('T', np, npr, 1.d0, reduce, ncg, psip, 1, 0.d0, psip(n2), 1)
@@ -2247,13 +2235,13 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                     indin = indi
                     !         store the solution found in psip(n2)
                     call dcopy(np, psip, 1, psip(n2), 1)
-                    if (rank .eq. 0) write (6, *) ' Ion forces '
+                    call log_info(' Ion forces ')
                     do i = npps, np
                         ipip(i) = 2
                         indin = indin + 1
                         ! the io
                         psip(indin) = forza(i)
-                        if (rank .eq. 0) write (6, *) i, psip(indin), err(i)
+                        call log_info(i, psip(indin), err(i))
                     end do
                     ndsr = indin - indi
                     if (ndsr .ne. 0) call ion_dynamics
@@ -2298,23 +2286,23 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 
                 cost = tjas*dsqrt(normsr)
                 if (.not. signalnoise) then
-                    if (rank .eq. 0) write (6, *) ' Norm correction = ', cost
+                    call log_info(' Norm correction = ', cost)
                     norm_corr = cost
 
                     if (cost .gt. abs(epsi) .and. epsi .ne. 0) then
-                        if (rank .eq. 0) write (6, *) ' Warning decelerated by ', epsi/cost
+                        call log_warning(' Warning decelerated by ', epsi/cost)
                         cost = abs(epsi)/cost
                         psip(1) = cost
                     end if
                     if (epsi .lt. 0 .and. norm_corr*3 .lt. -epsi) then
                         epsi = -3*norm_corr
-                        if (rank .eq. 0) write (6, *) 'Warning changing epsi on the fly =', epsi
+                        call log_warning('Warning changing epsi on the fly =', epsi)
                     end if
                 end if
                 !      endif
 
                 !       if(parcut.gt.0) then
-                if (rank .eq. 0) write (6, *) ' I consider # ', numpar, 'independent param. '
+                call log_info(' I consider # ', numpar, 'independent param. ')
 
                 if (np .gt. ncg) then
                     if (ncg .gt. 0) then
@@ -2334,9 +2322,9 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
                 call dcopy(npr, psip(n2), 1, psip, 1)
                 if (idyn .eq. 0 .and. ieskin .ne. 0 .and. signalnoise) then
                     cost = tjas*dnrm2(ieskin, psip(npr - ieskin + 1), 1)
-                    if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                    call log_info(' Norm change ions =', cost)
                     if (cost .gt. abs(epsi) .and. epsi .ne. 0) then
-                        if (rank .eq. 0) write (6, *) ' Warning decelerated ions by ', epsi/cost
+                        call log_warning(' Warning decelerated ions by ', epsi/cost)
                         cost = abs(epsi)/cost
                         psip(npr - ieskin + 1:npr) = cost*psip(npr - ieskin + 1:npr)
                     end if
@@ -2351,8 +2339,8 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
             end if
 
             if (info .ne. 0) then
-                if (rank .eq. 0) write (6, *) ' Warning info =', info
-                if (rank .eq. 0) write (6, *) 'Continuing with previous param. !!!'
+                call log_warning(' Warning info =', info)
+                call log_info('Continuing with previous param. !!!')
                 call dscalzero(np, 0.d0, psip, 1)
             end if
 
@@ -2379,7 +2367,7 @@ subroutine reweight0(nw, in1, npr, npm, factorsr                 &
 #endif
             if (errnoise .ne. 0) then
 
-                if (rank .eq. 0) write (6, *) ' Error in reweight0  =', errnoise
+                call log_error(' Error in reweight0  =', errnoise)
 
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
@@ -2578,7 +2566,7 @@ contains
                     ku_ion = ku_ion + 1
                     index(ku_ion) = i
                 else
-                    if (rank .eq. 0) write (6, *) ' Warning untouched ion parameter =', i
+                    call log_warning(' Warning untouched ion parameter =', i)
                 end if
             end do
         end if
@@ -2587,12 +2575,12 @@ contains
         ku_ionp = ku_ion + 1
         if (rank .eq. 0) then
             if (symmagp .or. kp_complex .eq. 0) then
-                write (6, *) ' Leading dimension matrix =', ku_ion - kp_complex/2
+                call log_info(' Leading dimension matrix =', ku_ion - kp_complex/2)
             else
                 if (real_agp) then
-                    write (6, *) ' Leading dimension matrix =', ku_ion - kp_complex/2
+                    call log_info(' Leading dimension matrix =', ku_ion - kp_complex/2)
                 else
-                    write (6, *) ' Leading dimension matrix =', ku_ion
+                    call log_info(' Leading dimension matrix =', ku_ion)
                 end if
             end if
         end if
@@ -2679,7 +2667,7 @@ contains
                     !         endif
                 end do
                 cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                call log_info(' Norm change ions =', cost)
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 ! zero temperature dynamics along direction of maximum signal/noise direction
@@ -2735,7 +2723,7 @@ contains
                         cost = cost/(ieskin - 3)
                     end if
                     Tmes = cost*ris(2) ! From Ry to H
-                    if (rank .eq. 0) write (6, *) ' Temperature (H)/weight= ', Tmes, weight_vir
+                    call log_info(' Temperature (H)/weight= ', Tmes, weight_vir)
                 elseif (.not. yesquantum) then
                     ! assumed that some atom is fixed
                     cost = 0.d0
@@ -2753,7 +2741,7 @@ contains
                     if (ind .gt. indi) then
                         cost = cost/(ind - indi)
                         Tmes = cost*ris(2) ! From Ry to H
-                        if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                        call log_info(' Temperature (H)= ', Tmes)
                     end if
                 end if
 
@@ -2848,14 +2836,14 @@ contains
                 call dsyev_my('V', 'L', ieskin, cov, ieskin, eig&
                         &, info, nprocrep, rankrep, commrep_mpi)
                 if (rank .eq. 0) then
-                    write (6, *) ' Eigenvalues covariance ion forces '
+                    call log_info(' Eigenvalues covariance ion forces ')
                     condnum = 0.d0
                     do i = 1, ieskin
-                        write (6, *) i, eig(i)
+                        call log_info(i, eig(i))
                         if (condnum .eq. 0.d0 .and. i .ge. mineig) condnum = eig(i)
                     end do
                     condnum = eig(ieskin)/condnum
-                    write (6, *) ' Condition number covariance matrix =', condnum
+                    call log_info(' Condition number covariance matrix =', condnum)
                 end if
 
                 if (yesquantum) then
@@ -2865,8 +2853,7 @@ contains
                     call bcast_real(eig, ieskin, 0, mpi_comm_world)
 #endif
                 end if
-                if (info .ne. 0) write (6, *) &
-                        &' ERROR in diagonalization of covariance matrix ', rank
+                if (info .ne. 0) call log_info(' ERROR in diagonalization of covariance matrix ', rank)
                 call dgemv('T', ieskin, ieskin, 1.d0, cov, ieskin, psip(indi + 1), 1, 0.d0, work, 1)
                 if (addrognoso) then
                     cost = -0.5d0/dtstep
@@ -2906,7 +2893,7 @@ contains
                                     cost = 2.d0*temp*(dtnoise/eigS - normcorr*dtnoise**2*eig(i)/eigS**2)
                                     if (cost .lt. 0.d0) then
                                         cost = 0.d0 ! The Umrigar choice
-                                        if (rankrep .eq. 0) write (6, *) 'Warning noise correction not possible!!! '
+                                        if (rankrep .eq. 0) call log_warning('Warning noise correction not possible!!! ')
                                     end if
                                 else
                                     cost = 2.d0*temp/eigS*dtnoise
@@ -2943,7 +2930,7 @@ contains
 !       Tmes=dnrm2(ieskin,velion,3)**2/ieskin*ris(2)
                     call reduce_base_real(1, Tmes, commcolrep_mpi, -1)
                     Tmes = Tmes/dble(ieskin)/dble(nbead)/dble(nbead - 1)*ris(2)
-                    if (rank .eq. 0) write (6, *) ' Temperature Virial', Tmes
+                    call log_info(' Temperature Virial', Tmes)
 #endif
                     do i = 1, ieskin
                         psip(n2 + indi + i - 1) = work(i)*psip(n3 + i - 1)
@@ -2976,14 +2963,14 @@ contains
                         end if
                     end do
                     if (maxsn .gt. 0.d0) maxsn = dsqrt(maxsn)
-                    if (rank .eq. 0) write (6, *) ' Maximum devmax signal/noise ratio =', maxsn
+                    call log_info(' Maximum devmax signal/noise ratio =', maxsn)
                     call dgemv('N', ieskin, ieskin, 1.d0, cov, ieskin, work, 1, 0.d0, psip(indi + 1), 1)
                     indin = indi
                     do j = npps, np
                         !            if(ipip(j).eq.2) then
                         indin = indin + 1
                         psip(n2 + indin - 1) = psip(indin)*psip(n3 + j - npps)
-                        if (rank .eq. 0) write (6, *) 'Change ion comp =', indin, psip(indin)
+                        call log_info('Change ion comp =', indin, psip(indin))
                         !            endif
                     end do
 
@@ -3023,7 +3010,7 @@ contains
                 cost = dnrm2(ieskin, psip(n2 + indi), 1)
                 if (cost .gt. eps_dyn5 .and. eps_dyn5 .gt. 0.d0) then
                     costn = eps_dyn5/cost
-                    if (rank .eq. 0) write (6, *) ' Warning decelerated ions by  ', costn
+                    call log_warning(' Warning decelerated ions by  ', costn)
                     call dscal(ieskin, costn, psip(n2 + indi), 1)
                     if (cleanrognoso) call dscal(ieskin, costn, psip(indi + 1), 1)
                     cost = eps_dyn5
@@ -3040,8 +3027,8 @@ contains
                         velion(1, j) = psip(n2 + indi + j - 1)
                     end do
                 end if
-                if (rank .eq. 0) write (6, *) ' Ratio dyn =', cost
-                if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                call log_info(' Ratio dyn =', cost)
+                call log_info(' Norm change ions =', cost)
 
                 deallocate (work, eig)
                 !+++++ end dynamics 5
@@ -3064,7 +3051,7 @@ contains
                 end do
 
                 if (indin .ne. ieskin) then
-                    if (rank .eq. 0) write (6, *) ' Error in dynamic ieskin ne indin !!!  ', ieskin, indin
+                    call log_error(' Error in dynamic ieskin ne indin !!!  ', ieskin, indin)
                     errnoise = 6
                 end if
                 !       stop
@@ -3095,9 +3082,9 @@ contains
                 call dsyev_my('V', 'L', ieskin, cov, ieskin, psip, info, nprocrep, rankrep, commrep_mpi)
                 !     call dsyev('V','L',ieskin,cov,ieskin,psip,psip(n5),lworkd,info)
                 if (rank .eq. 0) then
-                    write (6, *) ' Eigenvalues covariance '
+                    call log_info(' Eigenvalues covariance ')
                     do i = 1, ieskin
-                        write (6, *) i, psip(i)
+                        call log_info(i, psip(i))
                     end do
                 end if
 #ifdef DEBUG
@@ -3116,11 +3103,11 @@ contains
 #endif
 
                 if (info .ne. 0) then
-                    if (rank .eq. 0) write (6, *) ' Error in lapack dsyev  dynamic !!! '
+                    call log_error(' Error in lapack dsyev  dynamic !!! ')
                     errnoise = 4
                 end if
 
-                if (rank .eq. 0) write (6, *) ' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                 !         write(6,*) ' Spectrum gamma=',info,(psip(i)*dt,i=1,ieskin)
 
@@ -3134,10 +3121,8 @@ contains
                 !     velion(2,*) the transformed forces
 
 #ifdef DEBUG
-                if (rank .eq. 0) write (6, *) ' changed velocities ',&
-                  &sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1))
-                if (rank .eq. 0) write (6, *) ' changed velocities squares ',&
-                &sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2)
+                call log_info(' changed velocities ', sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1)))
+                call log_info(' changed velocities squares ', sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2))
 #endif
                 alphaqmc = 0.d0
                 !!!! INIZIO NEW DYN
@@ -3188,12 +3173,11 @@ contains
                             call root2mat(mnoise, errnoise)
 
                         else
-                            if (rank .eq. 0) write (6, *) ' ERROR negative eigenv. ', psip(i) &
-                                    &, alphaqmc
+                            call log_error(' ERROR negative eigenv. ', psip(i), alphaqmc)
                             errnoise = 1
                         end if !if psip(i).gt.0
 
-                        if (rank .eq. 0 .and. errnoise .ne. 0) write (6, *) ' Error negative noise matrix !!!'
+                        if (errnoise .ne. 0) call log_error(' Error negative noise matrix !!!')
 
                         eta_v = mnoise(1, 1)*zetan(1) + mnoise(1, 2)*zetan(2)
                         eta_r = mnoise(2, 1)*zetan(1) + mnoise(2, 2)*zetan(2)
@@ -3206,10 +3190,8 @@ contains
                     end do
 #ifdef DEBUG
                     velion(1:2, 1:3) = 0.d0
-                    if (rank .eq. 0) write (6, *) ' changed velocities 2 ',&
-             &sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin))
-                    if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ',&
-                    &sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2)
+                    call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin)))
+                    call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2))
 #endif
 
                     !         Now go back to the original basis
@@ -3231,9 +3213,9 @@ contains
                         !       write(6,*) i,psip(n2+indi+i-1),psip(n3+i-1),velion(3,i)
                     end do
                     Tmes = dnrm2(ieskin, velion(3, 1), 3)**2/cost*ris(2)
-                    if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                    call log_info(' Temperature (H)= ', Tmes)
                     cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                    if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                    call log_info(' Norm change ions =', cost)
 
                 !!!! FINE  NEW DYN
                     elseif (idyn .eq. 7) then
@@ -3269,7 +3251,7 @@ contains
                     end do
 
                     if (indin .ne. ieskin) then
-                        if (rank .eq. 0) write (6, *) ' Error in dynamic ieskin ne indin !!!  ', ieskin, indin
+                        call log_error(' Error in dynamic ieskin ne indin !!!  ', ieskin, indin)
                         errnoise = 6
                     end if
 
@@ -3307,9 +3289,9 @@ contains
                     end if
 
                     if (rank .eq. 0) then
-                        write (6, *) ' Eigenvalues covariance '
+                        call log_info(' Eigenvalues covariance ')
                         do i = 1, ieskin
-                            write (6, *) i, psip(i)
+                            call log_info(i, psip(i))
                         end do
                     end if
 #ifdef DEBUG
@@ -3329,17 +3311,17 @@ contains
 #endif
 
                     if (info .ne. 0) then
-                        if (rank .eq. 0) write (6, *) ' Error in lapack dsyev  dynamic !!! '
+                        call log_error(' Error in lapack dsyev  dynamic !!! ')
                         errnoise = 4
                     end if
 
-                    if (rank .eq. 0) write (6, *) ' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                    call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                     do i = 1, ieskin
                         if (psip(i) .gt. 0.d0) then
                             psip(n5 + i - 1) = (1.d0 - dexp(-psip(i)*dth))/psip(i)
                         else
-                            if (rank .eq. 0) write (6, *) ' Refused eigenvalue ', i
+                            call log_info(' Refused eigenvalue ', i)
                             psip(n5 + i - 1) = dth
                         end if
                     end do
@@ -3375,10 +3357,9 @@ contains
                         else
 
                             psip(n4 + i - 1) = 0.d0
-                            if (yesrootc) write (6, *) ' Warning noise correction not possible ', i, psip(i), psip(n4 + i - 1)
+                            if (yesrootc) call log_warning(' Warning noise correction not possible ', i, psip(i), psip(n4 + i - 1))
                             if (friction .gt. 0.d0 .and. .not. yesrootc) then
-                                if (rank .eq. 0) write (6, *) ' There should be some error in reweight0         &
-                                        &  ', i, psip(n4 + i - 1)
+                                call log_error(' There should be some error in reweight0 ', i, psip(n4 + i - 1))
                                 errnoise = 5
                             end if
                         end if
@@ -3419,7 +3400,7 @@ contains
                             &, velion(2, 1), 3, 0.d0, velion(3, 1), 3)
 
                     if (.not. yessecond) Tmes = dnrm2(ieskin, velion(3, 1), 3)**2/ieskin*ris(2)
-                    if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                    call log_info(' Temperature (H)= ', Tmes)
 
                     !          call dgemv('T',ieskin,ieskin,1.d0,cov,ieskin              &
                     !     &,velion(3,1),3,0.d0,sov4,1)
@@ -3462,10 +3443,8 @@ contains
 !       velion(2,*)  is actually zero below
 #endif
 #ifdef DEBUG
-                    if (rank .eq. 0) write (6, *) ' changed velocities ',&
-                      &sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1))
-                    if (rank .eq. 0) write (6, *) ' changed velocities squares ',&
-                    &sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2)
+                    call log_info(' changed velocities ', sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1)))
+                    call log_info(' changed velocities squares ', sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2))
 #endif
                     alphaqmc = 0.d0
                 !!!! INIZIO NEW DYN : Now everything is in the diagonal basis and the integration
@@ -3497,7 +3476,7 @@ contains
 
                             call root2mat(mnoise, errnoise)
 
-                            if (errnoise .ne. 0 .and. rank .eq. 0) write (6, *) ' Error negative definite matrix noise '
+                            if (errnoise .ne. 0) call log_error(' Error negative definite matrix noise ')
 
                             eta_v = mnoise(1, 1)*zetan(1) + mnoise(1, 2)*zetan(2)
                             eta_r = mnoise(2, 1)*zetan(1) + mnoise(2, 2)*zetan(2)
@@ -3512,10 +3491,8 @@ contains
                         end do
 #ifdef DEBUG
                         velion(1:2, 1:3) = 0.d0
-                        if (rank .eq. 0) write (6, *) ' changed velocities 2 ',&
-                 &sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin))
-                        if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ',&
-                        &sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2)
+                        call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin)))
+                        call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2))
 #endif
                         !         Now go back to the original basis
                         !       Tmes=dnrm2(ieskin,velion,3)**2/ieskin*ris(2)
@@ -3556,7 +3533,7 @@ contains
                             end if
                         end do
                         cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                        if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                        call log_info(' Norm change ions =', cost)
 
                 !!!! FINE  NEW IDYN=7  !!!!!
 
@@ -3612,9 +3589,9 @@ contains
                         call dsyev_my('V', 'L', ieskin, cov, ieskin, psip, info, nprocrep, rankrep, commrep_mpi)
 
                         if (rank .eq. 0) then
-                            write (6, *) ' Eigenvalues covariance '
+                            call log_info(' Eigenvalues covariance ')
                             do i = 1, ieskin
-                                write (6, *) i, psip(i)
+                                call log_info(i, psip(i))
                             end do
                         end if
 #ifdef DEBUG
@@ -3634,20 +3611,20 @@ contains
 #endif
 
                         if (info .ne. 0) then
-                            if (rank .eq. 0) write (6, *) ' Error in lapack dsyev  dynamic !!! ', info
+                            call log_error(' Error in lapack dsyev  dynamic !!! ', info)
                             errnoise = 4
                         end if
 
                         ! The scale invariant criterium is gamma/sqrt(T) , so I have divided by the
                         ! sqrt(T/T_0) where T_0=1000K
-                        if (rank .eq. 0) write (6, *) ' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                        call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                         ! now compute coefficients as function of gamma eigenvalues
                         do i = 1, ieskin
                             if (psip(i) .gt. 0.d0) then
                                 psip(n5 + i - 1) = (1.d0 - dexp(-psip(i)*dth))/psip(i)
                             else
-                                if (rank .eq. 0) write (6, *) ' Refused eigenvalue ', i
+                                call log_info(' Refused eigenvalue ', i)
                                 psip(n5 + i - 1) = dth
                             end if
                         end do
@@ -3675,7 +3652,7 @@ contains
 
                                 psip(n4 + i - 1) = 0.d0
                                 if (friction .gt. 0.d0) then
-                                    if (rank .eq. 0) write (6, *) ' There should be some error in reweight0', i, psip(n4 + i - 1)
+                                    call log_error(' There should be some error in reweight0', i, psip(n4 + i - 1))
                                     errnoise = 5
                                 end if
                             end if
@@ -3721,8 +3698,8 @@ contains
 
 #endif
 #ifdef DEBUG
-                            if (rank .eq. 0) write (6, *) ' changed velocities ', sum(sov5(4:ieskin, 6))
-                            if (rank .eq. 0) write (6, *) ' changed velocities squares ', sum(sov5(4:ieskin, 6)**2)
+                            call log_info(' changed velocities ', sum(sov5(4:ieskin, 6)))
+                            call log_info(' changed velocities squares ', sum(sov5(4:ieskin, 6)**2))
 #endif
 
 #ifdef DEBUG
@@ -3754,7 +3731,7 @@ contains
 
                                 ! Temperature estimation
                                 Tmes = dnrm2(ieskin, velion(2, 1), 3)**2/ieskin*ris(2)
-                                if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                                call log_info(' Temperature (H)= ', Tmes)
 
                                 ! perform the Langevin step in the normal modes
                                 ! as before, except that here there is no
@@ -3774,10 +3751,8 @@ contains
 
 #ifdef DEBUG
                                     velion(1:2, 1:3) = 0.d0
-                                    if (rank .eq. 0) write (6, *) ' changed velocities 2 ', &
-                                        sum(velion(2, 1:ieskin))
-                                    if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ', &
-                                        sum(velion(2, 1:ieskin)**2)
+                                    call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)))
+                                    call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2))
 #endif
                                     !       Now go back to the original basis
                                     !       Tmes=dnrm2(ieskin,velion,3)**2/ieskin*ris(2)
@@ -3822,7 +3797,7 @@ contains
 
                                         ! Temperature estimation
                                         Tmes = dnrm2(ieskin, velion(2, 1), 3)**2/ieskin*ris(2)
-                                        if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                                        call log_info(' Temperature (H)= ', Tmes)
 
                                         ! perform the Langevin step in the
                                         ! normal modes as before, except that here there is no intrisinc noise
@@ -3842,10 +3817,8 @@ contains
 
 #ifdef DEBUG
                                             velion(1:2, 1:3) = 0.d0
-                                            if (rank .eq. 0) write (6, *) ' changed velocities 2 ', &
-                                                sum(velion(2, 1:ieskin))
-                                            if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ', &
-                                                sum(velion(2, 1:ieskin)**2)
+                                            call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)))
+                                            call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2))
 #endif
 
                                             end if
@@ -3862,9 +3835,9 @@ contains
                                                 &, rankrep, commrep_mpi)
 
                                             if (rank .eq. 0) then
-                                                write (6, *) ' Eigenvalues covariance 2'
+                                                call log_info(' Eigenvalues covariance 2')
                                                 do i = 1, ieskin
-                                                    write (6, *) i, psip(i)
+                                                    call log_info(i, psip(i))
                                                 end do
                                             end if
 
@@ -3885,21 +3858,20 @@ contains
 #endif
 
                                             if (info .ne. 0) then
-                                                if (rank .eq. 0) write (6, *) ' Error in lapack dsyev  dynamic !!! ', info
+                                                call log_error(' Error in lapack dsyev  dynamic !!! ', info)
                                                 errnoise = 4
                                             end if
 
                                             ! The scale invariant criterium is gamma/sqrt(T) , so I have divided by the
                                             ! sqrt(T/T_0) where T_0=1000K
-                                    if (rank .eq. 0) write (6, *)&
-                                       & ' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                                    call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                                             ! now compute coefficients as function of gamma eigenvalues
                                             do i = 1, ieskin
                                                 if (psip(i) .gt. 0.d0) then
                                                     psip(n5 + i - 1) = (1.d0 - dexp(-psip(i)*dth))/psip(i)
                                                 else
-                                                    if (rank .eq. 0) write (6, *) ' Refused eigenvalue ', i
+                                                    call log_info(' Refused eigenvalue ', i)
                                                     psip(n5 + i - 1) = dth
                                                 end if
                                             end do
@@ -3927,8 +3899,7 @@ contains
 
                                                     psip(n4 + i - 1) = 0.d0
                                                     if (friction .gt. 0.d0) then
-                                                        if (rank .eq. 0) write (6, *)&
-                                                           & ' There should be some error in reweight0', i, psip(n4 + i - 1)
+                                                        call log_error(' There should be some error in reweight0', i, psip(n4 + i - 1))
                                                         errnoise = 5
                                                     end if
                                                 end if
@@ -3986,10 +3957,8 @@ contains
 
 #endif
 #ifdef DEBUG
-                                if (rank .eq. 0) write (6, *) ' changed velocities '&
-                                    &, sum(sov5(4:ieskin, 6)), sum(sov5(4:ieskin, 7))
-                  if (rank .eq. 0) write (6, *) ' changed velocities squares '&
-                      &, sum(sov5(4:ieskin, 6)**2), sum(sov5(4:ieskin, 7)**2)
+                                call log_info(' changed velocities ', sum(sov5(4:ieskin, 6)), sum(sov5(4:ieskin, 7)))
+                                call log_info(' changed velocities squares ', sum(sov5(4:ieskin, 6)**2), sum(sov5(4:ieskin, 7)**2))
 #endif
 
                                                 omega_harm = sqrt(abs(kdyn_eig(rankcolrep + 1)))
@@ -4018,10 +3987,8 @@ contains
 
 #ifdef DEBUG
                                                     velion(1:2, 1:3) = 0.d0
-                                                    if (rank .eq. 0) write (6, *) ' changed velocities 2 ', &
-                                                        sum(velion(2, 1:ieskin))
-                                                    if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ', &
-                                                        sum(velion(2, 1:ieskin)**2)
+                                                    call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)))
+                                                    call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2))
 #endif
                                                     !       Now go back to the original basis
                                                     !       Tmes=dnrm2(ieskin,velion,3)**2/ieskin*ris(2)
@@ -4062,7 +4029,7 @@ contains
                                                         end if
                                                     end do
                                                     cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                                                    if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                                                    call log_info(' Norm change ions =', cost)
 
                                                     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                     ! end idyn.eq.8
@@ -4093,8 +4060,7 @@ contains
                                                     end do
 
                                                     if (indin .ne. ieskin) then
-                                              if (rank .eq. 0) write (6, *) ' Error in dynamic ieskin ne indin !!!  '&
-                                                  &, ieskin, indin
+                                              call log_error(' Error in dynamic ieskin ne indin !!!  ', ieskin, indin)
                                                         errnoise = 6
                                                     end if
 
@@ -4146,9 +4112,9 @@ contains
 #endif
 
                                                     if (rank .eq. 0) then
-                                                        write (6, *) ' Eigenvalues covariance '
+                                                        call log_info(' Eigenvalues covariance ')
                                                         do i = 1, ieskin
-                                                            write (6, *) i, psip(i)
+                                                            call log_info(i, psip(i))
                                                         end do
                                                     end if
 #ifdef DEBUG
@@ -4170,12 +4136,11 @@ contains
 #endif
 
                                                     if (info .ne. 0) then
-                                                        if (rank .eq. 0) write (6, *) ' Error in lapack dsyev  dynamic !!! '
+                                                        call log_error(' Error in lapack dsyev  dynamic !!! ')
                                                         errnoise = 4
                                                     end if
 
-                                    if (rank .eq. 0) write (6, *) ' Ratio dyn =',&
-                                       &(psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                                    call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                                                     ! Now we go in the basis that diagonalizes cov
                                                     ! NB for quantum dynamic (yesturboq) cov is assumed the same for all beads.
@@ -4190,8 +4155,7 @@ contains
                                                     if (yesturboq) then
 
                                                         if (.not. yessecond .and. sum(abs(velion(1, 1:ieskin))) .ne. 0.d0) then
-                                                   write (6, *) ' ERROR velion 1 not conserved !!!  '&
-                                                   &, sum(abs(velion(1, 1:ieskin)))
+                                                   call log_error(' ERROR velion 1 not conserved !!!  ', sum(abs(velion(1, 1:ieskin))))
                                                             errnoise = 23
                                                         end if
                                                         !  Transformation coordinates in the basis of eigenvectors
@@ -4232,10 +4196,8 @@ contains
 #endif
                                                     end if
 #ifdef DEBUG
-                                                    if (rank .eq. 0) write (6, *) ' changed velocities ',&
-                                                      &sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1))
-                                                    if (rank .eq. 0) write (6, *) ' changed velocities squares ',&
-                                                    &sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2)
+                                                    call log_info(' changed velocities ', sum(velion(2, 4:ieskin)), sum(sov4(4:ieskin, 1)))
+                                                    call log_info(' changed velocities squares ', sum(velion(2, 4:ieskin)**2), sum(sov4(4:ieskin, 1)**2))
 #endif
                                                     alphaqmc = 0.d0
                 !!!! INIZIO NEW DYN : Now everything is in the diagonal basis and the integration
@@ -4326,13 +4288,11 @@ contains
                                                                 call root2mat(mnoise, errnoise)
 
                                                             else
-                                                                if (rank .eq. 0) write (6, *) ' ERROR negative eigenv. ', psip(i)&
-                                                                        &, alphaqmc
+                                                                call log_error(' ERROR negative eigenv. ', psip(i), alphaqmc)
                                                                 errnoise = 1
                                                             end if !if psip(i).gt.0
 
-                                        if (errnoise .ne. 0 .and. rank .eq. 0) write (6, *)&
-                                           & ' Error negative definite matrix noise '
+                                        if (errnoise .ne. 0) call log_error(' Error negative definite matrix noise ')
 
                                                             eta_v = mnoise(1, 1)*zetan(1) + mnoise(1, 2)*zetan(2)
                                                             eta_r = mnoise(2, 1)*zetan(1) + mnoise(2, 2)*zetan(2)
@@ -4362,10 +4322,8 @@ contains
                                                         end do
 #ifdef DEBUG
                                                         velion(1:2, 1:3) = 0.d0
-                                                        if (rank .eq. 0) write (6, *) ' changed velocities 2 ',&
-                                                 &sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin))
-                                                        if (rank .eq. 0) write (6, *) ' changed velocities squares 2  ',&
-                                                        &sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2)
+                                                        call log_info(' changed velocities 2 ', sum(velion(2, 1:ieskin)), sum(velion(1, 1:ieskin)))
+                                                        call log_info(' changed velocities squares 2  ', sum(velion(2, 1:ieskin)**2), sum(velion(1, 1:ieskin)**2))
 #endif
 
                                                         !         Now go back to the original basis
@@ -4418,9 +4376,9 @@ contains
                                                             end if
                                                         end do
                                                         Tmes = dnrm2(ieskin, velion(3, 1), 3)**2/cost*ris(2)
-                                                        if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                                                        call log_info(' Temperature (H)= ', Tmes)
                                                         cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                                                        if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                                                        call log_info(' Norm change ions =', cost)
 
                 !!!! FINE  NEW IDYN=6
 
@@ -4571,16 +4529,13 @@ contains
                                                                 end do
                                                             end if
 
-                                                            if (rank .eq. 0) then
-                                                                write (6, *) ' Eigenvalues gamma chosen '
-                                                                do i = 1, ieskin
-                                                                    write (6, *) i, psip(i)
-                                                                end do
-                                                            end if
+                                                            call log_info(' Eigenvalues gamma chosen ')
+                                                            do i = 1, ieskin
+                                                                call log_info(i, psip(i))
+                                                            end do
 
                                                             if (info .ne. 0) then
-                                                                if (rank .eq. 0) write (6, *)&
-                                                                   & ' Error in lapack dsyev  dynamic !!! '
+                                                                call log_error(' Error in lapack dsyev  dynamic !!! ')
                                                                 errnoise = 4
                                                             end if
 
@@ -4588,9 +4543,7 @@ contains
                                                             ! is gamma/sqrt(T) , so I have divided by the
                                                             ! sqrt(T/T_0) where T_0=1000K
 
-                                                            if (rank .eq. 0) write (6, *)&
-                                                               & ' Ratio dyn ='&
-                                                               &, (psip(ieskin) - friction)/sqrt(temp*157.8873306d0)
+                                                            call log_info(' Ratio dyn =', (psip(ieskin) - friction)/sqrt(temp*157.8873306d0))
 
                                                             !         write(6,*) ' Spectrum gamma=',info,(psip(i)*dt,i=1,ieskin)
 
@@ -4598,7 +4551,7 @@ contains
                                                                 if (psip(i) .gt. 0.d0) then
                                                                     psip(n5 + i - 1) = (1.d0 - dexp(-psip(i)*dth))/psip(i)
                                                                 else
-                                                                    if (rank .eq. 0) write (6, *) ' Refused eigenvalue ', i
+                                                                    call log_info(' Refused eigenvalue ', i)
                                                                     psip(n5 + i - 1) = dth
                                                                 end if
                                                             end do
@@ -4635,14 +4588,10 @@ contains
                                                                 if (psip(n4 + i - 1) .gt. 0.d0) then
                                                                     psip(n4 + i - 1) = dsqrt(psip(n4 + i - 1))
                                                                 else
-                                                                    if (yesrootc) write (6, *)&
-                                                                       & ' Warning noise correction not possible '&
-                                                                       &, i, psip(i), psip(n4 + i - 1)
+                                                                    if (yesrootc) call log_warning(' Warning noise correction not possible ', i, psip(i), psip(n4 + i - 1))
                                                                     psip(n4 + i - 1) = 0.d0
                                                                     if (friction .gt. 0.d0 .and. .not. yesrootc) then
-                                                                        if (rank .eq. 0) write (6, *)&
-                                                                           & ' There should be some error in reweight0         &
-                                                                                &  ', i, psip(n4 + i - 1)
+                                                                        call log_error(' There should be some error in reweight0 ', i, psip(n4 + i - 1))
                                                                         errnoise = 5
                                                                     end if
                                                                 end if
@@ -4690,7 +4639,7 @@ contains
 
                                                                 if (.not. yessecond) Tmes = dnrm2(ieskin, velion(3, 1), 3)**2&
                                                                     &/ieskin*ris(2)
-                                                            if (rank .eq. 0) write (6, *) ' Temperature (H)= ', Tmes
+                                                            call log_info(' Temperature (H)= ', Tmes)
 
                                                             ! endif idyn=3
                                                         end if
@@ -4716,18 +4665,16 @@ contains
                                                         end do
 
                                                         cost = dnrm2(ieskin, psip(n2 + indi), 1)
-                                                        if (rank .eq. 0) write (6, *) ' Norm change ions =', cost
+                                                        call log_info(' Norm change ions =', cost)
                                                         end if ! endif idyn.ge.2
-                                                        if (rank .eq. 0 .and. all_dyn .gt. 0) write (6, *) &
-                                                                &  ' Ratio QMC noise/ALL noise', ratio_dyn/all_dyn
+                                                        if (all_dyn .gt. 0) call log_info(' Ratio QMC noise/ALL noise', ratio_dyn/all_dyn)
                                                         ! do not move the ions and do not update velocities
                                                     else
 
                                                         if (maxdev_dyn .ne. 0&
                                                            & .and. devmaxp .gt. maxdev_dyn &
                                                            & .and. idyn .gt. 0) then
-                            if (rank .eq. 0) write (6, *) ' Warning devmax too large Ions not moved this step '&
-                                &, devmaxp, maxdev_dyn
+                            call log_warning(' Warning devmax too large Ions not moved this step ', devmaxp, maxdev_dyn)
                                                             acc_dyn = .false.
                                                         end if
                                                         do i = 1, ieskin
@@ -4762,11 +4709,9 @@ contains
                                                             if (epstion .lt. 0.d0) allocate (covpurif(ieskin, ieskin))
 
                                                             !             write(6,*) ' force before ',psip(indi+1:indi+ieskin)
-                                                            if (rank .eq. 0) write (6, *) 'Center of mass of the system: '
-                                                            if (rank .eq. 0) write (6, *) rioncm
-
-                                             if (rank .eq. 0) write (6, *) 'Ion coordinates from the Center of mass'//&
-                                                &' of the system: '
+                                                            call log_info('Center of mass of the system: ')
+                                                            call log_info(rioncm(1), rioncm(2), rioncm(3))
+                                                            call log_info('Ion coordinates from the Center of mass of the system: ')
                                                             riondcm = 0.d0
                                                             indr = 0
                                                             do i = 1, nion
@@ -4844,13 +4789,10 @@ contains
 
                                                             if (info .ne. 0) then
 
-                                               if (rank .eq. 0) write (6, *) ' Warning found 6-', info&
-                                                   &, ' independent rotations !! '
-                                                  if (info .eq. 1 .and. rank .eq. 0) write (6, *) &
-                                                      &' Warning collinear molecule !!! '
+                                               call log_warning(' Warning found 6-', info, ' independent rotations !! ')
+                                                  if (info .eq. 1) call log_warning(' Warning collinear molecule !!! ')
                                                         if (info .gt. 1) then
-                                                            if (rank .eq. 0) write (6, *)&
-                                                               & ' ERROR dependent roto-translations !!! '
+                                                            call log_error(' ERROR dependent roto-translations !!! ')
                                                                    errnoise = 11
                                                             end if
                                                             end if

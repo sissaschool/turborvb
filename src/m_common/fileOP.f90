@@ -17,6 +17,7 @@ subroutine check_scratch(rank, path, scratchpath)
     use allio, only: oldscra, wherescratch, chara, charaq, rankrep, rankcolrep&
             &, yesquantum, io_level, manyfort10, yesdft
     use io_m
+    use logger_io, only: log_info, log_warning
     implicit none
     character(*) :: path, scratchpath
     integer :: iflagerr, rank, idigit(6)
@@ -56,10 +57,9 @@ subroutine check_scratch(rank, path, scratchpath)
         wherescratch = trim(scratchpath)//"tmp"
     end if
 
-    if (rank .eq. 0) write (6, '(a,a)') '  Scratch extension ', trim(wherescratch)
+    call log_info('  Scratch extension ', trim(wherescratch))
     if (len_trim(scratchpath) .ge. lchlen) then
-        if (rank .eq. 0) write (6, *) ' Warning your probably truncated, please &
-       &  try to increase lchlen in mod_IO'
+        call log_warning(' Warning your probably truncated, please try to increase lchlen in mod_IO')
     end if
 
     call convertdec(rank, idigit)
@@ -85,6 +85,7 @@ subroutine open_files(rank, scratchpath)
     use allio, only: manyfort10
     use io_m
     use mpiio
+    use logger_io, only: log_info
 
     implicit none
 
@@ -114,18 +115,18 @@ subroutine open_files(rank, scratchpath)
         open (unit=12, file='fort.12', form='unformatted', position=positi)
         !   they contains ionic forces and positions
         if (itestr .eq. -5) then
-            write (6, *) 'Energy files ', message
+            call log_info('Energy files ', message)
             open (unit=16, file='forces.dat', form='formatted', position=positi)
             if (write_cov) then
                 open (unit=18, file='covmat.dat', form='formatted', position=positi)
             end if
             open (unit=13, file='fort.12.fn', form='unformatted', position=positi)
             if (idyn .gt. 1) then
-                write (6, *) 'Velocity file ', message
+                call log_info('Velocity file ', message)
                 open (unit=22, file='velocity.dat', form='formatted', position=positi)
             end if
             if (ieskint .ne. 0) then
-                write (6, *) 'forces and position files ', message
+                call log_info('forces and position files ', message)
                 open (unit=17, file='position.dat', form='formatted', position=positi)
                 !       if(yesquantum) then
                 !         write(6,*) 'Beads position files (PIMD) ',message
@@ -133,11 +134,11 @@ subroutine open_files(rank, scratchpath)
                 !       endif
             end if
             if (iespbc) then
-                write (*, *) ' Pressure file ', message
+                call log_info(' Pressure file ', message)
                 open (unit=23, file='pressure.dat', form='formatted', position=positi)
             end if
             if (ncg_adr .gt. 0 .or. npower + npowersz .gt. 0) then
-                write (*, *) ' parametrization file ', message
+                call log_info(' parametrization file ', message)
                 open (unit=25, file='parametrization.dat', form='formatted', position=positi)
             end if
 

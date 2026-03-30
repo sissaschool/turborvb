@@ -15,6 +15,7 @@
 
 subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, forza&
         &, g, h, psip, maxit, eps, epsdgel, fkav, x, parcut, eps_umrigar)
+    use logger_io, only: log_info, log_warning, log_error
     implicit none
     integer np, npk, i, ii, j, k, nl, npp, nbin, maxit, iter, rank, info, np3, np4&
             &, npm, ierr, countzero, comm_mpi, kpr, kpc, kp_complex, kpcp, npt, kpp, rank_t
@@ -201,7 +202,7 @@ subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, 
                 x(i + 1) = 0.d0
             end if
         else
-            if (rank_t .eq. 0 .and. fkav(i) .ne. 0.d0) write (6, *) ' Warning sr parameter too small !!! '
+            if (fkav(i) .ne. 0.d0) call log_warning(' Warning sr parameter too small !!! ')
             countzero = countzero + 1
             do j = 1, nbin
                 mat(j, i) = 0.d0
@@ -220,8 +221,7 @@ subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, 
             end do
             x(i) = forza(i)/fkav(i)
         else
-            if (rank_t .eq. 0 .and. fkav(i) .ne. 0.d0) &
-                    &  write (6, *) ' Warning sr parameter too small !!! '
+            if (fkav(i) .ne. 0.d0) call log_warning(' Warning sr parameter too small !!! ')
             countzero = countzero + 1
             do j = 1, nbin
                 mat(j, i) = 0.d0
@@ -334,8 +334,7 @@ subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, 
                     lambda = -ddot(np, h, 1, g, 1)/cost
                     error = abs(lambda)*dsqrt(cost)
                 else
-                    if (rank .eq. 0)                                                   &
-                            & write (6, *) ' ERROR  Non positive  definite matrix !!!'
+                    call log_error(' ERROR  Non positive  definite matrix !!!')
 
 #ifdef PARALLEL
                     call mpi_finalize(ierr)
@@ -401,7 +400,7 @@ subroutine conjginv(np, kp_complex, symmagp, nbin, rank_t, rank, comm_mpi, mat, 
             iter = iter + 1
 
         end do
-        if (rank .eq. 0) write (6, *) ' Output  cg  iter error   =', iter, error
+        call log_info(' Output  cg  iter error   =', iter, error)
         ! endif countzero
     end if
     do i = 1, np

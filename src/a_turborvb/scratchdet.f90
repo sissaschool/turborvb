@@ -16,7 +16,7 @@
 subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip, info)
     use constants, only: ipc, ipf, zone, zzero, nbdgetri, yes_ontarget
     use allio, only: nelorbh, nelorb, nelup, nel, indt4, neldo, nelup_mat, nel_mat, ndiff, npar_eagp, eagp_pfaff, agpn, epscuttype
-
+    use logger_io, only: log_error, log_info
     implicit none
     integer nelorb5, i, j, k, psidetsn, ipsip(nelup_mat), info
     !  integer,intent(in) :: nelorb,nelup,nel,indt4
@@ -207,7 +207,7 @@ subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip,
 
     if (info .ne. 0 .and. ipf .eq. 1) then
 
-        write (6, *) 'ERROR IN Z/DGETRF info  =', info
+        call log_error('ERROR IN Z/DGETRF info  =', info)
         call dscalzero(ipc*nelup_mat*nelup_mat, 0.d0, psip, 1)
 #ifdef _OFFLOAD
 !$omp target update from  (winv,winvbar) if(yes_ontarget)
@@ -264,17 +264,17 @@ subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip,
             end if
         end if
         if (ipc .eq. 2) then
-            write (6, *) ' input  matrix element DET AGP (real/imag) '
+            call log_info(' input  matrix element DET AGP (real/imag) ')
             do i = 1, nelup_mat
                 do j = 1, nelup_mat
-                    write (6, *) i, j, psip(2*i - 1, j), psip(2*i, j)
+                    call log_info(i, j, psip(2*i - 1, j), psip(2*i, j))
                 end do
             end do
         else
-            write (6, *) ' input  matrix element DET AGP  '
+            call log_info(' input  matrix element DET AGP  ')
             do i = 1, nelup_mat
                 do j = 1, nelup_mat
-                    write (6, *) i, j, psip(i, j)
+                    call log_info(i, j, psip(i, j))
                 end do
             end do
         end if
@@ -303,7 +303,7 @@ subroutine scratchdet(winv, winvbar, ainv, psidetln, psip, scratch_getri, ipsip,
         end if
 
         if (info .ne. 0) then
-            write (6, *) 'ERROR IN Z/DGETRI info =', info
+            call log_error('ERROR IN Z/DGETRI info =', info)
             return
         end if
         if (ipf .ne. 2) then

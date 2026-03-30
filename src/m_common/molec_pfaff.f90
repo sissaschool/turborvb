@@ -24,6 +24,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
+    use logger_io, only: log_error
     implicit none
     integer :: nelorb_c, ipc, lda
     integer :: i, j, ierr ! auxiliary variables
@@ -44,6 +45,8 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
                             eigvect(:, :), detmattr(:, :), auxmat(:, :), auxmat2(:, :), auxmat1(:, :)
     integer, allocatable :: iwork(:), ifail(:)
     complex(8) :: zzero, zone
+
+    integer :: kk
 
     zzero = (0.d0, 0.d0)
     zone = (1.d0, 0.d0)
@@ -69,9 +72,12 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
     end do
 
     if (ierr .gt. 0) then
-        write (6, *) "ERROR DSTEVX: the eigenvectors:", ifail(1:ierr), "did not converged!"
+        call log_error("ERROR DSTEVX: the eigenvectors did not converged! ierr=", ierr)
+        do kk=1, ierr
+           call log_error(ifail(kk))
+        end do
     else if (ierr .lt. 0) then
-        write (6, *) "ERROR DSTEVX: the parameter:", ierr, "has an illegal value!"
+        call log_error("ERROR DSTEVX: the parameter:", ierr, "has an illegal value!")
     end if
 
     call finalize_mopfaff(lda, nelorb_c, ipc, U1, U3, eigvalues, eigvect, outvl, outvct, detmat_c)
@@ -80,6 +86,7 @@ subroutine pfaffian_mo(lda, nelorb_c, ipc, detmat_c, outvl, outvct)
 end subroutine pfaffian_mo
 
 function orb_max(n, vect)
+    use logger_io, only: log_error
     integer n, i
     real(8) orb_max, safemin
     real(8) vect(n)
@@ -93,7 +100,7 @@ function orb_max(n, vect)
         orb_max = vect(i)
     else
         !  if all the elements satisfies the dowhile ineq. the normalization of vect < 0.57.. not possible
-        write (6, *) ' ERROR check normalization dstevx in molec_pfaff '
+        call log_error(' ERROR check normalization dstevx in molec_pfaff ')
     end if
     return
 end
@@ -104,6 +111,7 @@ end
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine symmtriang(nelorb_c, ipc, detmattr, lambdars, U3)
+    use logger_io, only: log_info
     implicit none
     integer :: nelorb_c, ipc
     integer :: i, j ! auxiliary variables
@@ -161,9 +169,9 @@ subroutine symmtriang(nelorb_c, ipc, detmattr, lambdars, U3)
     !call print_matrix(nelorb_c, 2, lambdars_test)
 
     lambdaih_test = lambdaih_test - lambdars_test
-    write (6, *) "If everything is correct no output before <Check U3 Completed>"
+    call log_info("If everything is correct no output before <Check U3 Completed>")
     call print_matrix(nelorb_c, nelorb_c, 2, lambdaih_test)
-    write (6, *) "Check U3 Completed"
+    call log_info("Check U3 Completed")
 
     deallocate (lambdars_test, lambdaih_test, auxmat)
 
@@ -176,6 +184,7 @@ end subroutine symmtriang
 !matrix detmattr and to calculate U1
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
+    use logger_io, only: log_info
     implicit none
     integer :: nelorb_c, ipc
     real(8) :: detmattr(ipc*nelorb_c, nelorb_c), U1(ipc*nelorb_c, nelorb_c)
@@ -202,7 +211,7 @@ subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
         lwork = idnint(testr)
         allocate (work(lwork))
         call dsktrd("U", "N", nelorb_c, U1, nelorb_c, aux, tau, work, lwork, info)
-        if (info .ne. 0) write (6, *) "Parameter n", info, "of dsktrd is incorrect"
+        if (info .ne. 0) call log_info("Parameter n", info, "of dsktrd is incorrect")
 
         do i = 1, nelorb_c - 1
             detmattr(i, i + 1) = U1(i, i + 1)
@@ -210,14 +219,14 @@ subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
             U1(i, i + 1) = 1.d0
         end do
         call dorgtr("U", nelorb_c, U1, nelorb_c, tau, work, lwork, info)
-        if (info .ne. 0) write (6, *) "Parameter n", info, "of dorgtr is incorrect"
+        if (info .ne. 0) call log_info("Parameter n", info, "of dorgtr is incorrect")
     else
         !Look for the documentation, this thing is a real mess
         call zsktrd("U", "N", nelorb_c, U1, nelorb_c, aux, tau, testc, lwork, info)
         lwork = idnint(dreal(testc))
         allocate (work(lwork*ipc))
         call zsktrd("U", "N", nelorb_c, U1, nelorb_c, aux, tau, work, lwork, info)
-        if (info .ne. 0) write (6, *) "Parameter n", info, "of dsktrd is incorrect"
+        if (info .ne. 0) call log_info("Parameter n", info, "of dsktrd is incorrect")
 
         !     stop
         do i = 1, nelorb_c - 1
@@ -230,7 +239,7 @@ subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
         end do
 
         call zungtr("U", nelorb_c, U1, nelorb_c, tau, work, lwork, info)
-        if (info .ne. 0) write (6, *) "Parameter n", info, "of dorgtr is incorrect"
+        if (info .ne. 0) call log_info("Parameter n", info, "of dorgtr is incorrect")
         !     call print_matrix(nelorb_c,2,U1)
     end if
 
@@ -248,9 +257,9 @@ subroutine pfatriag(nelorb_c, ipc, detmattr, U1)
         call ZGEMM("N", "T", nelorb_c, nelorb_c, nelorb_c, -zone, aux, nelorb_c, &
                    U1, nelorb_c, zone, auxmat, nelorb_c)
     end if
-    write (6, *) "If everything is correct no output before <Check U1 Completed>"
+    call log_info("If everything is correct no output before <Check U1 Completed>")
     call print_matrix(nelorb_c, nelorb_c, ipc, auxmat)
-    write (6, *) "Check U1 Completed"
+    call log_info("Check U1 Completed")
     deallocate (auxmat)
 #endif
     deallocate (aux, tau, work)
@@ -262,6 +271,7 @@ end subroutine pfatriag
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 subroutine finalize_mopfaff(lda, nelorb_c, ipc, U1, U3, eigvalues, eigvect, outvl, outvct, detmat_c)
+    use logger_io, only: log_info
     implicit none
     integer :: nelorb_c, ipc, lda
     integer :: i, ind_even
@@ -399,9 +409,9 @@ subroutine finalize_mopfaff(lda, nelorb_c, ipc, U1, U3, eigvalues, eigvect, outv
 
     auxmat = auxmat - detmat_c
 
-    write (6, *) "If everything is correct no output before <Choice Completed>"
+    call log_info("If everything is correct no output before <Choice Completed>")
     call print_matrix(lda, nelorb_c, ipc, auxmat)
-    write (6, *) "<Choice Completed>"
+    call log_info("<Choice Completed>")
     deallocate (auxvect2)
 #endif
 
@@ -490,6 +500,7 @@ end subroutine fill_tridiag
 !Subroutine that  matrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine print_matrix(lda, nelorb_c, ipc, detmat_c)
+    use logger_io, only: log_info
     implicit none
     integer :: nelorb_c, lda, ipc
     integer :: i, j !Auxiliary variables
@@ -502,10 +513,10 @@ subroutine print_matrix(lda, nelorb_c, ipc, detmat_c)
         do j = 1, nelorb_c
             if (ipc .eq. 2) then
                 if (abs(detmat_c(2*j, i)) + abs(detmat_c(2*j - 1, i)) .gt. prec) &
-                    write (6, *) j, i, detmat_c(2*j - 1, i), detmat_c(2*j, i)
+                    call log_info(j, i, detmat_c(2*j - 1, i), detmat_c(2*j, i))
             else
                 if (abs(detmat_c(j, i)) .gt. prec) &
-                    write (6, *) j, i, detmat_c(j, i)
+                    call log_info(j, i, detmat_c(j, i))
 
             end if
         end do

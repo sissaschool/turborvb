@@ -459,6 +459,7 @@ function multioptorb(ioptorb)
 end function multioptorb
 
 function check_multioptorb(multi, ioptorb, switch)
+    use logger_io, only: log_error, log_info, log_warning
     implicit none
     integer :: check_multioptorb, multi, ioptorb
     character :: switch
@@ -468,21 +469,19 @@ function check_multioptorb(multi, ioptorb, switch)
     if (multioptorb(ioptorb) .ne. 0) then
         if (multi .ne. multioptorb(ioptorb)) then
             if (switch .eq. 'E') then
-                write (6, *) ' ERROR: the multiplicity of orbital ', ioptorb
-                write (6, *) '              should be corrected as ', multioptorb(ioptorb)
+                call log_error(' ERROR: the multiplicity of orbital ', ioptorb)
+                call log_info('              should be corrected as ', multioptorb(ioptorb))
             elseif (switch .eq. 'W') then
                 multi = multioptorb(ioptorb)
-                write (6, *) ' Warning the multiplicity of orbital ', ioptorb, &
-                        &' has been replaced by ', multi
+                call log_warning(' Warning the multiplicity of orbital ', ioptorb, ' has been replaced by ', multi)
             else
-                write (6, *) 'Non-exist switch in check_multioptorb!'
+                call log_info('Non-exist switch in check_multioptorb!')
                 stop
             end if
             check_multioptorb = 1
         end if
     else
-        write (6, *) ' Warning the default multiplicity of ', ioptorb, &
-                &' is not defined! Please update function multioptorb!'
+        call log_warning(' Warning the default multiplicity of ', ioptorb, ' is not defined! Please update function multioptorb!')
     end if
 
     return

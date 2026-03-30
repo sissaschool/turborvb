@@ -137,6 +137,13 @@ if( ${LIBRARY} MATCHES common-.* )
         upvpot_ei.f90
         nvtx.f90
         ran.f90
+        # logger
+        logger_io.f90
+        stdlib_logger.f90
+        stdlib_ascii.f90
+        stdlib_kinds.f90
+        stdlib_optval.f90
+        tostring.f90
         ${HELP_FILE}
         ${VER_FILE}
     )

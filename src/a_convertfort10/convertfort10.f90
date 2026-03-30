@@ -19,6 +19,7 @@ program convertfort10
     use constants
     use IO_m
     use sub_comm
+    use logger_io, only: log_error, log_warning, log_info, log_debug, logger_config
     implicit none
     integer*8 indr, mesh, proc8
     integer i, j, k, ind, nbuf, nleft, jion, max_iter&
@@ -121,6 +122,8 @@ program convertfort10
     nprocn = 1
     commopt_mpi = 0
 #endif
+    ! configure logger so that only rank 0 outputs (rankn is the MPI rank)
+    call logger_config(rank=rankn)
     ! output version information
     if (rankn .eq. 0) call print_version
 
@@ -244,11 +247,9 @@ program convertfort10
         yesopen = .false.
     end if
 
-    if (rankn .eq. 0) then
-        if (overlap .and. .not. symmagp .and. ipc .ne. 1) then
-            write (6, *) ' Overlap with spin dependent or complex AGP not implemented yet '
-            iflagerr = 1
-        end if
+    if (overlap .and. .not. symmagp .and. ipc .ne. 1) then
+        call log_error(' Overlap with spin dependent or complex AGP not implemented yet ')
+        iflagerr = 1
     end if
     call checkiflagerr(iflagerr, rankn, 'ERROR reading opt_zeta')
 
@@ -265,7 +266,7 @@ program convertfort10
     end if
     call deallocate_all
 
-    if (rankn .eq. 0) write (6, *) ' # processor read ', nprocn
+    call log_info(' # processor read ', nprocn)
 
     rank = rankn
     nw = nprocn
@@ -300,9 +301,7 @@ program convertfort10
     end if
 
     if (ipj .eq. 2 .and. change_jas) then
-        if (rank .eq. 0) &
-                &write (6, *) ' Warning change_jas is set to .false., as it does not &
-                &work for generic Jastrow  -12/-22'
+        call log_warning(' Warning change_jas is set to .false., as it does not work for generic Jastrow -12/-22')
         change_jas = .false.
     end if
 
@@ -335,7 +334,7 @@ program convertfort10
     if (eqion) then
 
         if (nion_in .ne. nion) then
-            if (rank .eq. 0) write (6, *) ' The two wf should have the same number of ions', nion, nion_in
+            call log_error(' The two wf should have the same number of ions', nion, nion_in)
 
 #ifdef PARALLEL
             call mpi_finalize(ierr)
@@ -358,8 +357,7 @@ program convertfort10
 
             if (occion(i)) then
 
-                if (rank .eq. 0) write (6, *) 'The input wf do not match with fort.10_out,&
-                        & try eqion=.false. '
+                call log_error('The input wf do not match with fort.10_out, try eqion=.false. ')
 
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
@@ -382,16 +380,14 @@ program convertfort10
     distp = 0.d0
 
     if (ipf_in .ne. ipf) then
-        if (rankn .eq. 0) write (6, *) ' Pfaffian in/out =/  Normal in/out CASE not implemented:&
-                & please transform both in Pfaffians with convertpfaff.x tool'
+        call log_error(' Pfaffian in/out =/ Normal in/out CASE not implemented: please transform both in Pfaffians with convertpfaff.x tool')
 #ifdef PARALLEL
         call mpi_finalize(ierr)
 #endif
         stop
     end if
     if (ipc_in .ne. ipc) then
-        if (rankn .eq. 0) write (6, *) ' Complex  in/out =/  Real in/out CASE not implemented:&
-                & please transform both in complex  with real_to_complex.x  tool'
+        call log_error(' Complex in/out =/ Real in/out CASE not implemented: please transform both in complex with real_to_complex.x tool')
 #ifdef PARALLEL
         call mpi_finalize(ierr)
 #endif
@@ -451,9 +447,7 @@ program convertfort10
             oversn = 0.d0
 
             if (ndiff .ne. nelcolc_in - nelorbc_in) then
-                if (rank .eq. 0) write (6, *) ' The two wf should  have             &
-                        &the same number of unpaired orb.'
-                !!!'
+                call log_error(' The two wf should have the same number of unpaired orb. !!!')
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -530,8 +524,7 @@ program convertfort10
                 overunpaired = overunpaired*psip(ipf*nelorbh - i + 1)
             end do
 
-            if (rank .eq. 0)                                                   &
-                    &  write (6, *) ' Overlap square unpaired uncontr. =', overunpaired
+            call log_info(' Overlap square unpaired uncontr. =', overunpaired)
             if (.not. overlap) then
                 do i = 1, ndiff
                     call dcopy(ipc*ipf*nelorbh, oversn(1, ipf*nelorbh - ndiff + i), 1&
@@ -746,16 +739,12 @@ program convertfort10
 
                     call dsygv_my(ipc, multpointer(ii), psi_out, nelorbh, psip(nelorbh + 1), nelorbh&
                             &, .true., umat, eigmat, psip, mine, mat, epsdgel, .false., info, nprocu, rank, comm_mpi)
-                    if (rank .eq. 0) then
-                        write (6, *) ' DMRG AGP eigs atom=', kiontot(ii)
-                        do j = 1, multpointer(ii)
-                            write (6, *) j, psip(j)
-                        end do
-                    end if
-                    if (psip(1) .lt. -epsdgel .and. rank .eq. 0) then
-                        write (6, *) ' Warning possible   garbage !!!&
-                                & Negative DMRG eigenv increase epsdgel '
-                        !      write(6,*) 'eigenvalues dmrg =',ii,(psip(j),j=1,multpointer(ii))
+                    call log_info(' DMRG AGP eigs atom=', kiontot(ii))
+                    do j = 1, multpointer(ii)
+                        call log_info(j, psip(j))
+                    end do
+                    if (psip(1) .lt. -epsdgel) then
+                        call log_warning(' Warning possible garbage !!! Negative DMRG eigenv increase epsdgel ')
                     end if
 
                     if (ind .le. multpointer(ii)) then
@@ -764,7 +753,7 @@ program convertfort10
                             !             choose the gauge
                             maxpsi = 0.d0
                             imax = 0
-                            if (rank .eq. 0) write (6, *) ' dimension =', multpointer(ii), ind
+                            call log_info(' dimension =', multpointer(ii), ind)
                             do kk = 1, ipc*multpointer(ii)
                                 if (abs(psi_out(kk, multpointer(ii) - i + 1)) .gt. maxpsi) then
                                     maxpsi = abs(psi_out(kk, multpointer(ii) - i + 1))
@@ -784,8 +773,7 @@ program convertfort10
                             end if
                         end do
                     else
-                        if (rank .eq. 0) write (6, *) ' Too many contracted orbitals    &
-                                &  they are dependent !!! ', ind, multpointer(ii)
+                        call log_error(' Too many contracted orbitals they are dependent !!! ', ind, multpointer(ii))
 #ifdef PARALLEL
                         call mpi_finalize(ierr)
 #endif
@@ -911,7 +899,7 @@ program convertfort10
 
                 cost = abs(overoj/overojsz)
 
-                if (rank .eq. 0) write (6, *) ' Warning changing density matrix for Sz Jastrow weight= ', cost
+                call log_warning(' Warning changing density matrix for Sz Jastrow weight= ', cost)
 
                 !        add to the density matrix the Jastrow sz with the same weight
                 call dgemm_my('N', 'N', nelorbjh, nelorbjh, nelorbjh, 1.d0, over_sav&
@@ -1011,22 +999,18 @@ program convertfort10
                                     & = over_sav(mupointer(i, ii), mupointer(j, ii))
                         end do
                     end do
-                    if (rank .eq. 0) write (6, *) ' DMRG Jas eigs', ii, multpointer(ii)
+                    call log_info(' DMRG Jas eigs', ii, multpointer(ii))
                     call dsygv_my(1, multpointer(ii), psi_out, nelorbjh, psip(nelorbjh + 1), nelorbjh&
                             &, .true., umat, eigmat, psip, mine, mat, epsdgel, .false., info, nprocu, rank, comm_mpi)
-                    if (rank .eq. 0) then
-                        write (6, *) ' DMRG Jas eigs atom=', kiontotj(ii)
-                        do j = 1, multpointer(ii)
-                            write (6, *) j, psip(j)
-                        end do
-                    end if
+                    call log_info(' DMRG Jas eigs atom=', kiontotj(ii))
+                    do j = 1, multpointer(ii)
+                        call log_info(j, psip(j))
+                    end do
                     !          call  eval_molec_epsdgel(multpointer(ii),psip(nelorbjh+1),mat&
                     !    &,psi_out,psip,nelorbjh,epsdgel,1,rank,rank,comm_mpi,0,.true.)
-                    if (psip(1) .lt. -epsdgel .and. rank .eq. 0) then
-                        write (6, *) ' Warning possible   garbage !!!                 &
-                                &    Negative DMRG Jastow eigenv                                   &
-                                &       increase epsdgel '
-                        write (6, *) 'eigenvalues dmrg =', ii, (psip(j), j=1, multpointer(ii))
+                    if (psip(1) .lt. -epsdgel) then
+                        call log_warning(' Warning possible garbage !!! Negative DMRG Jastow eigenv increase epsdgel ')
+                        call log_warning('eigenvalues dmrg =', ii)
                     end if
 
                     if (ind .le. multpointer(ii)) then
@@ -1055,8 +1039,7 @@ program convertfort10
                         end do
 
                     else
-                        if (rank .eq. 0) write (6, *) ' Too many contracted Jastrow     &
-                                & orbitals  they are dependent !!! ', ind, multpointer(ii)
+                        call log_error(' Too many contracted Jastrow orbitals they are dependent !!! ', ind, multpointer(ii))
 #ifdef PARALLEL
                         call mpi_finalize(ierr)
 #endif
@@ -1108,16 +1091,14 @@ program convertfort10
                                 psip(nelorbjh*j + i) = over_sav(mupointer(i, ii), mupointer(j, ii))
                             end do
                         end do
-                        if (rank .eq. 0) write (6, *) ' DMRG Jas Sz  eigs'
+                        call log_info(' DMRG Jas Sz  eigs')
                         call dsygv_my(1, multpointer(ii), psi_out, nelorbjh, psip(nelorbjh + 1), nelorbjh&
                                 &, .true., umat, eigmat, psip, mine, mat, epsdgel, .false., info, nprocu, rank, comm_mpi)
                         !          call  eval_molec_epsdgel(multpointer(ii),psip(nelorbjh+1),mat&
                         !    &,psi_out,psip,nelorbjh,epsdgel,1,rank,rank,comm_mpi,0,.true.)
-                        if (psip(1) .lt. -epsdgel .and. rank .eq. 0) then
-                            write (6, *) ' Warning possible   garbage !!!                 &
-                                    &    Negative DMRG Jastow eigenv                                   &
-                                    &       increase epsdgel '
-                            write (6, *) 'eigenvalues dmrg =', ii, (psip(j), j=1, multpointer(ii))
+                        if (psip(1) .lt. -epsdgel) then
+                            call log_warning(' Warning possible garbage !!! Negative DMRG Jastow eigenv increase epsdgel ')
+                            call log_warning('eigenvalues dmrg =', ii)
                         end if
 
                         if (ind .le. multpointer(ii)) then
@@ -1138,8 +1119,7 @@ program convertfort10
                             end do
 
                         else
-                            if (rank .eq. 0) write (6, *) ' Too many contracted Jastrow     &
-                                    & orbitals  they are dependent !!! ', ind, multpointer(ii)
+                            call log_error(' Too many contracted Jastrow orbitals they are dependent !!! ', ind, multpointer(ii))
 #ifdef PARALLEL
                             call mpi_finalize(ierr)
 #endif
@@ -1482,7 +1462,7 @@ program convertfort10
 
     if (real_agp .or. rmax .gt. 0) then
         if (ipf .eq. 2) then
-            write (6, *) ' ERROR not implemented option real_agp/rmax with  pfaffian !!! '
+            call log_error(' ERROR not implemented option real_agp/rmax with pfaffian !!! ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -1561,7 +1541,7 @@ program convertfort10
 
         deallocate (optimize)
 
-        if (rank .eq. 0) write (6, *) ' Overlap square =', overlapsquare
+        call log_info(' Overlap square =', overlapsquare)
 
     else
 
@@ -1629,7 +1609,7 @@ program convertfort10
             if (molecular .gt. 0) then
                 imin = imax - molecular + 1
                 dimo = molecular - nelup + neldo
-                if (rank .eq. 0) write (6, *) ' Changed imin =', imin, imax, dimo
+                call log_info(' Changed imin =', imin, imax, dimo)
             end if
         end if
         over_sav(1:ipc*imax, 1:imax) = oversn(1:ipc*imax, 1:imax)
@@ -1706,8 +1686,7 @@ program convertfort10
             overlapsquare = tracemat2(dimo, dimo, umat, dimo, mat, dimo)/overo
         end if
 
-        if (rank .eq. 0 .and. overo .ne. 0.d0) write (6, *)&
-                &  ' Overlap square Geminal  found =', overlapsquare
+        if (overo .ne. 0.d0) call log_info(' Overlap square Geminal found =', overlapsquare)
         !       normalization
         !OK
 
@@ -1760,9 +1739,9 @@ program convertfort10
 
                 end if
 
-                if (.not. checkall .and. rank .eq. 0) then
-                    write (6, *) ' Warning the matrix  AGP has some extra non zero element '
-                    write (6, *) 'Overlap square with no zero', over_new
+                if (.not. checkall) then
+                    call log_warning(' Warning the matrix AGP has some extra non zero element ')
+                    call log_warning('Overlap square with no zero', over_new)
                 end if
 
                 if (overlap) then
@@ -1789,13 +1768,9 @@ program convertfort10
                     ! compute Tr [S_out*lambda_proj*S_out*lambda_proj]
                     overo_norm_inout = tracemat(nelorb_cu, psip, nelorb_cu)
 
-                    if (rank .eq. 0) then
-                        write (6, *) 'Overlap between _in and _out geminals'
-                        write (6, *) 'absolute normalization', &
-                                &overodot_norm/sqrt(overo_norm*overon_norm)
-                        write (6, *) 'normalization in _out basis set', &
-                                &overodot_norm/sqrt(overo_norm_inout*overon_norm)
-                    end if
+                    call log_info('Overlap between _in and _out geminals')
+                    call log_info('absolute normalization', overodot_norm/sqrt(overo_norm*overon_norm))
+                    call log_info('normalization in _out basis set', overodot_norm/sqrt(overo_norm_inout*overon_norm))
                 end if
 
             end if
@@ -1820,8 +1795,7 @@ program convertfort10
     if (nelcol_c .gt. nelorb_c .and. npar_eagp .eq. 0) then
         if (molecular .gt. 0) dimo = dimo + nelup - neldo
         if (ndiff .ne. nelcolc_in - nelorbc_in) then
-            if (rank .eq. 0) write (6, *) ' The two wf should  have the same&
-                    &number of unpaired orb.  !!!'
+            call log_error(' The two wf should have the same number of unpaired orb. !!!')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -1906,11 +1880,9 @@ program convertfort10
         allocate (psip(lwork))
         psip = 0.d0
 
-        if (rank .eq. 0) then
-            write (6, *) ' input martices ', nelorb_c
-            write (6, *) ' minimum index  ', imin
-            write (6, *) ' dimension uncontr =  ', dimo
-        end if
+        call log_info(' input martices ', nelorb_c)
+        call log_info(' minimum index  ', imin)
+        call log_info(' dimension uncontr =  ', dimo)
 
         if (molecular .gt. 0 .or. ipc .eq. 2) then
             call invsymeps(ipc, dimo, over_sav(imin, imin)&
@@ -1930,8 +1902,7 @@ program convertfort10
             overunpairedc = overunpairedc*psip(dimo - i + 1)
         end do
 
-        if (rank .eq. 0) write (6, *) ' Overlap square unpaired contr. ='    &
-                &, overunpairedc
+        call log_info(' Overlap square unpaired contr. =', overunpairedc)
         !        if(rank.eq.0) then
         !        write(6,*) ' Eigenvalues found ',ndiff
         !        do i=1,dimo
@@ -1979,8 +1950,7 @@ program convertfort10
             end do
             occorb(i_max) = .false.
             if (i_max .eq. 0) then
-                if (rank .eq. 0) write (6, *) ' There should be some error          &
-                        &   in unpaired orbitals !!'
+                call log_error(' There should be some error in unpaired orbitals !!')
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -2187,7 +2157,7 @@ program convertfort10
                 imax = imax - molecularj/2
                 dimo = molecularj/2
             end if
-            if (rank .eq. 0) write (6, *) ' Changed imin =', imin, imax, dimo
+            call log_info(' Changed imin =', imin, imax, dimo)
         end if
 
         !       calculation inverse of overlap matrix
@@ -2224,8 +2194,7 @@ program convertfort10
 
         overlapsquarej = tracemat(dimo, oversnj, dimo)/overoj
 
-        if (rank .eq. 0 .and. overoj .ne. 0.d0)                                                   &
-                &  write (6, *) ' Overlap square Jas  found =', overlapsquarej
+        if (overoj .ne. 0.d0) call log_info(' Overlap square Jas  found =', overlapsquarej)
         !       cost=1.d0/dsqrt(overlapsquarej)
         !       to be closest in L2 norm
         cost = 1.d0
@@ -2241,12 +2210,10 @@ program convertfort10
 
         call checkmat(nelorbj_c, mat, nelorbj_c, nozeroj_c, nnozeroj_c, checkall, rank, 0.d0, .true., 1)
         if (.not. checkall) then
-            if (rank .eq. 0) write (6, *) ' Warning the matrix Jas has some extra&
-                    & non zero element '
+            call log_warning(' Warning the matrix Jas has some extra non zero element ')
             call dgemm_my('N', 'N', nelorbj_c, nelorbj_c, nelorbj_c, 1.d0, over_sav&
                     &, nelorbj_c, mat, nelorbj_c, 0.d0, psip, nelorbj_c, nprocu, rank, comm_mpi)
-            if (rank .eq. 0)&
-                    &write (6, *) 'Overlap square with no zero', tracemat(nelorbj_c, psip, nelorbj_c)/overoj
+            call log_warning('Overlap square with no zero', tracemat(nelorbj_c, psip, nelorbj_c)/overoj)
         end if
 
         if (contractionj .ne. 0) then
@@ -2277,7 +2244,7 @@ program convertfort10
                 imin = imax + 1
                 imax = imax + molecularj/2
                 dimo = molecularj/2
-                if (rank .eq. 0) write (6, *) ' Changed imin Sz =', imin, imax, dimo
+                call log_info(' Changed imin Sz =', imin, imax, dimo)
                 over_sav(1:imax, 1:imax) = oversnj(1:imax, 1:imax)
                 call invsymeps(1, dimo, oversnj(imin, imin)&
                         &, nelorbj_c, info, epsdgel, mine, umat, eigmat, nprocu, rank, comm_mpi)
@@ -2292,8 +2259,7 @@ program convertfort10
 
             overlapsquarejsz = tracemat(dimo, oversnj, dimo)/overojsz
 
-            if (rank .eq. 0 .and. overojsz .ne. 0.d0)                             &
-                    &  write (6, *) ' Overlap square Jas Sz found =', overlapsquarejsz
+            if (overojsz .ne. 0.d0) call log_info(' Overlap square Jas Sz found =', overlapsquarejsz)
 
             !       cost=1.d0/dsqrt(overlapsquarejsz)
             !       to be closest in L2 norm
@@ -2309,11 +2275,10 @@ program convertfort10
 
             call checkmat(nelorbj_c, mat, nelorbj_c, nozeroj_c, nnozeroj_c, checkall, rank, 0.d0, .true., 1)
             if (.not. checkall) then
-                if (rank .eq. 0) write (6, *) ' Warning the matrix Jas-Sz  has some extra non zero element '
+                call log_warning(' Warning the matrix Jas-Sz  has some extra non zero element ')
                 call dgemm_my('N', 'N', nelorbj_c, nelorbj_c, nelorbj_c, 1.d0, over_sav&
                         &, nelorbj_c, mat, nelorbj_c, 0.d0, psip, nelorbj_c, nprocu, rank, comm_mpi)
-                if (rank .eq. 0) &
-                    write (6, *) 'Overlap square with no zero', tracemat(nelorbj_c, psip, nelorbj_c)/overojsz
+                call log_warning('Overlap square with no zero', tracemat(nelorbj_c, psip, nelorbj_c)/overojsz)
             end if
 
             if (contractionj .ne. 0) then
@@ -2503,8 +2468,7 @@ contains
         nelorb_cu = nelorbcu_in
         nelorbjc_in = nelorbj_c
         if (ipj .eq. 2 .and. change_jas) then
-            if (rank .eq. 0) write (6, *) ' Warning change_jas is set to .false., as it does not &
-                    &work for generic Jastrow  -12/-22'
+            call log_warning(' Warning change_jas is set to .false., as it does not work for generic Jastrow -12/-22')
             change_jas = .false.
         end if
         if (rank .eq. 0) then
@@ -2534,19 +2498,19 @@ contains
 118         continue
             if (ny .eq. 0) then
                 ny = nx
-                write (6, *) ' Default value for ny=', ny
+                call log_info(' Default value for ny=', ny)
             end if
             if (nz .eq. 0) then
                 nz = ny
-                write (6, *) ' Default value for nz=', nz
+                call log_info(' Default value for nz=', nz)
             end if
             if (ay .eq. 0. .and. .not. iespbc) then
                 ay = ax
-                write (6, *) ' Default value for ay=', ay
+                call log_info(' Default value for ay=', ay)
             end if
             if (az .eq. 0. .and. .not. iespbc) then
                 az = ay
-                write (6, *) ' Default value for az=', az
+                call log_info(' Default value for az=', az)
             end if
             if (nbufd .eq. -1) then
                 nbufd = 1024
@@ -2555,7 +2519,7 @@ contains
                 !        else
                 !        nbufd=100  ! there may be memory problems
                 !        endif
-                write (6, *) ' Default value for buffer dimension=', nbufd
+                call log_info(' Default value for buffer dimension=', nbufd)
             end if
         end if
         call checkiflagerr(iflagerr, rankn, 'ERROR reading mesh_info')
@@ -2579,7 +2543,7 @@ contains
             ax = cellscale(1)/nx
             ay = cellscale(2)/ny
             az = cellscale(3)/nz
-            if (rank .eq. 0) write (6, *) ' lattice mesh chosen ', ax, ay, az, Lbox
+            call log_info(' lattice mesh chosen ', ax, ay, az, Lbox)
         end if
 
         volmesh = ax*ay*az*unit_volume
@@ -2587,12 +2551,11 @@ contains
         if ((nbufd == 0) .or. (nx == 0) .or. (ny == 0) .or. (nz == 0) .or. volmesh .eq. 0.d0) then
             if (rank .eq. 0) then
                 if ((nx == 0) .or. (ny == 0) .or. (nz == 0)) then
-                    write (*, *) 'ERROR in the mesh input nx>0,ny>0,nz>0', nx, ny, nz
+                    call log_error('ERROR in the mesh input nx>0,ny>0,nz>0', nx, ny, nz)
                 end if
-                if (nbufd == 0) write (*, *) 'ERROR  buffer dimension nbufd>0', nbufd
-                if (volmesh .eq. 0.d0) write (6, *) ' ERROR Volmesh =0 , you should define ax>0,ay>0,az>0'&
-                        &, ax, ay, az
-                write (*, *) 'Program ends'
+                if (nbufd == 0) call log_error('ERROR buffer dimension nbufd>0', nbufd)
+                if (volmesh .eq. 0.d0) call log_error(' ERROR Volmesh =0 , you should define ax>0,ay>0,az>0', ax, ay, az)
+                call log_error('Program ends')
             end if
 #ifdef PARALLEL
             call mpi_finalize(ierr)
@@ -2614,7 +2577,7 @@ contains
         x = 0.d0
         call shift_originref
 
-        if (rank .eq. 0) write (6, *) 'New center of mesh =', rion_ref(:)
+        call log_info('New center of mesh =', rion_ref(1), rion_ref(2), rion_ref(3))
 
 #ifdef PARALLEL
         if (.not. bigram) open (100, file=trim(wherescratch)//'.'//chara, form='unformatted')
@@ -2654,8 +2617,7 @@ contains
         end if
 
         if (indr .gt. 2147483647 .and. bigram) then
-            if (rank .eq. 0) write (6, *) ' Warning not enough address  per mpi processor in AGP'&
-                    &, indr, '<=', 2147483647
+            call log_warning(' Warning not enough address per mpi processor in AGP', indr, '<=', 2147483647)
             bigram = .false.
         end if
 
@@ -2880,7 +2842,7 @@ contains
         indmax = ind
 #endif
         if (indmax .ne. 0) then
-            write (6, *) ' ERROR load_fort10in AGP check input nbufd and/or code '
+            call log_error(' ERROR load_fort10in AGP check input nbufd and/or code ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -3055,8 +3017,7 @@ contains
             end if
 
             if (indr .gt. 2147483647 .and. bigram) then
-                if (rank .eq. 0) write (6, *) ' Warning not enough address  per mpi processor in Jas '&
-                        &, indr, '<=', 2147483647
+                call log_warning(' Warning not enough address per mpi processor in Jas ', indr, '<=', 2147483647)
                 bigram = .false.
             end if
             if (bigram) then
@@ -3196,7 +3157,7 @@ contains
             indmax = ind
 #endif
             if (indmax .ne. 0) then
-                write (6, *) ' ERROR load_fort10in Jas check input nbufd and/or code '
+                call log_error(' ERROR load_fort10in Jas check input nbufd and/or code ')
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -3425,7 +3386,7 @@ contains
         indmax = ind
 #endif
         if (indmax .ne. 0) then
-            write (6, *) ' ERROR load_gemz check input nbufd and/or code '
+            call log_error(' ERROR load_gemz check input nbufd and/or code ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -3479,7 +3440,7 @@ contains
         call invsymeps(ipc, nelorbpf, oversnl, nelorbpf, info, epsdgel&
                 &, mine, umat, eigmat, nprocu, rank, comm_mpi)
         if (info .ne. 0) then
-            if (rank .eq. 0) write (6, *) ' SDV  failed  !!! ', info
+            call log_error(' SDV  failed  !!! ', info)
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -3554,8 +3515,7 @@ contains
 
         end if
 
-        if (rank .eq. 0 .and. overo .ne. 0) write (6, *)&
-                & ' Overlap square Geminal uncontracted found =', overlapsquare
+        if (overo .ne. 0) call log_info(' Overlap square Geminal uncontracted found =', overlapsquare)
         !OK
 
         !       to be closest in L2 norm
@@ -3677,7 +3637,7 @@ contains
         indmax = ind
 #endif
         if (indmax .ne. 0) then
-            write (6, *) ' ERROR load_jas check input nbufd and/or code '
+            call log_error(' ERROR load_jas check input nbufd and/or code ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -3706,7 +3666,7 @@ contains
                 &, nelorbjc_in, oversnjl, nelorbj, 0.d0, psip, nelorbjc_in, nprocu, rank, comm_mpi)
 
         if (info .ne. 0) then
-            if (rank .eq. 0) write (6, *) ' SDV  failed  !!! '
+            call log_error(' SDV  failed  !!! ')
 #ifdef PARALLEL
             call mpi_finalize(ierr)
 #endif
@@ -3720,8 +3680,7 @@ contains
 
         overlapsquarej = tracemat(nelorbjh, oversnjl, nelorbjh)/overoj
 
-        if (rank .eq. 0 .and. overoj .ne. 0.d0) write (6, *)&
-                & ' Overlap square Jas uncontracted found =', overlapsquarej
+        if (overoj .ne. 0.d0) call log_info(' Overlap square Jas uncontracted found =', overlapsquarej)
 
         cost = 1.d0
         call dgemm_my('N', 'N', nelorbjh, nelorbjh, nelorbjh, cost, inv_sav&
@@ -3751,8 +3710,7 @@ contains
 
             overlapsquarejsz = tracemat(nelorbjh, oversnjl, nelorbjh)/overojsz
 
-            if (rank .eq. 0 .and. overojsz .ne. 0.d0) write (6, *)&
-                    & ' Overlap square uncontracted Jas Sz found =', overlapsquarejsz
+            if (overojsz .ne. 0.d0) call log_info(' Overlap square uncontracted Jas Sz found =', overlapsquarejsz)
 
             !       cost=1.d0/dsqrt(overlapsquarejsz)
             !       to be closest in L2 norm
@@ -3998,6 +3956,7 @@ subroutine setorbcost(nelorbj_c, jasmat_c, orbcostn, nozeroj_c, nnozeroj_c)
 end subroutine setorbcost
 subroutine checkmat_complex(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, rank, epsr, symmagp, ipf)
     use allio, only: yes_hermite, pfaffup, kiontot
+    use logger_io, only: log_warning, log_error
     implicit none
     integer ix, iy, ixt, iyt, k, ndim, nelorbj_c, lead, nnozeroj_c, rank&
             &, indadds, imax, jmax, ipf, ndimh, nozeroj_c(*)
@@ -4080,23 +4039,23 @@ subroutine checkmat_complex(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, ch
                         imax = ixt
                         jmax = iyt
                     end if
-                    if (rank .eq. 0 .and. abs(jasmat_sav(lead*(iyt - 1) + ixt)) .gt. 1d-7) &
-                            &write (6, *) ' Not found element ', ixt, iyt&
-                            &, jasmat_sav(lead*(iyt - 1) + ixt)
+                    if (abs(jasmat_sav(lead*(iyt - 1) + ixt)) .gt. 1d-7) &
+                            call log_warning(' Not found element ', ixt, iyt, jasmat_sav(lead*(iyt - 1) + ixt))
                 end if
             end if
         end do
     end do
-    if (rank .eq. 0 .and. .not. checkall) then
-        write (6, *) ' Number of wrong matrix elements x~2 =', count
-        write (6, *) ' Average error =', error/count/scalem
-        write (6, *) ' Max  error =', errormax/scalem, imax, jmax
+    if (.not. checkall) then
+        call log_error(' Number of wrong matrix elements x~2 =', count)
+        call log_error(' Average error =', error/count/scalem)
+        call log_error(' Max  error =', errormax/scalem, imax, jmax)
     end if
 
     deallocate (jasmat_sav)
 end subroutine checkmat_complex
 subroutine checkmat(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, rank, epsr, symmagp, ipf)
     use allio, only: pfaffup, kiontot
+    use logger_io, only: log_warning, log_error
     implicit none
     integer ix, iy, ixt, iyt, k, ipf, ndim, ndimh, nelorbj_c, lead, nnozeroj_c, rank&
             &, indadds, imax, jmax, nozeroj_c(*)
@@ -4160,16 +4119,16 @@ subroutine checkmat(nelorbj_c, jasmat_c, lead, nozeroj_c, nnozeroj_c, checkall, 
                         imax = ixt
                         jmax = iyt
                     end if
-                    if (rank .eq. 0 .and. abs(jasmat_sav(lead*(iyt - 1) + ixt)) .gt. 1.d-7) &
-                            &write (6, *) ' Not found element ', ixt, iyt, jasmat_sav(lead*(iyt - 1) + ixt)
+                    if (abs(jasmat_sav(lead*(iyt - 1) + ixt)) .gt. 1.d-7) &
+                            call log_warning(' Not found element ', ixt, iyt, jasmat_sav(lead*(iyt - 1) + ixt))
                 end if
             end if
         end do
     end do
-    if (rank .eq. 0 .and. .not. checkall) then
-        write (6, *) ' Number of wrong matrix elements x~2 =', count
-        write (6, *) ' Average error =', error/count/scalem
-        write (6, *) ' Max  error =', errormax/scalem, imax, jmax
+    if (.not. checkall) then
+        call log_error(' Number of wrong matrix elements x~2 =', count)
+        call log_error(' Average error =', error/count/scalem)
+        call log_error(' Max  error =', errormax/scalem, imax, jmax)
     end if
 
     deallocate (jasmat_sav)

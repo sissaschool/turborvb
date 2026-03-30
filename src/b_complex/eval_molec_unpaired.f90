@@ -18,6 +18,7 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
     use constants, only: ipc, ipf, zzero, zone, zmone
     use allio, only: yes_hermite, symmetrize_agp&
             &, opposite_phase, same_phase, real_contracted, gauge_fixing
+    use logger_io, only: log_warning, log_info
     implicit none
     integer nelorb_c, i, j, nproc, rank, info, n, lda, mine, neig, lwork, ndiff&
             &, minemax, dimo, mino, dimn, dimorb, ierr, miner, dimor, il, iu, indi, indj&
@@ -280,11 +281,10 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
             !        write(6,*) ' warning zero eigenvalue !!! '
         end if
     end do
-    if (info .ne. 0 .and. rank .eq. 0) write (6, *)                         &
-            &' info > 0 in dsyevx !!! ', info
+                if (info .ne. 0) call log_info(' info > 0 in dsyevx !!! ', info)
 
-    if (mine .ne. 1 .and. rank .eq. 0)                                     &
-            &write (6, *) ' disregarded coll. =', mine - 1
+    if (mine .ne. 1)                                     &
+            & call log_warning(' disregarded coll. =', mine - 1)
 
     minemax = max(mine - 1, ndiff)
 
@@ -329,8 +329,7 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
     else
         call grahamo_complex(mat, work(2*ndiff + 1), work, n, ndiff, indunp)
     end if
-    if (indunp .ne. 0 .and. rank .eq. 0) write (6, *) &
-            &'Warning dependency, unpaired not changed', indunp
+    if (indunp .ne. 0) call log_info('Warning dependency, unpaired not changed', indunp)
     !       changing psi_unp back in the original space
     do i = 1, ndiff
         do j = 1, n
@@ -438,12 +437,10 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
                     if (eig_sav(i) .ne. work(i)) yesh = .false.
                 end do
             end if
-            if (rank .eq. 0) then
-                if (yes_constrainm) then
-                    write (6, *) ' Warning constraining molecular orbitals'
-                else
-                    write (6, *) ' Warning NO constraining molecular orbitals'
-                end if
+            if (yes_constrainm) then
+                call log_warning(' Warning constraining molecular orbitals')
+            else
+                call log_warning(' Warning NO constraining molecular orbitals')
             end if
             if (indi .gt. 0 .and.&
                     &((.not. opposite_phase .and. .not. same_phase) .or. .not. real_contracted)) then
@@ -502,8 +499,7 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
                         eigmr(i) = 0.d0
                     end if
                 end do
-                if (info .ne. 0 .and. rank .eq. 0) write (6, *)                         &
-                        &' info > 0 in dsyevx !!! ', info
+                if (info .ne. 0) call log_info(' info > 0 in dsyevx !!! ', info)
             else
                 if (opposite_phase .or. ipc .eq. 1) then
                     umatright = umat
@@ -860,12 +856,10 @@ subroutine eval_molec_unpaired(nelorb_c, overs, mat_in        &
     !          enddo
     !        enddo
 
-    if (rank .eq. 0) then
-        write (6, *) ' Eigenvalues hamiltonian '
-        do i = 1, nelorb_c/ipf
-            write (6, *) i, eig(i)
-        end do
-    end if
+    call log_info(' Eigenvalues hamiltonian ')
+    do i = 1, nelorb_c/ipf
+        call log_info(' Eigenvalue ', i, eig(i))
+    end do
     deallocate (mat, umat, eig_sav, work, eigmat, iwork, psint)
     if ((.not. symmagp .or. ipc .eq. 2) .and. ipf .eq. 1) deallocate (umatright, eigmr, eigright)
 

@@ -39,6 +39,7 @@ subroutine uptabtot(nelup, neldo, nelorb, nelorbh, jel            &
      &, molecular, enforce_detailb, dim_uptabtot, yes_ontarget, pot_aasunel&
      &, yes_sparse, nnozeroj, nozeroj, nelorbjh2, jasmat_c, muj_c, nelorbj_c, contractionj
     use dielectric
+    use logger_io, only: log_debug
     implicit none
 
     integer nelup, neldo, nel, jel, itest, nion, indtm(*), indjel        &
@@ -1085,8 +1086,7 @@ subroutine uptabtot(nelup, neldo, nelorb, nelorbh, jel            &
     end if
     !
 #ifdef DEBUG
-    write (6, *)
-    write (6, *) ' jastrowall_ei after uptabtot in DEBUG=', sum(abs(jastrowall_ei(1, :)))
+    call log_debug(' jastrowall_ei after uptabtot in DEBUG=', sum(abs(jastrowall_ei(1, :))))
 #endif
     !stop
     return

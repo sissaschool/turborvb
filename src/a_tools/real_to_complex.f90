@@ -20,7 +20,7 @@ program real_to_complex
     ! to a random number) the imaginary parts of the complex coefficients.
 
     use allio
-
+    use logger_io, only: log_error, log_info
     implicit none
     integer :: nshell_o, indpar, indpar_read, is, i, j, ufort10, ndetmatR, &
                ndupcR, cfl, nnozeroR, ind, nelorb_cnew, ix1, iy1, ii, count_mol
@@ -215,7 +215,7 @@ program real_to_complex
         if (contraction .ne. 0) then
             if (molecular .ne. 0 .and. symmagp) then
                 if (2*nozero_cnew(is) .gt. size(detmat_c)) then
-                    write (6, *) ' ERROR ', 2*nozero_cnew(is), size(detmat_c), 2*ndetmatR
+                    call log_error(' ERROR ', 2*nozero_cnew(is), size(detmat_c), 2*ndetmatR)
                     stop
                 end if
                 detmat_c(2*nozero_cnew(is) - 1) = detmatRead(nozero_c(is))
@@ -240,18 +240,18 @@ program real_to_complex
         ix = nozero_c(i) - (iy - 1)*nelorb_c
     end do
 #if defined DEBUG
-    write (6, *) ' Check basis set '
+    call log_info(' Check basis set ')
     do i = 1, iesupr_c
-        write (6, *) dupcRead(i), dup_c(2*(i - 1) + 1), dup_c(2*(i - 1) + 2)
+        call log_info(dupcRead(i), dup_c(2*(i - 1) + 1), dup_c(2*(i - 1) + 2))
     end do
-    write (6, *) ' Check detmat '
+    call log_info(' Check detmat ')
     if (contraction .ne. 0) then
         do i = 1, nnozero_c
-            write (6, *) detmatRead(nozero_c(i)), detmat_c(2*nozero_c(i) - 1), detmat_c(2*nozero_c(i))
+            call log_info(detmatRead(nozero_c(i)), detmat_c(2*nozero_c(i) - 1), detmat_c(2*nozero_c(i)))
         end do
     else
         do i = 1, nnozero
-            write (6, *) detmatRead(nozero(i)), detmat(2*nozero(i) - 1), detmat(2*nozero(i))
+            call log_info(detmatRead(nozero(i)), detmat(2*nozero(i) - 1), detmat(2*nozero(i)))
         end do
     end if
 #endif
@@ -272,15 +272,15 @@ program real_to_complex
 
     !!!!!!! ERRORS !!!!!!!
 
-101 write (6, *) ' Input fort.10 not found!!'
+101 call log_error(' Input fort.10 not found!!')
     stop
-102 write (6, *) ' Input fort.10 is already complex!!'
+102 call log_info(' Input fort.10 is already complex!!')
     stop
-103 write (6, *) ' You cannot use atomic orbital after molecular!!'
+103 call log_info(' You cannot use atomic orbital after molecular!!')
     stop
-104 write (6, *) ' Some error in reading determinant shells!!'
+104 call log_error(' Some error in reading determinant shells!!')
     stop
-105 write (6, *) ' Error in writing output fort.10_complex!!'
+105 call log_error(' Error in writing output fort.10_complex!!')
     stop
 
 contains

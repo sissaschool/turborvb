@@ -19,6 +19,7 @@
 ! written in Fortran 77.
 
 subroutine DSORT(X, Y, N, KFLAG)
+    use logger_io, only: log_error
     !***BEGIN PROLOGUE  DSORT
     !***DATE WRITTEN   761101   (YYMMDD)
     !***REVISION DATE  820801   (YYMMDD)
@@ -67,12 +68,11 @@ subroutine DSORT(X, Y, N, KFLAG)
     if (NN .ge. 1) GO TO 10
     !      CALL XERROR ( 'SSORT- THE NUMBER OF VALUES TO BE SORTED WAS NOT PO
     !     1SITIVE.',58,1,1)
-    write (*, *) 'SSORT- THE NUMBER OF VALUES TO BE SORTED WAS NOT >0'
+    call log_error('SSORT- THE NUMBER OF VALUES TO BE SORTED WAS NOT >0')
     return
 10  KK = IABS(KFLAG)
     if ((KK .eq. 1) .or. (KK .eq. 2)) GO TO 15
-    write (*, *) 'SSORT- THE SORT !ONTROL PARAMETER, K, WAS NOT 2, 1,&
-            & -1, OR -2.'
+    call log_error('SSORT- THE SORT CONTROL PARAMETER, K, WAS NOT 2, 1, -1, OR -2.')
     !      CALL XERROR ( 'SSORT- THE SORT CONTROL PARAMETER, K, WAS NOT 2, 1,
     !     1 -1, OR -2.',62,2,1)
     return

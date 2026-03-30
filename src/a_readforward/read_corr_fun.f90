@@ -31,6 +31,7 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     use allio, only: rion
     use cell, only: givens2r, s2r, yes_tilted
     use berry_phase, only: ifberry
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
     integer nion, corr_factors, fwd_propagations, j &
         , bin_length, initial_bin, fwd_skip, corrfun_dim, i, ngen, nbias, maxf, lbin, iskip, ddim, ibinit, iopt, ioptread
@@ -114,7 +115,7 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
         celldm(3) = 1.d0
         rs = 1.d0
         if (ell(1)*ell(2)*ell(3) .eq. 0.d0) then
-            write (6, *) ' Default box 10x10x10 a.u.. Change ell in input to modify it! '
+            call log_info(' Default box 10x10x10 a.u.. Change ell in input to modify it! ')
             cellscale(1) = 10.
             cellscale(2) = 10.
             cellscale(3) = 10.
@@ -132,14 +133,14 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
         ell(:) = cellscale(:)
     end if
 
-    write (6, *) 'SYSTEM PARAMETERS'
+    call log_info('SYSTEM PARAMETERS')
 
     if (nel - nelup .eq. 0) then
         fermi_flag = .false.
-        write (6, *) 'Bose particles, or spinless fermions'
+        call log_info('Bose particles, or spinless fermions')
     else
         fermi_flag = .true.
-        write (6, *) 'Fermi particles with spin'
+        call log_info('Fermi particles with spin')
     end if
 
     new_density = .false. ! (Matteo) Added default for flag assaraf density
@@ -202,20 +203,18 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
 
     read (55, nml=corrfun)
 
-    write (6, *) 'CORRELATION FUNCTION PARAMETERS'
-    write (6, *) 'corrective factors (corr_factors) =', corr_factors
-    write (6, *) 'forward propagations (fwd_propagations) =', fwd_propagations
-    write (6, *) 'skips forward (fwd_skip) =', fwd_skip
-    write (6, *) 'bin length (bin_length) =', bin_length
-    write (6, *) 'initial bin (initial_bin) =', initial_bin
-    write (6, *) 'active dimension (corrfun_dim) =', corrfun_dim
-    write (6, *) 'cartesian coordinates (cart_axes) =', (cartesian(cart_axes(i)), i=1, corrfun_dim)
-    write (6, *) 'offset =', (offset(i), i=1, corrfun_dim)
-    write (6, *) 'cutoff log wave function (shiftlog) =', shiftlog
+    call log_info('CORRELATION FUNCTION PARAMETERS')
+    call log_info('corrective factors (corr_factors) =', corr_factors)
+    call log_info('forward propagations (fwd_propagations) =', fwd_propagations)
+    call log_info('skips forward (fwd_skip) =', fwd_skip)
+    call log_info('bin length (bin_length) =', bin_length)
+    call log_info('initial bin (initial_bin) =', initial_bin)
+    call log_info('active dimension (corrfun_dim) =', corrfun_dim)
+    call log_info('cutoff log wave function (shiftlog) =', shiftlog)
 
     if (sum(abs(offset(:))) .eq. 0.d0) then
         if (ngrid(1) .ge. 1 .and. ngrid(2) .ge. 1 .and. ngrid(3) .ge. 1) then
-            write (6, *) 'Default shift offset for centering xcrysden -0.5,-0.5,-0.5 in mesh grid units'
+            call log_info('Default shift offset for centering xcrysden -0.5,-0.5,-0.5 in mesh grid units')
             if (.not. yes_tilted) then
                 offset(:) = offset(:) - 0.5d0*cellscale(:)/ngrid(:)
             else
@@ -238,15 +237,15 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     cutk = k_cutoff
 
     if (iskip .le. 0) then
-        write (6, *) 'input fatal error'
-        write (6, *) 'fwd_skip must be positive!'
+        call log_error('input fatal error')
+        call log_info('fwd_skip must be positive!')
         err_stop = .true.
     end if
 
     ! added by Kosuke Nakano on 29 May 2019
     if (rdf_for_atom .and. ddim .ne. 1) then
-        write (6, *) 'input fatal error'
-        write (6, *) 'rdf_for_atom is valid only for corrfun_dim=1'
+        call log_error('input fatal error')
+        call log_info('rdf_for_atom is valid only for corrfun_dim=1')
         err_stop = .true.
     end if
 
@@ -259,7 +258,7 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     iffluct = fluctuations
 
     if ((.not. ifrho) .and. (.not. ifspin) .and. fluctuations) then
-        write (6, *) 'warning: to compute local charge or spin fluctuations, you must switch on the charge or spin flag!'
+        call log_warning('warning: to compute local charge or spin fluctuations, you must switch on the charge or spin flag!')
         iffluct = .false.
     end if
 
@@ -311,8 +310,7 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     ngrid_p = radial_grid
 
     if (ifrho_assar) then
-        write (6, *) 'warning: calculating only the charge distribution with the &
-                &method proposed \n by Assaraf the rest is switched off'
+        call log_warning('warning: calculating only the charge distribution with the method proposed by Assaraf the rest is switched off')
         charge_density = .false.
         spin_density = .false.
         pair_corr_fun = .false.
@@ -334,8 +332,8 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
         else
             grid_points = ngrid(1)*ngrid(2)*ngrid(3)
         end if
-        write (*, *) 'Switch value for the grid =', kswitch
-        write (*, *) 'Steepness n value for Ks and Ka (see O. Chernomor''s thesis) =', nswitch
+        call log_info('Switch value for the grid =', kswitch)
+        call log_info('Steepness n value for Ks and Ka (see O. Chernomor''s thesis) =', nswitch)
     end if
 
     ! (Matteo) Added for STM to fix the grid type.
@@ -349,62 +347,64 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
 
     if (ifpair .or. ifspin .or. ifrho .or. (grid_points .eq. 0 .and. ifrho_assar)) then
         if (sphere_radius .eq. 0.d0) then
-            write (6, *) 'ngrid (ngrid) =', (ngrid(i), i=1, corrfun_dim)
+            do i=1, corrfun_dim
+               call log_info('ngrid (ngrid) =', ngrid(i))
+            end do
         else
-            write (6, *) 'Warning: site occupation instead of standard density!!!'
+            call log_warning('Warning: site occupation instead of standard density!!!')
             if (ddim .eq. 2) then
-                write (6, *) 'site defined by cylinder radius of', sphere_radius, 'a_0'
-                if (outofplane .ne. 0.d0) write (6, *) 'take only out-of-plane configurations >', outofplane, 'a_0'
+                call log_info('site defined by cylinder radius of', sphere_radius, 'a_0')
+                if (outofplane .ne. 0.d0) call log_info('take only out-of-plane configurations >', outofplane, 'a_0')
             else
-                write (6, *) 'site defined by sphere radius of', sphere_radius, 'a_0'
+                call log_info('site defined by sphere radius of', sphere_radius, 'a_0')
             end if
-            if (allshells) write (6, *) ' Warning: All bonds considered without averaging according to the distance '
+            if (allshells) call log_warning(' Warning: All bonds considered without averaging according to the distance ')
             ngrid_l = 0
             ngrid_p = 0
             if (ifkspin) then
-                write (6, *) 'warning: site occupation not compatible with SDW yet !!!'
-                write (6, *) 'ifkspin set to .false.'
+                call log_warning('warning: site occupation not compatible with SDW yet !!!')
+                call log_info('ifkspin set to .false.')
                 ifkspin = .false.
             end if
             if (iffluct) then
-                write (6, *) 'warning: in the site approach, fluctuations are already computed as on-site pair correlations!'
-                write (6, *) 'fluctuations option has been disabled'
+                call log_warning('warning: in the site approach, fluctuations are already computed as on-site pair correlations!')
+                call log_info('fluctuations option has been disabled')
                 iffluct = .false.
             end if
         end if
     end if
 
     if (ifsofk) then
-        write (6, *) 'cutoff in k space for S(k)', cutk
+        call log_info('cutoff in k space for S(k)', cutk)
     end if
 
     if ((ifpair .and. .not. ifspin .and. .not. ifrho)) then
         ifrho = .true.
         ifspin = .true.
-        write (6, *) 'warning: charge_density and spin_density switched on'
+        call log_warning('warning: charge_density and spin_density switched on')
     end if
 
     if (ifpair .and. .not. iespbc) then
-        write (6, *) 'warning: to compute pair_corr_fun we assume translational invariance!'
+        call log_warning('warning: to compute pair_corr_fun we assume translational invariance!')
     end if
 
     if (ifsofk .and. .not. iespbc) then
-        write (6, *) 'warning: to compute the structure factor we assume translational invariance!'
+        call log_warning('warning: to compute the structure factor we assume translational invariance!')
     end if
 
     if ((ifpair .or. ifspin .or. ifrho .or. (grid_points .eq. 0 .and. ifrho_assar)) .and. sphere_radius .eq. 0.d0) then
         if (ngrid(1) .eq. 0 .and. ngrid(2) .eq. 0 .and. ngrid(3) .eq. 0) then
-            write (6, *) 'input fatal error'
-            write (6, *) 'you must specify ngrid in each direction to compute density and pair_corr_fun'
+            call log_error('input fatal error')
+            call log_info('you must specify ngrid in each direction to compute density and pair_corr_fun')
             err_stop = .true.
         end if
     end if
 
     if (ifpair .or. ifspin .or. ifrho .or. ifsofk .or. (grid_points .eq. 0 .and. ifrho_assar)) then
-        write (6, *) 'dimension of the cell for correlation functions'
-        write (6, *) 'ell(x) =', ell(1)
-        write (6, *) 'ell(y) =', ell(2)
-        write (6, *) 'ell(z) =', ell(3)
+        call log_info('dimension of the cell for correlation functions')
+        call log_info('ell(x) =', ell(1))
+        call log_info('ell(y) =', ell(2))
+        call log_info('ell(z) =', ell(3))
     end if
 
     !

@@ -19,6 +19,7 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
                       , cellscale, deps, yes_hermite, opposite_phase, zeta, J3_off &
                       , check_same_atom, no_4body_jas, cut_hybrid)
     use symm_data, only: CartesianToCrystal
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
     integer norb, nrot, ntra, symrot(norb, nrot), symtra(norb, ntra)
     logical occupied(norb, norb), symmagp, accept, yes_hermite, J3_off(ntotatoms), check_same_atom, yes_cut
@@ -127,7 +128,7 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
                     end if
 
                     if (imap .eq. 0 .or. jmap .eq. 0) then
-                        write (6, *) ' Error in symtra !!! ', imap, jmap
+                        call log_error(' Error in symtra !!! ', imap, jmap)
                         stop
                     end if
                     do l = 1, nrot
@@ -279,7 +280,7 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
     end do
 
     if (countrec .gt. nrec) then
-        write (6, *) ' Warning # record too small ', countrec, nrec
+        call log_warning(' Warning # record too small ', countrec, nrec)
     else
 
         occupied = .false.
@@ -294,10 +295,12 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
                     if (abs(recordsym(1, j, i)) .eq. abs(recordsym(1, k, i)) .and. abs(recordsym(2, j, i)) .eq.&
                             &abs(recordsym(2, k, i)) .and. k .ne. j) then
 
-                        write (6, *) ' Repetition !!! j,k, record  ', j, k, i
-                        write (6, *) ' first pair --> ', recordsym(1, j, i), recordsym(2, j, i)
-                        write (6, *) ' second pair --> ', recordsym(1, k, i), recordsym(2, k, i)
-                        write (6, *) lenrec(i), (recordsym(1, kk, i), recordsym(2, kk, i), kk=1, lenrec(i))
+                        call log_warning(' Repetition !!! j,k, record  ', j, k, i)
+                        call log_info(' first pair --> ', recordsym(1, j, i), recordsym(2, j, i))
+                        call log_info(' second pair --> ', recordsym(1, k, i), recordsym(2, k, i))
+                        do kk=1, lenrec(i)
+                           call log_info(lenrec(i), recordsym(1, kk, i), recordsym(2, kk, i))
+                        end do
                         stop
 
                     end if
@@ -307,7 +310,7 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
             end do
             count = count + lenrec(i)
         end do
-        write (6, *) ' Matrix elements inside makelambda =', count
+        call log_info(' Matrix elements inside makelambda =', count)
         count = 0
         do i = 1, norb
             do j = 1, norb
@@ -315,7 +318,7 @@ subroutine makelambda(norb, symrot, nrot, symtra, ntra, occupied, recordsym &
             end do
         end do
 
-        write (6, *) ' Count check inside makelambda ', count
+        call log_info(' Count check inside makelambda ', count)
 
     end if
     nrec = countrec

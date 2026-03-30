@@ -15,6 +15,7 @@
 
 subroutine cutminzmaxz(ipc, contractionj, iesm, npar3bodyr_c, iesuptransbj&
         &, jbraiesm, minz, maxz, indc, alphavar, alphab, scalpar, fixpar, tpar, nmat, rank)
+    use logger_io, only: log_warning, log_info
     implicit none
     integer iesuptransbj(*), jbraiesm(*), i, j, iesm, npar3bodyr_c   &
             &, rank, contractionj, indc, nmat, ipc
@@ -37,38 +38,38 @@ subroutine cutminzmaxz(ipc, contractionj, iesm, npar3bodyr_c, iesuptransbj&
             if (cost .lt. minz .and. alphavar(indc + i) .ge. minz) then
                 scaletry = (minz - alphavar(indc + i))/tpar/alphab(indc + i)/2.d0
                 alphab(indc + i) = scaletry*alphab(indc + i)
-                if (rank .eq. 0) write (6, *) ' Warning Z too small  ', i, cost, minz
+                call log_warning(' Warning Z too small  ', i, cost, minz)
                 if (fixpar) then
                     scalpar(indc + i) = 0.d0
-                    if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', i, cost
+                    call log_info(' Fixing forever this Z ', i, cost)
                 end if
             elseif (alphavar(indc + i) .lt. minz) then
-                if (rank .eq. 0) write (6, *) ' Warning Z smaller than limit  '
+                call log_warning(' Warning Z smaller than limit  ')
                 alphavar(indc + i) = minz
                 alphab(indc + i) = 0.d0
                 if (fixpar) then
                     scalpar(indc + i) = 0.d0
-                    if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', i, cost
+                    call log_info(' Fixing forever this Z ', i, cost)
                 end if
             end if
             if (cost .gt. maxz .and. alphavar(indc + i) .le. maxz) then
-                if (rank .eq. 0) write (6, *) 'Warning Z too large ', i, cost, maxz
+                call log_warning('Warning Z too large ', i, cost, maxz)
                 scaletry = (maxz - alphavar(indc + i))/tpar/alphab(indc + i)/2.d0
 
                 alphab(indc + i) = scaletry*alphab(indc + i)
                 if (fixpar) then
                     scalpar(indc + i) = 0.d0
-                    if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', i, cost
+                    call log_info(' Fixing forever this Z ', i, cost)
                 end if
 
                 !           if(scaletry.lt.scalealphab) scalealphab=scaletry
             elseif (alphavar(indc + i) .gt. maxz) then
-                if (rank .eq. 0) write (6, *) ' Warning Z larger than limit  '
+                call log_warning(' Warning Z larger than limit  ')
                 alphavar(indc + i) = maxz
                 alphab(indc + i) = 0.d0
                 if (fixpar) then
                     scalpar(indc + i) = 0.d0
-                    if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', i, cost
+                    call log_info(' Fixing forever this Z ', i, cost)
                 end if
             end if
         end do
@@ -81,36 +82,36 @@ subroutine cutminzmaxz(ipc, contractionj, iesm, npar3bodyr_c, iesuptransbj&
                     scaletry = (minz - alphavar(indc + j))/tpar/alphab(indc + j)/2.d0
                     alphab(indc + j) = scaletry*alphab(indc + j)
                     !           if(scaletry.lt.scalealphab) scalealphab=scaletry
-                    if (rank .eq. 0) write (6, *) ' Warning Z too small ', j, cost, minz
+                    call log_warning(' Warning Z too small ', j, cost, minz)
                     if (fixpar) then
                         scalpar(indc + j) = 0.d0
-                        if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', j, cost
+                        call log_info(' Fixing forever this Z ', j, cost)
                     end if
                 elseif (alphavar(indc + j) .lt. minz) then
-                    if (rank .eq. 0) write (6, *) ' Warning Z smaller than limit  '
+                    call log_warning(' Warning Z smaller than limit  ')
                     alphavar(indc + j) = minz
                     alphab(indc + j) = 0.d0
                     if (fixpar) then
                         scalpar(indc + j) = 0.d0
-                        if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', j, cost
+                        call log_info(' Fixing forever this Z ', j, cost)
                     end if
                 end if
                 if (cost .gt. maxz .and. alphavar(indc + j) .le. maxz) then
                     scaletry = (maxz - alphavar(indc + j))/tpar/alphab(indc + j)/2.d0
                     !           if(scaletry.lt.scalealphab) scalealphab=scaletry
                     alphab(indc + j) = scaletry*alphab(indc + j)
-                    if (rank .eq. 0) write (6, *) ' Warning Z too large  ', j, cost, maxz
+                    call log_warning(' Warning Z too large  ', j, cost, maxz)
                     if (fixpar) then
                         scalpar(indc + j) = 0.d0
-                        if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', j, cost
+                        call log_info(' Fixing forever this Z ', j, cost)
                     end if
                 elseif (alphavar(indc + j) .gt. maxz) then
-                    if (rank .eq. 0) write (6, *) ' Warning Z larger than limit  '
+                    call log_warning(' Warning Z larger than limit  ')
                     alphavar(indc + j) = maxz
                     alphab(indc + j) = 0.d0
                     if (fixpar) then
                         scalpar(indc + j) = 0.d0
-                        if (rank .eq. 0) write (6, *) ' Fixing forever this Z ', j, cost
+                        call log_info(' Fixing forever this Z ', j, cost)
                     end if
                 end if
                 !            write(6,*) ' Inside cut i,j =',i,jbraiesm(i)

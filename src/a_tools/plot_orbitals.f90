@@ -15,6 +15,7 @@
 
 program plot_orbitals
     use allio
+    use logger_io, only: log_info, log_warning
     ! use constants, only: pi,ipc,ipf
 
     implicit none
@@ -76,16 +77,16 @@ program plot_orbitals
     iesdvj = iesdr1iesd(iesdr)
 
     if (.not. molyes) call error('plot_orbitals', ' This tool work only with molecular orbitals', 1, 0)
-    write (*, *) ' Number of molecular orbitals : ', molecular
+    call log_info(' Number of molecular orbitals : ', molecular)
 
     do i = 1, 3
         center(i) = sum(rion(i, 1:nion))/nion
     end do
 
     if (.not. iespbc) then
-        write (*, *) ' Choose box size (x,y,z) '
+        call log_info(' Choose box size (x,y,z) ')
         read (*, *) cell_loc(:)
-        write (*, *) cell_loc(:)
+        call log_info(cell_loc(1), cell_loc(2), cell_loc(3))
         cellscale(1:3) = cell_loc(1:3)
         do i = 1, nion
             rion(1:3, i) = rion(1:3, i) - center(1:3) + cell_loc(1:3)/2.d0
@@ -98,22 +99,22 @@ program plot_orbitals
         !rion(1:3,i)=rion(1:3,i)+cellscale(1:3)/2.d0
         !enddo
         cell_loc(1:3) = cellscale(1:3)
-        write (*, *) ' Choose shift reference unit cell PBC : '
+        call log_info(' Choose shift reference unit cell PBC : ')
         read (*, *) origin(:)
         origin(1:3) = origin(1:3)*cellscale(1:3)
     end if
 
-    write (*, *) ' Choose number of mesh points (x,y,z) : '
+    call log_info(' Choose number of mesh points (x,y,z) : ')
     read (*, *) mesh(:)
-    write (*, *) mesh(:)
+    call log_info(mesh(1), mesh(2), mesh(3))
 
     ! To match with output plot in xcrysden
     if (iespbc) mesh(:) = mesh(:) + 1
 
-    write (*, *) ' Choose orbitals to tabulate (possible answers all, partial, charge, spin) : '
+    call log_info(' Choose orbitals to tabulate (possible answers all, partial, charge, spin) : ')
     read (*, *) question
     lq = index(question, ' ') - 1
-    write (*, *) question(1:lq)
+    call log_info(trim(question(1:lq)))
 
     spinon = .false.
     chargeon = .false.
@@ -122,32 +123,32 @@ program plot_orbitals
     upper = molecular
 
     if (question(1:lq) .eq. 'partial') then
-        write (*, *) ' Please give a range between 1 and ', molecular
+        call log_info(' Please give a range between 1 and ', molecular)
         read (*, *) lower, upper
-        write (*, *) lower, upper
+        call log_info(lower, upper)
     end if
 
     if (question(1:lq) .eq. 'charge') then
-        write (*, *) ' Please give  the lowest molecular orbital within 1 and ', molecular
+        call log_info(' Please give  the lowest molecular orbital within 1 and ', molecular)
         read (*, *) lower
         upper = -1
-        write (6, *) 'Number of fully occupied molecular orbital/total number occupied by up and down ?'
+        call log_info('Number of fully occupied molecular orbital/total number occupied by up and down ?')
         read (5, *) nfil, ntot
 
     end if
 
     if (question(1:lq) .eq. 'spin') then
-        write (*, *) ' Please give  the lowest molecular orbital within 1 and ', molecular
+        call log_info(' Please give  the lowest molecular orbital within 1 and ', molecular)
         read (*, *) lower
         upper = -2
-        write (6, *) 'Number of fully occupied molecular orbital/total number occupied by up and down ?'
+        call log_info('Number of fully occupied molecular orbital/total number occupied by up and down ?')
         read (5, *) nfil, ntot
 
-        write (6, *) ' Momentum magnetization ? (unit 2pi/cellscale) '
+        call log_info(' Momentum magnetization ? (unit 2pi/cellscale) ')
         read (5, *) kspin(1:3)
         kspin(1:3) = 2.d0*pi*kspin(1:3)/cellscale(1:3)
 
-        write (6, *) ' K rescaled =', kspin(1:3)
+        call log_info(' K rescaled =', kspin(1), kspin(2), kspin(3))
 
     end if
 
@@ -167,7 +168,7 @@ program plot_orbitals
                 upper = 2*ntot
             end if
         end if
-        write (6, *) ' Warning computing charge density '
+        call log_warning(' Warning computing charge density ')
     elseif (upper .eq. -2) then
         spinon = .true.
         nochsp = .false.
@@ -177,7 +178,7 @@ program plot_orbitals
             upper = 2*ntot
         end if
         if (symmagp) call error("plot_orbitals", " Spin density is not possible for symmagp=.true.", 1, 0)
-        write (6, *) ' Warning computing spin density '
+        call log_warning(' Warning computing spin density ')
     end if
 
     allocate (imap_loc(molecular), control(molecular), psi(ipc))
@@ -209,7 +210,7 @@ program plot_orbitals
     end do
 
     chosen_mol = ind_mol
-    write (*, *) ' # of orbitals written =', chosen_mol
+    call log_info(' # of orbitals written =', chosen_mol)
 
     allocate (norm(molecular + 1))
     norm = 0.d0
@@ -353,15 +354,15 @@ program plot_orbitals
                     else
                         totmag = sum(abs(datagrid(:, :, :)))*vol
                     end if
-                    write (6, *) ' Mag up to orbital =', ind_mol, imap_loc(j), totmag
+                    call log_info(' Mag up to orbital =', ind_mol, imap_loc(j), totmag)
                 else
                     if (ipf .eq. 1) then
-                        write (6, *) ' Molecular =', j, ind_mol
+                        call log_info(' Molecular =', j, ind_mol)
                     else
                         if (up_down .eq. 1) then
-                            write (6, *) ' Up pfaffian Molecular =', j, ind_mol
+                            call log_info(' Up pfaffian Molecular =', j, ind_mol)
                         else
-                            write (6, *) ' Down pfaffian Molecular =', j, ind_mol
+                            call log_info(' Down pfaffian Molecular =', j, ind_mol)
                         end if
                     end if
                 end if
@@ -423,8 +424,8 @@ program plot_orbitals
                             end do
                         end do
 
-                        write (6, *) ' Total magnetization in the cell (Bohr)', totmag
-                        write (6, *) ' Total square root structure factor at K (Bohr)', abs(totmagc)
+                        call log_info(' Total magnetization in the cell (Bohr)', totmag)
+                        call log_info(' Total square root structure factor at K (Bohr)', abs(totmagc))
 
                     elseif (chargeon) then
                         if (iespbc) then
@@ -432,7 +433,7 @@ program plot_orbitals
                         else
                             totmag = sum(datagrid(:, :, :))*vol
                         end if
-                        write (6, *) ' Total charge in the cell ', totmag
+                        call log_info(' Total charge in the cell ', totmag)
                     end if
                     if (chargeon) then
                         if (ipf .eq. 1) then

@@ -32,6 +32,7 @@ subroutine write_corr_fun(ebin, ebin2, wbin, ibin, ibinit, nind, maxf, ddim, ell
     use Rho_corr_module, only: ifrho_corr
     use Dipole_module, only: ifdipole, ndipole, nquad, quad, quad_diag, diag_quad, nuclear_dipole
     use berry_phase, only: ifberry
+    use logger_io, only: log_info
 
     implicit none
     integer i1, j1, ibin, ibinit, maxf, nmis, ddim, i, k, kk, l, shift, nel &
@@ -419,7 +420,7 @@ contains
 
             shift = shift + nrhoind
 
-            if (rank .eq. 0) write (6, *) 'total charge in the system', check(maxf)
+            call log_info('total charge in the system', check(maxf))
 
         else
 
@@ -443,7 +444,7 @@ contains
 
             shift = shift + nrhoind
 
-            if (rank .eq. 0) write (6, *) 'total charge within spheres', check(maxf)
+            call log_info('total charge within spheres', check(maxf))
             ! compute <n_i>^2 averaged over sites
             check = check/dble(nion)
             check = check**2
@@ -833,7 +834,7 @@ contains
                 shift = shift + nrhoind + 1
             end if
 
-            if (rank .eq. 0) write (6, *) 'total spin in the system', check(maxf)
+            call log_info('total spin in the system', check(maxf))
 
         else
 
@@ -866,7 +867,7 @@ contains
 
             shift = shift + nrhoind + 1
 
-            if (rank .eq. 0) write (6, *) 'total spin within spheres', check(maxf)
+            call log_info('total spin within spheres', check(maxf))
             ! compute <sigma_i>^2 averaged over sites
             check = check/dble(nion)
             check = check**2
@@ -1398,6 +1399,7 @@ end subroutine write_corr_fun
 subroutine bootstrap(unit, av, err, nbin)
     use constants, only: ipc
     use allio, only: rank
+    use logger_io, only: log_info
     implicit none
 
     integer unit, i, nbin, kmain, nmis, k, j
@@ -1413,7 +1415,7 @@ subroutine bootstrap(unit, av, err, nbin)
     end do
 500 continue
 
-    if (rank .eq. 0) write (6, *) ' number of bins read in file corrsampling_bin.dat =', nbin
+    call log_info(' number of bins read in file corrsampling_bin.dat =', nbin)
 
     allocate (e(nbin), es(nbin), w(nbin), ws(nbin), o(nbin))
     if (ipc .eq. 2) allocate (oi(nbin))

@@ -61,6 +61,7 @@ subroutine plot_bands
     use setup, only: eigmol_sav, eigmoldo_sav, yeslsda, bands
     use kpoints_mod, only: nk, xkp
     use constants, only: ipc, energy_unit ! Ha to eV conversion
+    use logger_io, only: log_info, log_warning
     implicit none
     logical, dimension(:), allocatable :: high_symmetry, in_range, in_rangedo
     integer i, j, k
@@ -69,9 +70,9 @@ subroutine plot_bands
     character(len=80) :: filename
 
     ! initialization
-    write (6, *) '---------------------------'
-    write (6, *) ' Evaluating band structure '
-    write (6, *) '---------------------------'
+    call log_info('---------------------------')
+    call log_info(' Evaluating band structure ')
+    call log_info('---------------------------')
 
     filename = 'band_structure.dat'
     allocate (high_symmetry(nk), in_range(bands))
@@ -140,15 +141,16 @@ subroutine plot_bands
         in_rangedo(i) = any(eigmoldo_sav(i, 1:nk) >= emin .and. eigmoldo_sav(i, 1:nk) <= emax)
     end do
 
+    ! full-array output: left as write (logger has limited optional args)
     write (6, *) in_range
     write (6, *) kp_path
 
-    write (6, *) ' Band structures INFORMATION: '
-    write (6, *) 'Minimum/maximum bands values:', emin, emax
-    write (6, *) 'High symmetry points: '
+    call log_info(' Band structures INFORMATION: ')
+    call log_info('Minimum/maximum bands values:', emin, emax)
+    call log_info('High symmetry points: ')
     do k = 1, nk
         if (high_symmetry(k)) then
-            write (6, *) kp_path(k), xkp(:, k)
+            call log_info(kp_path(k), xkp(1, k), xkp(2, k), xkp(3, k))
         end if
     end do
     !
@@ -205,6 +207,7 @@ subroutine evaluate_dos
     use setup, only: eigmol_sav, eigmoldo_sav, epsshell, optocc, deltaE, &
                      emin, emax, yeslsda, bands
     use compute_efermi, only: smearD
+    use logger_io, only: log_info, log_warning
 
     implicit none
     integer :: i, j, k, ibnd, indk, smear_type
@@ -214,12 +217,12 @@ subroutine evaluate_dos
     character(len=80) :: filename
 
     ! initialization
-    write (6, *) '------------------------------'
-    write (6, *) ' Evaluating density of states '
-    write (6, *) '------------------------------'
+    call log_info('------------------------------')
+    call log_info(' Evaluating density of states ')
+    call log_info('------------------------------')
     filename = 'density_of_states.dat'
     if (optocc .eq. 0 .or. epsshell .eq. 0.d0) then
-        write (6, *) 'Warning: DOS must be updated with a smearing function! Setting default values.'
+        call log_warning('Warning: DOS must be updated with a smearing function! Setting default values.')
         optocc = 1
         epsshell = 0.01_qp
     end if
@@ -276,7 +279,7 @@ subroutine evaluate_dos
     end if
 
     deallocate (dos_up, dos_down, tdos)
-    write (6, *)
+    call log_info()
     close (80)
 
 100 format(2f10.4)

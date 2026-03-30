@@ -671,6 +671,7 @@ subroutine cutdens
                      scale_hartreen, corr_hartree, scale_hartree
 
     use fourier_module, only: vhartree
+    use logger_io, only: log_info, log_warning
 
     implicit none
 
@@ -750,29 +751,31 @@ subroutine cutdens
         !    else
         !     scale_hartreen=1.d0
         !    endif
-        if (rank .eq. 0) write (6, *) ' Old/new Total charge ratio ', densproc_cut
+        call log_info(' Old/new Total charge ratio ', densproc_cut)
     end if
 
-    if (rank .eq. 0) then
-        !      if(rankrep.eq.0) then
-        if (yeslsda) then
-            write (6, '(a,2F18.6)') ' Total charge/spin: ', denstot, spintot
-        else
-            write (6, '(a,F18.6)') ' Total charge: ', denstot
-            !          write(6,'(a,F10.6,I4)') ' Total charge: ',denstot,rankcolrep
-            if (double_mesh) write (6, *) ' V Hartree q=0: ', vhq0
-        end if
-        if (minden .lt. 0.d0) write (6, *) ' Warning negative charge detected: ', minden/dens0
-        if (abs(denstot - nel) .gt. 1d-4) then
-            write (6, *) ' Warning total charge not conserved: ', denstot - nel
-            !          write(6,'(a,F10.6,I4)') ' Warning total charge not conserved: ',denstot-nel,rankcolrep
-        end if
-        if (yeslsda) then
-            if (minspin .lt. 0.d0) write (6, *) ' Warning negative spin charge detected: ', minspin/dens0
-            if (abs(spintot - nelup + neldo) .gt. 1d-4) then
-                write (6, '(a,F18.6)') ' Warning total spin not conserved: ', spintot - nelup + neldo
-                write (6, '(a,F18.6)') ' Total spin occupations found: ', sum(occupations(:) - occupationdo(:))
-            end if
+    !      if(rankrep.eq.0) then
+    if (yeslsda) then
+        ! original format: (a,2F18.6)
+        call log_warning(' Total charge/spin: ', denstot, spintot)
+    else
+        ! original format: (a,F18.6)
+        call log_warning(' Total charge: ', denstot)
+        !          write(6,'(a,F10.6,I4)') ' Total charge: ',denstot,rankcolrep
+        if (double_mesh) call log_warning(' V Hartree q=0: ', vhq0)
+    end if
+    if (minden .lt. 0.d0) call log_warning(' Warning negative charge detected: ', minden/dens0)
+    if (abs(denstot - nel) .gt. 1d-4) then
+        call log_warning(' Warning total charge not conserved: ', denstot - nel)
+        !          write(6,'(a,F10.6,I4)') ' Warning total charge not conserved: ',denstot-nel,rankcolrep
+    end if
+    if (yeslsda) then
+        if (minspin .lt. 0.d0) call log_warning(' Warning negative spin charge detected: ', minspin/dens0)
+        if (abs(spintot - nelup + neldo) .gt. 1d-4) then
+            ! original format: (a,F18.6)
+            call log_warning(' Warning total spin not conserved: ', spintot - nelup + neldo)
+            ! original format: (a,F18.6)
+            call log_warning(' Total spin occupations found: ', sum(occupations(:) - occupationdo(:)))
         end if
     end if
 
@@ -791,6 +794,7 @@ subroutine symmetrize_density(rho, buffer_grid, meshproc, nx, ny, nz, isymm, nsy
     use allio, only: rankrep, commrep_mpi, nprocrep, rank, rankcolrep
     use setup, only: symtime
     use parallel_module, only: gather_from_grid, scatter_to_grid
+    use logger_io, only: log_warning
 
     implicit none
 #ifdef PARALLEL
@@ -810,7 +814,7 @@ subroutine symmetrize_density(rho, buffer_grid, meshproc, nx, ny, nz, isymm, nsy
     real(8), external :: cclock
     real(8) :: symtimep
 
-    if (rank .eq. 0) write (6, *) ' Warning: symmetrisation of the charge density! '
+    call log_warning(' Warning: symmetrisation of the charge density! ')
 
     allocate (dens_grid(nx, ny, nz), symflag(nx, ny, nz))
     dens_grid = 0.d0

@@ -15,6 +15,7 @@
 
 subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
         &, index_out, rank, nelorb_c)
+    use logger_io, only: log_info
     implicit none
     integer nnozero, nnozeron, nelorb, nozero(*), nozeron(*), rank, dimmax&
             &, i, ind, icheck, iy, ix, ii, jj, ifound, ierr, nelorb_c
@@ -50,7 +51,7 @@ subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
             call dsortx(sortvect, 1, nnozero, indexo)
 
             if (sortvect(1) .lt. 1 .or. sortvect(nnozero) .gt. maxindex) then
-                if (rank .eq. 0) write (6, *) ' Matrix elements out of range !!! '
+                call log_info(' Matrix elements out of range !!! ')
 #ifdef  PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -64,7 +65,7 @@ subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
             end do
             call dsortx(sortvect, 1, nnozeron, indexn)
             if (sortvect(1) .lt. 1 .or. sortvect(nnozero) .gt. maxindex) then
-                if (rank .eq. 0) write (6, *) ' Matrix elements out of range !!! '
+                call log_info(' Matrix elements out of range !!! ')
 #ifdef  PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -98,7 +99,7 @@ subroutine checkmatrix_sparse(nnozero, nnozeron, nelorb, nozero, nozeron&
             else
                 iy = nozeron(ii + nnozero)
                 ix = abs(nozeron(ii))
-                if (rank .eq. 0) write (6, *) 'Not found in given lambda table: ix, iy', ix, iy
+                call log_info('Not found in given lambda table: ix, iy', ix, iy)
             end if
         end do
 
@@ -114,6 +115,7 @@ end
 
 subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
         &, index_out, rank, nelorb_c)
+    use logger_io, only: log_info
     implicit none
     integer nnozero, nnozeron, nelorb, nozero(*), nozeron(*), rank, dimmax&
             &, i, ind, icheck, iy, ix, ii, jj, ifound, ierr, maxindex, nelorb_c
@@ -145,7 +147,7 @@ subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
             call dsortx(sortvect, 1, nnozero, indexo)
 
             if (sortvect(1) .lt. 1 .or. sortvect(nnozero) .gt. maxindex) then
-                if (rank .eq. 0) write (6, *) ' Matrix elements out of range !!! '
+                call log_info(' Matrix elements out of range !!! ')
 #ifdef  PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -158,7 +160,7 @@ subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
             sortvect(1:nnozeron) = abs(nozeron(1:nnozeron))
             call dsortx(sortvect, 1, nnozeron, indexn)
             if (sortvect(1) .lt. 1 .or. sortvect(nnozero) .gt. maxindex) then
-                if (rank .eq. 0) write (6, *) ' Matrix elements out of range !!! '
+                call log_info(' Matrix elements out of range !!! ')
 #ifdef  PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -184,7 +186,7 @@ subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
             else
                 iy = (abs(nozeron(ii)) - 1)/nelorb + 1
                 ix = abs(nozeron(ii)) - (iy - 1)*nelorb
-                if (rank .eq. 0) write (6, *) 'Not found in given lambda table: ix, iy', ix, iy
+                call log_info('Not found in given lambda table: ix, iy', ix, iy)
             end if
         end do
 
@@ -199,6 +201,7 @@ subroutine checkmatrix(nnozero, nnozeron, nelorb, nozero, nozeron&
 end
 
 subroutine checkrepeat(nnozero, nelorb, nozero, rank)
+    use logger_io, only: log_info
     implicit none
     integer nnozero, nelorb, nozero(*), rank&
             &, i, ind, iy, ix, ii, jj, ifound, j, ierr
@@ -234,8 +237,8 @@ subroutine checkrepeat(nnozero, nelorb, nozero, rank)
                 ii = index(i)
                 iy = (abs(nozero(ii)) - 1)/nelorb + 1
                 ix = abs(nozero(ii)) - (iy - 1)*nelorb
-                write (6, *) ' Repeated matrix elem. ', ix, iy
-                write (6, *) ' # times   ', ifound
+                call log_info(' Repeated matrix elem. ', ix, iy)
+                call log_info(' # times   ', ifound)
                 iflagerr = .true.
             end if
         end do

@@ -15,6 +15,7 @@
 
 program join
 
+    use logger_io, only: log_error, log_info, log_warning, log_debug
     implicit none
     integer i, j, k, ii, kk, nelup_1, nel_1, nion_1, nelup_2, nel_2, nion_2    &
             &, nelup, nel, nion, niesd, iesdr_1, iesdr_2, iesdim, iesupr_1, iesupr_2    &
@@ -102,17 +103,17 @@ program join
     if (str .eq. "noconstr" .or. str .eq. "noconstrains" .or. &
             & str .eq. "NOCONSTR" .or. str .eq. "NOCONSTRAINS") then
         flagconstrains = 3
-        write (6, *) ' Warning: read flag for NO-constrains on contracted orbitals! '
+        call log_warning(' Warning: read flag for NO-constrains on contracted orbitals! ')
     end if
     if (str .eq. "noconstrjas" .or. str .eq. "noconstrainsjas" .or. &
             & str .eq. "NOCONSTRJAS" .or. str .eq. "NOCONSTRAINSJAS") then
         flagconstrains = 2
-        write (6, *) ' Warning: read flag for NO-constrains on contracted orbitals of Jastrow! '
+        call log_warning(' Warning: read flag for NO-constrains on contracted orbitals of Jastrow! ')
     end if
     if (str .eq. "noconstrdet" .or. str .eq. "noconstrainsdet" .or. &
             & str .eq. "NOCONSTRDET" .or. str .eq. "NOCONSTRAINSDET") then
         flagconstrains = 1
-        write (6, *) ' Warning: read flag for NO-constrains on contracted orbitals of det. part! '
+        call log_warning(' Warning: read flag for NO-constrains on contracted orbitals of det. part! ')
     end if
     !    ZZZ   end lines added by Zen
 
@@ -659,7 +660,7 @@ program join
     end do
     if (yesfixphase) yesalldet = .false. ! To be safe.
 
-    if (yesalldet) write (6, *) ' Warning changing contracted and tranforming the Det matrix '
+    if (yesalldet) call log_warning(' Warning changing contracted and tranforming the Det matrix ')
 
     allocate (ipsipd_1(iesswr_1 + iesswr_eagp, 2*maxic))
 
@@ -1106,7 +1107,7 @@ program join
                 iesdet = .false.
             end if
         elseif (irankdet .lt. neldo_1 + nelup_1) then
-            write (6, *) ' Singular fort.10 !!!! '
+            call log_info(' Singular fort.10 !!!! ')
             iesdet = .false.
         else
             iesdet = .false.
@@ -1119,7 +1120,7 @@ program join
                 iesdet = .false.
             end if
         elseif (irankdet .lt. neldo_1) then
-            write (6, *) ' Singular fort.10 !!!! '
+            call log_info(' Singular fort.10 !!!! ')
             iesdet = .false.
         else
             iesdet = .false.
@@ -2156,6 +2157,7 @@ end
 !================
 subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
     use constants, only: zone, zzero
+    use logger_io, only: log_error, log_warning, log_debug
     implicit none
     integer n, i, j, ncoeff, info, lwork, ipc
     real*8 psi_in(ncoeff*ipc, n), psi_out(ncoeff*ipc, n), umat(ipc*n, n)
@@ -2210,9 +2212,9 @@ subroutine makeumat(ipc, n, ncoeff, psi_in, psi_out, umat)
         end if
 
     else
-        write (6, *) ' Orbitals are not independent, ERROR in dgetrf !!!! ', info
+        call log_warning(' Orbitals are not independent, ERROR in dgetrf !!!! ', info)
         do i = 1, n
-            write (6, *) i, smat(ipc*(i - 1) + 1, ipc*(i - 1) + 1)
+            call log_warning(i, smat(ipc*(i - 1) + 1, ipc*(i - 1) + 1))
         end do
         !       stop
     end if

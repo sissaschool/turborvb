@@ -27,6 +27,7 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
         &, img, max_iter, optimize, L1, L1mod, SL2, SR2, SL12, SR12, L2&
         &, prec, Z, rank, nprocu, mpi_comm_world)
     use constants, only: ipf
+    use logger_io, only: log_info, log_warning
     implicit none
 
     !All the quantities referred to the previous basis have the label 1, the quantities of the new one with 2
@@ -82,9 +83,9 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     end do
 
     !  if (rank.eq.0) write(6,*) jbradet (1), jbradet(2), jbradet(3)
-    if (rank .eq. 0) write (6, *) "Symmetry lambda =", type_lambda
-    if (rank .eq. 0) write (6, *) "nsym =", nsym
-    if (rank .eq. 0) write (6, *) "nnozero_c =", nnozero_c
+    call log_info("Symmetry lambda =", type_lambda)
+    call log_info("nsym =", nsym)
+    call log_info("nnozero_c =", nnozero_c)
 
     !Allocating the matrices and the vectors
     allocate (dL2(img*size2, size2), Op(img*size2, size2), Ob(img*size2, size2), L2eff(img*size2, size2))
@@ -118,13 +119,11 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
     call calcA(size2, img, L2eff, L2mod, Op, rank, nprocu, mpi_comm_world)
     call calcZ(size1, size2, img, L2eff, Ob, L1mod, L2mod, Z, rank, nprocu, mpi_comm_world)
 
-    if (rank .eq. 0) then
-        write (*, *) "Starting overlap:"
-        write (*, *) "L1=", L1mod, ",   L2=", L2mod
-        write (*, *) "Z=", Z
-        write (*, *) ""
-        write (*, *) ""
-    end if
+    call log_info("Starting overlap:")
+    call log_info("L1=", L1mod, ",   L2=", L2mod)
+    call log_info("Z=", Z)
+    call log_info("")
+    call log_info("")
     prevZ = 0.d0
 
     do i = 1, max_iter
@@ -144,12 +143,10 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
         !     if(rank.eq.0) write(6,*) ' Iteration =',i,Z,prevZ
 
         if (mod(i, 20) == 0) then
-            if (rank .eq. 0) then
-                write (*, *) "Iteration number", i
-                write (*, *) "Overlap value Z=", Z
-                write (*, *) ""
-                write (*, *) ""
-            end if
+            call log_info("Iteration number", i)
+            call log_info("Overlap value Z=", Z)
+            call log_info("")
+            call log_info("")
             !        call initialize_symm(size2, img, nnozero_c, nsym,  count_sym, jbradet, optimize, L2, nozero_c, type_lambda)
             if ((abs(Z - prevZ) < prec*0.1) .or. (Z < prevZ)) exit
             prevZ = Z
@@ -167,15 +164,12 @@ subroutine max_ovlp (size1, size2, type_lambda, nnozero_c, nozero_c, jbradet&
 
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) "Final iteration  number", i
-        write (*, *) "Overlap value:"
-        write (*, *) "Z=", Z
-        write (*, *) "|dL2|=", modder
-        !     write(*,*) "Lambda=", lambda
-        write (*, *) ""
-        write (*, *) ""
-    end if
+    call log_info("Final iteration  number", i)
+    call log_info("Overlap value:")
+    call log_info("Z=", Z)
+    call log_info("|dL2|=", modder)
+    call log_info("")
+    call log_info("")
     L2 = L2eff
     deallocate (dL2, Op, Ob, prevG, prevH, count_sym, L2eff)
 
@@ -191,6 +185,7 @@ subroutine minDB(size1, size2, type_lambda, nnozero_c                    &
            &, L1mod, L2mod, L2, Ob, SL2, SR2, A, dL2                     &
            &, optimize, prevH, prevG, prec, lambda, rank                 &
            &, nprocu, mpi_comm_world)
+    use logger_io, only: log_warning
     implicit none
     integer :: size2, img, size1, i, j, rank, nprocu, mpi_comm_world, nnozero_c, ix, iy, nsym, type_lambda, ierr
     !mac prec is the precision that we can expect from the zero of the derivative. If the single number precision is
@@ -250,6 +245,7 @@ end subroutine minDB
 
 subroutine lineminDB(size1, size2, type_lambda, nnozero_c, nozero_c, jbradet, nsym, count_sym, img, L1mod, &
                      L2mod, L2, Ob, SL2, SR2, g, h, lambda, prec, optimize, macprec, rank, nprocu, mpi_comm_world)
+    use logger_io, only: log_warning
     implicit none
     integer :: size1, size2, img, step, i, j, k, rank, nprocu, mpi_comm_world, ierr, debug, nsym, nnozero_c, ix, iy, type_lambda
     !lt1 and lt2 are the lambda trial
@@ -274,11 +270,11 @@ subroutine lineminDB(size1, size2, type_lambda, nnozero_c, nozero_c, jbradet, ns
     do i = 1, img*nsym
         dg1 = dg1 + g1(i)*h(i)
     end do
-    if (dg1 .lt. macprec .and. rank .eq. 0) write (6, *) i, ' Warning dg1 too small  ', dg1
+    if (dg1 .lt. macprec) call log_warning(i, ' Warning dg1 too small  ', dg1)
 
     Z = 0
     !Changing the direction of h if necessary (It shouldn't be necessary, only for check)
-    if (dg1 .lt. 0 .and. rank .eq. 0) write (6, *) i, ' Warning h g <0 '
+    if (dg1 .lt. 0) call log_warning(i, ' Warning h g <0 ')
 
     !Initialization of the calculation, finding a point where g2 is negative
     do i = 1, 100

@@ -29,6 +29,7 @@ subroutine read_molecular
     use freeelmod_complex, only: nozeroc_in, nnozeroc_in, jbradetc_in, jbradetnc_in, nelcolc_in, &
                                  nelorbc_in, niesd_in, iesdrr_in, contraction_in, nmoltot, count2n, &
                                  countalln, costalln
+    use logger_io, only: log_info, log_warning
 
     implicit none
     ! local
@@ -66,7 +67,8 @@ subroutine read_molecular
 
     molecorb_old = 0.d0
     if (yeslsda .or. ipc .eq. 2) molecorbdo_old = 0.d0
-    if (rank .eq. 0) write (6, '(a,5I6)') ' Read molecular orbitals', nmol, nmoltot, nelorb_c, nelorbh, bands
+    ! original format: (a,5I6)
+    call log_info(' Read molecular orbitals', nmol, nmoltot, nelorb_c, nelorbh, bands)
 
     do i = 1, nmol
         if (i .le. bands) then
@@ -122,8 +124,10 @@ subroutine read_molecular
                 end if
             end if
         else
-            if (rank .eq. 0 .and. done) &
-                write (6, '(a)') ' Warning not all orbitals are read from fort10'
+            if (done) then
+                ! original format: (a)
+                call log_warning(' Warning not all orbitals are read from fort10')
+            end if
             done = .false.
         end if
         indpar = indpar + 2*nelorbh
@@ -131,7 +135,10 @@ subroutine read_molecular
 
     end do
 
-    if (ndiff .gt. 0 .and. rank .eq. 0) write (6, '(a)') ' Read unpaired molecular orbitals'
+    if (ndiff .gt. 0) then
+        ! original format: (a)
+        call log_info(' Read unpaired molecular orbitals')
+    end if
     do i = nmol + 1, nmol + ndiff
         i_new = i - nmol
         j_new = nelorb_c - ndiff + i_new

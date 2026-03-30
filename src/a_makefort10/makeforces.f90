@@ -15,6 +15,7 @@
 
 subroutine makeforces(ntotatoms, symrot, nrot, nrotu, symtra, ntra, ntrau, occupied, recordsym&
         &, lenrec, nrec, ipsip)
+    use logger_io, only: log_error
     implicit none
     integer norb, ntotatoms, nrot, ntra, symrot(3*ntotatoms, nrot)&
             &, symtra(3*ntotatoms, ntra), ntrau, nrotu
@@ -56,7 +57,7 @@ subroutine makeforces(ntotatoms, symrot, nrot, nrotu, symtra, ntra, ntrau, occup
                     signi = -signi
                 end if
                 if (imap .eq. 0) then
-                    write (6, *) ' Error in symtra !!! ', imap, jmap
+                    call log_error(' Error in symtra !!! ', imap, jmap)
                     stop
                 end if
                 do l = 1, nrotu

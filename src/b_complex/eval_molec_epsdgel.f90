@@ -18,6 +18,7 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
     use constants, only: ipc, ipf, zone, zzero
     use allio, only: molecular, yes_hermite, symmetrize_agp&
             &, opposite_phase, same_phase, real_contracted, gauge_fixing, printoverlap
+    use logger_io, only: log_error, log_warning, log_info, log_debug
     implicit none
     integer nelorb_c, i, j, k, rank, info, n, lda, mine, dimo, neig, lwork&
             &, optprint, dimorb, ierr, il, iu, indi, indj, nproc, old_threads, comm_mpi&
@@ -42,7 +43,7 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             mat(1:ipc*nelorb_c, 1:nelorb_c) = overs(1:ipc*nelorb_c, 1:nelorb_c)
             call bcast_real(overs, dimmat, 0, comm_mpi)
             if (sum(abs(mat(1:ipc*nelorb_c, 1:nelorb_c) - overs(1:ipc*nelorb_c, 1:nelorb_c))) .ne. 0.d0)&
-              & write (6, *) ' Inconsistent input ', rank
+              & call log_error(' Inconsistent input ', rank)
 
         else
             allocate (mat(ipc*lda, 2*nelorb_c))
@@ -50,12 +51,12 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             dimmat2 = ((2*nelorb_c - 1)*lda + nelorb_c)*ipc
             call bcast_real(overs, dimmat2, 0, comm_mpi)
             if (sum(abs(mat(1:ipc*nelorb_c, 1:2*nelorb_c) - overs(1:ipc*nelorb_c, 1:2*nelorb_c)))&
-           &.ne. 0.d0) write (6, *) ' Inconsistent input ', rank
+           &.ne. 0.d0) call log_error(' Inconsistent input ', rank)
         end if
         mat(1:ipc*nelorb_c, 1:nelorb_c) = mat_in(1:ipc*nelorb_c, 1:nelorb_c)
         call bcast_real(mat_in, dimmat, 0, comm_mpi)
         if (sum(abs(mat(1:ipc*nelorb_c, 1:nelorb_c) - mat_in(1:ipc*nelorb_c, 1:nelorb_c))) .ne. 0.d0)&
-           & write (6, *) ' Inconsistent input ', rank
+           & call log_error(' Inconsistent input ', rank)
         deallocate (mat)
     end if
 #endif
@@ -265,8 +266,8 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             if (cost .gt. maxerr) maxerr = cost
         end do
     end do
-    if (rank .eq. 0 .and. maxerr .gt. 1.d-6) &
-   &write (6, *) ' Warning precision orthogonality eigenvectors =', maxerr
+    if (maxerr .gt. 1.d-6) &
+   & call log_warning(' Warning precision orthogonality eigenvectors =', maxerr)
     umat = 0.d0
 #endif
 
@@ -301,8 +302,8 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
 
     mine = 1
 
-    if (rank .eq. 0 .and. optprint .ne. 0) then
-        write (6, *) ' min/max Eigenvalues overlap matrix ', indj, eig(min(n - indj + 1, n)), eig(n)
+    if (optprint .ne. 0) then
+        call log_info(' min/max Eigenvalues overlap matrix ', indj, eig(min(n - indj + 1, n)), eig(n))
         !        Extended output
         !        do i=1,indj
         !        write(6,*) i,eig(n-indj+i)
@@ -321,8 +322,7 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             end if
         end if
     end do
-    if (info .ne. 0 .and. rank .eq. 0) write (6, *)                         &
-            &' info > 0 in dsyevx !!! ', info
+    if (info .ne. 0) call log_info(' info > 0 in dsyevx !!! ', info)
 
     if ((.not. symmagp .or. ipc .eq. 2) .and. ipf .eq. 1) then
 
@@ -369,12 +369,10 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
                     if (eig_sav(i) .ne. work(i)) yesh = .false.
                 end do
             end if
-            if (rank .eq. 0) then
-                if (yes_constrainm) then
-                    write (6, *) ' Warning constraining molecular orbitals'
-                else
-                    write (6, *) ' Warning NO constraining molecular orbitals'
-                end if
+            if (yes_constrainm) then
+                call log_warning(' Warning constraining molecular orbitals')
+            else
+                call log_warning(' Warning NO constraining molecular orbitals')
             end if
 
             if ((.not. opposite_phase .and. .not. same_phase) .or. .not. real_contracted) then
@@ -417,9 +415,9 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
                     umatleft(1:ipc*n, i) = 0.d0
                 end do
 
-                if (rank .eq. 0 .and. optprint .ne. 0) then
-                    write (6, *) 'min/max Eigenvalues overlap matrix left eigenvectors ', &
-                        indj, eigleft(min(n - indj + 1, n)), eigleft(n)
+                if (optprint .ne. 0) then
+                    call log_info('min/max Eigenvalues overlap matrix left eigenvectors ', &
+                        indj, eigleft(min(n - indj + 1, n)), eigleft(n))
                     !     Extended output
                     !     do i=1,indj
                     !     write(6,*) i,eigleft(n-indj+i)
@@ -434,8 +432,7 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
                         eigml(i) = 0.d0
                     end if
                 end do
-                if (info .ne. 0 .and. rank .eq. 0) write (6, *)                         &
-                        &' info > 0 in dsyevx !!! ', info
+                if (info .ne. 0) call log_info(' info > 0 in dsyevx !!! ', info)
             else ! real_contracted
                 if (opposite_phase .or. ipc .eq. 1) then
                     umatleft = umat
@@ -453,8 +450,8 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
         end if ! endif eqover
     end if ! endif not symmagp
 
-    if (mine .ne. 1 .and. rank .eq. 0 .and. optprint .ne. 0)&
-            &write (6, *) ' disregarded coll. =', mine - 1
+    if (mine .ne. 1 .and. optprint .ne. 0)&
+            & call log_warning(' disregarded coll. =', mine - 1)
 
     dimo = n - mine + 1
 
@@ -529,17 +526,17 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             !         if (rank.eq.0) write (6,*) "eig", eig
             !         if (rank.eq.0) write (6,*) "Stopping after pfaffian mo"
 
-            if (rank .eq. 0 .and. printoverlap) then
-                write (6, *) '  Normalization up/down molecular orbitals '
+            if (printoverlap) then
+                call log_info('  Normalization up/down molecular orbitals ')
                 if (mod(nelorb_c, 2) .eq. 0) then
                     do i = 1, nelorb_c
-                        write (6, *) i, eig((i + 1)/2), sum(molecorb(1:ipc*nelorb_c/2, i)**2)&
-                                &, sum(molecorb(ipc*nelorb_c/2 + 1:ipc*nelorb_c, i)**2)
+                        call log_info(' ', i, eig((i + 1)/2), sum(molecorb(1:ipc*nelorb_c/2, i)**2)&
+                                &, sum(molecorb(ipc*nelorb_c/2 + 1:ipc*nelorb_c, i)**2))
                     end do
                 else
                     do i = 1, nelorb_c
-                        write (6, *) i, eig(i/2 + 1), sum(molecorb(1:ipc*nelorb_c/2, i)**2)&
-                                &, sum(molecorb(ipc*nelorb_c/2 + 1:ipc*nelorb_c, i)**2)
+                        call log_info(' ', i, eig(i/2 + 1), sum(molecorb(1:ipc*nelorb_c/2, i)**2)&
+                                &, sum(molecorb(ipc*nelorb_c/2 + 1:ipc*nelorb_c, i)**2))
                     end do
                 end if
             end if
@@ -595,7 +592,7 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
             end do
         end if
         timep = cclock() - timep
-        if (rank .eq. 0) write (6, *) ' Time SVD =', timep
+        call log_info(' Time SVD =', timep)
 
     end if ! endif ipc.eq.1.and.symmagp
 
@@ -772,10 +769,10 @@ subroutine eval_molec_epsdgel(nelorb_c, overs, mat_in               &
     !          endif
 
     !        if(info.eq.0) then
-    if (optprint .ne. 0 .and. rank .eq. 0) then
-        write (6, *) ' Eigenvalues Det '
+    if (optprint .ne. 0) then
+        call log_info(' Eigenvalues Det ')
         do i = 1, nelorb_c/ipf
-            write (6, *) i, eig(i)
+            call log_info(' Eigenvalue ', i, eig(i))
         end do
     end if
 
@@ -814,6 +811,7 @@ subroutine gauge_fixr(N, molecorbup, ldup, molecorbdown, lddown)
 end
 
 subroutine check_complex(n, eig, molecorb, mat)
+    use logger_io, only: log_info, log_debug
     implicit none
     real*8 eig(*)
     integer n, i, j, k
@@ -828,10 +826,10 @@ subroutine check_complex(n, eig, molecorb, mat)
         end do
     end do
 
-    write (6, *) ' Output complex matrix '
+    call log_info(' Output complex matrix ')
     do j = 1, n
         do k = 1, n
-            write (6, *) j, k, mat(j, k)
+            call log_info(j, k, mat(j, k))
         end do
     end do
     return

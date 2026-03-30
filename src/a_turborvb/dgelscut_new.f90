@@ -16,6 +16,7 @@
 subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
         &, scalpar, lwork, epsmach, indexpar, rank, nprocopt, rankopt, commopt_mpi)
     use allio, only: nproc_diag
+    use logger_io, only: log_info, log_warning, log_error, log_debug
     implicit none
     integer ip, nmat, i, j, npm, n1, n2, n3, n4, n5, info, rank, ipsip(*)    &
             &, ind, lwork, iscra, k, ierr, imax, imaxg, indi, indj, np &
@@ -69,7 +70,7 @@ subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
         else
             call dsyev('N', 'L', indi, sov(1, 1, 2), npm, psip, psip(n2), lwork, info)
         end if
-        if (rank .eq. 0) write (6, *) ' Lowest/Max  eigenvalues SR mat ', psip(1), psip(indi)
+        call log_info(' Lowest/Max  eigenvalues SR mat ', psip(1), psip(indi))
 
         eigs = psip(1)
         eigb = psip(2)
@@ -79,7 +80,7 @@ subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
         eigmin = psip(1)
 
     else
-        if (rank .eq. 0) write (6, *) ' Warning no par to eliminate =', indi
+        call log_warning(' Warning no par to eliminate =', indi)
         eigmin = 1.d0
 
     end if
@@ -141,16 +142,14 @@ subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
 
             indscali = indexpar(imax)
 
-            if (rank .eq. 0) then
-                if (indscali .eq. 0) then
-                    write (6, *) 'eliminated collective par', imax
-                else
-                    write (6, *) 'eliminated normal  par', indscali
-                end if
+            if (indscali .eq. 0) then
+                call log_info('eliminated collective par', imax)
+            else
+                call log_info('eliminated normal  par', indscali)
             end if
 
             if (imax .eq. 0) then
-                if (rank .eq. 0) write (6, *) ' Some error in findzero ', eigs_min, eigb_min
+                call log_error(' Some error in findzero ', eigs_min, eigb_min)
 #ifdef PARALLEL
                 call mpi_finalize(ierr)
 #endif
@@ -162,21 +161,19 @@ subroutine dgelscut(sov, nmat, npm, psip, epsdgel, ipsip, np, info    &
 
         end do
 
-        if (rank .eq. 0) write (6, *) ' New  Lowest eigenval ', eigmin
+        call log_info(' New  Lowest eigenval ', eigmin)
     end if
-    if (rank .eq. 0) write (6, *) ' Fixed parameters '
+    call log_info(' Fixed parameters ')
     ind = 0
     do i = 1, nmat
         ipsip(i + np) = ipsip(i)
         if (ipsip(i) .eq. 0) then
             ind = ind + 1
             indscali = indexpar(i)
-            if (rank .eq. 0) then
-                if (indscali .eq. 0) then
-                    write (6, *) ind, i
-                else
-                    write (6, *) ind, indscali
-                end if
+            if (indscali .eq. 0) then
+                call log_info(ind, i)
+            else
+                call log_info(ind, indscali)
             end if
         end if
         ! only the regul

@@ -18,6 +18,7 @@ subroutine read_fort10(ufort10)
     use Cell, only : cellscale, map, metric, CartesianToCrystal,case_map,chosen_map
     use allio
     use convertmod
+    use logger_io, only: log_error, log_warning, log_info
     implicit none
     integer, intent(in) :: ufort10
     integer ioptorbcontr, i1, nel2, ilaenv, iflagpip, indshell&
@@ -45,11 +46,9 @@ subroutine read_fort10(ufort10)
 
     ! $$$$$$$$$$$$$$$$ READING fort.10 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-    if(rank.eq.0) then
-        write(6, *)
-        write(6, *) ' START reading the wave function fort.10 '
-        write(6, *)
-    endif
+    call log_info('')
+    call log_info(' START reading the wave function fort.10 ')
+    call log_info('')
     case_map = 0  ! default value of case_map
     chosen_map=.false. ! No abs(iesdrr)>=100 is assumed
     if(rankrep.eq.0) then
@@ -64,14 +63,12 @@ subroutine read_fort10(ufort10)
             iespbc = .true.
             yes_crystal = .true.
             gamma_point = .true.
-            if(rank.eq.0) write(6, *) ' Warning: using Crystal periodic basis set &
-                    &definition.  Complex wave function with phase is possible now! '
+            call log_warning(' Warning: using Crystal periodic basis set definition.  Complex wave function with phase is possible now! ')
         elseif(checkpbc_c.eq.'PBC_C') then
             iespbc = .true.
             yes_crystal = .true.
             gamma_point = .true.
-            if(rank.eq.0) write(6, *) ' Warning: using Crystal periodic basis set &
-                    &definition.  Complex wave function with phase is possible now! '
+            call log_warning(' Warning: using Crystal periodic basis set definition.  Complex wave function with phase is possible now! ')
         else
             rewind(ufort10)
             read(ufort10, *, err = 100, end = 100) chars, checkpbc
@@ -79,7 +76,7 @@ subroutine read_fort10(ufort10)
                 iespbc = .true.
                 ! defining gamma_point in any case to avoid illegal intr. in mpi_bcast.
                 gamma_point = .true.
-                if(rank.eq.0) write(6, *) ' Warning we are assuming PBC '
+                call log_warning(' Warning we are assuming PBC ')
             else
                 iespbc = .false.
                 gamma_point = .true.
@@ -104,7 +101,7 @@ subroutine read_fort10(ufort10)
 
     if(iespbc) then
         if(rankrep.eq.0) then
-            if(rank.eq.0) write(*, *) ' Reading celldm . . . . '
+            call log_info(' Reading celldm . . . . ')
             read(ufort10, *, err = 102, end = 102)
             if(.not.yes_crystal) then
                 read(ufort10, *, err = 102, end = 102) rs, celldm(2:3), phase(:)
@@ -112,7 +109,7 @@ subroutine read_fort10(ufort10)
                 if(yes_tilted) then
                     read(ufort10, *, err = 102, end = 102) (s2r(:, k), k = 1, 3), phase(:), phase_down(:)
                     case_map = 8
-                    if(rank.eq.0) write(6, *) ' Warning new mapping used case_map=8 !!! '
+                    call log_warning(' Warning new mapping used case_map=8 !!! ')
                 else
                     ! complex w.f. : read also a phase for down-spin electrons!
                     read(ufort10, *, err = 102, end = 102) rs, celldm(2:3), phase(:), phase_down(:)
@@ -147,10 +144,10 @@ subroutine read_fort10(ufort10)
            &,3,MPI_DOUBLE_PRECISION,commcolrep_mpi,ierr)
      call mpi_allgather(phase_down,3,MPI_DOUBLE_PRECISION,xkp_down&
            &,3,MPI_DOUBLE_PRECISION,commcolrep_mpi,ierr)
-     if(rank.eq.0) then
-        ! write file "kp_weights.dat" needed to perform averages
+     ! write file "kp_weights.dat" needed to perform averages
+    call log_info(' Writing k-points information on file ')
+    if(rank.eq.0) then
         open(unit=37,file='kp_info.dat',form='formatted',status='unknown',position='rewind')
-        write(6,*) ' Writing k-points information on file '
         write(37,'(I6)') nk
         write(37,*) '# up spin electrons '
         do i = 1,nk
@@ -161,8 +158,8 @@ subroutine read_fort10(ufort10)
            write(37,301) i,xkp_down(1,i),xkp_down(2,i),xkp_down(3,i),wkp_down(i)
         enddo
         close(37)
+    endif
 301     format(I6,3F13.8,1F19.14)
-     endif
 
      endif
 
@@ -222,7 +219,7 @@ subroutine read_fort10(ufort10)
 
     if(rankrep.eq.0) then
 
-        if(rank.eq.0) write(6, *) ' Reading the begin . . . . '
+        call log_info(' Reading the begin . . . . ')
         read(ufort10, *, err = 104, end = 104)
         read(ufort10, *, err = 104, end = 104) nelup, nel, nion
         if(nel.lt.0) then
@@ -267,7 +264,7 @@ subroutine read_fort10(ufort10)
         forcecomplex = .false.
         forcesymm = .false.
         if(nshell.lt.0) then
-            if(rank.eq.0.and..not.yes_complex) write(6, *) ' Warning complex wave function  !!!'
+            if(.not.yes_complex) call log_warning(' Warning complex wave function  !!!')
             yes_complex = .true.
             forcecomplex = .true.
             nshell = -nshell
@@ -288,14 +285,14 @@ subroutine read_fort10(ufort10)
                     phase_down(i) = -0.5d0
                     opposite_phase = .true.
                     same_phase = .false.
-                    if(rank.eq.0.and..not.done) write(6, *) ' Warning set phases opposite in the real case '
+                    if(.not.done) call log_warning(' Warning set phases opposite in the real case ')
                     done = .true.
                 endif
                 if(abs(phase(i) - nint(phase(i))).eq.0.5d0) then
                     phase(i) = 0.5d0
                     opposite_phase = .true.
                     same_phase = .false.
-                    if(rank.eq.0.and..not.done) write(6, *) ' Warning set phases opposite in the real case '
+                    if(.not.done) call log_warning(' Warning set phases opposite in the real case ')
                     done = .true.
                 endif
             enddo
@@ -308,7 +305,7 @@ subroutine read_fort10(ufort10)
         !even though nshellj=0, which induced the double allocation in allio.f90 (kgrid). 
         !if(nshellj.lt.0.or.yes_tilted) then
         if(nshellj.lt.0.or.(yes_tilted.and.nshellj.ne.0.)) then
-            if(rank.eq.0.and.iespbc) write(6, *) ' Warning Crystal basis for Jastrow  !!!'
+            if(iespbc) call log_warning(' Warning Crystal basis for Jastrow  !!!')
             if(iespbc) yes_crystalj = .true.
             nshellj = abs(nshellj)
         endif
@@ -335,7 +332,7 @@ subroutine read_fort10(ufort10)
         if(nnozero.lt.0) then
             if(yes_complex) forcesymm = .true.
             nnozero = -nnozero
-            if(rank.eq.0.and.yes_complex) write(6, *) ' Warning complex symmetric geminal wave function  !!!'
+            if(yes_complex) call log_warning(' Warning complex symmetric geminal wave function  !!!')
         endif
         read(ufort10, *, err = 106, end = 106)
         read(ufort10, *, err = 106, end = 106) iesupind, iesmind
@@ -403,7 +400,7 @@ subroutine read_fort10(ufort10)
     endif
 
     if(yesbump.and.rank.eq.0) then
-        write(6, *) ' Warning working with bumped Gaussian orbitals !!! '
+        call log_warning(' Warning working with bumped Gaussian orbitals !!! ')
     endif
 
     if(yes_complex) then
@@ -454,26 +451,22 @@ subroutine read_fort10(ufort10)
 
         call set_sym_bl(s2r)
         if(.not.manyfort10) then
-            if(rank.eq.0) then
-                if(.not.yes_crystal) then
-                    write(*, '(a,3f12.6)') ' Phase : ', phase(:)
-                else
-                    write(*, '(a,3f12.6)') ' Phase up spin  : ', phase(:)
-                    write(*, '(a,3f12.6)') ' Phase down spin: ', phase_down(:)
-                endif
+            if(.not.yes_crystal) then
+                call log_info(' Phase : ', phase(1), phase(2), phase(3))
+            else
+                call log_info(' Phase up spin  : ', phase(1), phase(2), phase(3))
+                call log_info(' Phase down spin: ', phase_down(1), phase_down(2), phase_down(3))
             endif
             if(sum(abs(phase(:))).eq.0.or.yes_complex) then
                 gamma_point = .true.
-                if(rank.eq.0) then
-                    if(.not.yes_complex) write(6, *) ' Gamma Point Caculation '
-                    ! complex wf can be used with any phase
-                    if(yes_complex.and.sum(abs(phase(:))).ne.0.d0) write(*, *) ' Complex phase calculation '
-                    if(yes_complex.and.sum(abs(phase(:))).eq.0.d0) write(*, *) ' Gamma phase calculation with complex wf'
-                endif
+                if(.not.yes_complex) call log_info(' Gamma Point Caculation ')
+                ! complex wf can be used with any phase
+                if(yes_complex.and.sum(abs(phase(:))).ne.0.d0) call log_info(' Complex phase calculation ')
+                if(yes_complex.and.sum(abs(phase(:))).eq.0.d0) call log_info(' Gamma phase calculation with complex wf')
                 ! gamma_point is true not only for true gamma point, but also for complex phases (out of gamma)
             else
                 gamma_point = .false.
-                if(rank.eq.0) write(6, *) ' Real boundary calculation '
+                call log_info(' Real boundary calculation ')
                 ! gamma_point is false only for phases with real wave functions (real boundaries)
             endif
         else
@@ -509,13 +502,13 @@ subroutine read_fort10(ufort10)
     if(iespbc) then
         if(ieskint.eq.ieskinr_pos + 2) then
             if(rank.eq.0)                                              &
-                    write(6, *) 'Computing Cell derivatives b,c , constant volume '
+                    call log_info('Computing Cell derivatives b,c , constant volume ')
         elseif(ieskint.eq.ieskinr_pos + 3) then
             if(rank.eq.0)                                              &
-                    write(6, *) 'Calculation at constant  pressure variable cell ', pressfixed
+                    call log_info('Calculation at constant  pressure variable cell ', pressfixed)
         elseif(ieskint.eq.ieskinr_pos + 1) then
             if(rank.eq.0)                                              &
-                    write(6, *) 'Calculation at constant  pressure b/a c/a fixed ', pressfixed
+                    call log_info('Calculation at constant  pressure b/a c/a fixed ', pressfixed)
         endif
     endif
 
@@ -962,7 +955,7 @@ subroutine read_fort10(ufort10)
             endif
         enddo
         deallocate(atom_s, iatom_s)
-        if(rank.eq.0) write(6, *) ' Number of different atomic species =', nmax_ion
+        call log_info(' Number of different atomic species =', nmax_ion)
 
     endif
 
@@ -989,7 +982,7 @@ subroutine read_fort10(ufort10)
         if(iesdr.eq.-2) &
                 call error('read_fort10', ' Jastrow = -2 not implemented for periodic systems!', 1, rank)
 
-        if(rank.eq.0) write(6, *) " Periodic System "
+        call log_info(' Periodic System ')
 
         derEVp = 0.d0
         errEVp = 0.d0
@@ -1018,29 +1011,25 @@ subroutine read_fort10(ufort10)
         endif
      if(yes_tilted.and.ksq.ne.0.5d0) kappa = kappa/cond_find(metric(1,2),metric(1,3),metric(2,3))
 
-        if(rank.eq.0) then
+        call log_info(' Rs = ', rs)
+        call log_info(' Notice celldm(1) set to ', 1)
+        call log_info(' Unit of length a.u. ')
+        call log_info(' LMin = ', lmin)
+        call log_info(' Real Volume of the Cell = ', omega)
+        call log_info(' Rescaled tstep ', tstep)
+        call log_info(' celscale before ', cellscale(1), cellscale(2), cellscale(3))
+        if(yes_tilted.and.ksq.ne.0.5d0) call log_warning(' Warning increased kappa Ewald by = ',1.d0/cond_find(metric(1,2),metric(1,3),metric(2,3)))
 
-            write(6, *) ' Rs = ', rs
-            write(6, *) ' Notice celldm(1) set to ', 1
-            write(6, *) ' Unit of length a.u. '
-            write(6, *) ' LMin = ', lmin
-            write(6, *) ' Real Volume of the Cell = ', omega
-            write(6, *) ' Rescaled tstep ', tstep
-            write(6, *) ' celscale before ', cellscale(1:3)
-            if(yes_tilted.and.ksq.ne.0.5d0) write(6,*) ' Warning increased kappa Ewald by = ',1.d0/cond_find(metric(1,2),metric(1,3),metric(2,3))
-
-            if(cellscale(3).ne.0.d0.and.cellscale(2).ne.0.d0) then
-                lmin = min(cellscale(1), cellscale(2), cellscale(3))
-            elseif(cellscale(2).ne.0.d0) then
-                lmin = min(cellscale(1), cellscale(2))
-            else
-                lmin = cellscale(1)
-            endif
-
-            if(tstep.gt.lmin / 2.0) call error('read_fort10', " WARNING ! tstep > LBox/2 ", -1, rank)
-            if(rank.eq.0) write(6, *) ' Rescaling Distances . . . '
-
+        if(cellscale(3).ne.0.d0.and.cellscale(2).ne.0.d0) then
+            lmin = min(cellscale(1), cellscale(2), cellscale(3))
+        elseif(cellscale(2).ne.0.d0) then
+            lmin = min(cellscale(1), cellscale(2))
+        else
+            lmin = cellscale(1)
         endif
+
+        if(tstep.gt.lmin / 2.0) call error('read_fort10', " WARNING ! tstep > LBox/2 ", -1, rank)
+        call log_info(' Rescaling Distances . . . ')
 
 #ifdef PARALLEL
      call mpi_bcast(lmin,1,MPI_DOUBLE_PRECISION,0,commrep_mpi,ierr)
@@ -1053,7 +1042,7 @@ subroutine read_fort10(ufort10)
         !      *************** PERIODIC WORLD *****************
     else
 
-        if(rank.eq.0) write(6, *) ' Open Boundary Conditions '
+        call log_info(' Open Boundary Conditions ')
         kMax = 1
         kMax2 = 2
         ALLOCATE(rmucos(3, nion * (indt + 1)), rmusin(3, nion * (indt + 1)))
@@ -1119,7 +1108,7 @@ subroutine read_fort10(ufort10)
                 if(LBox.gt.0) then
 
                     if(rcutoff(ind).gt.Lmin) then
-                        if(rank.eq.0) write(6, *) ' Warning core radius too large for pseudo ion: ', ind, i
+                        call log_warning(' Warning core radius too large for pseudo ion: ', ind, i)
                     endif
                 endif
 
@@ -1236,7 +1225,7 @@ subroutine read_fort10(ufort10)
 
     ipsip = 0
 
-    if(rank.eq.0) write(6, *) ' Reading ieskin . . . . '
+    call log_info(' Reading ieskin . . . . ')
     !            if(rank.eq.0.and.ieskinr.eq.3*nion.and.iesking.eq.0) then
     !            write(6,*) 'Warning assuming all force components included '
     !            endif
@@ -1297,7 +1286,7 @@ subroutine read_fort10(ufort10)
         !              endif
     enddo
 
-    if(rank.eq.0) write(6, *) 'Number of moved ionic coordinates', indn
+    call log_info('Number of moved ionic coordinates', indn)
     movedion = indn
     stopdyn = .false.
 
@@ -1308,7 +1297,7 @@ subroutine read_fort10(ufort10)
 
     if(iesdr.ne.0) then
         if(rankrep.eq.0) then
-            if(rank.eq.0) write(6, *) ' Reading 2-body jastrow . . . . '
+            call log_info(' Reading 2-body jastrow . . . . ')
             allocate(psip(10000))
             read(ufort10, *, err = 118, end = 118) niesd, (psip(i), i = 1, abs(niesd))
             if(niesd.lt.0) then
@@ -1368,7 +1357,7 @@ subroutine read_fort10(ufort10)
     ! just check whether the boundary conditions for opposite spins are opposite.
 
     if(rank.eq.0.and.allowed_averagek) &
-            write(6, *) ' Warning algorithm with effective lambda for k-average '
+            call log_warning(' Warning algorithm with effective lambda for k-average ')
 
     !   Calculation yes_hermite
     if(.not.opposite_phase) yes_hermite = .false.
@@ -1382,17 +1371,16 @@ subroutine read_fort10(ufort10)
 
 #ifdef PARALLEL
    if(manyfort10) then
-    if(rank.eq.0) write(6,*) ' Warning forcing all to have the same &
-    &  Hermite/non Hermitian case=',yes_hermite
+    call log_warning(' Warning forcing all to have the same Hermite/non Hermitian case=', yes_hermite)
     call mpi_bcast(yes_hermite,1,MPI_LOGICAL,0,mpi_comm_world,ierr)
     call mpi_bcast(opposite_phase,1,MPI_LOGICAL,0,mpi_comm_world,ierr)
     call mpi_bcast(same_phase,1,MPI_LOGICAL,0,mpi_comm_world,ierr)
    endif
 #endif
 
-    if(rank.eq.0) write(6, *) 'opposite phase =', opposite_phase
-    if(rank.eq.0) write(6, *) 'same  phase =', same_phase
-    if(rank.eq.0) write(6, *) 'yes_hermite before =', yes_hermite
+    call log_info('opposite phase =', opposite_phase)
+    call log_info('same  phase =', same_phase)
+    call log_info('yes_hermite before =', yes_hermite)
 
     if(yes_crystal) then
         if(symmagp) then
@@ -1430,7 +1418,7 @@ subroutine read_fort10(ufort10)
     dsw = 0.d0
 
     if(iesd.ne.0.and.iesd.ne.niesd) then
-        if(rank.eq.0) write(6, *) ' Warning iesd changed to ', niesd
+        call log_warning(' Warning iesd changed to ', niesd)
         iesd = niesd
     endif
 
@@ -1450,7 +1438,7 @@ subroutine read_fort10(ufort10)
     maxshell = 1
     allocate(whereiesup(iesup_c))
     whereiesup = 0
-    if(rank.eq.0) write(6, *) ' Reading det shells . . . . '
+    call log_info(' Reading det shells . . . . ')
     do i = 1, nshell_c
         if(rankrep.eq.0) then
             read(ufort10, *, err = 124, end = 124) mult_c(i), nparam_c(i), ioptorb_c(i)
@@ -1575,10 +1563,8 @@ subroutine read_fort10(ufort10)
 
     do i = 2, nshell_c
         if(kion_c(i).lt.kion_c(i - 1)) then
-            if(rank.eq.0) then
-                write(6, *) 'Warn. Ions are not in ascending order in Det !'
-                write(6, *) 'Check shell det =', i
-            endif
+            call log_warning('Warn. Ions are not in ascending order in Det !')
+            call log_info('Check shell det =', i)
         endif
     enddo
 
@@ -1587,17 +1573,15 @@ subroutine read_fort10(ufort10)
 
     if(contraction.ne.0) then
 
-        if(rank.eq.0)  then
-            write(6, *) 'USING', contraction, 'CONTRACTED DET ORBITALS'
-            write(6, *) 'USING', molecular, 'MOLECULAR  DET ORBITALS'
-        endif
+        call log_info('USING', contraction, 'CONTRACTED DET ORBITALS')
+        call log_info('USING', molecular, 'MOLECULAR  DET ORBITALS')
 
         ! definition iesup_atom
         iesup_atom = 0
         do i = 1, nshell_c
             if(ioptorb_c(i).ne.1000000) iesup_atom = iesup_atom + nparam_c(i)
         enddo
-        if(rank.eq.0) write(6, *)  ' iesup dimension  atomic basis =', iesup_atom, iesup_c
+        call log_info(' iesup dimension  atomic basis =', iesup_atom, iesup_c)
 
     else
         iesup_atom = iesup_c
@@ -1660,7 +1644,7 @@ subroutine read_fort10(ufort10)
     maxshellj = 1
     maxparamj = 0
     numcost = 0
-    if(rank.eq.0) write(6, *) ' Reading jas shells . . . . '
+    call log_info(' Reading jas shells . . . . ')
     do i = 1, nshellj_c
         if(rankrep.eq.0) then
             read(ufort10, *, err = 130, end = 130) multj_c(i), nparamj_c(i), ioptorbj_c(i)
@@ -1691,7 +1675,7 @@ subroutine read_fort10(ufort10)
         if(ioptorbj_c(i).ne.ioptorbcontr(ioptorbj_c(i), LBoxj, 1)&
                 &.or.(num200.gt.0.and.ioptorbj_c(i).eq.200)) then
             if(num200.eq.1.and.ioptorbj_c(i).eq.200) then
-                if(rank.eq.0) write(6, *) ' Warning >1  constant orbitals--> considered contracted '
+                call log_warning(' Warning >1  constant orbitals--> considered contracted ')
             endif
             contractionj = contractionj + 1
             if(.not.moljyes) then
@@ -1739,8 +1723,8 @@ subroutine read_fort10(ufort10)
 
 
     if((contractionj.ne.0.or.iessz).and.yes_sparse.and..not.yes_sparse_choose) then
-     if(rank.eq.0.and.contractionj.ne.0) write(6,*) ' Warning  yes_sparse=.true. implemented only with  uncontracted Jastrow '
-     if(rank.eq.0.and.iessz) write(6,*) ' Warning  yes_sparse=.true. not implemented with  old spin  Jastrow/ use -22 or similar '
+     if(contractionj.ne.0) call log_warning(' Warning  yes_sparse=.true. implemented only with  uncontracted Jastrow ')
+     if(iessz) call log_warning(' Warning  yes_sparse=.true. not implemented with  old spin  Jastrow/ use -22 or similar ')
       yes_sparse=.false.
     endif
 
@@ -1776,32 +1760,26 @@ subroutine read_fort10(ufort10)
 
     do i = 2, nshellj_c
         if(kionj_c(i).lt.kionj_c(i - 1)) then
-            if(rank.eq.0) then
-                write(6, *) 'Warn. Ions are not in ascending order in Jas !'
-                write(6, *) 'Check shell Jas =', i
-            endif
+            call log_warning('Warn. Ions are not in ascending order in Jas !')
+            call log_info('Check shell Jas =', i)
         endif
     enddo
 
     if(indpar.ne.npar3body_c) &
             call error('read_fort10', ' Some error in input Jastrow 3-body ', 1, rank)
 
-    if(rank.eq.0) then
-        if(contractionj.ne.0) then
-            write(6, *) ' USING CONTRACTED JASTROW ORBITALS ', contractionj
-        else
-            write(6, *) ' USING UNCONTRACTED JASTROW ORBITALS '
-        endif
+    if(contractionj.ne.0) then
+        call log_info(' USING CONTRACTED JASTROW ORBITALS ', contractionj)
+    else
+        call log_info(' USING UNCONTRACTED JASTROW ORBITALS ')
     endif
 
     if(contractionj.ne.0) then
 
-        if(rank.eq.0) then
-            write(6, *) 'USING', contractionj, 'CONTRACTED + CONST JASTROW ORBITALS'
-            write(6, *) 'USING', molecularj, 'MOLECULAR  JASTROW ORBITALS'
-            write(6, *) 'USING', maxshellj, 'max shells jastrow'
-            write(6, *) 'USING', maxshell, 'max shells det '
-        endif
+        call log_info('USING', contractionj, 'CONTRACTED + CONST JASTROW ORBITALS')
+        call log_info('USING', molecularj, 'MOLECULAR  JASTROW ORBITALS')
+        call log_info('USING', maxshellj, 'max shells jastrow')
+        call log_info('USING', maxshell, 'max shells det ')
 
     else
 
@@ -1856,7 +1834,7 @@ subroutine read_fort10(ufort10)
     ioccup_c = 0
 
     if(rankrep.eq.0) then
-        if(rank.eq.0) write(*, *) ' Reading det occupation . . . . '
+        call log_info(' Reading det occupation . . . . ')
         do i = 1, occ_c
             read(ufort10, *, err = 136, end = 136) ioccup_c(i)
         enddo
@@ -1886,10 +1864,8 @@ subroutine read_fort10(ufort10)
     !    if(ioptorb_c(i).eq.1000000) nelorb_c=nelorb_c+1
     ! enddo
 
-    if(rank.eq.0) then
-        write(6, *) 'Number of total det orbitals', occ_c
-        write(6, *) 'Number of occupied det orbitals', nelorb_c
-    endif
+    call log_info('Number of total det orbitals', occ_c)
+    call log_info('Number of occupied det orbitals', nelorb_c)
 
     if(contraction.ne.0) then
 
@@ -1906,10 +1882,8 @@ subroutine read_fort10(ufort10)
             dimtranspip = dimtranspip + iesup_atom
         enddo
 
-        if(rank.eq.0) then
-            write(6, *) ' Preliminary allocation ', 24d-9 * iesup_c
-            write(6, *) ' transpip =', 4d-9 * dimtranspip
-        endif
+        call log_info(' Preliminary allocation ', 24d-9 * iesup_c)
+        call log_info(' transpip =', 4d-9 * dimtranspip)
         memtot = memtot + 3 * iesup_c + 0.5 * dimtranspip
 
         if(rankrep.eq.0) then
@@ -2059,7 +2033,7 @@ subroutine read_fort10(ufort10)
                 elseif(ioptorb_c(i).lt.900000) then
 
                     if(nparam_c(i).gt.1) then
-                        if(rankrep.eq.0) write(6, *) 'Uncontracted orbital with', nparam_c(i), 'zeta!', rankcolrep
+                        if(rankrep.eq.0) call log_info('Uncontracted orbital with', nparam_c(i), 'zeta!', rankcolrep)
                         call error('read_fort10', ' It is supposed to be a single zeta orbital! ', 1, rank)
                     endif
 
@@ -2164,10 +2138,8 @@ subroutine read_fort10(ufort10)
             if(ioccup(i).ne.0) nelorb = nelorb + 1
         enddo
 
-        if(rank.eq.0) then
-            write(6, *) 'Number of total det orbitals (root)', occ
-            write(6, *) 'Number of occupied det orbitals (root)', nelorb
-        endif
+        call log_info('Number of total det orbitals (root)', occ)
+        call log_info('Number of occupied det orbitals (root)', nelorb)
 
         nelorbh = nelorb
 
@@ -2243,7 +2215,7 @@ subroutine read_fort10(ufort10)
     ioccj_c = 0
 
     if(rankrep.eq.0) then
-        if(rank.eq.0) write(6, *) ' Reading jas occupation . . . . '
+        call log_info(' Reading jas occupation . . . . ')
         do i = 1, occj_c
             read(ufort10, *, err = 140, end = 140) ioccj_c(i)
         enddo
@@ -2262,10 +2234,8 @@ subroutine read_fort10(ufort10)
         if(ioccj_c(i).eq.1) nelorbj_c = nelorbj_c + 1
     enddo
 
-    if(rank.eq.0) then
-        write(6, *) 'Number of total Jas orbitals', occj_c
-        write(6, *) 'Number of occupied Jas orbitals', nelorbj_c
-    endif
+    call log_info('Number of total Jas orbitals', occj_c)
+    call log_info('Number of occupied Jas orbitals', nelorbj_c)
 
     ! write(6,*) ' Lbox inside fort10',LBox
     if(LBox.eq.3.and..not.yes_crystalj) then
@@ -2388,7 +2358,7 @@ subroutine read_fort10(ufort10)
             elseif(ioptorbj_c(i).lt.900000) then
 
                 if(nparamj_c(i).gt.1) then
-                    if(rankrep.eq.0) write(6, *) 'Uncontracted Jas orbital with', nparamj_c(i), 'zeta!', rankcolrep
+                    if(rankrep.eq.0) call log_info('Uncontracted Jas orbital with', nparamj_c(i), 'zeta!', rankcolrep)
                     call error('read_fort10', ' It is supposed to be a single zeta orbital! ', 1, rank)
                 endif
 
@@ -2458,10 +2428,8 @@ subroutine read_fort10(ufort10)
             if(ioccj(i).ne.0) nelorbj = nelorbj + 1
         enddo
 
-        if(rank.eq.0) then
-            write(6, *) 'Number of total Jas orbitals (root)', occj
-            write(6, *) 'Number of occupied Jas orbitals (root)', nelorbj
-        endif
+        call log_info('Number of total Jas orbitals (root)', occj)
+        call log_info('Number of occupied Jas orbitals (root)', nelorbj)
 
         nelorbjh = nelorbj
         npar3body = npar3body_fill
@@ -2585,7 +2553,7 @@ subroutine read_fort10(ufort10)
     dim_uptabtot = max(dim_upwf, ipc * nmol * (5 + 2 * (1 + indt + ip4)))
 
     if(contraction.eq.0.and.yesfast.ne.0) then
-        if(rank.eq.0) write(6, *) ' Warning without contracted orbitals yesfast=0, forced '
+        call log_warning(' Warning without contracted orbitals yesfast=0, forced ')
         yesfast = 0
     endif
 
@@ -2660,28 +2628,26 @@ subroutine read_fort10(ufort10)
 
     !-------- GENERAL ALLOCATION --------!
 
-    if(rank.eq.0) then
-        write(6, *) ' Before allocation standard '
-        write(6, *) ' nion = ', nion
-        write(6, *) ' nel = ', nel
-        write(6, *) ' indt=', indt
-        write(6, *) ' npm= ', npm
-        write(6, *) ' nwm= ', nwm
-        write(6, *) ' nws= ', nws
-        write(6, *) ' nelorbj= ', nelorbj
-        write(6, *) ' iscrapip= ', iscrapip
-        write(6, *) ' iscraipsip= ', iscraipsip
-        write(6, *) ' nelorb= ', nelorb
-        write(6, *) ' nelcol= ', nelcol
-        write(6, *) ' nelup= ', nelup
-        write(6, *) ' nelorb_c= ', nelorb_c
-        write(6, *) ' nelorbj_c= ', nelorbj_c
-        write(6, *) ' nelcol_c= ', nelcol_c
-        write(6, *) ' nshell= ', nshell
-        write(6, *) ' nshellj= ', nshellj
-        write(6, *) ' npsamax= ', npsamax
-        write(6, *) ' nintpseudo= ', nintpseudo
-    endif
+    call log_info(' Before allocation standard ')
+    call log_info(' nion = ', nion)
+    call log_info(' nel = ', nel)
+    call log_info(' indt=', indt)
+    call log_info(' npm= ', npm)
+    call log_info(' nwm= ', nwm)
+    call log_info(' nws= ', nws)
+    call log_info(' nelorbj= ', nelorbj)
+    call log_info(' iscrapip= ', iscrapip)
+    call log_info(' iscraipsip= ', iscraipsip)
+    call log_info(' nelorb= ', nelorb)
+    call log_info(' nelcol= ', nelcol)
+    call log_info(' nelup= ', nelup)
+    call log_info(' nelorb_c= ', nelorb_c)
+    call log_info(' nelorbj_c= ', nelorbj_c)
+    call log_info(' nelcol_c= ', nelcol_c)
+    call log_info(' nshell= ', nshell)
+    call log_info(' nshellj= ', nshellj)
+    call log_info(' npsamax= ', npsamax)
+    call log_info(' nintpseudo= ', nintpseudo)
 
 
     nelorbjh2=2*nelorbj
@@ -2786,8 +2752,8 @@ subroutine read_fort10(ufort10)
             rknew = 0.d0
         endif
 
-        if(rank.eq.0) write(6, *) ' Memory required DFT =', memtot * 8 / 1d9, 'Gbyte'
-        if(rank.eq.0) write(6, *) ' Memory winv =', 8d-9 * nelorb * (indt + 5) * nws
+        call log_info(' Memory required DFT =', memtot * 8 / 1d9, 'Gbyte')
+        call log_info(' Memory winv =', 8d-9 * nelorb * (indt + 5) * nws)
 
     else
         ! in1 = nw/nproc = nws
@@ -2921,9 +2887,9 @@ subroutine read_fort10(ufort10)
                 &nelorb * (indt + ip4) + nelup * nelorbh + nelup * nelorb + 2 + nelorbh + 4 * nion + &
                 &max(nelorbjh * nelorbjh, 1) + &
                 &nelorb * (ip4 + 1) + 1 + nshell + nshellj + 2 * nws + indt + 4 + 3 * nion * nion
-        if(rank.eq.0) write(6, *) ' Memory required QMC =', memtot * 8 / 1d9, 'Gbyte'
-        if(rank.eq.1) write(6, *) ' Memory required QMC slaves =', memtot * 8 / 1d9, 'Gbyte'
-        if(rank.eq.0) write(6, *) ' Memory winv =', 8d-9 * nelorb * nel * (indt4 + 1) * nws
+        call log_info(' Memory required QMC =', memtot * 8 / 1d9, 'Gbyte')
+        call log_info(' Memory required QMC slaves =', memtot * 8 / 1d9, 'Gbyte')
+        call log_info(' Memory winv =', 8d-9 * nelorb * nel * (indt4 + 1) * nws)
 
     endif
 
@@ -2966,8 +2932,8 @@ subroutine read_fort10(ufort10)
         iscramax = max(iscramax, nelorbj * nelorbj_c)
     endif
     iscramax = iscramax + 3 * nel ! in upscratch_global psip is called with address 3*nel+1
-    if(rank.eq.0)  write(6, *) ' iscramax for master = ', iscramax
-    if(rank.eq.1)  write(6, *) ' iscramax for slaves = ', iscramax
+    call log_info(' iscramax for master = ', iscramax)
+    call log_info(' iscramax for slaves = ', iscramax)
 
 
     !    iscramax=1000000
@@ -3037,7 +3003,7 @@ subroutine read_fort10(ufort10)
     ! read non zero elements of lambda and put in scale
     if(rankrep.eq.0) then
         read(ufort10, *, err = 142, end = 142)
-        if(rank.eq.0) write(6, *) ' Reading det nnozero . . . . '
+        call log_info(' Reading det nnozero . . . . ')
         do i = 1, nnozero_c + nnozero_eagp
             if(yes_complex) then
                 read(ufort10, *, err = 142, end = 142) ix, iy, scale_c(2 * i - 1), scale_c(2 * i)
@@ -3081,7 +3047,7 @@ subroutine read_fort10(ufort10)
     indp = 0
     indtot = 0
     iimax = 0
-    if(rank.eq.0) write(*, *) ' Reading det nnozero symmetries ....'
+    call log_info(' Reading det nnozero symmetries ....')
     if(rankrep.eq.0) then
         do i = 1, iesswr
             read(ufort10, *, err = 146, end = 146) ii, (ipsip(j), j = 1, 2 * abs(ii))
@@ -3185,15 +3151,13 @@ subroutine read_fort10(ufort10)
     ind = indn
 
     if(iessw.ne.0.and.iesswind.ne.iessw) then
-        if(rank.eq.0) write(6, *) ' Warning iessw changed to ', iesswind * ipc
+        call log_warning(' Warning iessw changed to ', iesswind * ipc)
         iessw = iesswind * ipc
         if(symmagp.and.ipc.eq.2.and.yes_correct) iessw = iessw * 2
     endif
 
-    if(rank.eq.0) then
-        write(6, *) 'Number of non zero geminal lambda for det ', indtot
-        write(6, *) 'Number of non fixed geminal lambda for det', indn
-    endif
+    call log_info('Number of non zero geminal lambda for det ', indtot)
+    call log_info('Number of non fixed geminal lambda for det', indn)
 
     call checkmatrix(nnozero_c, indn - nnozero_eagp, nelorb_c, nozero_c, nozeron&
             &, ipsip, rank, nelcol_c)
@@ -3262,17 +3226,13 @@ subroutine read_fort10(ufort10)
     !    enddo
 
     if(indtot.ne.nnozero_c + nnozero_eagp) then
-        if(rank.eq.0) then
-            write(6, *) ' Inconsistent input sym in Det. ', indtot, nnozero_c
-            write(6, *) ' The # of written table entries =', nnozero_c
-            write(6, *) ' The # of symmetric table entries =', indtot
-        endif
+        call log_error(' Inconsistent input sym in Det. ', indtot, nnozero_c)
+        call log_error(' The # of written table entries =', nnozero_c)
+        call log_error(' The # of symmetric table entries =', indtot)
         call error('read_fort10', ' Error checking matrices! ', 1, rank)
     elseif(indn.ne.nnozero_c + nnozero_eagp) then
-        if(rank.eq.0) then
-            write(6, *) ' The # of written table entries =', nnozero_c + nnozero_eagp
-            write(6, *) ' The # of matches  =', indn
-        endif
+        call log_error(' The # of written table entries =', nnozero_c + nnozero_eagp)
+        call log_error(' The # of matches  =', indn)
         call error('read_fort10', ' Error checking matrices! ', 1, rank)
     endif
 
@@ -3369,7 +3329,7 @@ subroutine read_fort10(ufort10)
         if(allowed_averagek) then
             !          From the effective to the real one
             call attach_phase2det(.true., detmat_c)
-            if(rank.eq.0) write(6, *) ' Passi qui from eff. to real I '
+            call log_info(' Passi qui from eff. to real I ')
         endif
     else
         ! no contraction
@@ -3472,7 +3432,7 @@ subroutine read_fort10(ufort10)
                         ix = transpip_sav(jj)%col(kk) - (ii - 1) * nelorbmax
                         iy = addr_occ(ii)
                         if(iy.eq.0) then
-                            write(6, *) ' ERROR contraction coefficient !!! ', iy
+                            call log_error(' ERROR contraction coefficient !!! ', iy)
                         else
                             transpip(jj)%col(kk) = (iy - 1) * ipf * nelorbh + ix
                             transpip(jj + multranspip(kk))%col(kk) = (iy + nelorb_at / 2 - 1) * ipf * nelorbh + ix + nelorbh
@@ -3487,7 +3447,7 @@ subroutine read_fort10(ufort10)
                         ix = transpip_sav(jj)%col(kk) - (ii - 1) * nelorbmax
                         iy = addr_occ(ii)
                         if(iy.eq.0) then
-                            write(6, *) ' ERROR contraction coefficient !!! ', iy
+                            call log_error(' ERROR contraction coefficient !!! ', iy)
                         else
                             transpip(jj)%col(kk) = (iy - 1) * nelorbh + ix
                         endif
@@ -3538,12 +3498,12 @@ subroutine read_fort10(ufort10)
                             endif
                             if(ix.gt.nelorbh * ipf.or.ix.lt.1) then
                                 if(ioptorb_c(i).eq.900000) then
-                                    write(6, *) ' Error the hybrid atomic basis does not match with orbital # ', ix
-                                    write(6, *) ' Minimum/Maximum atomic orbital # allowed ', 1, ipf * nelorbh
+                                    call log_error(' Error the hybrid atomic basis does not match with orbital # ', ix)
+                                    call log_error(' Minimum/Maximum atomic orbital # allowed ', 1, ipf * nelorbh)
                                     call error(' read_fort10 ', 'Error setting hybrid orbitals.', 1, rank)
                                 else
-                                    write(6, *) ' Error the molecular basis does not match with orbital # ', ix
-                                    write(6, *) ' Minimum/Maximum atomic orbital # allowed ', 1, ipf * nelorbh
+                                    call log_error(' Error the molecular basis does not match with orbital # ', ix)
+                                    call log_error(' Minimum/Maximum atomic orbital # allowed ', 1, ipf * nelorbh)
                                     call error(' read_fort10 ', 'Error setting molecular orbitals.', 1, rank)
                                 endif
                             endif
@@ -3633,7 +3593,7 @@ subroutine read_fort10(ufort10)
         endif
         nnozero = indocc
 
-        if(rank.eq.0) write(6, *) 'Number of non zero lambda (root)', nnozero
+        call log_info('Number of non zero lambda (root)', nnozero)
 
         if(yesdetmatc) then
             if(yes_complex) then
@@ -3738,7 +3698,7 @@ subroutine read_fort10(ufort10)
         if(allowed_averagek) then
             !          From the effective to the real one
             call attach_phase2det(.true., detmat)
-            if(rank.eq.0) write(6, *) ' Passi qui from eff. to real II '
+            call log_info(' Passi qui from eff. to real II ')
         endif
 
     endif  ! endif contraction gt 0
@@ -3746,7 +3706,7 @@ subroutine read_fort10(ufort10)
     ! read lambda for jastrow and put in scalej
     if(rankrep.eq.0) then
         read(ufort10, *, err = 148, end = 148)
-        if(rank.eq.0) write(*, *) ' Reading jas nnozero ....'
+        call log_info(' Reading jas nnozero ....')
         if(yes_sparse) then
         do i = 1, nnozeroj_c
             read(ufort10, *, err = 148, end = 148) ix, iy, scalej_c(i)
@@ -3781,7 +3741,7 @@ subroutine read_fort10(ufort10)
 #endif
      if(iessz) then
     if(rankrep.eq.0) then
-        write(*, *) ' Reading jas-sz nnozero ....'
+        call log_info(' Reading jas-sz nnozero ....')
         read(ufort10, *, err = 150, end = 150)
         do i = 1, nnozeroj_c
             iy = (nozeroj_c(i) - 1) / nelorbj_c + 1
@@ -3808,7 +3768,7 @@ subroutine read_fort10(ufort10)
 ! It is supposed that the contraction does not contain constant orbitals
 ind = 0
 indorb = 0
-if(rank.eq.0) write(6, *) 'Location constant orbitals in Jastrow'
+call log_info('Location constant orbitals in Jastrow')
 do i = 1, nshellj_c
     do j = 1, multj_c(i)
         ind = ind + 1
@@ -3817,7 +3777,7 @@ do i = 1, nshellj_c
 
             if(ioptorbj_c(i).eq.200.or.ioptorbj_c(i).eq.199) then
                 orbcostn(indorb) = .true.
-                if(rank.eq.0) write(6, *) indorb, ' Constant orbital '
+                call log_info(' Constant orbital ', indorb)
             else
                 orbcostn(indorb) = .false.
             endif
@@ -3850,7 +3810,7 @@ indp = 0
 indtot = 0
 iesfreesz = 0
 iijmax = 0
-if(rank.eq.0) write(6, *) ' Reading jas nnozero symmetries ....', rankcolrep
+call log_info(' Reading jas nnozero symmetries ....', rankcolrep)
 if(rankrep.eq.0) then
     do i = 1, iesfreer
         read(ufort10, *, err = 154, end = 154) ii, (ipsip(j), j = 1, 2 * abs(ii))
@@ -3985,21 +3945,19 @@ endif
 #endif
 
 if(iesfree.ne.0.and.indp.ne.iesfree) then
-    if(rank.eq.0) write(6, *) 'Warning iesfree changed to ', indp
+    call log_warning('Warning iesfree changed to ', indp)
     iesfree = indp
 endif
 
 if(iesinv.ne.0.and.iesinv.ne.iesfreesz) then
-    if(rank.eq.0) write(6, *) 'Warning iesinv changed to ', iesfreesz
+    call log_warning('Warning iesinv changed to ', iesfreesz)
     iesinv = iesfreesz
 endif
 
 if(.not.iessz.or.(iesinv.eq.0.and..not.yesdft)) iesfreesz = 0
-if(rank.eq.0) then
-    write(6, *) 'Number of non zero geminal lambda for Jas', indtot
-    write(6, *) 'Number of non fixed geminal lambda for Jas', indn
-    write(6, *) ' Number of accepted nnozeron Jas Sz ', iesfreesz
-endif
+call log_info('Number of non zero geminal lambda for Jas', indtot)
+call log_info('Number of non fixed geminal lambda for Jas', indn)
+call log_info(' Number of accepted nnozeron Jas Sz ', iesfreesz)
 
 if(yes_sparse) then
 call checkmatrix_sparse(nnozeroj_c, indn, ipj * nelorbj_c, nozeroj_c, nozeron&
@@ -4047,7 +4005,7 @@ if(yes_sparse) then
    nozeroj(i+nnozeroj)=nozeroj_c(nozerojder(i)+nnozeroj_c)
    jasmat(i)=scalej_c(nozerojder(i))
    enddo
-   if(rank.eq.0) write(6,*) ' SPARSE number of jasmat el.=',nnozeroj
+   call log_info(' SPARSE number of jasmat el.=', nnozeroj)
 endif
 
 if(iessz) then
@@ -4060,7 +4018,7 @@ if(iessz) then
 endif
 
 if(.not.yes_sparse) then
-if(rank.eq.0) write(6, *) ' Check repeated in the symmetry table Jastrow  '
+call log_info(' Check repeated in the symmetry table Jastrow  ')
 call checkrepeat(indn, nelorbj_c * ipj, nozeron, rank)
 endif
 
@@ -4078,15 +4036,15 @@ endif
 
 if(indtot.ne.nnozeroj_c) then
     if(rank.eq.0) then
-        write(6, *) ' Inconsistent input sym in Jas. ', indtot, nnozeroj_c
-        write(6, *) ' The # of written table entris =', nnozeroj_c
-        write(6, *) ' The # of symmetric table entries =', indtot
+        call log_error(' Inconsistent input sym in Jas. ', indtot, nnozeroj_c)
+        call log_error(' The # of written table entris =', nnozeroj_c)
+        call log_error(' The # of symmetric table entries =', indtot)
     endif
     call error('read_fort10', ' Error checking matrices! ', 1, rank)
 elseif(indn.ne.nnozeroj_c) then
     if(rank.eq.0) then
-        write(6, *) ' The # of written table entries =', nnozeroj_c
-        write(6, *) ' The # of matches  =', indn
+        call log_error(' The # of written table entries =', nnozeroj_c)
+        call log_error(' The # of matches  =', indn)
     endif
     call error('read_fort10', ' Error checking matrices! ', 1, rank)
 endif
@@ -4164,7 +4122,7 @@ if(contractionj.ne.0) then
             if(iy.ne.0) then
                 transpipj(jj)%col(kk) = (iy - 1) * nelorbjh + ix
             else
-                if(rank.eq.0) write(6, *) ' ERROR input '
+                call log_error(' ERROR input ')
             endif
         enddo
     enddo
@@ -4226,7 +4184,7 @@ if(contractionj.ne.0) then
     indocc = (ipj * nelorbjh * (ipj * nelorbjh + 1)) / 2
     nnozeroj = indocc
 
-    if(rank.eq.0) write(6, *) 'Number of non zero Jas lambda (root)', nnozeroj
+    call log_info('Number of non zero Jas lambda (root)', nnozeroj)
     if(iessz) then 
     allocate(scalejsz(max(nnozeroj,1)))
     else
@@ -4282,7 +4240,7 @@ ALLOCATE(jbraiesup(iesupr_c)                               &
 jbraiesup = 0
 jbraiesup_sav = 0
 
-if(rank.eq.0) write(*, *) ' Reading Z-AGP symmetries ....'
+call log_info(' Reading Z-AGP symmetries ....')
 if(rankrep.eq.0) then
     read(ufort10, *, err = 156, end = 156)
 endif
@@ -4347,8 +4305,8 @@ if(contraction.ne.0) then
                 jj = iesuptransb(j)
                 if(ii.eq.jj) then
                     if(jbraiesup(i).ne.jbraiesup(j)) then
-                        write(6, *) 'det zeta', i, 'and', j, 'must be joined with symmetry!'
-                        write(6, *) dup_c(i), dup_c(j)
+                        call log_warning('det zeta', i, 'and', j, 'must be joined with symmetry!')
+                        call log_info(' ', dup_c(i), dup_c(j))
                         call error('read_fort10', ' Error in reading symmetries! ', 1, rank)
                     endif
                 endif
@@ -4357,9 +4315,9 @@ if(contraction.ne.0) then
     enddo
 endif
 
-if(rank.eq.0) write(6, *) ' Touched det zeta par =', iesuptouched
+call log_info(' Touched det zeta par =', iesuptouched)
 if(iesup.ne.0.and.ipc * iesuptouched.ne.iesup) then
-    if(rank.eq.0) write(6, *) ' Warning iesup changed to ', ipc * iesuptouched
+    call log_warning(' Warning iesup changed to ', ipc * iesuptouched)
     iesup = ipc * iesuptouched
 endif
 
@@ -4373,7 +4331,7 @@ if(rankrep.eq.0) then
     read(ufort10, *, err = 160, end = 160)
 endif
 if(iesmind.ne.0) then
-    if(rank.eq.0) write(6, *) ' Reading Z-jas symmetries .... '
+    call log_info(' Reading Z-jas symmetries .... ')
     ind = 0
     vjutouched = 0
     do i = 1, iesmind
@@ -4426,8 +4384,8 @@ if(contractionj.ne.0) then
                 jj = iesuptransbj(j)
                 if(ii.eq.jj) then
                     if(jbraiesm(i).ne.jbraiesm(j)) then
-                        write(6, *) 'Jas zeta', i, 'and', j, 'must be joined with symmetry!'
-                        write(6, *) vju_c(i), vju_c(j)
+                        call log_warning('Jas zeta', i, 'and', j, 'must be joined with symmetry!')
+                        call log_info(' ', vju_c(i), vju_c(j))
                         call error('read_fort10', ' Error in reading symmetries! ', 1, rank)
                     endif
                 endif
@@ -4436,9 +4394,9 @@ if(contractionj.ne.0) then
     enddo
 endif
 
-if(rank.eq.0) write(6, *) ' Touched Jas zeta par =', vjutouched
+call log_info(' Touched Jas zeta par =', vjutouched)
 if(iesm.ne.0.and.vjutouched.ne.iesm) then
-    if(rank.eq.0) write(6, *) ' Warning iesm changed to ', vjutouched
+    call log_warning(' Warning iesm changed to ', vjutouched)
     iesm = vjutouched
 endif
 
@@ -4475,7 +4433,7 @@ if(ireadmin.gt.0) then
 
         read(ufort10, *, err = 164, end = 164)
 
-        if(rank.eq.0) write(6, *) ' Reading new WF parameters ....'
+        call log_info(' Reading new WF parameters ....')
 
         if(ieskint.ne.0.and.ieskint.eq.ieskinr_pos) then
 
@@ -4496,7 +4454,7 @@ if(ireadmin.gt.0) then
 
             celldm(1) = (PI * nel * 4.d0 / 3.d0 / omega)**(1.d0 / 3.d0) * rs
             celldm(4:6) = 90.d0 * PI / 180.d0
-            if(rank.eq.0) write(6, *) ' rs read =', rs
+            call log_info(' rs read =', rs)
 #ifndef PARALLEL
 
             givens2r = .false.
@@ -4593,7 +4551,7 @@ if(ireadmin.gt.0) then
         if(allowed_averagek) then
             !          From the effective to the real one
             call attach_phase2det(.true., detmat_c)
-            if(rank.eq.0) write(6, *) ' Passi qui from eff. to real III '
+            call log_info(' Passi qui from eff. to real III ')
         endif
     else
         if(yes_complex) then
@@ -4638,7 +4596,7 @@ if(ireadmin.gt.0) then
         if(allowed_averagek) then
             !          From the effective to the real one
             call attach_phase2det(.true., detmat)
-            if(rank.eq.0) write(6, *) ' Passi qui from eff. to real IV '
+            call log_info(' Passi qui from eff. to real IV ')
         endif
     endif
 
@@ -4970,21 +4928,17 @@ timeg=cclock()
 
 call update_kgrid
 
-if(rank.eq.0) write(6,*) ' Time spent in  update_kgrid=',cclock()-timeg
+call log_info(' Time spent in  update_kgrid=', cclock()-timeg)
 
 if(iespbc.and.yesbump.and.rank.eq.0) then
-    write(6, *) ' Warning minimum Z allowed for bump Gaussian functions &
-            &    check your fort.10 ', 36.d0 / Lmin**2
+    call log_warning(' Warning minimum Z allowed for bump Gaussian functions check your fort.10 ', 36.d0 / Lmin**2)
 endif
 
 if(iespbc.and..not.yesdft) then
     !     Unit Ry/a.u.^3
     pressclass = temp * dble(nion) / cellscale(1) / cellscale(2) / cellscale(3)
     dcellclass(1:3) = temp * dble(nion) / cellscale(1:3)
-    if(rank.eq.0) then
-        write(6, *) ' Warning contribution perfect gas &
-                &    pressure a.u. NOT included ', pressclass / 2.d0
-    endif
+    call log_warning(' Warning contribution perfect gas pressure a.u. NOT included ', pressclass / 2.d0)
 else
     pressclass = 0.d0
     dcellclass = 0.d0
@@ -5001,12 +4955,12 @@ do ii = 1, nion
 enddo
 
 if(rank.eq.0.and.niong.ne.0) then
-    write(6, *) ' Number of ghost atoms =', niong
-    write(6, *) ' Number of real  atoms =', niont
+    call log_info(' Number of ghost atoms =', niong)
+    call log_info(' Number of real  atoms =', niont)
 endif
 
 if(iesking.eq.3 * niong.and.niong.eq.niont) then
-    if(rank.eq.0) write(6, *) ' Warning allocated warp matrix '
+    call log_warning(' Warning allocated warp matrix ')
     allocate(warpmat(niont, niong))
     warpmat = 0.d0
 else
@@ -5017,16 +4971,14 @@ endif
 !    Initializing once for all pointvj
 numvjpar = num_vjpar(iesdrr)
 
-if(rank.eq.0) then
-    if(npsar.gt.0) then
-     if(niesd.ne.numvjpar) then
-        write(6, *) ' Warning number niesd suggested (# par one/two body Jastrow) = ', numvjpar
-     endif
-    else
-     if(niesd.ne.nmax_ion + numvjpar) then
-        write(6, *) ' Warning number niesd suggested (# par one/two body Jastrow) = ', nmax_ion + numvjpar
-        write(6, *) ' in such case one has an independent one body for each different  atomic specie'
-     endif
+if(npsar.gt.0) then
+    if(niesd.ne.numvjpar) then
+        call log_warning(' Warning number niesd suggested (# par one/two body Jastrow) = ', numvjpar)
+    endif
+else
+    if(niesd.ne.nmax_ion + numvjpar) then
+        call log_warning(' Warning number niesd suggested (# par one/two body Jastrow) = ', nmax_ion + numvjpar)
+        call log_warning(' in such case one has an independent one body for each different  atomic specie')
     endif
 endif
 
@@ -5047,7 +4999,7 @@ if(case_map.ne.0.and..not.chosen_map) then
             &iesd_twobody.eq.5).and.(iesd_onebody.eq.4.or.iesd_onebody.eq.-4.&
         &or.iesd_onebody.eq.8.or.iesd_onebody.eq.5)) then
     case_map = 5
-    if(rank.eq.0) write(6, *) ' Warning one&two body exponential (case_map=5) '
+    call log_warning(' Warning one&two body exponential (case_map=5) ')
     endif
 endif
 
@@ -5080,13 +5032,11 @@ if(n_body_on.ne.0) then
 else
     scale_one_body = 0.d0
 endif
-if(rank.eq.0) write(6, *) ' scale one body =', scale_one_body
+call log_info(' scale one body =', scale_one_body)
 
-if(rank.eq.0) then
-    write(6, *)
-    write(6, *) ' END reading the wave function fort.10 '
-    write(6, *)
-endif
+call log_info('')
+call log_info(' END reading the wave function fort.10 ')
+call log_info('')
 if(molecular.gt.0) then
     molyes = .true.
 else
@@ -5146,6 +5096,7 @@ end subroutine read_fort10
 
 subroutine read_fort10_fast
                 use allio
+                use logger_io, only: log_warning, log_info
                 implicit none
                 !     integer iesinv,iesm,iesd,iesfree,iessw,iesup,ieskin
                 integer icq, icp, icd, icj, kionpar, ilaenv&
@@ -5233,7 +5184,7 @@ subroutine read_fort10_fast
                 endif
 
 
-                write(*, *) ' Reading the begin in fast. . . . '
+                call log_info(' Reading the begin in fast. . . . ')
                 read(10, *, err = 101, end =101)
                 read(10, *, err = 101, end =101) nelup, nel, nion
 
@@ -5365,7 +5316,7 @@ subroutine read_fort10_fast
         &deallocate(zetar_fast, rion_fast, atom_number_fast)
         allocate(zetar_fast(nion), rion_fast(3, nion), atom_number_fast(nion))
 
-                write(*, *) ' Reading zeta and rion  in fast . . . . '
+                call log_info(' Reading zeta and rion  in fast . . . . ')
 
 
                 read(10, *, err = 102, end =102)
@@ -5395,7 +5346,7 @@ subroutine read_fort10_fast
                 allocate(ipsip(6*nion))
 
 
-                write(*, *) ' Reading ieskin in fast. . . . '
+                call log_info(' Reading ieskin in fast. . . . ')
         read(10, *, err = 103, end =103)
                 check1 = .false.
                 ieskinold = ieskin
@@ -5419,7 +5370,7 @@ subroutine read_fort10_fast
         iesking = 0
                 elseif(ieskinold.gt.ieskin) then
                 ieskin = ieskinold
-                write(6, *) ' Warning chosen input ieskin> ieskinr ', ieskin
+                call log_warning(' Warning chosen input ieskin> ieskinr ', ieskin)
                 !        elseif(ieskinold.le.3) then
                 !        ieskin=ieskin+ieskinold
                 !        write(6,*) ' Warning also cell forces computed ',ieskin
@@ -5443,7 +5394,7 @@ subroutine read_fort10_fast
         allocate(psip(10000))
                 check1 = .false.
                 if(iesd.eq.0) check1 = .true.
-        write(*, *) ' Reading 2-body jastrow in fast . . . . '
+        call log_info(' Reading 2-body jastrow in fast . . . . ')
         read(10, *, err = 104, end =104)
                 symmagp = .true.
                 if(abs(iesdrr).eq.0) then
@@ -5459,7 +5410,7 @@ subroutine read_fort10_fast
 
                 deallocate(psip)
 
-                write(*, *) ' Reading det shells in fast. . . . '
+                call log_info(' Reading det shells in fast. . . . ')
                 read(10, *, err = 105, end =105)
         allocate(mult(nshell), nparam(nshell), ioptorb(nshell))
                 if(yes_complex) then
@@ -5493,7 +5444,7 @@ subroutine read_fort10_fast
 
                 allocate(multj(nshelljmax), ioptorbj(nshelljmax), nparamj(nshelljmax))
         allocate(psip(max(npar3body, 1)))
-                write(*, *) ' Reading jas shells in fast. . . . '
+                call log_info(' Reading jas shells in fast. . . . ')
 
                 read(10, *, err = 106, end =106)
                 do i = 1, nshellj
@@ -5507,7 +5458,7 @@ subroutine read_fort10_fast
                 occ = occ+mult(i)
                 enddo
 
-                write(*, *) ' Reading det occupation in fast. . . . ', occ
+                call log_info(' Reading det occupation in fast. . . . ', occ)
                 read(10, *, err = 107, end =107)
                 allocate(ioccup(occ))
                 do i = 1, occ
@@ -5548,7 +5499,7 @@ subroutine read_fort10_fast
                 enddo
 
         allocate(ioccj(max(occj, 1)))
-                write(*, *) ' Reading jas occupation in fast. . . . ', occj
+                call log_info(' Reading jas occupation in fast. . . . ', occj)
                 read(10, *, err = 108, end =108)
                 nelorbj = 0
                 do i = 1,occj
@@ -5574,7 +5525,7 @@ subroutine read_fort10_fast
         enddo
 
 
-        write(*, *) ' Reading det nnozero in fast. . . . '
+        call log_info(' Reading det nnozero in fast. . . . ')
         read(10, *, err = 109, end =109)
                 do i = 1, nnozero
                 read(10, *, err = 109, end =109)
@@ -5589,7 +5540,7 @@ subroutine read_fort10_fast
         iessw = 0
 
         allocate(ipsip(2*(nnozero+nnozero_eagp)))
-        write(*, *) ' Reading det nnozero symmetries in fast....'
+                call log_info(' Reading det nnozero symmetries in fast....')
         read(10, *, err = 110, end =110)
                 do i = 1, iesswr
                 read(10, *, err = 110, end =110) icd,(ipsip(j), j = 1, 2*abs(icd))
@@ -5614,14 +5565,14 @@ subroutine read_fort10_fast
                 deallocate(ipsip)
                 if(check1) iessw = 0
                 if(checks1) iessw = -iessw
-        write(*, *) ' Reading jas nnozero in fast....'
+        call log_info(' Reading jas nnozero in fast....')
         read(10, *, err = 111, end =111)
                 do i = 1, nnozeroj
                 !   ixj_1(i),iyj_1(i),jasmat_1(i)
                 read(10, *, err = 111, end =111)
                 enddo
                 if(iessz) then
-                write(*, *) ' Reading jas-sz nnozero in fast....'
+                call log_info(' Reading jas-sz nnozero in fast....')
         read(10, *, err = 112, end =112)
                 do i = 1, nnozeroj
                 ! ixj_1(i),iyj_1(i),jasmatsz_1(i)
@@ -5641,7 +5592,7 @@ subroutine read_fort10_fast
         if(iesinv.lt.0) checks2 = .true.
         iesfree = 0
         iesinv =0
-        write(*, *) ' Reading jas nnozero symmetries in fast....'
+        call log_info(' Reading jas nnozero symmetries in fast....')
         read(10, *, err = 113, end =113)
                 do i = 1, iesfreer
                 read(10, *, err = 113, end =113) icj,(ipsip(j), j = 1, 2*abs(icj))
@@ -5674,7 +5625,7 @@ subroutine read_fort10_fast
         if(checks2) iesinv = -iesinv
         if(.not.iessz) iesinv = 0 ! In any event if the Jastrow Sz is off iesinv=0
 
-        write(*, *) ' Reading Z-det  symmetries in fast....'
+        call log_info(' Reading Z-det  symmetries in fast....')
         read(10, *, err = 114, end =114)
                 check1 = .false.
                 if(iesup.eq.0) check1 = .true.
@@ -5689,7 +5640,7 @@ subroutine read_fort10_fast
                         if(check1) iesup = 0
 
 
-        write(*, *) ' Reading Z-jas  symmetries in fast....'
+        call log_info(' Reading Z-jas  symmetries in fast....')
         read(10, *, err = 115, end =115)
                 check1 = .false.
                 if(iesm.eq.0) check1 = .true.
@@ -5739,6 +5690,7 @@ subroutine read_fort10_fast
 
                         subroutine write_fort10(unit)
                         use allio
+                        use logger_io, only: log_warning, log_info
                         implicit none
                         integer unit
                         integer, dimension(:), allocatable :: indexv
@@ -5903,7 +5855,7 @@ subroutine read_fort10_fast
         if(contraction.ne.0) then
         !       From the real one to the effective
         if(allowed_averagek) call attach_phase2det(.false., detmat_c)
-                if(rank.eq.0) write(6, *) ' Passi qui from real to eff V '
+                call log_info(' Passi qui from real to eff V ')
         do i = 1, nnozero_c
         iy=(nozero_c(i)-1)/nelorb_c+1
         ix = nozero_c(i)-(iy-1)*nelorb_c
@@ -5911,20 +5863,17 @@ subroutine read_fort10_fast
         if(no_sjbra) then
         if(sjbradet(i)) then
         if(abs(detmat_c(2*nozero_c(i))).gt.eps8.or&
-        &.abs(detmat_c(2*nozero_c(i)-1)).gt.eps8) write(6, *) ' Warning sjbradet &
-        & mat  removed ', detmat_c(2*nozero_c(i)-1), detmat_c(2*nozero_c(i))
+        &.abs(detmat_c(2*nozero_c(i)-1)).gt.eps8) call log_warning(' Warning sjbradet mat  removed ', detmat_c(2*nozero_c(i)-1), detmat_c(2*nozero_c(i)))
         write(unit, *) ix, iy, 0.d0, 0.d0
         elseif(real_agp) then
-        if(abs(detmat_c(2*nozero_c(i))).gt.eps8) write(6, *) &
-        &' Warning dirty imaginary part for real_agp removed ', detmat_c(2*nozero_c(i))
+        if(abs(detmat_c(2*nozero_c(i))).gt.eps8) call log_warning(' Warning dirty imaginary part for real_agp removed ', detmat_c(2*nozero_c(i)))
         write(unit, *) ix, iy, detmat_c(2*nozero_c(i)-1), 0.d0
         else
         write(unit, *) ix, iy, detmat_c(2*nozero_c(i)-1), detmat_c(2*nozero_c(i))
         endif
         else
         if(real_agp) then
-        if(abs(detmat_c(2*nozero_c(i))).gt.eps8) write(6, *) &
-        &' Warning dirty imaginary part for real_agp removed ', detmat_c(2*nozero_c(i))
+        if(abs(detmat_c(2*nozero_c(i))).gt.eps8) call log_warning(' Warning dirty imaginary part for real_agp removed ', detmat_c(2*nozero_c(i)))
                 write(unit, *) ix, iy, detmat_c(2*nozero_c(i)-1), 0.d0
         else
         write(unit, *) ix, iy, detmat_c(2*nozero_c(i)-1), detmat_c(2*nozero_c(i))
@@ -5937,11 +5886,11 @@ subroutine read_fort10_fast
                 !       From the effective to the real one
                 if(allowed_averagek)&
                 &call attach_phase2det(.true., detmat_c)
-                if(rank.eq.0) write(6, *) ' Passi qui from eff to real  VI '
+                call log_info(' Passi qui from eff to real  VI ')
         else
         !       From the the real one to the effective
         if(allowed_averagek) call attach_phase2det(.false., detmat)
-                if(rank.eq.0) write(6, *) ' Passi qui from real to eff VII '
+                call log_info(' Passi qui from real to eff VII ')
                 do i = 1, nnozero
                 iy=(nozero(i)-1)/(ipf*nelorbh)+1
         ix = nozero(i)-(iy-1)*nelorbh*ipf
@@ -5949,20 +5898,17 @@ subroutine read_fort10_fast
         if(no_sjbra) then
         if(sjbradet(i)) then
         if(abs(detmat(2*nozero(i))).gt.eps8.or&
-        &.abs(detmat(2*nozero(i)-1)).gt.eps8) write(6, *) &
-        &' Warning sjbradet mat  removed ', detmat(2*nozero(i)-1), detmat(2*nozero(i))
+        &.abs(detmat(2*nozero(i)-1)).gt.eps8) call log_warning(' Warning sjbradet mat  removed ', detmat(2*nozero(i)-1), detmat(2*nozero(i)))
         write(unit, *) ix, iy, 0.d0, 0.d0
         elseif(real_agp) then
-        if(abs(detmat(2*nozero(i))).gt.eps8) write(6, *) &
-        &' Warning dirty imaginary part for real_agp removed ', detmat(2*nozero(i))
+        if(abs(detmat(2*nozero(i))).gt.eps8) call log_warning(' Warning dirty imaginary part for real_agp removed ', detmat(2*nozero(i)))
         write(unit, *) ix, iy, detmat(2*nozero(i)-1), 0.d0
         else
         write(unit, *) ix, iy, detmat(2*nozero(i)-1), detmat(2*nozero(i))
         endif
         else
         if(real_agp) then
-        if(abs(detmat(2*nozero(i))).gt.eps8) write(6, *) &
-        &' Warning dirty imaginary part for real_agp removed ', detmat(2*nozero(i))
+        if(abs(detmat(2*nozero(i))).gt.eps8) call log_warning(' Warning dirty imaginary part for real_agp removed ', detmat(2*nozero(i)))
                 write(unit, *) ix, iy, detmat(2*nozero(i)-1), 0.d0
         else
         write(unit, *) ix, iy, detmat(2*nozero(i)-1), detmat(2*nozero(i))
@@ -5975,7 +5921,7 @@ subroutine read_fort10_fast
                 !       From the effective to real (to avoid that if called two times
                 !       does not work)
                 if(allowed_averagek) call attach_phase2det(.true., detmat)
-                if(rank.eq.0) write(6, *) ' Passi qui from eff to real VIII '
+                call log_info(' Passi qui from eff to real VIII ')
         endif
         do i = 1, nnozero_eagp
         iy =(nozero_c(i+nnozero_c)-1)/ndiff+1

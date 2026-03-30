@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program pseudo
+    use logger_io, only: log_info
     implicit none
     integer npsa, ion, i, j, npseudopar, npseudoparn, lmax, indmax
     real*8 r, rcut, fun, toll, pseudofun
@@ -41,7 +42,7 @@ program pseudo
     npsa = 1
     read (8, *) pseudoname
     allocate (kindion(npsa + 1), pshell(npsa), rcutoff(npsa))
-    write (6, *) ' Tollerance pseudo energy/pseudo '
+    call log_info(' Tollerance pseudo energy/pseudo ')
     read (5, *) toll
 
     npseudopar = 1
@@ -88,9 +89,9 @@ program pseudo
         end do
 
         indmax = jpseudo(pshell(ion), ion) + nparpshell(pshell(ion), ion) - 1
-        write (6, *) ' indmax found =', indmax
-        write (6, *) ' last jpseudo  =', jpseudo(pshell(ion), ion)
-        write (6, *) ' last  nparpshell  =', nparpshell(pshell(ion), ion)
+        call log_info(' indmax found =', indmax)
+        call log_info(' last jpseudo  =', jpseudo(pshell(ion), ion))
+        call log_info(' last  nparpshell  =', nparpshell(pshell(ion), ion))
 
         do i = jpseudo(1, ion), indmax
             read (8, *) (parshell(j, i), j=1, 3)
@@ -100,7 +101,7 @@ program pseudo
     rcut = 0.d0
 
     do j = 1, pshell(1)
-        write (6, *) ' Angular component =', j
+        call log_info(' Angular component =', j)
         do i = 0, 1000
             r = i*0.01d0
             fun = pseudofun(nparpshell(j, 1), r                               &
@@ -111,7 +112,7 @@ program pseudo
         end do
     end do
 
-    write (6, *) ' Suggested cut-off pseudo  =', rcut
+    call log_info(' Suggested cut-off pseudo  =', rcut)
 
     do i = 1, 1000
         r = i*0.01d0

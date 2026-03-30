@@ -17,6 +17,7 @@ module Cell
 
     use constants
     use symmetries
+    use logger_io, only: log_error
 
     implicit none
 
@@ -179,10 +180,10 @@ contains
         car2cry = at
         call dgetrf(3, 3, car2cry, 3, ipiv, info)
         if (info .ne. 0) then
-            write (6, *) ' ERROR in initialization cell (dgetrf) !!! '
+            call log_error(' ERROR in initialization cell (dgetrf) !!! ')
         else
             call dgetri(3, car2cry, 3, ipiv, matscra, 9, info)
-            if (info .ne. 0) write (6, *) ' ERROR in initialization cell (dgetri) !!! '
+            if (info .ne. 0) call log_error(' ERROR in initialization cell (dgetri) !!! ')
         end if
 
         !   if(.not.givens2r)  then

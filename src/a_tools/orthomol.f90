@@ -16,6 +16,7 @@
 program orthomol
     use convertmod
     use allio
+    use logger_io, only: log_info, logger_config
     implicit none
     logical yesbig
     integer rankn, nprocn, ithread, i
@@ -63,7 +64,7 @@ program orthomol
 #endif
 
     if (rankn .eq. 0) then
-        write (*, *) " * * * READ fort.10 * * * "
+        call log_info(" * * * READ fort.10 * * * ")
 
         open (unit=10, file='fort.10', form='formatted', status='unknown')
 
@@ -71,6 +72,7 @@ program orthomol
 
     rank = rankn
     nproc = nprocn
+    call logger_config(rank=rank)
     !     rankopt=rank
     !     nprocopt=nproc
     call default_allocate
@@ -94,7 +96,7 @@ program orthomol
         read (5, nml=mesh_info)
 
         if (nx .eq. 0) then
-            write (6, *) ' The number of mesh point is zero !!! ', nx, ny, nz
+            call log_info(' The number of mesh point is zero !!! ', nx, ny, nz)
             stop
         end if
 
@@ -135,12 +137,12 @@ program orthomol
         ax = cellscale(1)/nx
         ay = cellscale(2)/ny
         az = cellscale(3)/nz
-        if (rank .eq. 0) write (6, *) ' lattice mesh chosen ', ax, ay, az, Lbox
+        call log_info(' lattice mesh chosen ', ax, ay, az, Lbox)
     else
-        if (rank .eq. 0) write (6, *) ' lattice mesh ax,ay,az '
+        call log_info(' lattice mesh ax,ay,az ')
         if (ay .eq. 0.d0) ay = ax
         if (az .eq. 0.d0) az = ay
-        write (6, *) ax, ay, az
+        call log_info(ax, ay, az)
     end if
 
     if (rank .eq. 0) then
@@ -151,7 +153,7 @@ program orthomol
             allocate (wheremol(abs(nummol)))
             read (5, *) (wheremol(i), i=1, abs(nummol))
         else
-            write (6, *) ' Nothing to be orthogonalized '
+            call log_info(' Nothing to be orthogonalized ')
         end if
 
         if (nummol .lt. 0) then
@@ -175,7 +177,7 @@ program orthomol
     if (nummol .eq. 0) stop
 #endif
 
-    if (rank .eq. 0) write (6, *) ' Starting orthogonalization '
+    call log_info(' Starting orthogonalization ')
 
     call ortho_fast
 

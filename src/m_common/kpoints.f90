@@ -18,6 +18,7 @@
 module kpoints_mod
 
     use cell
+    use logger_io, only: log_info, log_warning, log_error
 
     public
     logical yes_kpoints, same_phase, opposite_phase ! flag to switch on multiple read of fort.10's
@@ -111,13 +112,13 @@ contains
         ! compute Bravais lattice symmetry operations
         call set_sym_bl(s2r)
         call purge_isymm(.true., nrot, isymm, sname, t_rev, rion, nion, atom_number, cellscale)
-        write (6, *) 'number of point symmetries found', nrot
-        write (6, *) ' Symmetries types found:'
+        call log_info('number of point symmetries found', nrot)
+        call log_info(' Symmetries types found:')
         do i = 1, nrot
-            write (6, *) sname(i)
-            write (6, *) (isymm(j, 1, i), j=1, 3)
-            write (6, *) (isymm(j, 2, i), j=1, 3)
-            write (6, *) (isymm(j, 3, i), j=1, 3)
+            call log_info(sname(i))
+            call log_info(isymm(1, 1, i), isymm(2, 1, i), isymm(3, 1, i))
+            call log_info(isymm(1, 2, i), isymm(2, 2, i), isymm(3, 2, i))
+            call log_info(isymm(1, 3, i), isymm(2, 3, i), isymm(3, 3, i))
         end do
         smerding = .false.
         if (kp_type .lt. 0) then
@@ -245,8 +246,7 @@ contains
 
         end if
         if (smerding) then
-            write (6, *) ' Warning adding a small pseudo random twist &
-                    & to remove degeneracies '
+            call log_warning(' Warning adding a small pseudo random twist to remove degeneracies ')
             !     adding a pseudo random small contribution to remove all possible
             !     degeneracy of the eigenvalues
             xkp(1, :) = xkp(1, :) + 1.d-8/dsqrt(5.d0)
@@ -316,7 +316,7 @@ contains
         end do
 
         if (skip_equivalence) then
-            write (6, *) ' Warning k-points grid: skip check of k-points equivalence '
+            call log_warning(' Warning k-points grid: skip check of k-points equivalence ')
             wkk = 1.d0
         else
             do nk = 1, nkr
@@ -391,7 +391,7 @@ contains
             wk(nk) = wk(nk)/fact
         end do
 
-        write (6, *) 'number of inequivalent/total k-points found', nks, nkp
+        call log_info('number of inequivalent/total k-points found', nks, nkp)
         ! set total number of k-points as the number of inequivalent ones
         nkp = nks
 
@@ -456,7 +456,7 @@ contains
         xkp(:, (nk1 - 1)*nk2 + 1) = klines(:, nk1)
         !
         !
-123     if (iflag .ne. 0) write (6, *) 'ERROR in generate k-points path'
+123     if (iflag .ne. 0) call log_error('ERROR in generate k-points path')
         deallocate (klines)
 
         return
@@ -642,7 +642,7 @@ contains
         end do
         return
         ! error
-122     write (6, *) 'section  ', section_name, '  not found'
+122     call log_info('section  ', section_name, '  not found')
         iflag = 1
         return
 

@@ -17,6 +17,7 @@ subroutine upvpot(npar, iesdr, nw, nel, nelup, rcart, econf, vj          &
         &, rion, nion, costz, costz3, LBox)
     use Constants
     use Cell
+    use logger_io, only: log_error
     implicit none
     integer npar, nw, L, nel, keli, kelj, iesdr2iesd    &
             &, k, i, ii, jj, ind, indo, iopt, j, jold, iesd, iesdr, nelup, nion
@@ -67,7 +68,7 @@ subroutine upvpot(npar, iesdr, nw, nel, nelup, rcart, econf, vj          &
 
         if (iesd .eq. -2) then
             if (LBox .gt. 0.d0) then
-                write (*, *) ' Jastrow -2 not supported in Periodic Systems!'
+                call log_error(' Jastrow -2 not supported in Periodic Systems!')
                 stop
             end if
             do i = j + 1, nel

@@ -78,7 +78,7 @@ end module numeric
 ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 module bspline
-
+    use logger_io, only: log_error, log_info, log_debug
     !
     !  ------------------------------------------------------------------
     !
@@ -153,9 +153,9 @@ contains
         end if
 
         if ((kxord .lt. 0) .or. (kxord .gt. nx)) then
-            write (6, *) "subroutine dbsnak: error"
-            write (6, *) "0 <= kxord <= nx is required."
-            write (6, *) "kxord = ", kxord, " and nx = ", nx, " is given."
+            call log_error("subroutine dbsnak: error")
+            call log_info("0 <= kxord <= nx is required.")
+            call log_info("kxord = ", kxord, " and nx = ", nx, " is given.")
             stop
         end if
 
@@ -246,8 +246,8 @@ contains
         call banfac(work, kx + kxm1, nx, kxm1, kxm1, iflag)
 
         if (iflag .ne. 1) then
-            write (6, *) "subroutine dbsint: error"
-            write (6, *) "no solution of linear equation system !!!"
+            call log_error("subroutine dbsint: error")
+            call log_info("no solution of linear equation system !!!")
             stop
         end if
 
@@ -259,9 +259,9 @@ contains
 
         return
 
-998     write (6, *) "subroutine dbsint:"
-        write (6, *) "xknot(ix) <= xknot(ix+1) required."
-        write (6, *) ix, xknot(ix), xknot(ix + 1)
+998     call log_info("subroutine dbsint:")
+        call log_info("xknot(ix) <= xknot(ix+1) required.")
+        call log_info(' ', ix, xknot(ix), xknot(ix + 1))
 
         stop
 
@@ -308,18 +308,18 @@ contains
 
         do ix = 1, nx + kx - 1
             if (xknot(ix) .gt. xknot(ix + 1)) then
-                write (6, *) "subroutine dbsval:"
-                write (6, *) "xknot(ix) <= xknot(ix+1) required."
-                write (6, *) ix, xknot(ix), xknot(ix + 1)
+                call log_info("subroutine dbsval:")
+                call log_info("xknot(ix) <= xknot(ix+1) required.")
+                call log_info(' ', ix, xknot(ix), xknot(ix + 1))
                 stop
             end if
             if ((xknot(ix) .le. x) .and. (x .lt. xknot(ix + 1))) leftx = ix
         end do
 
         if (leftx .eq. 0) then
-            write (6, *) "subroutine dbsval:"
-            write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-            write (6, *) "x = ", x
+            call log_info("subroutine dbsval:")
+            call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+            call log_info("x = ", x)
             stop
         end if
 
@@ -391,19 +391,19 @@ contains
         leftx = 0
         do ix = 1, nx + kx - 1
             if (xknot(ix) .gt. xknot(ix + 1)) then
-                write (6, *) "subroutine dbsder:"
-                write (6, *) "xknot(ix) <= xknot(ix+1) required."
+                call log_info("subroutine dbsder:")
+                call log_info("xknot(ix) <= xknot(ix+1) required.")
                 stop
             end if
             if ((xknot(ix) .le. x) .and. (x .lt. xknot(ix + 1))) leftx = ix
         end do
 
         if (leftx .eq. 0) then
-            write (6, *) "subroutine dbsder:"
-            write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-            write (6, *) "xknot(1)     = ", xknot(1)
-            write (6, *) "xknot(nx+kx) = ", xknot(nx + kx)
-            write (6, *) "         x   = ", x
+            call log_info("subroutine dbsder:")
+            call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+            call log_info("xknot(1)     = ", xknot(1))
+            call log_info("xknot(nx+kx) = ", xknot(nx + kx))
+            call log_info("         x   = ", x)
             stop
         end if
 
@@ -518,6 +518,7 @@ contains
         real(kind=dbl) :: dik
         real(kind=dbl), dimension(nxvec, kx) :: dl, dr, biatx, work
         real(kind=dbl), dimension(nxvec) :: save1, save2, term
+        integer :: kk
 
         logical :: same, next
 
@@ -540,20 +541,23 @@ contains
 
         do ix = 1, nx + kx - 1
             if (xknot(ix) .gt. xknot(ix + 1)) then
-                write (6, *) "subroutine dbs1gd:"
-                write (6, *) "xknot(ix) <= xknot(ix+1) required."
-                write (6, *) ix, xknot(ix), xknot(ix + 1)
-                write (6, *)
-                write (6, *) xknot
+                call log_info("subroutine dbs1gd:")
+                call log_info("xknot(ix) <= xknot(ix+1) required.")
+                call log_info(' ', ix, xknot(ix), xknot(ix + 1))
+                call log_info(' ')
+                call log_info('')
+                do i=kk, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
 
         do ix = 1, nxvec
             if ((xvec(ix) .lt. xknot(1)) .or. (xvec(ix) .gt. xknot(nx + kx))) then
-                write (6, *) "subroutine dbs1gd:"
-                write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-                write (6, *) "x = ", xvec(ix)
+                call log_info("subroutine dbs1gd:")
+                call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+                call log_info("x = ", xvec(ix))
                 stop
             end if
         end do
@@ -872,8 +876,8 @@ contains
         call banfac(work3, k + km1, n, km1, km1, iflag)
 
         if (iflag .ne. 1) then
-            write (6, *) "subroutine dbs2in: error"
-            write (6, *) "no solution of linear equation system !!!"
+            call log_info("subroutine dbs2in: error")
+            call log_info("no solution of linear equation system !!!")
             stop
         end if
 
@@ -891,11 +895,11 @@ contains
 
         return
 
-998     write (6, *) "subroutine db2in:"
-        write (6, *) "i with knot(i) <= x/y < knot(i+1) required."
-        write (6, *) "knot(1)   = ", xyknot(1)
-        write (6, *) "knot(n+k) = ", xyknot(n + k)
-        write (6, *) "      x/y = ", xyveci
+998     call log_info("subroutine db2in:")
+        call log_info("i with knot(i) <= x/y < knot(i+1) required.")
+        call log_info("knot(1)   = ", xyknot(1))
+        call log_info("knot(n+k) = ", xyknot(n + k))
+        call log_info("      x/y = ", xyveci)
 
         stop
 
@@ -946,6 +950,8 @@ contains
         integer :: ix, iy, iky, leftx, lefty
         real(kind=dbl), dimension(ky) :: work
 
+        integer :: kk
+
         !
         !     check if knot(i) <= knot(i+1) and calculation of i so that
         !     knot(i) <= x < knot(i+1)
@@ -955,22 +961,28 @@ contains
 
         do ix = 1, nx + kx - 1
             if (xknot(ix) .gt. xknot(ix + 1)) then
-                write (6, *) "subroutine dbs2vl:"
-                write (6, *) "xknot(ix) <= xknot(ix+1) required."
-                write (6, *) ix, xknot(ix), xknot(ix + 1)
-                write (6, *)
-                write (6, *) xknot
+                call log_info("subroutine dbs2vl:")
+                call log_info("xknot(ix) <= xknot(ix+1) required.")
+                call log_info(' ', ix, xknot(ix), xknot(ix + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
             if ((xknot(ix) .le. x) .and. (x .lt. xknot(ix + 1))) leftx = ix
         end do
 
         if (leftx .eq. 0) then
-            write (6, *) "subroutine dbs2vl:"
-            write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-            write (6, *) "x = ", x
-            write (6, *)
-            write (6, *) xknot
+            call log_info("subroutine dbs2vl:")
+            call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+            call log_info("x = ", x)
+            call log_info(' ')
+            call log_info('')
+            do kk=1, size(xknot)
+               call log_info(xknot(kk))
+            end do
             stop
         end if
 
@@ -978,20 +990,20 @@ contains
 
         do iy = 1, ny + ky - 1
             if (yknot(iy) .gt. yknot(iy + 1)) then
-                write (6, *) "subroutine dbs2vl:"
-                write (6, *) "yknot(iy) <= yknot(iy+1) required."
-                write (6, *) iy, yknot(iy), yknot(iy + 1)
+                call log_info("subroutine dbs2vl:")
+                call log_info("yknot(iy) <= yknot(iy+1) required.")
+                call log_info(' ', iy, yknot(iy), yknot(iy + 1))
                 stop
             end if
             if ((yknot(iy) .le. y) .and. (y .lt. yknot(iy + 1))) lefty = iy
         end do
 
         if (lefty .eq. 0) then
-            write (6, *) "subroutine dbs2vl:"
-            write (6, *) "iy with yknot(iy) <= y < yknot(iy+1) required."
-            write (6, *) "yknot(iy)   = ", yknot(iy)
-            write (6, *) "  y         = ", y
-            write (6, *) "yknot(iy+1) = ", yknot(iy + 1)
+            call log_info("subroutine dbs2vl:")
+            call log_info("iy with yknot(iy) <= y < yknot(iy+1) required.")
+            call log_info("yknot(iy)   = ", yknot(iy))
+            call log_info("  y         = ", y)
+            call log_info("yknot(iy+1) = ", yknot(iy + 1))
             stop
         end if
 
@@ -1061,18 +1073,18 @@ contains
 
         do ix = 1, nx + kx - 1
             if (xknot(ix) .gt. xknot(ix + 1)) then
-                write (6, *) "subroutine dbs2dr:"
-                write (6, *) "xknot(ix) <= xknot(ix+1) required."
-                write (6, *) ix, xknot(ix), xknot(ix + 1)
+                call log_info("subroutine dbs2dr:")
+                call log_info("xknot(ix) <= xknot(ix+1) required.")
+                call log_info(' ', ix, xknot(ix), xknot(ix + 1))
                 stop
             end if
             if ((xknot(ix) .le. x) .and. (x .lt. xknot(ix + 1))) nintx = ix
         end do
 
         if (nintx .eq. 0) then
-            write (6, *) "subroutine dbs2dr:"
-            write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-            write (6, *) "x = ", x
+            call log_info("subroutine dbs2dr:")
+            call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+            call log_info("x = ", x)
             stop
         end if
 
@@ -1080,18 +1092,18 @@ contains
 
         do iy = 1, ny + ky - 1
             if (yknot(iy) .gt. yknot(iy + 1)) then
-                write (6, *) "subroutine dbs2dr:"
-                write (6, *) "yknot(iy) <= yknot(iy+1) required."
-                write (6, *) iy, yknot(iy), yknot(iy + 1)
+                call log_info("subroutine dbs2dr:")
+                call log_info("yknot(iy) <= yknot(iy+1) required.")
+                call log_info(' ', iy, yknot(iy), yknot(iy + 1))
                 stop
             end if
             if ((yknot(iy) .le. y) .and. (y .lt. yknot(iy + 1))) ninty = iy
         end do
 
         if (ninty .eq. 0) then
-            write (6, *) "subroutine dbs2dr:"
-            write (6, *) "iy with yknot(iy) <= y < yknot(iy+1) required."
-            write (6, *) "y = ", y
+            call log_info("subroutine dbs2dr:")
+            call log_info("iy with yknot(iy) <= y < yknot(iy+1) required.")
+            call log_info("y = ", y)
             stop
         end if
 
@@ -1174,6 +1186,8 @@ contains
 
         logical :: same, next
 
+        integer :: kk
+
         leftx(1) = 0
 
         call huntn(xknot, nx + kx, kx, xvec(1), leftx(1))
@@ -1193,20 +1207,23 @@ contains
 
         do i = 1, nx + kx - 1
             if (xknot(i) .gt. xknot(i + 1)) then
-                write (6, *) "subroutine dbs2gd:"
-                write (6, *) "xknot(i) <= xknot(i+1) required."
-                write (6, *) i, xknot(i), xknot(i + 1)
-                write (6, *)
-                write (6, *) xknot
+                call log_info("subroutine dbs2gd:")
+                call log_info("xknot(i) <= xknot(i+1) required.")
+                call log_info(' ', i, xknot(i), xknot(i + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
 
         do i = 1, nxvec
             if ((xvec(i) .lt. xknot(1)) .or. (xvec(i) .gt. xknot(nx + kx))) then
-                write (6, *) "subroutine dbs2gd:"
-                write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-                write (6, *) "x = ", xvec(i)
+                call log_info("subroutine dbs2gd:")
+                call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+                call log_info("x = ", xvec(i))
                 stop
             end if
         end do
@@ -1229,20 +1246,23 @@ contains
 
         do i = 1, ny + ky - 1
             if (yknot(i) .gt. yknot(i + 1)) then
-                write (6, *) "subroutine dbs2gd:"
-                write (6, *) "yknot(i) <= yknot(i+1) required."
-                write (6, *) i, yknot(i), yknot(i + 1)
-                write (6, *)
-                write (6, *) yknot
+                call log_info("subroutine dbs2gd:")
+                call log_info("yknot(i) <= yknot(i+1) required.")
+                call log_info(' ', i, yknot(i), yknot(i + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(yknot)
+                   call log_info(yknot(kk))
+                end do
                 stop
             end if
         end do
 
         do i = 1, nyvec
             if ((yvec(i) .lt. yknot(1)) .or. (yvec(i) .gt. yknot(ny + ky))) then
-                write (6, *) "subroutine dbs2gd:"
-                write (6, *) "iy with yknot(iy) <= y < yknot(iy+1) required."
-                write (6, *) "y = ", yvec(i)
+                call log_info("subroutine dbs2gd:")
+                call log_info("iy with yknot(iy) <= y < yknot(iy+1) required.")
+                call log_info("y = ", yvec(i))
                 stop
             end if
         end do
@@ -1476,8 +1496,8 @@ contains
         call banfac(work3, k + km1, n, km1, km1, iflag)
 
         if (iflag .ne. 1) then
-            write (6, *) "subroutine dbs3in: error"
-            write (6, *) "no solution of linear equation system !!!"
+            call log_info("subroutine dbs3in: error")
+            call log_info("no solution of linear equation system !!!")
             stop
         end if
 
@@ -1498,11 +1518,11 @@ contains
 
         return
 
-998     write (6, *) "subroutine db3in:"
-        write (6, *) "i with knot(i) <= x/y/z < knot(i+1) required."
-        write (6, *) "knot(1)   = ", xyzknot(1)
-        write (6, *) "knot(n+k) = ", xyzknot(n + k)
-        write (6, *) "    x/y/z = ", xyzveci
+998     call log_info("subroutine db3in:")
+        call log_info("i with knot(i) <= x/y/z < knot(i+1) required.")
+        call log_info("knot(1)   = ", xyzknot(1))
+        call log_info("knot(n+k) = ", xyzknot(n + k))
+        call log_info("    x/y/z = ", xyzveci)
 
         stop
 
@@ -1571,20 +1591,20 @@ contains
 
         do iz = 1, nz + kz - 1
             if (zknot(iz) .gt. zknot(iz + 1)) then
-                write (6, *) "subroutine dbs3vl:"
-                write (6, *) "zknot(iz) <= zknot(iz+1) required."
-                write (6, *) iz, zknot(iz), zknot(iz + 1)
+                call log_info("subroutine dbs3vl:")
+                call log_info("zknot(iz) <= zknot(iz+1) required.")
+                call log_info(' ', iz, zknot(iz), zknot(iz + 1))
                 stop
             end if
             if ((zknot(iz) .le. z) .and. (z .lt. zknot(iz + 1))) nintz = iz
         end do
 
         if (nintz .eq. 0) then
-            write (6, *) "subroutine dbs3vl:"
-            write (6, *) "iz with zknot(iz) <= z < zknot(iz+1) required."
-            write (6, *) "zknot(iz)   = ", zknot(iz)
-            write (6, *) "  z         = ", z
-            write (6, *) "zknot(iz+1) = ", zknot(iz + 1)
+            call log_info("subroutine dbs3vl:")
+            call log_info("iz with zknot(iz) <= z < zknot(iz+1) required.")
+            call log_info("zknot(iz)   = ", zknot(iz))
+            call log_info("  z         = ", z)
+            call log_info("zknot(iz+1) = ", zknot(iz + 1))
             stop
         end if
 
@@ -1665,20 +1685,20 @@ contains
 
         do iz = 1, nz + kz - 1
             if (zknot(iz) .gt. zknot(iz + 1)) then
-                write (6, *) "subroutine dbs3vl:"
-                write (6, *) "zknot(iz) <= zknot(iz+1) required."
-                write (6, *) iz, zknot(iz), zknot(iz + 1)
+                call log_info("subroutine dbs3vl:")
+                call log_info("zknot(iz) <= zknot(iz+1) required.")
+                call log_info(' ', iz, zknot(iz), zknot(iz + 1))
                 stop
             end if
             if ((zknot(iz) .le. z) .and. (z .lt. zknot(iz + 1))) nintz = iz
         end do
 
         if (nintz .eq. 0) then
-            write (6, *) "subroutine dbs3dr:"
-            write (6, *) "iz with zknot(iz) <= z < zknot(iz+1) required."
-            write (6, *) "zknot(iz)   = ", zknot(iz)
-            write (6, *) "  z         = ", z
-            write (6, *) "zknot(iz+1) = ", zknot(iz + 1)
+            call log_info("subroutine dbs3dr:")
+            call log_info("iz with zknot(iz) <= z < zknot(iz+1) required.")
+            call log_info("zknot(iz)   = ", zknot(iz))
+            call log_info("  z         = ", z)
+            call log_info("zknot(iz+1) = ", zknot(iz + 1))
             stop
         end if
 
@@ -1780,22 +1800,27 @@ contains
 
         logical :: same, next
 
+        integer :: kk
+
         do i = 1, nx + kx - 1
             if (xknot(i) .gt. xknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "xknot(i) <= xknot(i+1) required."
-                write (6, *) i, xknot(i), xknot(i + 1)
-                write (6, *)
-                write (6, *) xknot
+                call log_info("subroutine dbs3gd:")
+                call log_info("xknot(i) <= xknot(i+1) required.")
+                call log_info(' ', i, xknot(i), xknot(i + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(xknot)
+                   call log_info(xknot(kk))
+                end do
                 stop
             end if
         end do
 
         do i = 1, nxvec
             if ((xvec(i) .lt. xknot(1)) .or. (xvec(i) .gt. xknot(nx + kx))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "ix with xknot(ix) <= x < xknot(ix+1) required."
-                write (6, *) "x = ", xvec(i)
+                call log_info("subroutine dbs3gd:")
+                call log_info("ix with xknot(ix) <= x < xknot(ix+1) required.")
+                call log_info("x = ", xvec(i))
                 stop
             end if
         end do
@@ -1818,20 +1843,23 @@ contains
 
         do i = 1, ny + ky - 1
             if (yknot(i) .gt. yknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "yknot(i) <= yknot(i+1) required."
-                write (6, *) i, yknot(i), yknot(i + 1)
-                write (6, *)
-                write (6, *) yknot
+                call log_info("subroutine dbs3gd:")
+                call log_info("yknot(i) <= yknot(i+1) required.")
+                call log_info(' ', i, yknot(i), yknot(i + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(yknot)
+                   call log_info(yknot(kk))
+                end do
                 stop
             end if
         end do
 
         do i = 1, nyvec
             if ((yvec(i) .lt. yknot(1)) .or. (yvec(i) .gt. yknot(ny + ky))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "iy with yknot(iy) <= y < yknot(iy+1) required."
-                write (6, *) "y = ", yvec(i)
+                call log_info("subroutine dbs3gd:")
+                call log_info("iy with yknot(iy) <= y < yknot(iy+1) required.")
+                call log_info("y = ", yvec(i))
                 stop
             end if
         end do
@@ -1854,20 +1882,23 @@ contains
 
         do i = 1, nz + kz - 1
             if (zknot(i) .gt. zknot(i + 1)) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "zknot(i) <= zknot(i+1) required."
-                write (6, *) i, zknot(i), zknot(i + 1)
-                write (6, *)
-                write (6, *) zknot
+                call log_info("subroutine dbs3gd:")
+                call log_info("zknot(i) <= zknot(i+1) required.")
+                call log_info(' ', i, zknot(i), zknot(i + 1))
+                call log_info(' ')
+                call log_info('')
+                do kk=1, size(zknot)
+                   call log_info(zknot(kk))
+                end do
                 stop
             end if
         end do
 
         do i = 1, nzvec
             if ((zvec(i) .lt. zknot(1)) .or. (zvec(i) .gt. zknot(nz + kz))) then
-                write (6, *) "subroutine dbs3gd:"
-                write (6, *) "iz with zknot(iz) <= z < zknot(iz+1) required."
-                write (6, *) "z = ", zvec(i)
+                call log_info("subroutine dbs3gd:")
+                call log_info("iz with zknot(iz) <= z < zknot(iz+1) required.")
+                call log_info("z = ", zvec(i))
                 stop
             end if
         end do

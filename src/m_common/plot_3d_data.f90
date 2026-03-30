@@ -16,6 +16,7 @@
 subroutine plot_3d_data(ipc, cell, cellscale, natoms, pos, zeta, periodic, mesh, origin, datagrid, indmol, word)
 
     use constants, only: length_unit
+    use logger_io, only: log_error
 
     implicit none
     integer, parameter :: ofile = 55555555
@@ -45,7 +46,7 @@ subroutine plot_3d_data(ipc, cell, cellscale, natoms, pos, zeta, periodic, mesh,
 
     else
 
-        write (6, *) 'error from open unit in plot_3d_data, unit already opened'
+        call log_error('error from open unit in plot_3d_data, unit already opened')
         return
 
     end if

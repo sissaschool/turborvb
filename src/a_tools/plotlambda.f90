@@ -16,6 +16,7 @@
 program fort10toxyz
     use allio
     use atom_names
+    use logger_io, only: log_info
     implicit none
     integer c, n, i, j, countpar
     integer, allocatable :: intzeta(:)
@@ -35,7 +36,7 @@ program fort10toxyz
         stop
     end if
     !    AAA   end lines to be added
-    write (*, *) " * * * READ fort.10 and make xyz file * * * "
+    call log_info(" * * * READ fort.10 and make xyz file * * * ")
     open (unit=10, file='fort.10', form='formatted', status='unknown')
     call default_allocate
     call read_fort10(10)

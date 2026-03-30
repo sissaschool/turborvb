@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program fitvsa
+    use logger_io, only: log_error, log_info, log_warning, log_debug
     implicit none
     real*8 res, errscale, r1, r2, zeta, pi, drand1, xk, xmax, power&
             &, ermax, xw, evidencem, evidences
@@ -48,7 +49,7 @@ program fitvsa
     end if
     !    AAA   end lines to be added
 
-    write (6, *) ' Program with precision =', dlamch('E')
+    call log_info(' Program with precision =', dlamch('E'))
 
     map = 0.d0
     beta = 1.d0
@@ -122,7 +123,7 @@ program fitvsa
             end do
         end if
     end if
-    write (6, *) ' Read data OK '
+    call log_info(' Read data OK ')
     xmax = x(1)
     do i = 2, N
         if (x(i) .gt. xmax) xmax = x(i)
@@ -140,11 +141,11 @@ program fitvsa
     end do
 
     call funmult(order, N, Ntrue, x, y, wy, ypred, dypred, coeff, res, psip, ipsip, power, map, beta, gamma, evidence, fixbeta)
-    if (map .ne. 0.d0) write (6, *) ' Machine learning alpha,beta =', map, beta
+    if (map .ne. 0.d0) call log_info(' Machine learning alpha,beta =', map, beta)
     if (Ntrue .gt. orderp) then
-        write (6, *) ' Reduced chi^2  =', res/dble(Ntrue - orderp)
+        call log_info(' Reduced chi^2  =', res/dble(Ntrue - orderp))
     else
-        write (6, *) ' Warning, no degrees of freedom '
+        call log_warning(' Warning, no degrees of freedom ')
     end if
     !     estimation error bars
     coeffa = 0.d0
@@ -202,13 +203,13 @@ program fitvsa
     yprederr = dsqrt(max(yprederr - ypreda**2, 0.d0))
     dyprederr = dsqrt(max(dyprederr - dypreda**2, 0.d0))
     evidences = dsqrt(max(evidences - evidencem**2, 0.d0))
-    if (map .ne. 0.d0) write (6, *) ' Machine learning Evidence =', real(evidencem), '+/-', real(evidences)
-    write (6, *) ' Coefficient found '
+    if (map .ne. 0.d0) call log_info(' Machine learning Evidence =', real(evidencem), '+/-', real(evidences))
+    call log_info(' Coefficient found ')
     do i = 1, orderp
-        write (6, *) i, coeff(i), coefferr(i)
+        call log_info(i, coeff(i), coefferr(i))
     end do
 
-    write (6, *) ' Predicted error /measured error '
+    call log_info(' Predicted error /measured error ')
 
     ermax = 0.d0
     do i = 1, N
@@ -244,12 +245,13 @@ program fitvsa
 
         if (wy(i) .ne. 0.d0) then
             if (abs(cost - y(i)) .gt. ermax) ermax = abs(cost - y(i))
-            write (6, 123) i, xw, cost, yprederr(i), dcost, dyprederr(i), y(i), wy(i)
+            ! original format: (I4, 7f15.7)
+            call log_info(i, xw, cost, yprederr(i), dcost, dyprederr(i), y(i), wy(i))
         else
-            write (6, 123) i, xw, cost, yprederr(i), dcost, dyprederr(i)
+            call log_info(i, xw, cost, yprederr(i), dcost, dyprederr(i))
         end if
     end do
-    write (6, *) ' Max error in fit =', ermax
+    call log_info(' Max error in fit =', ermax)
 
 123 format(I4, 7f15.7)
 
@@ -258,6 +260,7 @@ end
 
 subroutine funmult(order, N, Ntrue, x, y, wy, ypred, dypred, coeff, res, psip, ipsip, power&
         &, map, beta, gamma, evidence, fixbeta)
+    use logger_io, only: log_error, log_info
     implicit none
     integer i, j, k, l, order, orderp, orderpp, orderp3, N, ipsip(*), info, iter, maxit, Ntrue
 #ifdef __DDIAG
@@ -350,8 +353,7 @@ subroutine funmult(order, N, Ntrue, x, y, wy, ypred, dypred, coeff, res, psip, i
         error = 1.d0
         eps = 1d-8
         maxit = 100
-        if (eig(1) .le. 0.d0) write (6, *) &
-                &' Warning accuracy diag/cond numb. ', eig(1), abs(eig(orderp)/eig(1))
+        if (eig(1) .le. 0.d0) call log_info(' Warning accuracy diag/cond numb. ', eig(1), abs(eig(orderp)/eig(1)))
         eig_min = eig(orderp)*dlamch('E')
         do i = 1, orderp
             if (eig(i) .lt. eig_min) eig(i) = eig_min
@@ -412,7 +414,7 @@ subroutine funmult(order, N, Ntrue, x, y, wy, ypred, dypred, coeff, res, psip, i
             !         write(6,*) ' New value of alpha,beta =',iter,map,beta,res,error
         end do
         if (error .gt. eps .or. iter .ge. maxit) &
-                &write (6, *) ' ERROR not converged', error, iter
+                call log_error(' ERROR not converged', error, iter)
         deallocate (mat, eig, work, vec)
         !        stop
     end if
@@ -433,7 +435,7 @@ subroutine funmult(order, N, Ntrue, x, y, wy, ypred, dypred, coeff, res, psip, i
             call dgetrs('N', orderp, 1, psip, orderp, ipsip, coeff, orderp, info)
 #endif
         else
-            write (6, *) ' There is depdendency !!! '
+            call log_info(' There is depdendency !!! ')
         end if
         resd = 0.d0
         do i = 1, N

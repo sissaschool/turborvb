@@ -15,9 +15,10 @@
 
 subroutine write_fort11_begin
     use allio
+    use logger_io, only: log_info
     implicit none
     rewind (11)
-    write (6, *) ' Length record unit 12  =', nmatb
+    call log_info(' Length record unit 12  =', nmatb)
     nmatb = nnozero_c
     write (11) ngg, nbra, npow, etryr, nrest, nw, tbra, np, npbra, nmatb      &
             &, nnozeroj, yesmin, membig&
@@ -64,6 +65,7 @@ end subroutine write_fort11_end
 
 subroutine read_fort11_begin
     use allio
+    use logger_io, only: log_info, log_warning, log_error
     implicit none
     real*8 tstepr, parr_read, tpar_read, min_running_ave_read, &
         min_running_ave_energy_read, min_running_std_read, min_running_std_energy_read
@@ -114,7 +116,7 @@ subroutine read_fort11_begin
             min_running_std = min_running_std_read
             min_running_std_energy = min_running_std_energy_read
         else
-            write (6, *) ' Warning using tpar read in input |tpar| and restarting buffer '
+            call log_warning(' Warning using tpar read in input |tpar| and restarting buffer ')
             stop_increasing_tpar = .false.
             tpar = abs(tpar)
             tpar_buffer_filled(:) = .false.
@@ -138,20 +140,19 @@ subroutine read_fort11_begin
     if (iopt .eq. 0) iesconv = iesconv_read
     if (change_tstep) tstep = tstepr
     return
-100 write (6, *) "From allio ERROR fort.11 begin"
+100 call log_error("From allio ERROR fort.11 begin")
     iflagerr = 1
 end subroutine read_fort11_begin
 
 subroutine read_fort11_end
     use allio
+    use logger_io, only: log_info, log_error, log_warning
     implicit none
     integer nelnwr, i, j, k, l, indtel
 
     if (nwr .ne. nw .or. nprocr .ne. nproc) then
-        if (nwr .ne. nw) write (6, *) ' ERROR in read_fort11: &
-                & you cannot continue with different # walkers', nw, nwr
-        if (nprocr .ne. nproc) write (6, *) ' ERROR in read_fort11: &
-                & you cannot continue with different # processors ', nproc, nprocr
+        if (nwr .ne. nw) call log_error(' ERROR in read_fort11: you cannot continue with different # walkers', nw, nwr)
+        if (nprocr .ne. nproc) call log_error(' ERROR in read_fort11: you cannot continue with different # processors ', nproc, nprocr)
         iflagerr = 1
     end if
     nelnwr = nel*nwr*(indt + 1)
@@ -162,8 +163,7 @@ subroutine read_fort11_end
     else
         if (itestr .eq. -5) then
             if (nwr .ne. nw) then
-                write (6, *) ' ERROR in read_fort11: &
-                        & you cannot continue with different # walkers', nw, nwr
+                call log_error(' ERROR in read_fort11: you cannot continue with different # walkers', nw, nwr)
                 iflagerr = 1
             end if
             reduce = 0.d0
@@ -183,9 +183,9 @@ subroutine read_fort11_end
                             &, (dekg(k), k=1, iesking)                                            &
                             &, ((velion(j, i), j=1, 3), i=1, ieskindim)
                     allowcontr = .true.
-                    write (6, *) ' Warning np read different from np found !!! ', np, npr
+                    call log_warning(' Warning np read different from np found !!! ', np, npr)
                     if (ncgdim .gt. 1) then
-                        write (6, *) ' Warning previous CG steps forgotten in read '
+                        call log_warning(' Warning previous CG steps forgotten in read ')
                         stepcg = 0
                     end if
                     reduce = 0.d0
@@ -205,9 +205,9 @@ subroutine read_fort11_end
                             &, (dek(k), k=1, ieskin)             &
                             &, (dekg(k), k=1, iesking)                                            &
                             &, ((velion(j, i), j=1, 3), i=1, ieskindim)
-                    write (6, *) ' Warning np read different from np found !!! ', np, npr
+                    call log_warning(' Warning np read different from np found !!! ', np, npr)
                     if (ncgdim .gt. 1) then
-                        write (6, *) ' Warning previous CG steps forgotten in read '
+                        call log_warning(' Warning previous CG steps forgotten in read ')
                         stepcg = 0
                     end if
                     reduce = 0.d0
@@ -228,9 +228,9 @@ subroutine read_fort11_end
         end if
     end if
     if (allocated(cov_old)) read (11, err=100, end=100) cov_old
-    write (6, *) ' File fort.11 is read correctly ...'
+    call log_info(' File fort.11 is read correctly ...')
     return
 
-100 write (6, *) " From fort11_io.f90, Error fort.11 end"
+100 call log_error(" From fort11_io.f90, Error fort.11 end")
     iflagerr = 1
 end subroutine read_fort11_end

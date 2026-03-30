@@ -23,6 +23,7 @@ module buffers
     use constants, only: ipc, zone, zzero
     use allio, only: rank, compute_bands
     use setup, only: contracted_on, double_overs, yeslsda
+    use logger_io, only: log_info
 
     real(8), dimension(:, :), allocatable :: wf_threading_scratch, wf_threading_scratch_down
     real(8), dimension(:, :), allocatable :: buffer, buffer_on, buf_conj
@@ -84,12 +85,12 @@ contains
             wf_threading_scratch_down = 0.d0
         end if
         if (present(print_size)) then
-            if (print_size .and. rank .eq. 0) then
+            if (print_size) then
                 if (.not. compute_bands) then
-                    write (6, '(E12.5, A)') 8.d0*allocated_size_buf/1d9 &
-                        , " Gbyte per MPI task for the buffer, proportional to nbufd!"
-                    write (6, '(E12.5, A)') 8.d0*allocated_size_thread/1d9 &
-                        , " Gbyte per MPI task for the buffer, proportional to threads!"
+                    ! original format: (E12.5, A)
+                    call log_info(8.d0*allocated_size_buf/1d9, " Gbyte per MPI task for the buffer, proportional to nbufd!")
+                    ! original format: (E12.5, A)
+                    call log_info(8.d0*allocated_size_thread/1d9, " Gbyte per MPI task for the buffer, proportional to threads!")
                 end if
             end if
         end if

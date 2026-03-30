@@ -16,6 +16,7 @@
 program main
 
     use setup
+    use logger_io, only: log_error, log_warning, log_info, logger_config
     use freeelmod_complex, only: self_consistent_run
     use parallel_module, only: old_threads, setup_para
     use allio, only: cublas_handle
@@ -48,12 +49,13 @@ program main
     call mpi_comm_size(MPI_COMM_WORLD, nproc, ierr)
     call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
     call mpi_barrier(MPI_COMM_WORLD, ierr)
-    if (rank .eq. 0) write (6, *) ' Number of mpi proc =', nproc
 #else
     rank = 0
     nproc = 1
 #endif
-    !
+    ! configure logger so that only rank 0 outputs
+    call logger_config(rank=rank)
+
     ! Initialize OpenMP
     !
 #if defined _OPENMP
@@ -66,7 +68,10 @@ program main
     if (rank .eq. 0) call print_version
 
     ! print threads and mpi info.
-    if (rank .eq. 0) write (6, *) ' Number of threads /mpi proc =', old_threads
+#if defined PARALLEL
+    call log_info(' Number of mpi proc =', nproc)
+#endif
+    call log_info(' Number of threads /mpi proc =', old_threads)
 
 #if defined UNREL_SMP
 #if defined PARALLEL
@@ -76,10 +81,10 @@ program main
     call omp_set_num_threads(old_threads) ! force the same
 #endif
 #endif
-    if (rank .eq. 0) write (6, *) ' Warning init. value of threads/mpi task', old_threads
+    call log_warning(' Warning init. value of threads/mpi task', old_threads)
     !
     call get_dir(path)
-    if (rank .eq. 0) write (6, *) ' Initial path : ', path
+    call log_info(' Initial path : ', path)
     !
     ! Initialize error flags needed by read_datasmin
     yesdft = .true. ! important flag to avoid useless allocation and checks

@@ -36,6 +36,7 @@ subroutine errore(calling_routine, message, ierr)
     !
     use io_global, only: stdout
     use io_files, only: crashunit, crash_file
+    use logger_io, only: log_error
     use parallel_include
     !
     implicit none
@@ -74,7 +75,8 @@ subroutine errore(calling_routine, message, ierr)
     !
 #endif
     !
-    write (*, '("     stopping ...")')
+    ! original format: '("     stopping ...")'
+    call log_error("     stopping ...")
     !
     call flush_unit(stdout)
     !

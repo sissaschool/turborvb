@@ -14,6 +14,7 @@
 ! along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 program fitxyz
+    use logger_io, only: log_info
     implicit none
     real(8), dimension(:), allocatable :: x, erx, y, z, er, ys, xs, xt, yn&
             &, ern, yns, alat
@@ -58,7 +59,7 @@ program fitxyz
     rewind (11)
     do n = 1, nh
         read (11, *) alat(n), y(n), er(n), yn(n), ern(n), a, c, xt(n), erx(n)
-        write (6, *) xt(n), erx(n), y(n), er(n), yn(n), ern(n)
+        call log_info(xt(n), erx(n), y(n), er(n), yn(n), ern(n))
     end do
     n = nh
 

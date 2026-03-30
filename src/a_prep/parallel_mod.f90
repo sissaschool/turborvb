@@ -19,6 +19,7 @@ module parallel_module
                      commrep_mpi, commcolrep_mpi, manyfort10, iflagerr, nbead, yeswrite10, min_block, writescratch
     use kpoints_mod, only: nk, wkp, kaverage, compute_bands
     use constants, only: old_threads
+    use logger_io, only: log_info, log_warning
 
     implicit none
 
@@ -119,13 +120,13 @@ contains
         if (split_comms) then
 
             if (nk .gt. nproc) then
-                if (rank .eq. 0) write (6, *) ' # MPI processes/ # of k-points ', nproc, nk
+                call log_info(' # MPI processes/ # of k-points ', nproc, nk)
                 call error(' setup_parallel ', ' choose an higher number of processors &
                         &or decrease the number of k-points! ', 1, rank)
             end if
 
             if (mod(nproc, nk) .ne. 0) then
-                if (rank .eq. 0) write (6, *) ' # MPI processes/ # of k-points ', nproc, nk
+                call log_info(' # MPI processes/ # of k-points ', nproc, nk)
                 call error(' setup_parallel ', ' Choose a number of processors multiple of the &
                         &number of k-points! ', 1, rank)
             end if
@@ -140,8 +141,8 @@ contains
             call mpi_barrier(MPI_COMM_WORLD, ierr)
 
 #if defined DEBUG
-            if (rank .eq. 0) write (*, *) 'Processors involved:', nproc, nproc/nk
-            if (rank .eq. 0) write (*, *) '    Iam    irow    jcol  row-id  col-id'
+            call log_info('Processors involved:', nproc, nproc/nk)
+            call log_info('    Iam    irow    jcol  row-id  col-id')
 #endif
 
             row_id = 0
@@ -179,7 +180,8 @@ contains
 
             ! print processors grid for debugging
 #ifdef DEBUG
-            write (*, '(5I5)') rank, irow, jcol, rankrep, rankcolrep
+            ! original format: (5I5)
+            call log_info(rank, irow, jcol, rankrep, rankcolrep)
 #endif
         end if
 
@@ -216,10 +218,7 @@ contains
             np_ortho(1) = nelorb/min_block
             if (np_ortho(1)*min_block .ne. nelorb) np_ortho(1) = np_ortho(1) + 1
             np_ortho(2) = np_ortho(1)
-            if (rank .eq. 0) then
-                write (6, *) ' Warning using less number of processor to distribute the matrix , block too small !!! ' &
-                    , np_ortho(1), nelorb
-            end if
+            call log_warning(' Warning using less number of processor to distribute the matrix , block too small !!! ', np_ortho(1), nelorb)
         end if
 
         np_ortho1 = np_ortho(1)*np_ortho(2)

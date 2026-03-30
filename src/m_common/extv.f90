@@ -58,6 +58,7 @@ subroutine extpot_read
 
     use extpot
     use allio, only: rank
+    use logger_io, only: log_info
 
     implicit none
     integer :: i, ix, iy, iz
@@ -97,17 +98,15 @@ subroutine extpot_read
         iy = (n_y - 1)/2 + 1
         iz = (n_z - 1)/2 + 1
     end do
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) '|******************************************|'
-        write (*, *) '|       EXTERNAL QMC/MM POTENTIAL          |'
-        write (*, *) '|******************************************|'
-        write (*, *)
-        write (*, *) " Reading cube file ...", filename_cube
-        write (*, '(a15,3i7)') '  Dimensions  :', n_x, n_y, n_z
-        write (*, '(a10,3f12.6)') '  Mesh  : ', delta
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|       EXTERNAL QMC/MM POTENTIAL          |')
+    call log_info('|******************************************|')
+    call log_info('')
+    call log_info(' Reading cube file ...', trim(filename_cube))
+    call log_info('  Dimensions  :', n_x, n_y, n_z)
+    call log_info('  Mesh  : ', delta(1), delta(2), delta(3))
+    call log_info('')
 
     call interpolate
 
@@ -128,6 +127,7 @@ subroutine interpolate
     use splines
     use bspline
     use allio, only: rank
+    use logger_io, only: log_info
 
     implicit none
 
@@ -149,27 +149,21 @@ subroutine interpolate
     call dbsnak(n_z, zdata, kzord, zknot)
 
     !        interpolate
-    if (rank .eq. 0) then
-        write (*, *)
-        write (*, '(a50,3i4)') &
-                &  ' Interpolating with 3D spline of order (x,y,z) : '  &
-                &, kxord, kyord, kzord
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info(' Interpolating with 3D spline of order (x,y,z) : ', kxord, kyord, kzord)
+    call log_info('')
 
     call dbs3in(n_x, xdata, n_y, ydata, n_z, zdata, pot, &
             &            n_x, n_y, kxord, kyord, kzord, xknot, yknot, zknot, &
             &            bscoef)
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) ' Interpolation done.'
-        write (*, *) ''
-        write (*, *) '|******************************************|'
-        write (*, *) '|       EXTERNAL QMC/MM POTENTIAL          |'
-        write (*, *) '|******************************************|'
-        write (*, *)
-    end if
+    call log_info('')
+    call log_info(' Interpolation done.')
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|       EXTERNAL QMC/MM POTENTIAL          |')
+    call log_info('|******************************************|')
+    call log_info('')
     nxcoef = n_x
     nycoef = n_y
     nzcoef = n_z
@@ -246,6 +240,7 @@ subroutine extpot_final(nelec)
     !*********************************************************************
 
     use extpot
+    use logger_io, only: log_info
 
     implicit none
 
@@ -255,19 +250,15 @@ subroutine extpot_final(nelec)
     t_ave = t_ave/t_ncount
     err_el = dsqrt((t_ave2/t_ncount - t_ave**2)/t_ncount)
 
-    write (*, *) ''
-    write (*, *) '|******************************************|'
-    write (*, *) '|       EXTERNAL QMC/MM  POTENTIAL         |'
-    write (*, *) '|******************************************|'
-    write (*, *)
-    write (*, *) ' Total number of N-el evaluations:', t_ncount
-    write (*, 110) ' Rate of out of box electrons:', &
-            &             t_nout/dble(t_ncount*nelec)
-    write (*, 120) ' Average QMC/MM electronic energy:', t_ave, '(', err_el, ')'
-    write (*, *)
-
-110 format(a31, 1x, 1f10.6)
-120 format(a35, 1x, 1f10.6, 2x, 1a, 1f10.6, 1a)
+    call log_info('')
+    call log_info('|******************************************|')
+    call log_info('|       EXTERNAL QMC/MM  POTENTIAL         |')
+    call log_info('|******************************************|')
+    call log_info('')
+    call log_info(' Total number of N-el evaluations:', t_ncount)
+    call log_info(' Rate of out of box electrons:', t_nout/dble(t_ncount*nelec))
+    call log_info(' Average QMC/MM electronic energy:', t_ave, ' (', err_el, ')')
+    call log_info('')
 
     return
 end subroutine extpot_final
@@ -330,6 +321,7 @@ subroutine ion_final(nion)
     use extpot
     use allio, only: idyn
     use van_der_waals, only: vdw
+    use logger_io, only: log_info
 
     implicit none
 
@@ -353,24 +345,21 @@ subroutine ion_final(nion)
         err_ion = 0.d0
     end if
 
-    write (*, *)
-    write (*, *) ' Total number of evaluations:', t_ncount_ion
-    write (*, 120) 'Average QMC/MM nuclear energy:', t_ave_ion, '(', err_ion, ')'
-    write (*, *)
+    call log_info('')
+    call log_info(' Total number of evaluations:', t_ncount_ion)
+    call log_info('Average QMC/MM nuclear energy:', t_ave_ion, ' (', err_ion, ')')
+    call log_info('')
     total_ave = t_ave + t_ave_ion
     total_err = dsqrt(err_el**2 + err_ion**2)
 
     if (.not. vdw) then
-        write (*, 130) ' Total (N+e) QMC/MM energy:', total_ave, '(', total_err, ')'
-        write (*, *)
-        write (*, *) '|******************************************|'
-        write (*, *) '|         EXTERNAL QMC/MM POTENTIAL        |'
-        write (*, *) '|******************************************|'
-        write (*, *) ''
+        call log_info(' Total (N+e) QMC/MM energy:', total_ave, ' (', total_err, ')')
+        call log_info('')
+        call log_info('|******************************************|')
+        call log_info('|         EXTERNAL QMC/MM POTENTIAL        |')
+        call log_info('|******************************************|')
+        call log_info('')
     end if
-
-120 format(a33, 1x, 1f10.6, 2x, 1a, 1f10.6, 1a)
-130 format(a28, 1x, 1f10.6, 2x, 1a, 1f10.6, 1a)
 
     return
 end subroutine ion_final
@@ -382,6 +371,7 @@ subroutine vdw_read()
     use van_der_waals
     use allio, only: rank, nion, rion
     use extpot, only: link_atom
+    use logger_io, only: log_error, log_info
 
     implicit none
     integer :: idum, i, j, jdum, i_err, qmcount, mmcount
@@ -395,9 +385,7 @@ subroutine vdw_read()
     ! idum  = number of QM atoms (must be equal to nion!)
     read (901, *) nratt, idum
     if (idum .ne. nion) then
-        if (rank .eq. 0) then
-            write (*, *) 'ERROR: the number QM atoms read  must be equal to nion!', idum, '.ne.', nion
-        end if
+        call log_error('ERROR: the number QM atoms read  must be equal to nion!', idum, '.ne.', nion)
 #ifdef PARALLEL
         call mpi_finalize(i_err)
         stop
@@ -483,13 +471,11 @@ subroutine vdw_read()
         end if
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) 'Adding the van der Waals contribution'
-        write (*, *) 'Number of QM atoms:', nion
-        write (*, *) 'Number of NN atoms:', nat_nn
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('Adding the van der Waals contribution')
+    call log_info('Number of QM atoms:', nion)
+    call log_info('Number of NN atoms:', nat_nn)
+    call log_info('')
 
     close (901)
 
@@ -636,6 +622,7 @@ subroutine vdw_final()
     use extpot, only: mm_restr, total_ave, err_el, err_ion, link_atom
     use allio, only: idyn
     use tot_angle
+    use logger_io, only: log_info
 
     implicit none
 
@@ -701,26 +688,26 @@ subroutine vdw_final()
     end if
 
     if (.not. mm_restr) then
-        write (*, *)
-        write (*, *) ' Total number of vdW evaluations:', t_ncount_vdw
-        write (*, 120) ' Average QMC/MM vdW energy:', t_ave_vdw, '(', err_vdw, ')'
-        write (*, *)
+        call log_info('')
+        call log_info(' Total number of vdW evaluations:', t_ncount_vdw)
+        call log_info(' Average QMC/MM vdW energy:', t_ave_vdw, ' (', err_vdw, ')')
+        call log_info('')
     end if
     if (link_atom .or. mm_restr) then
         if (mm_restr) then
-            write (*, *) ' Total number of bond distance evaluations:', t_ncount_bond
-            write (*, 120) ' Average bond distance energy:', t_ave_bond, '(', err_bond, ')'
-            write (*, *)
+            call log_info(' Total number of bond distance evaluations:', t_ncount_bond)
+            call log_info(' Average bond distance energy:', t_ave_bond, ' (', err_bond, ')')
+            call log_info('')
         end if
-        write (*, *) ' Total number of bond angle evaluations:', t_ncount_angle
-        write (*, 120) ' Average bond angle energy:', t_ave_angle, '(', err_angle, ')'
-        write (*, *)
-        write (*, *) ' Total number of proper dihedral evaluations:', t_ncount_dihed
-        write (*, 120) ' Average proper dihedral energy:', t_ave_dihed, '(', err_dihed, ')'
-        write (*, *)
-        write (*, *) ' Total number of improper dihedral evaluations:', t_ncount_impr
-        write (*, 120) ' Average improper dihedral energy:', t_ave_impr, '(', err_impr, ')'
-        write (*, *)
+        call log_info(' Total number of bond angle evaluations:', t_ncount_angle)
+        call log_info(' Average bond angle energy:', t_ave_angle, ' (', err_angle, ')')
+        call log_info('')
+        call log_info(' Total number of proper dihedral evaluations:', t_ncount_dihed)
+        call log_info(' Average proper dihedral energy:', t_ave_dihed, ' (', err_dihed, ')')
+        call log_info('')
+        call log_info(' Total number of improper dihedral evaluations:', t_ncount_impr)
+        call log_info(' Average improper dihedral energy:', t_ave_impr, ' (', err_impr, ')')
+        call log_info('')
         if (link_atom) then
             sum_pot = total_ave + t_ave_vdw + t_ave_angle + t_ave_dihed + t_ave_impr
             sum_err = dsqrt(err_el**2 + err_ion**2 + err_vdw**2 + err_angle**2 + err_dihed**2 + err_impr**2)
@@ -729,27 +716,24 @@ subroutine vdw_final()
             sum_err = dsqrt(err_bond + err_angle**2 + err_dihed**2 + err_impr**2)
         end if
         if (link_atom) then
-            write (*, 130) ' Total QMC/MM (electrostatic + vdW + MM) energy:', sum_pot, '(', sum_err, ')'
-            write (*, *)
+            call log_info(' Total QMC/MM (electrostatic + vdW + MM) energy:', sum_pot, ' (', sum_err, ')')
+            call log_info('')
         elseif (mm_restr) then
-            write (*, 130) ' Total QMC/MM (restraints) energy:', sum_pot, '(', sum_err, ')'
+            call log_info(' Total QMC/MM (restraints) energy:', sum_pot, ' (', sum_err, ')')
         end if
 
     elseif (vdw .and. .not. link_atom) then
         sum_pot = total_ave + t_ave_vdw
         sum_err = dsqrt(err_el**2 + err_ion**2 + err_vdw**2)
-        write (*, 130) ' Total QMC/MM (electrostatic + vdW) energy:', sum_pot, '(', sum_err, ')'
-        write (*, *)
+        call log_info(' Total QMC/MM (electrostatic + vdW) energy:', sum_pot, ' (', sum_err, ')')
+        call log_info('')
     end if
     if (.not. mm_restr) then
-        write (*, *) '|******************************************|'
-        write (*, *) '|         EXTERNAL QMC/MM POTENTIAL        |'
-        write (*, *) '|******************************************|'
-        write (*, *) ''
+        call log_info('|******************************************|')
+        call log_info('|         EXTERNAL QMC/MM POTENTIAL        |')
+        call log_info('|******************************************|')
+        call log_info('')
     end if
-
-120 format(a34, 1x, 1f12.6, 2x, 1a, 1f12.6, 1a)
-130 format(a48, 1x, 1f12.6, 2x, 1a, 1f12.6, 1a)
 
     return
 
@@ -809,6 +793,7 @@ subroutine link_read()
     use link_angle
     use van_der_waals, only: grom, cpmd, nat_tot
     use allio, only: rank
+    use logger_io, only: log_info
 
     implicit none
 
@@ -821,15 +806,13 @@ subroutine link_read()
     !Number of capping atoms
     read (902, *) cdum
     read (902, *) latoms
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (6, *) '|****************************************|'
-        write (6, *) '| Link atoms in the QMC/MM framework     |'
-        write (6, *) '|****************************************|'
-        write (*, *) ''
-        write (*, *) 'Number of link atoms:', latoms
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('|****************************************|')
+    call log_info('| Link atoms in the QMC/MM framework     |')
+    call log_info('|****************************************|')
+    call log_info('')
+    call log_info('Number of link atoms:', latoms)
+    call log_info('')
 
     allocate (linangle(latoms, maxth), ntheta(latoms))
     allocate (capping(latoms))
@@ -863,18 +846,16 @@ subroutine link_read()
         end do
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) 'Capping  QM-link  MM-link (Turbo/CPMD list)'
-        do i = 1, latoms
-            write (*, '(3I8)') capping(i)%cap, capping(i)%qm, capping(i)%mm
-        end do
-        write (*, *) ''
-        write (6, *) '|****************************************|'
-        write (6, *) '| Link atoms in the QMC/MM framework     |'
-        write (6, *) '|****************************************|'
-        write (*, *) ''
-        write (*, *)
-    end if
+    call log_info('Capping  QM-link  MM-link (Turbo/CPMD list)')
+    do i = 1, latoms
+        call log_info(capping(i)%cap, capping(i)%qm, capping(i)%mm)
+    end do
+    call log_info('')
+    call log_info('|****************************************|')
+    call log_info('| Link atoms in the QMC/MM framework     |')
+    call log_info('|****************************************|')
+    call log_info('')
+    call log_info('')
 
     read (902, *) cdum
 
@@ -1371,6 +1352,7 @@ subroutine exclusion_list()
     use exc_list
     use van_der_waals, only: nat_tot, grom
     use allio, only: rank
+    use logger_io, only: log_info
 
     implicit none
 
@@ -1409,17 +1391,19 @@ subroutine exclusion_list()
     end do
 600 close (702)
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) 'Exclusion list for first and second neighbours (GROMOS)'
-        write (*, *) 'ATOM I   NEXCL'
-        write (*, *) 'J1  J2  J3  J4 ...JNEXCL'
-        do i = 1, nat_tot
-            write (*, *) exc(i)%ref, exc(i)%n
-            if (exc(i)%n .ne. 0) write (*, *) (exc_at(i, j), j=1, exc(i)%n)
-        end do
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('Exclusion list for first and second neighbours (GROMOS)')
+    call log_info('ATOM I   NEXCL')
+    call log_info('J1  J2  J3  J4 ...JNEXCL')
+    do i = 1, nat_tot
+        call log_info(exc(i)%ref, exc(i)%n)
+        if (exc(i)%n .ne. 0) then
+            do j = 1, exc(i)%n
+                call log_info(exc_at(i, j))
+            end do
+        end if
+    end do
+    call log_info('')
 
     ! 1-4 neighbours
     allocate (exc14(nat_tot))
@@ -1449,17 +1433,19 @@ subroutine exclusion_list()
     end do
 601 close (703)
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) 'Exclusion list for 1-4 neighbours (GROMOS)'
-        write (*, *) 'ATOM I   NEXCL'
-        write (*, *) 'J1  J2  J3  J4 ...JNEXCL'
-        do i = 1, nat_tot
-            write (*, *) exc14(i)%ref, exc14(i)%n
-            if (exc14(i)%n .ne. 0) write (*, *) (exc_14(i, j), j=1, exc14(i)%n)
-        end do
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('Exclusion list for 1-4 neighbours (GROMOS)')
+    call log_info('ATOM I   NEXCL')
+    call log_info('J1  J2  J3  J4 ...JNEXCL')
+    do i = 1, nat_tot
+        call log_info(exc14(i)%ref, exc14(i)%n)
+        if (exc14(i)%n .ne. 0) then
+            do j = 1, exc14(i)%n
+                call log_info(exc_14(i, j))
+            end do
+        end if
+    end do
+    call log_info('')
 
     return
 
@@ -1546,17 +1532,16 @@ subroutine restr_read()
     use allio, only: rank, nion
     use cl_restr
     use link_angle, only: cl_bond, cl_angle, cl_dimp, cl_dihe, pi
+    use logger_io, only: log_info
 
     character*50 :: cdum
     integer :: i
 
     open (913, file='restr.dat')
 
-    if (rank .eq. 0) then
-        write (*, *) ''
-        write (*, *) 'Classical (MM) restraints'
-        write (*, *) ''
-    end if
+    call log_info('')
+    call log_info('Classical (MM) restraints')
+    call log_info('')
 
     !Multiplicative factor
     read (913, *) mm_fact
@@ -1575,10 +1560,8 @@ subroutine restr_read()
         read (913, *) cl_bond(i)%i, cl_bond(i)%j, cl_bond(i)%kbond, cl_bond(i)%req
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) nbonds, 'bond restraints'
-        write (*, *) ''
-    end if
+    call log_info(nbonds, 'bond restraints')
+    call log_info('')
 
     ! Angles
     read (913, *) cdum
@@ -1590,10 +1573,8 @@ subroutine restr_read()
         cl_angle(i)%thetaeq = dcos(cl_angle(i)%thetaeq)
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) nth, 'angle restraints'
-        write (*, *) ''
-    end if
+    call log_info(nth, 'angle restraints')
+    call log_info('')
 
     ! Dihedrals
     read (913, *) cdum
@@ -1605,10 +1586,8 @@ subroutine restr_read()
         cl_dihe(i)%qcos = dcos(cl_dihe(i)%qcos)
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) ndihe, 'dihedral restraints'
-        write (*, *) ''
-    end if
+    call log_info(ndihe, 'dihedral restraints')
+    call log_info('')
 
     ! Improper dihedrals
     read (913, *) cdum
@@ -1620,10 +1599,8 @@ subroutine restr_read()
         cl_dimp(i)%qcos = dcos(cl_dimp(i)%qcos)
     end do
 
-    if (rank .eq. 0) then
-        write (*, *) ndimp, 'improper dihedral restraints'
-        write (*, *) ''
-    end if
+    call log_info(ndimp, 'improper dihedral restraints')
+    call log_info('')
 
     ! Allocate arrays for forces
     allocate (restr_f_bond(3, nion), restr_f_angle(3, nion), restr_f_dihe(3, nion), restr_f_dimp(3, nion))
