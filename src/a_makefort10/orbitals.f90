@@ -136,6 +136,9 @@ contains
                 if (njas_hyb .gt. 0) call errore('read_orbitals', 'No jastrow shell, no jastrow hybrid!', 1)
             end if
             !
+            ! dump parameters
+            call dump_parameters(section_name)
+            !
         end do
 
         write (*, *) ' # Det Shells : ', totshelldet
@@ -1483,6 +1486,18 @@ contains
         do i = 1, n
             z(i) = alpha*beta**(i - 1)
         end do
-    end subroutine defz
+      end subroutine defz
+
+    subroutine dump_parameters(section_name)
+      implicit none
+      character(20),intent(in) :: section_name
+      write (6,*) '==== namelist shells ', trim(section_name), ' ===='
+      write (6,*) 'nshelljas            = ', nshelljas
+      write (6,*) 'nshelldet            = ', nshelldet
+      write (6,*) 'njas_hyb             = ', njas_hyb
+      write (6,*) 'ndet_hyb             = ', ndet_hyb
+      write (6,*) 'no_3body_jas         = ', no_3body_jas
+      write (6,*) 'ncut_hyb             = ', ncut_hyb
+    end subroutine dump_parameters
 
 end module mod_orbital

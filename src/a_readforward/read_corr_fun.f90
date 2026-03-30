@@ -213,6 +213,9 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
     write (6, *) 'offset =', (offset(i), i=1, corrfun_dim)
     write (6, *) 'cutoff log wave function (shiftlog) =', shiftlog
 
+    ! dump parameters
+    call dump_parameters
+    
     if (sum(abs(offset(:))) .eq. 0.d0) then
         if (ngrid(1) .ge. 1 .and. ngrid(2) .ge. 1 .and. ngrid(3) .ge. 1) then
             write (6, *) 'Default shift offset for centering xcrysden -0.5,-0.5,-0.5 in mesh grid units'
@@ -407,8 +410,66 @@ subroutine read_corr_fun(nel, nelup, nion, iespbc, celldm, rs, cellscale &
         write (6, *) 'ell(z) =', ell(3)
     end if
 
-    !
-
     close (55)
 
+  contains
+    subroutine dump_parameters
+      implicit none
+      ! write parameter values
+      write (6,*) '==== namelist simulation ===='
+      write (6,*) 'decouple_files       = ', decouple_files
+      write (6,*) 'decouple_k           = ', decouple_k
+      write (6,*) 'iopt                 = ', iopt
+      write (6,*) 'longio               = ', longio
+      write (6,*) 'ngen                 = ', ngen
+      write (6,*) '==== namelist system ===='
+      write (6,*) 'center_type          = ', center_type
+      write (6,*) 'da                   = ', da
+      write (6,*) 'ell                  = ', ell
+      write (6,*) 'extr_point           = ', extr_point
+      write (6,*) 'n_extr_points        = ', n_extr_points
+      write (6,*) 'ncell                = ', ncell
+      write (6,*) 'starting_point       = ', starting_point
+      write (6,*) '==== namelist corrfun ===='
+      write (6,*) 'allshells            = ', allshells
+      write (6,*) 'assar_cut            = ', assar_cut
+      write (6,*) 'assar_density        = ', assar_density
+      write (6,*) 'assar_parr           = ', assar_parr
+      write (6,*) 'bin_length           = ', bin_length
+      write (6,*) 'cart_axes            = ', cart_axes
+      write (6,*) 'charge_density       = ', charge_density
+      write (6,*) 'compute_spin2        = ', compute_spin2
+      write (6,*) 'corr_factors         = ', corr_factors
+      write (6,*) 'correlated_samp      = ', correlated_samp
+      write (6,*) 'corrfun_dim          = ', corrfun_dim
+      write (6,*) 'dipole_moment        = ', dipole_moment
+      write (6,*) 'fluctuations         = ', fluctuations
+      write (6,*) 'fwd_propagations     = ', fwd_propagations
+      write (6,*) 'fwd_skip             = ', fwd_skip
+      write (6,*) 'grid_points          = ', grid_points
+      write (6,*) 'ifberry              = ', ifberry
+      write (6,*) 'ifkspin              = ', ifkspin
+      write (6,*) 'initial_bin          = ', initial_bin
+      write (6,*) 'k_cutoff             = ', k_cutoff
+      write (6,*) 'kspin                = ', kspin
+      write (6,*) 'kswitch              = ', kswitch
+      write (6,*) 'new_density          = ', new_density
+      write (6,*) 'ngrid                = ', ngrid
+      write (6,*) 'noeloc               = ', noeloc
+      write (6,*) 'nswitch              = ', nswitch
+      write (6,*) 'offset               = ', offset
+      write (6,*) 'outofplane           = ', outofplane
+      write (6,*) 'pair_corr_fun        = ', pair_corr_fun
+      write (6,*) 'quasi_hole           = ', quasi_hole
+      write (6,*) 'quasi_hole_extr      = ', quasi_hole_extr
+      write (6,*) 'quasi_hole_k         = ', quasi_hole_k
+      write (6,*) 'quasi_particle       = ', quasi_particle
+      write (6,*) 'radial_grid          = ', radial_grid
+      write (6,*) 'rdf_for_atom         = ', rdf_for_atom
+      write (6,*) 'shiftlog             = ', shiftlog
+      write (6,*) 'sphere_radius        = ', sphere_radius
+      write (6,*) 'spin_density         = ', spin_density
+      write (6,*) 'structure_factor     = ', structure_factor
+    end subroutine dump_parameters
+    
 end subroutine read_corr_fun

@@ -829,6 +829,8 @@ contains
         ! write information on the calculation
         !
         call write_info
+        !
+        call dump_parameters
         ! syncronize all processors
 #ifdef  PARALLEL
         call mpi_barrier(MPI_COMM_WORLD, ierr)
@@ -1226,4 +1228,84 @@ contains
 
     end subroutine set_addresses
 
+    subroutine dump_parameters
+      implicit none
+      if (rank.eq.0) then
+
+      write (6,*) '==== namelist DFT ===='
+      write (6,*) 'bands                = ', bands
+      write (6,*) 'contracted_on        = ', contracted_on
+      write (6,*) 'corr_hartree         = ', corr_hartree
+      write (6,*) 'deltaE               = ', deltaE
+      write (6,*) 'do_hartree           = ', do_hartree
+      write (6,*) 'emax                 = ', emax
+      write (6,*) 'emin                 = ', emin
+      write (6,*) 'eps_mach             = ', eps_mach
+      write (6,*) 'epsdft               = ', epsdft
+      write (6,*) 'epsover              = ', epsover
+      write (6,*) 'epsshell             = ', epsshell
+      write (6,*) 'epssr                = ', epssr
+      write (6,*) 'fix_density          = ', fix_density
+      write (6,*) 'from_ions            = ', from_ions
+      write (6,*) 'h_charge             = ', h_charge
+      write (6,*) 'h_field              = ', h_field
+      write (6,*) 'jaccond              = ', jaccond
+      write (6,*) 'l0_at                = ', l0_at
+      write (6,*) 'linear               = ', linear
+      write (6,*) 'maxcg                = ', maxcg
+      write (6,*) 'maxit                = ', maxit
+      write (6,*) 'maxold               = ', maxold
+      write (6,*) 'memlarge             = ', memlarge
+      write (6,*) 'mincond              = ', mincond
+      write (6,*) 'minz_at              = ', minz_at
+      write (6,*) 'mixing               = ', mixing
+      write (6,*) 'mixingder            = ', mixingder
+      write (6,*) 'nc                   = ', nc
+      write (6,*) 'nelocc               = ', nelocc
+      write (6,*) 'neloccdo             = ', neloccdo
+      write (6,*) 'newj_onebody         = ', newj_onebody
+      write (6,*) 'nproc_fft            = ', nproc_fft
+      write (6,*) 'nx_at                = ', nx_at
+      write (6,*) 'nxs                  = ', nxs
+      write (6,*) 'ny_at                = ', ny_at
+      write (6,*) 'nys                  = ', nys
+      write (6,*) 'nz_at                = ', nz_at
+      write (6,*) 'nzs                  = ', nzs
+      write (6,*) 'optimize_overs       = ', optimize_overs
+      write (6,*) 'optocc               = ', optocc
+      write (6,*) 'orthodiag            = ', orthodiag
+      write (6,*) 'randspin             = ', randspin
+      write (6,*) 'rion_from            = ', rion_from
+      write (6,*) 'rmax                 = ', rmax
+      write (6,*) 'scale_hartree        = ', scale_hartree
+      write (6,*) 'scale_z              = ', scale_z
+      write (6,*) 'setj_onebody         = ', setj_onebody
+      write (6,*) 'shift_origin         = ', shift_origin
+      write (6,*) 'shiftx               = ', shiftx
+      write (6,*) 'shifty               = ', shifty
+      write (6,*) 'shiftz               = ', shiftz
+      write (6,*) 'task                 = ', task
+      write (6,*) 'try_translation      = ', try_translation
+      write (6,*) 'typedft              = ', typedft
+      write (6,*) 'typeopt              = ', typeopt
+      write (6,*) 'vmax0_in             = ', vmax0_in
+      write (6,*) 'weightcorr           = ', weightcorr
+      write (6,*) 'weightvh             = ', weightvh
+      write (6,*) 'weightxc             = ', weightxc
+      write (6,*) 'write_den            = ', write_den
+      write (6,*) 'write_matrix         = ', write_matrix
+      write (6,*) 'zero_jas             = ', zero_jas
+
+      if (compute_bands) then
+      write (6,*) '==== namelist band_structure ===='
+      write (6,*) 'deltaE               = ', deltaE
+      write (6,*) 'emax                 = ', emax
+      write (6,*) 'emin                 = ', emin
+      write (6,*) 'task                 = ', task
+      end if
+
+      end if ! rank.eq.0
+      return
+    end subroutine dump_parameters
+    
 end module setup

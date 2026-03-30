@@ -99,6 +99,9 @@ program find_kpoints
         go to 108
     end select
 
+    ! dump parameters
+    call dump_parameters_kpoints(0)
+    
     allocate (xkp(3, nk), wkp(nk))
     allocate (xkp_down(3, nk), wkp_down(nk))
     !

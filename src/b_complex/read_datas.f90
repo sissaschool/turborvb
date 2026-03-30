@@ -2630,275 +2630,311 @@ subroutine read_datasmin
         tcore(1) = 0.d0
         icore = 0
     end if
+
+    ! write parameter values
+    call dump_parameters_simulation
+    call dump_parameters_pseudo
+    if (itest.eq.2) then
+       call dump_parameters_vmc
+    end if
+    if (itest .eq. 1 .or. itestr4 .eq. -7) then
+       call dump_parameters_dmclrdmc
+    end if
+    if (itestr .eq. -5) then
+       call dump_parameters_optimization
+    end if
+    call dump_parameters_readio
+    call dump_parameters_parameters
+    if (developer .gt. 0) then
+       call dump_parameters_unused
+    end if
+    !call dump_parameters_pot_ext
+    if (link_atom) then
+       call dump_parameters_link
+    end if
+    if (iesfree .lt. 0 .or. iessw .lt. 0 .or. iesinv .lt. 0) then
+       call dump_parameters_fitpar
+    end if
+    if (idyn .ne. 0) then
+       call dump_parameters_dynamic
+    end if
+    if (manyfort10 .and. nbead .le. 1) then
+       call dump_parameters_kpoints(rank)
+    end if
+     
 end subroutine read_datasmin
 
 subroutine read_datasmin_mol
-    use allio
-    use convertmod, only: nmolmatdo
-    implicit none
+  use allio
+  use convertmod, only: nmolmatdo
+  implicit none
 
 #ifdef PARALLEL
-    include 'mpif.h'
+  include 'mpif.h'
 #endif
-    if (itestr .eq. -5 .or. read_molecul) then
-!
+  if (itestr .eq. -5 .or. read_molecul) then
+     !
 
-        if (rank .eq. 0) then
-!       default values
-            epsdgm = 1d-14 !  No more than 12 digits in diagonalization.
-            smearing = 1d-5
-            nbufd = -1
-!       nmol=molecular-(nelup-neldo)
-            nmolmax = 0
-            nmolmaxw = 0
-            nmolmin = 0
-            nx = 0
-            ny = 0
-            nz = 0
-            ax = 0.d0
-            ay = 0.d0
-            az = 0.d0
-            weight_loc = -1.d0
-            orthoyes = .true.
-            gramyes = .true.
-            iflagerr = 1
-            if (npsar .gt. 0) then
-                add_onebody2det = .false.
-            else
-                add_onebody2det = .true.
-            end if
-            epsrem_contr = epsdgel
-            shift_origin = .true.
-            shiftx = .false.
-            shifty = .false.
-            shiftz = .false.
-            read (5, nml=molecul, err=121)
-            write (6, *) ' After reading molecul '
-            if (yesavopt) then
-                if (rank .eq. 0) write (6, *) ' Warning yesavopt forced to false with mol optimiz.!!! '
-                yesavopt = .false.
-            end if
-            iflagerr = 0
-            if (molecular .eq. 0) then
-                write (6, *) ' Warning   fort.10 should have molecular orbitals,&
-              & please run again with the output fort.10  !'
-                if (nmol .eq. -1 .or. nmol .lt. neldo) then
-                    iflagerr = 1
-                    write (6, *) ' ERROR you should have molecular orbitals in fort.10 '
-                    write (6, *) ' ERROR please use convertfort10mol or rerun with nmol>neldo '
-                end if
-            end if
-            if (contraction .eq. 0) then
-                iflagerr = 1
-                write (6, *) ' ERROR you should have contracted orbitals in fort.10 '
-                write (6, *) ' ERROR please introduce contraction (even fake) in your AGP '
-            end if
-
-121         if (iflagerr .ne. 0) then
-                write (6, *) ' ERROR reading molecul '
-                iflagerrall = iflagerr + iflagerrall
-            else
-                if (ny .eq. 0) then
-                    ny = nx
-                    write (6, *) ' Default value for ny=', ny
-                end if
-                if (nz .eq. 0) then
-                    nz = ny
-                    write (6, *) ' Default value for nz=', nz
-                end if
-                if (.not. iespbc) then
-                    if (ay .eq. 0.d0) then
-                        ay = ax
-                        write (6, *) ' Default value for ay=', ay
-                    end if
-                    if (az .eq. 0.d0) then
-                        az = ay
-                        write (6, *) ' Default value for az=', az
-                    end if
-                end if
-                if (symmagp .and. ipc .eq. 1) then
-                    nmol = molecular - ndiff
-                else
-                    nmol = (molecular - ndiff)/2
-                end if
-                write (6, *) ' Default value of nmol ', nmol
-                if (nmolmin .eq. 0) then
-                    nmolmin = neldo
-                    write (6, *) ' Default value of nmolmin ', nmolmin
-                end if
-                if (nmolmax .eq. 0) then
-                    nmolmax = neldo
-                    write (6, *) ' Default value of nmolmax ', nmolmax
-                end if
-
-                write (6, *) ' after  read molec '
-
-                if (weight_loc .eq. 0.d0) then
-                    if (epsdgm .ne. 0.d0) then
-                        weight_loc = epsdgm**2
-                    else
-                        weight_loc = 1d-8
-                    end if
-                    write (6, *) ' Default value for weight_loc =', weight_loc
-                end if
-
-                if (nmol .ne. 0 .and. nmolmax .eq. 0) then
-                    nmolmax = nmol
-                    write (6, *) ' Default value for nmolmax =', nmolmax
-                end if
-
-                if (nmolmaxw .eq. 0) then
-                    nmolmaxw = nmolmax
-                    write (6, *) ' Default value of nmolmaxw=', nmolmaxw
-                end if
-
-                if (nmolmax .lt. neldo) then
-                    iflagerrall = iflagerrall + 1
-                    write (6, *) ' Too small  nmolmax> =', neldo
-                end if
-
-!       read(5,*) epsdgm
-                write (6, *) ' error converter  ', epsdgm
-!       read(5,*) nx,ny,nz
-                write (6, *) ' # mesh read ', nx, ny, nz
-
-                if (nbufd .eq. -1) then
-#ifdef __SCALAPACK
-                    if (nelorb .gt. 2000 .and. .not. yesdft) then ! with SCALAPACK no memory problem
-#else
-                        if (nelorb .gt. 2000) then
-#endif
-                            nbufd = 100 ! there may be memory problems
-                        else
-                            nbufd = 1000 ! almost maximum efficiency dgemm
-                        end if
-                        write (6, *) 'Default value for buffer =', nbufd
-                    end if
-
-                end if
-
-            end if ! endif rank.eq.0
-
-!       never print the overlap in this case
-            printoverlap = .false.
-
-#ifdef PARALLEL
-            call mpi_bcast(epsdgm, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(smearing, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(epsrem_contr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(weight_loc, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nx, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(ny, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nz, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nbufd, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(orthoyes, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(gramyes, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(add_onebody2det, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(shift_origin, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(shiftx, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(shifty, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(shiftz, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(iflagerr, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nw_max, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-#ifdef UNREL
-!   For unreliable  networks.
-            call mpi_barrier(MPI_COMM_WORLD, ierr)
-!$omp barrier
-#endif
-#endif
-
-            if (iessw .eq. 0 .and. iesup .eq. 0 .and. .not. yesdft .and. .not. read_molecul) then
-                call checkiflagerr(1, rank,&
-            &' ERROR you cannot use molopt>0 without optimizing AGP !!!')
-            end if
-
-            if (nx .eq. 0 .or. ny .eq. 0 .or. nz .eq. 0) then
-                write (errmsg, *) ' Mesh should be finite !!!', nx, ny, nz
-                call checkiflagerr(1, rank, errmsg)
-            end if
-
-            if (gramyes .and. .not. orthoyes) then
-                if (rank .eq. 0) write (6, *) &
-         &' Warning with Gram-Schmidt ortho, changed orthoyes= true'
-                orthoyes = .true.
-            end if
-            if (iespbc) then
-                ax = cellscale(1)/nx
-                ay = cellscale(2)/ny
-                az = cellscale(3)/nz
-                if (rank .eq. 0)                                                  &
-            &write (6, *) ' lattice mesh chosen ', ax, ay, az, cellscale(1)
-            else
-                if (rank .eq. 0) write (6, *) ' lattice mesh read ax,ay,az ', ax, ay, az
-!       if(rank.eq.0) read(5,*) ax,ay,az
-#ifdef PARALLEL
-                call mpi_bcast(ax, 1, MPI_DOUBLE_PRECISION                        &
-             &, 0, MPI_COMM_WORLD, ierr)
-                call mpi_bcast(ay, 1, MPI_DOUBLE_PRECISION                        &
-             &, 0, MPI_COMM_WORLD, ierr)
-                call mpi_bcast(az, 1, MPI_DOUBLE_PRECISION                        &
-             &, 0, MPI_COMM_WORLD, ierr)
-#ifdef UNREL
-!   For unreliable  networks.
-                call mpi_barrier(MPI_COMM_WORLD, ierr)
-!$omp barrier
-#endif
-#endif
-            end if
-            if (ax .eq. 0 .or. ay .eq. 0 .or. az .eq. 0) then
-                write (errmsg, *) ' Lattice constants should be finite !!!', ax, ay, az
-                call checkiflagerr(1, rank, errmsg)
-            end if
-
-            if (rank .eq. 0) then
-                write (6, *) '# molecular orbital Det considered/projected'
-                write (6, *) nmol, nmolmin, nmolmax
-            end if
-
-#ifdef PARALLEL
-            call mpi_bcast(nmol, 1, MPI_INTEGER                               &
-         &, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nmolmin, 1, MPI_INTEGER                            &
-         &, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nmolmax, 1, MPI_INTEGER                            &
-         &, 0, MPI_COMM_WORLD, ierr)
-            call mpi_bcast(nmolmaxw, 1, MPI_INTEGER                            &
-         &, 0, MPI_COMM_WORLD, ierr)
-#ifdef UNREL
-!   For unreliable  networks.
-            call mpi_barrier(MPI_COMM_WORLD, ierr)
-!$omp barrier
-#endif
-#endif
-            detc_proj = .false.
-            yesmin = 0
-            if (molopt .ne. 0) then
-                yesmin = 1
-                if (rank .eq. 0 .and. .not. yesdft) write (6, *) ' Warning molecular orbitals&
-                & are constraint to be written in terms of contracted orbitals'
-                detc_proj = .true.
-                molopt = 1
-            end if
+     if (rank .eq. 0) then
+        !       default values
+        epsdgm = 1d-14 !  No more than 12 digits in diagonalization.
+        smearing = 1d-5
+        nbufd = -1
+        !       nmol=molecular-(nelup-neldo)
+        nmolmax = 0
+        nmolmaxw = 0
+        nmolmin = 0
+        nx = 0
+        ny = 0
+        nz = 0
+        ax = 0.d0
+        ay = 0.d0
+        az = 0.d0
+        weight_loc = -1.d0
+        orthoyes = .true.
+        gramyes = .true.
+        iflagerr = 1
+        if (npsar .gt. 0) then
+           add_onebody2det = .false.
         else
-            yesmin = 0
-            detc_proj = .false.
-        end if ! closed main if itestr.eq.-5
-
-!  Here we should interchange nmol_min with nmolmin because they have the
-!  opposite meaning in the code. In the code nmolmin is used for projection
-!, whereas nmol_min set to one the eigenvalues <= nmol_min. In input the
-!  meaning is opposite.
-        if (yesmin .eq. 1) then
-            nmolmat = ipf*nmolmax
-            nmolmatw = nmolmaxw
-            if (symmagp .or. ipf .eq. 2) then
-                nmolmatdo = nmolmat
-            else
-                nmolmatdo = nmolmax
-            end if
-        else
-            nmolmatdo = 0
-            nmolmat = 0
-            nmolmatw = 0
+           add_onebody2det = .true.
         end if
-        end subroutine read_datasmin_mol
+        epsrem_contr = epsdgel
+        shift_origin = .true.
+        shiftx = .false.
+        shifty = .false.
+        shiftz = .false.
+        read (5, nml=molecul, err=121)
+        write (6, *) ' After reading molecul '
+        if (yesavopt) then
+           if (rank .eq. 0) write (6, *) ' Warning yesavopt forced to false with mol optimiz.!!! '
+           yesavopt = .false.
+        end if
+        iflagerr = 0
+        if (molecular .eq. 0) then
+           write (6, *) ' Warning   fort.10 should have molecular orbitals,&
+                & please run again with the output fort.10  !'
+           if (nmol .eq. -1 .or. nmol .lt. neldo) then
+              iflagerr = 1
+              write (6, *) ' ERROR you should have molecular orbitals in fort.10 '
+              write (6, *) ' ERROR please use convertfort10mol or rerun with nmol>neldo '
+           end if
+        end if
+        if (contraction .eq. 0) then
+           iflagerr = 1
+           write (6, *) ' ERROR you should have contracted orbitals in fort.10 '
+           write (6, *) ' ERROR please introduce contraction (even fake) in your AGP '
+        end if
+
+121     if (iflagerr .ne. 0) then
+           write (6, *) ' ERROR reading molecul '
+           iflagerrall = iflagerr + iflagerrall
+        else
+           if (ny .eq. 0) then
+              ny = nx
+              write (6, *) ' Default value for ny=', ny
+           end if
+           if (nz .eq. 0) then
+              nz = ny
+              write (6, *) ' Default value for nz=', nz
+           end if
+           if (.not. iespbc) then
+              if (ay .eq. 0.d0) then
+                 ay = ax
+                 write (6, *) ' Default value for ay=', ay
+              end if
+              if (az .eq. 0.d0) then
+                 az = ay
+                 write (6, *) ' Default value for az=', az
+              end if
+           end if
+           if (symmagp .and. ipc .eq. 1) then
+              nmol = molecular - ndiff
+           else
+              nmol = (molecular - ndiff)/2
+           end if
+           write (6, *) ' Default value of nmol ', nmol
+           if (nmolmin .eq. 0) then
+              nmolmin = neldo
+              write (6, *) ' Default value of nmolmin ', nmolmin
+           end if
+           if (nmolmax .eq. 0) then
+              nmolmax = neldo
+              write (6, *) ' Default value of nmolmax ', nmolmax
+           end if
+
+           write (6, *) ' after  read molec '
+
+           if (weight_loc .eq. 0.d0) then
+              if (epsdgm .ne. 0.d0) then
+                 weight_loc = epsdgm**2
+              else
+                 weight_loc = 1d-8
+              end if
+              write (6, *) ' Default value for weight_loc =', weight_loc
+           end if
+
+           if (nmol .ne. 0 .and. nmolmax .eq. 0) then
+              nmolmax = nmol
+              write (6, *) ' Default value for nmolmax =', nmolmax
+           end if
+
+           if (nmolmaxw .eq. 0) then
+              nmolmaxw = nmolmax
+              write (6, *) ' Default value of nmolmaxw=', nmolmaxw
+           end if
+
+           if (nmolmax .lt. neldo) then
+              iflagerrall = iflagerrall + 1
+              write (6, *) ' Too small  nmolmax> =', neldo
+           end if
+
+           !       read(5,*) epsdgm
+           write (6, *) ' error converter  ', epsdgm
+           !       read(5,*) nx,ny,nz
+           write (6, *) ' # mesh read ', nx, ny, nz
+
+           if (nbufd .eq. -1) then
+#ifdef __SCALAPACK
+              if (nelorb .gt. 2000 .and. .not. yesdft) then ! with SCALAPACK no memory problem
+#else
+              if (nelorb .gt. 2000) then
+#endif
+                 nbufd = 100 ! there may be memory problems
+              else
+                 nbufd = 1000 ! almost maximum efficiency dgemm
+              end if
+              write (6, *) 'Default value for buffer =', nbufd
+           end if
+
+        end if
+
+     end if ! endif rank.eq.0
+     
+     !       never print the overlap in this case
+     printoverlap = .false.
+
+#ifdef PARALLEL
+     call mpi_bcast(epsdgm, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(smearing, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(epsrem_contr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(weight_loc, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nx, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(ny, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nz, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nbufd, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(orthoyes, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(gramyes, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(add_onebody2det, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(shift_origin, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(shiftx, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(shifty, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(shiftz, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(iflagerr, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nw_max, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+#ifdef UNREL
+     !   For unreliable  networks.
+     call mpi_barrier(MPI_COMM_WORLD, ierr)
+     !$omp barrier
+#endif
+#endif
+
+     if (iessw .eq. 0 .and. iesup .eq. 0 .and. .not. yesdft .and. .not. read_molecul) then
+        call checkiflagerr(1, rank,&
+             &' ERROR you cannot use molopt>0 without optimizing AGP !!!')
+     end if
+
+     if (nx .eq. 0 .or. ny .eq. 0 .or. nz .eq. 0) then
+        write (errmsg, *) ' Mesh should be finite !!!', nx, ny, nz
+        call checkiflagerr(1, rank, errmsg)
+     end if
+
+     if (gramyes .and. .not. orthoyes) then
+        if (rank .eq. 0) write (6, *) &
+             &' Warning with Gram-Schmidt ortho, changed orthoyes= true'
+        orthoyes = .true.
+     end if
+     if (iespbc) then
+        ax = cellscale(1)/nx
+        ay = cellscale(2)/ny
+        az = cellscale(3)/nz
+        if (rank .eq. 0)                                                  &
+             &write (6, *) ' lattice mesh chosen ', ax, ay, az, cellscale(1)
+     else
+        if (rank .eq. 0) write (6, *) ' lattice mesh read ax,ay,az ', ax, ay, az
+        !       if(rank.eq.0) read(5,*) ax,ay,az
+#ifdef PARALLEL
+        call mpi_bcast(ax, 1, MPI_DOUBLE_PRECISION                        &
+             &, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(ay, 1, MPI_DOUBLE_PRECISION                        &
+             &, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(az, 1, MPI_DOUBLE_PRECISION                        &
+             &, 0, MPI_COMM_WORLD, ierr)
+#ifdef UNREL
+        !   For unreliable  networks.
+        call mpi_barrier(MPI_COMM_WORLD, ierr)
+        !$omp barrier
+#endif
+#endif
+     end if
+     if (ax .eq. 0 .or. ay .eq. 0 .or. az .eq. 0) then
+        write (errmsg, *) ' Lattice constants should be finite !!!', ax, ay, az
+        call checkiflagerr(1, rank, errmsg)
+     end if
+
+     if (rank .eq. 0) then
+        write (6, *) '# molecular orbital Det considered/projected'
+        write (6, *) nmol, nmolmin, nmolmax
+     end if
+
+#ifdef PARALLEL
+     call mpi_bcast(nmol, 1, MPI_INTEGER                               &
+          &, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nmolmin, 1, MPI_INTEGER                            &
+          &, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nmolmax, 1, MPI_INTEGER                            &
+          &, 0, MPI_COMM_WORLD, ierr)
+     call mpi_bcast(nmolmaxw, 1, MPI_INTEGER                            &
+          &, 0, MPI_COMM_WORLD, ierr)
+#ifdef UNREL
+     !   For unreliable  networks.
+     call mpi_barrier(MPI_COMM_WORLD, ierr)
+     !$omp barrier
+#endif
+#endif
+     detc_proj = .false.
+     yesmin = 0
+     if (molopt .ne. 0) then
+        yesmin = 1
+        if (rank .eq. 0 .and. .not. yesdft) write (6, *) ' Warning molecular orbitals&
+             & are constraint to be written in terms of contracted orbitals'
+        detc_proj = .true.
+        molopt = 1
+     end if
+  else
+     yesmin = 0
+     detc_proj = .false.
+  end if ! closed main if itestr.eq.-5
+
+  !  Here we should interchange nmol_min with nmolmin because they have the
+  !  opposite meaning in the code. In the code nmolmin is used for projection
+  !, whereas nmol_min set to one the eigenvalues <= nmol_min. In input the
+  !  meaning is opposite.
+  if (yesmin .eq. 1) then
+     nmolmat = ipf*nmolmax
+     nmolmatw = nmolmaxw
+     if (symmagp .or. ipf .eq. 2) then
+        nmolmatdo = nmolmat
+     else
+        nmolmatdo = nmolmax
+     end if
+  else
+     nmolmatdo = 0
+     nmolmat = 0
+     nmolmatw = 0
+  end if
+
+  ! write parameter values
+  call dump_parameters_molecul
+
+end subroutine read_datasmin_mol

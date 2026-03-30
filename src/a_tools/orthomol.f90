@@ -163,6 +163,9 @@ program orthomol
 
     end if
 
+    ! write parameters
+    call dump_parameters
+
 #ifdef PARALLEL
     call mpi_bcast(nummol, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     if (nummol .eq. 0) then
@@ -195,4 +198,27 @@ program orthomol
 #endif
 
     stop
+
+  contains
+
+    subroutine dump_parameters
+      implicit none
+      if (rank.eq.0) then
+      write (6,*) '==== namelist mesh_info ===='
+      write (6,*) 'ax                   = ', ax
+      write (6,*) 'ay                   = ', ay
+      write (6,*) 'az                   = ', az
+      write (6,*) 'nbufd                = ', nbufd
+      write (6,*) 'nx                   = ', nx
+      write (6,*) 'ny                   = ', ny
+      write (6,*) 'nz                   = ', nz
+      write (6,*) 'shift_origin         = ', shift_origin
+      write (6,*) 'shiftx               = ', shiftx
+      write (6,*) 'shifty               = ', shifty
+      write (6,*) 'shiftz               = ', shiftz
+      write (6,*) '==== namelist molec_info ===='
+      write (6,*) 'nummol               = ', nummol
+      end if
+    end subroutine dump_parameters
+      
 end
